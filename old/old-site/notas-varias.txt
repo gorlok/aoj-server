@@ -1,0 +1,104 @@
+NOTAS VARIAS, QUE AHORA HE REUNIDO AQUI.
+ESTA INFO PUEDE ESTAR DESACTUALIZADA.
+----------------------------------------
+
+13/03/2004:
+Falta el comando FEST, que devuelve al cliente las estadísticas del personaje,
+	- Criminales matados,
+	- Ciudadanos matados,
+	- Usuarios matados,
+	- NPCs matados,
+	- Clase,
+	- Tiempo restante en carcel
+No lo encuentro implementado en ningun fuente, y no se cual es el protocolo
+(bah, cual es/son el/los mensaje/s de respuesta correctos...
+
+############################################################################################
+DESDE AQUI, NOTAS VIEJAS...
+----------
+la desconexion por inactividad, debe mostrar un 'DIALOGO', en lugar del mensaje actual.
+CORREGIDO! (bug en el código fuente)
+-----------
+CORRECTO. ES ASI.
+el /smsg debe mostrar un dialogo!
+-----------
+en zonas seguras no se puede atacar a ciudadanos!!
+SOLUCIONADO, habia problemas con los .dat (pk en lugar de PK)
+-----------
+la puerta de la carcel (66-74-62) debe tener LLAVE
+SOLUCIONADO, habia problemas en Obj.dat (llave= y Clave=)
+-----------
+al morir como barco, se convierte en barco fantasma, pero se pierde el item barco (no debe perderlo).
+Al conectarse como barco fantasma, se muestra el comun (revisar, no estoy seguro)
+CORREGIDO: agregue el test de "itemSeCae(), en tirar items".
+-----------
+/salir debe esperar 10 segundos!!!
+IMPLEMENTAR... ups!
+SOLUCIONADO!
+-----------
+el listado de dioses/semidioses/consejeros, se debe cargar desde server.ini
+SOLUCIONADO.
+-----------
+-----------
+-----------
+-----------
+-----------
+Leviatán (7000/7000)
+id=1835 mapa = 125 x = 75 y = 33 no se mueve ??
+SOLUCION: usa PATHFINDING, que falta implementar :-(
+IMPLEMENTAR, entonces :-)
+----------
+no se puede pasar del mapa 150 al 151 (ciudad Arghâl)
+PREGUNTAR: porque no se puede entrar en Arghâl?????
+NOTA: en el server 099z pasa lo mismo :-?
+----------
+revisar la logica para mandar a la carcel: ¿se puede encarcelar newbies??
+REVISARLO
+-----------
+LISTO:
+	- Backups
+	- Guardar personajes
+	- Hacer case-insensitive la lectura de los ini-files.
+
+TO-DO/PENDIENTES:
+	- LAS MASCOTAS DEBEN TRANSPORTARSE AL NUEVO MAPA JUNTO AL PJ.
+	- BAN/UNBAN
+	- Leer parametros del server desde server.ini
+	- Implementar los loggers
+	- Foros: guardar/recuperar mensajes en disco.
+	- Algunos comandos de dioses
+	- Clanes
+	- Path Finding (usando algoritmo simple x ahora)
+
+
+--------------------------------------------------------------------------------
+
+Mapas faltantes:
+81
+82
+83
+84
+85
+86	(dañado?)
+117
+118
+119
+
+Mapa de la ciudad Arghal dañado???
+
+--------------------------------------------------------------------------------
+ATRI
+	Pide los atributos del usuario
+
+ESKI
+	Pide los skills del usuario
+
+FAMA
+	Pide la reputacion del usuario
+
+GLINFO
+	Pide info sobre los clanes.
+
+--------------------------------------------------------------------------------
+
+<EOF>

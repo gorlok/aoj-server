@@ -1,0 +1,1 @@
+package misc.astar;public class Agent {	//}

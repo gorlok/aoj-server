@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<!-- ===================================================================== -->
+<!-- Argentum Online: Java port project                                    -->
+<!-- Ant 1.5 build file                                                    -->
+<!-- ===================================================================== -->
+
+<project name="Argentum Online: Java port project" default="build" basedir=".">
+
+    <property name="srcdir" value="src"/>
+    <property name="destdir" value="build"/>
+    <property name="docdir" value="doc/api"/>
+
+    <!-- Allow user to override properties without editing this file -->
+    <property file="${user.home}/.ant.properties" />
+
+
+    <!-- ================================================================= -->
+    <!-- Compile                                                           -->
+    <!-- ================================================================= -->
+    <target name="compile" description="Compiles the source code">
+
+        <mkdir dir="${destdir}"/>
+
+        <javac srcdir="${srcdir}"
+               destdir="${destdir}"
+               debug="on"
+        		encoding="ISO-8859-1"
+        		source="1.5"
+        		target="1.5" >
+            <include name="**/*.java"/>
+        	<compilerarg value="-Xlint"/>
+        </javac>
+
+    </target>
+
+
+    <!-- ================================================================= -->
+    <!-- Clean                                                             -->
+    <!-- ================================================================= -->
+    <target name="clean" description="Deletes the build directory">
+        <delete dir="${destdir}" failonerror="false" />
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Build                                                               -->
+    <!-- =================================================================== -->
+    <target name="build" depends="clean, compile" 
+        description="Compiles and creates the Jar file">
+
+        <jar jarfile="${basedir}/aoserver.jar">
+            <manifest>
+                <attribute name="Main-Class"
+                    value="org.ArgentumOnline.server.AojServer"/>
+            </manifest>
+
+            <fileset dir="${destdir}" includes="**/*.class"/>
+        </jar>
+
+    </target>
+
+
+    <!-- =================================================================== -->
+    <!-- Javadoc                                                             -->
+    <!-- =================================================================== -->
+    <target name="javadoc" description="Creates API documentation (JavaDocs)">
+
+        <delete dir="${docdir}" failonerror="false"/>
+        <mkdir dir="${docdir}"/>
+
+        <javadoc
+            packagenames="org.ArgentumOnline.*"
+            sourcepath="${srcdir}"
+            defaultexcludes="yes"
+            destdir="${docdir}"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="Argentum Online Java API">
+                <doctitle><![CDATA[<h1>Argentum Online: The Java Port</h1>]]></doctitle>
+                <bottom><![CDATA[<i>Copyright &#169; 2004 Pablo Fernando Lillia. All Rights Reserved.</i>]]></bottom>
+                <tag name="todo" scope="all" description="To do:" />
+                <tag name="fixme" scope="all" description="FIXME:" />
+                <group title="Core Packages" packages="org.ArgentumOnline.*"/>
+                <link offline="true" href="http://java.sun.com/j2se/1.5.0/docs/api/" packagelistLoc="C:\tmp"/>
+                <link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+        </javadoc>
+
+    </target>
+
+</project>

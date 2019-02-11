@@ -1,0 +1,48 @@
+[INIT]
+NumObjs=15
+
+[Obj1] ' Cuchara
+Index=163
+
+[Obj2] ' Silla
+Index=168
+
+[Obj3] ' Fragata
+Index=474
+
+[Obj4] ' Fragata reforzada
+Index=475
+
+[Obj5] ' Fragata guerra
+Index=476
+
+[Obj6] ' Arco simple
+Index=478
+
+[Obj7] ' Arco compuesto
+Index=479
+
+[Obj8] ' Flecha
+Index=480
+
+[Obj9] ' Laud
+Index=469
+
+[Obj10] 'Tambor
+Index=362
+
+[Obj11] 'Flauta
+Index=540
+
+[Obj12] 'Flecha + 1
+Index=551
+
+[Obj13] 'Flecha + 2
+Index=552
+
+[Obj14] 'Flecha + 3
+Index=553
+
+[Obj15] 'Mueble 
+Index=167
+

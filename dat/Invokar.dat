@@ -1,0 +1,76 @@
+;#################### LISTA DE SPAWN #############################
+[INIT]
+NumNPCs=20
+
+
+[LIST]
+NI1=500
+NN1=Murcielago
+
+NI2=501
+NN2=Lobo
+
+NI3=502
+NN3=Zombie
+
+NI4=503
+NN4=Esqueleto
+
+NI5=504
+NN5=Serpiente cobra
+
+NI6=505
+NN6=Goblin
+
+NI7=506
+NN7=Gallo Salvaje
+
+NI8=507
+NN8=Zombi
+
+NI9=508
+NN9=Esqueleto Guerrero
+
+NI10=509
+NN10=Dragon rojo
+
+NI11=510
+NN11=Araña gigante
+
+NI12=523
+NN12=Orco
+
+NI13=529
+NN13=Escorpion
+
+NI14=530
+NN14=Bandido
+
+NI15=531
+NN15=Asesino
+
+NI16=541
+NN16=Ogro
+
+NI17=540
+NN17=Duende
+
+NI18=537
+NN18=Beholder
+
+NI19=538
+NN19=Oso blanco
+
+NI20=534
+NN20=Señor de la muerte
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,193 @@
+Argentum Online: The Java Port
+http://aojava.sourceforge.net
+http://sourceforge.net/projects/aojava
+
+INTRODUCCION
+------------
+  Argentum Online es un juego de rol multijugador en-línea (MMORPG, por sus
+  siglas en inglés).
+  "Argentum Online: The Java Port", es una re-implementación o port del 
+  juego original en la plataforma Java.
+
+LA HISTORIA (muy resumida)
+-----------
+  Como no conozco la historia completa, solo voy a dar algunos detalles y comentarios
+  sobre el juego :-)
+  
+  AO es un juego de rol ambientado en una época medieval de fantasia, del mismo tipo
+  que Ultima Online, Everquest, y otros similares. Está en castellano y es gratuito.
+  
+  El juego original tiene un cliente gráfico simple en 2D, que está escrito en VB6 y
+  DX8.
+
+  Dentro del juego hay 5 razas, 5 atributos, 21 skills (habilidades), NPCs (criaturas
+  manejadas por la PC), un sistema de experiencia, un sistema de comercio, un sistema
+  de ataque, un sistema de magia y hechizos, navegación usando barcos, un sistema de
+  clanes, la eterna lucha entre el Bien y el Mal, y un largo largo etc.
+
+  Puede llegar a ser un juego muy adictivo, pero NUNCA olvides que es solo eso, un
+  juego :-)
+  
+  Hoy día hay decenas de servidores por todos lados, principalmente en Argentina,
+  España y en latinoaméríca. Y creo que hay algunas traducciones en curso.
+  
+  Con el tiempo han surjido varios mods (versiones modificadas), con diferentes
+  objetivos.
+
+  El juego original fue creado por Pablo Marquez y otros, de NoLand Studios, y es
+  Open Source, bajo licencia GPL. Gracias a ellos ahora podemos disfrutar de este
+  gran juego.
+
+
+EL PROYECTO
+-----------
+Si bien no hay un nombre definitivo para este proyecto, en general lo llamo:
+	AOJava o "Argentum Online: The Java Project"
+Algunas veces (las menos) se puede encontrar algo como:
+	"Argentum Online: Reborn Edition"
+que fue un nombre tentativo usado en las primeras lineas de código.
+En cualquier caso son todos nombres internos, y se usan indistintamente. 
+Se recomienda usar alguno de los 2 primeros, para evitar confusiones con otros 
+proyectos similares.
+
+OBJETIVOS
+---------
+- Iniciales:
+  * Lograr una versión multiplaforma, de alta performance, para el disfrute de todos.
+  * Mantener compatibilidad con el juego original, tanto como sea posible.
+  * Tener cierta correspondencia con el código fuente VB original de AO, en principio.
+  * Divertirse mucho!
+
+- En un futuro (cercano?):
+  * Hacer un rediseño para facilitar el mantenimiento y expansión del código fuente,
+    más orientado a objetos, incorporando nuevas ideas y mejoras.
+  * Poner suficientes controles como para minimizar la posibilidad de hacer trampas
+    (macros, cheats) u obtener ventajas ilegales sobre otros jugadores.
+  * Aumentar la performance, y desterrar el maldito LAG que sufren muchos servers 
+    actuales, intentando aumentar el máximo de conexiones manejables, para que se
+    soporten al menos 250,350, 500 o más usuarios simultáneos sin ningún tipo de
+    problemas, y sin demasiado ancho de banda. Los clientes deberían poder usar desde
+    un módem de 56K, sin sufrir penalizaciones.
+  * Ofrecer herramientas de administración, preferentemente web, fáciles de usar y
+    seguras.
+  * Establecer un ciclo de desarrollo, que incluya etapas de pruebas.
+  * Incorporar pruebas de unidad automáticas durante el desarrollo y la compilación,
+    usando test de unidad (JUnit, tal vez?).
+  * DOCUMENTAR todo: protocolo, formato de archivos, guías para el desarrollo.
+  * Analizar el uso de scripting para facilitar la ampliación el juego, y si fuera
+    posible, intentar separar el core o framework de la implementación particular 
+    (reglas) de cada servidor. En resumen: implementar un mecanismo simple de
+    extensión, sin tener que modificar el core ni recompilar.
+  * Y espero que muchas cosas más, que el tiempo y ustedes dirán ;)
+
+REQUERIMIENTOS
+--------------
+  Para compilar:
+    + java sdk 1.4.2 (J2SE 1.4.2)
+    + ant 1.6.0 (1.5 puede funcionar)
+
+  Para jugar:
+    + java JRE 1.4.2 (incluido en SDK)
+    + CUALQUIER sistema operativo ;-)
+
+  Hardware:
+    El requerimiento principal es RAM. La cantidad mínima depende de la cantidad de
+    objetos, mapas, NPCs, conexiones, etc. Solo a modo orientativo, para 155 mapas con
+    todos los objetos y NPCs incluidos en AO 0.9.9z, se necesitan 256 MB para la VM de
+    Java.
+    Como referencia, yo utilizo un AMD Duron 700, con 384 MB RAM. Me interesa conocer
+    cómo funciona sobre otras configuraciones, y agradeceré comentarios al respecto.
+
+  NOTA IMPORTANTE: para aumentar el tamaño máximo de RAM utilizable por la VM de Java,
+    hay que usar el parámetro -Xmx. Por ejemplo, para un máximo de 256 MB es -Xmx256m.
+    Ver el script run.sh o run.bat de arranque.
+
+COMPILACION
+-----------
+  1) Comprobar los requerimientos mínimos con:
+    ant -version
+    java -version
+
+  2) Usando la linea de comandos, ir a la carpeta del proyecto y escribir:
+    ant
+
+  Debería mostrarse algunas lineas de salida, finalizando con algo similar a:
+    BUILD SUCCESFULL
+    Total time: 10 seconds
+
+A JUGAR!
+--------
+  Ir a la carpeta del proyecto y escribir el comando:
+    en Windows:      run
+    en Linux:        sh run.sh
+
+LICENCIA
+--------
+"Argentun Online" y "Argentun Online: The Java Project" son SOFTWARE LIBRE,
+que están bajo licencia GPL versión 2 o posterior.
+Esto significa que puedes usarlo, modificarlo, y hasta venderlo, pero siempre debes
+DISTRIBUIR EL CÓDIGO FUENTE COMPLETO si haces cualquier modificación al mismo.
+De esta forma, la comunidad podrá aprovechar tu aporte, del mismo modo que tu lo haces. 
+Evitamos reinventar la rueda, y el trabajo queda protegido. Aquí FREE significa LIBRE.
+Cualquier duda, revisa los términos de la GNU General Public License, en 
+http://www.fsf.org y http://www.gnu.org. A continuación incluyo un resumen legal,
+copiado del AO original:
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	Argentum Online is based on Baronsoft's VB6 Online RPG
+	You can contact the original creator of ORE at aaron@baronsoft.com
+	for more information about ORE please visit http://www.baronsoft.com/
+
+
+CREDITOS
+--------
+Argentum Online: The Java Project, AOJava, es 
+	(C) 2004 Pablo Fernando Lillia.
+
+Argentum Online, es 
+	(C) 2002 Pablo Ignacio Marquez
+
+Página oficial de AOJava: 
+	http://sourceforge.net/projects/aojava
+	http://aojava.sourceforge.net (pendiente de construcción)
+
+Página oficial de AO: 
+	http://www.argentum-online.com.ar 
+	http://ao.alkon.com.ar
+
+AGRADECIMIENTOS
+---------------
+No puedo dejar de agradecer a todo el staff de Argentum Online, a NoLand Studios, y
+a Pablo Marquez (alias Gulfas Morgolock) por haber creado este magnífico juego, 
+hacerlo gratis y libre, invirtiendo cientos y miles de horas para que todos podamos
+jugar en las fantásticas tierras de AO.
+Y a toda la comunidad. Por su paciencia, aportes, y por elegir a este gran juego argentino.
+A Sun y los pioneros de Java, por haber creado esta excelente plataforma de desarrollo
+que ha revolucionado a la industria informática, y no siempre bien valorada.
+Y a SourceForge, por el gran servicio que le ofrecen a la comunidad del Software Libre.
+
+CONTACTO
+--------
+Pablo Lillia, 
+email: pablofer72@yahoo.com.ar
+email: gorlok@sourceforge.net
+
+Página del proyecto: http://aojava.sourceforge.net
+Página del desarrollo: http://sourceforge.net/projects/aojava
+
+---------------------------------------------------------------------------------------
+Ultima actualización: 24/feb/2004
+<pfl/>

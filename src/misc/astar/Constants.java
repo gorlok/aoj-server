@@ -1,0 +1,1 @@
+package misc.astar;public class Constants {    public static final int NOTHING = -1, EMPTY = 0, TERRAIN1 = 1, TERRAIN2 = 2, TERRAIN3 = 3,                     SOLID = 4, START = 5, FINISH = 6, NUMCOLORS = FINISH + 1;}
