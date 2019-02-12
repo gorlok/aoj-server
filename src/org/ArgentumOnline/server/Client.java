@@ -26,6 +26,7 @@
 package org.ArgentumOnline.server;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +44,8 @@ import org.ArgentumOnline.server.classes.HunterClass;
 import org.ArgentumOnline.server.classes.ThiefClass;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildInfo;
+import org.ArgentumOnline.server.protocol.BufferWriter;
 import org.ArgentumOnline.server.protocol.serverPacketID;
-import org.ArgentumOnline.server.protocol.Protocol;
-import org.ArgentumOnline.server.protocol.ProtocolManager;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -67,7 +67,7 @@ public class Client extends BaseCharacter implements Constants {
 	public int minX = 0;
 	public int minY = 0;
 	
-	public LinkedList <Integer> lengthClient = new LinkedList();
+	public List <Integer> lengthClient = new LinkedList<Integer>();
 
 	/** Character universal id. */
 	short m_id = 0;
@@ -79,12 +79,8 @@ public class Client extends BaseCharacter implements Constants {
 	public SocketChannel socketChannel = null;
 
 	private final static int BUFFER_SIZE = 1024;
-	
 	public ByteBuffer colaClient = ByteBuffer.allocate(2048);
-
-	public ByteBuffer clientBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-
-	private Protocol protocol;
+	public ByteBuffer clientBuffer;
 
 	String m_desc = ""; // Descripcion
 
@@ -156,6 +152,9 @@ public class Client extends BaseCharacter implements Constants {
 
 	/** Creates a new instance of Client */
 	public Client(SocketChannel socketChannel, AojServer aoserver) {
+		this.clientBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+		this.clientBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		
 		this.server = aoserver;
 		this.m_id = server.getNextId();
 		this.m_spells = new UserSpells(server, this);
@@ -165,11 +164,9 @@ public class Client extends BaseCharacter implements Constants {
 		this.socketChannel = socketChannel;
 		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel
 			.socket().getRemoteSocketAddress();
-		this.protocol = ProtocolManager.getDefaultProtocol(this.server, this);
 		if (addr != null) {
 			this.m_ip = addr.getAddress().getHostAddress();
-			Log.serverLogger().info(
-				this.m_nick + " conectado desde " + this.m_ip);
+			Log.serverLogger().info(this.m_nick + " conectado desde " + this.m_ip);
 		}
 	}
 	
@@ -266,10 +263,6 @@ public class Client extends BaseCharacter implements Constants {
 
 	public GuildInfo guildInfo() {
 		return m_guildInfo;
-	}
-
-	public Protocol getProtocol() {
-		return protocol;
 	}
 
 	public int genCRC() {
@@ -487,11 +480,11 @@ public class Client extends BaseCharacter implements Constants {
 		try {
 			Log.serverLogger().fine(">>" + m_nick + ">> " + msg);
 			
-			clientBuffer.clear();
+			this.clientBuffer.clear();
+		    
+			BufferWriter.write(this.clientBuffer, msg, params);
 			
-		    protocol.encodeData(clientBuffer, msg, params);
-			
-			clientBuffer.flip();
+			this.clientBuffer.flip();
 			
 			if (socketChannel.write(clientBuffer) == 0) {
 				// FIXME: ESTO SIGNIFICA QUE NO PUDO ESCRIBIR, HAY QUE ENCOLAR
@@ -2035,8 +2028,8 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void sendUserSkillsTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
-		for (int i = 1; i <= MAX_SKILLS; i++) {
-			enviarMensaje(" " + skillsNames[i] + " = "
+		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
+			enviarMensaje(" " + Skill.skillsNames[i] + " = "
 					+ usuario.m_estads.userSkills[i], FontType.INFO);
 		}
 	}
@@ -2180,7 +2173,7 @@ public class Client extends BaseCharacter implements Constants {
 			// enviar("RSOS" + pedido.usuario + ": " + pedido.msg);
 			//enviar(MSG_RSOS, pedido.usuario);
 		}
-	//	enviar(MSG_MSOS);
+		//	enviar(MSG_MSOS);
 	}
 
 	public void doFinAyuda(String s) {
@@ -3026,7 +3019,7 @@ public class Client extends BaseCharacter implements Constants {
 			double monto = unidad * cant;
 			m_estads.oro -= monto;
 			// tal vez suba el skill comerciar ;-)
-			subirSkill(SKILL_Comerciar);
+			subirSkill(Skill.SKILL_Comerciar);
 			if (info.ObjType == OBJTYPE_LLAVES) {
 				Log.logVentaCasa(m_nick + " compro " + info.Nombre);
 			}
@@ -3064,7 +3057,7 @@ public class Client extends BaseCharacter implements Constants {
 				1.9, 1.9, // 81-90
 				2.0, 2.0 // 91-100
 		};
-		int ptsComercio = m_estads.userSkills[SKILL_Comerciar];
+		int ptsComercio = m_estads.userSkills[Skill.SKILL_Comerciar];
 		m_flags.Descuento = indicesDto[(short) (ptsComercio / 5)];
 		return m_flags.Descuento;
 	}
@@ -3215,7 +3208,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doNavega() {
 		double modNave = m_clase.modNavegacion();
 		ObjectInfo barco = m_inv.getBarco();
-		if (m_estads.userSkills[SKILL_Navegacion] / modNave < barco.MinSkill) {
+		if (m_estads.userSkills[Skill.SKILL_Navegacion] / modNave < barco.MinSkill) {
 			enviarMensaje(
 				"No tenes suficientes conocimientos para usar este barco.",
 				FontType.INFO);
@@ -3279,7 +3272,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		final short indiceSuerte[] = { 0, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
 		// FIXME: REVISAR SI DEBE SER DIVIDIDO X 10 o NO.
-		short suerte = indiceSuerte[m_estads.userSkills[SKILL_Supervivencia] / 10];
+		short suerte = indiceSuerte[m_estads.userSkills[Skill.SKILL_Supervivencia] / 10];
 		if (Util.Azar(1, suerte) == 1) {
 			short objid = FOGATA_APAG;
 			int cant = mapa.getObjeto(pos.x, pos.y).obj_cant / 3;
@@ -3297,7 +3290,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_flags.UltimoMensaje = 10;
 			}
 		}
-		subirSkill(SKILL_Supervivencia);
+		subirSkill(Skill.SKILL_Supervivencia);
 	}
 
 	public void usarItem(short slot) {
@@ -3348,7 +3341,7 @@ public class Client extends BaseCharacter implements Constants {
 			ObjectInfo info = server
 				.getInfoObjeto(m_flags.TargetObjInvIndex);
 			if (info.ObjType == OBJTYPE_MINERALES
-					&& info.MinSkill <= m_estads.userSkills[SKILL_Mineria]
+					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria]
 							/ m_clase.modFundicion()) {
 				doLingotes();
 			} else {
@@ -3361,7 +3354,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private double calcularPoderDomador() {
 		return m_estads.userAtributos[ATRIB_CARISMA]
-				* (m_estads.userSkills[SKILL_Domar] / m_clase
+				* (m_estads.userSkills[Skill.SKILL_Domar] / m_clase
 					.modDomar())
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
@@ -3388,7 +3381,7 @@ public class Client extends BaseCharacter implements Constants {
 				npc.followAmo();
 				enviarMensaje("La criatura te ha aceptado como su amo.",
 					FontType.INFO);
-				subirSkill(SKILL_Domar);
+				subirSkill(Skill.SKILL_Domar);
 				// hacemos respawn del npc para reponerlo.
 				Npc.spawnNpc(npc.getNPCtype(), new WorldPos(npc.getPos().mapa,
 					(short) 0, (short) 0), false, true);
@@ -3406,7 +3399,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteMineria() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Mineria] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Mineria] / 10)]);
 		return (Util.Azar(1, rango) < 6);
 	}
 
@@ -3432,13 +3425,13 @@ public class Client extends BaseCharacter implements Constants {
 				m_flags.UltimoMensaje = 9;
 			}
 		}
-		subirSkill(SKILL_Mineria);
+		subirSkill(Skill.SKILL_Mineria);
 		m_flags.Trabajando = true;
 	}
 
 	private boolean suerteTalar() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 13, 7, 7 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Talar] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Talar] / 10)]);
 		return (Util.Azar(1, rango) < 6);
 	}
 
@@ -3462,7 +3455,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_flags.UltimoMensaje = 8;
 			}
 		}
-		subirSkill(SKILL_Talar);
+		subirSkill(Skill.SKILL_Talar);
 		m_flags.Trabajando = true;
 	}
 
@@ -3524,7 +3517,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteRobar() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 5, 5 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Robar] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Robar] / 10)]);
 		return (Util.Azar(1, rango) < 3);
 	}
 
@@ -3572,13 +3565,13 @@ public class Client extends BaseCharacter implements Constants {
 				m_faccion.expulsarFaccionReal();
 			}
 			m_reputacion.incLandron(vlLadron);
-			subirSkill(SKILL_Robar);
+			subirSkill(Skill.SKILL_Robar);
 		}
 	}
 
 	private boolean suertePescarCaña() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Pesca] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Pesca] / 10)]);
 		return (Util.Azar(1, rango) < 6);
 	}
 
@@ -3597,19 +3590,19 @@ public class Client extends BaseCharacter implements Constants {
 				m_flags.UltimoMensaje = 6;
 			}
 		}
-		subirSkill(SKILL_Pesca);
+		subirSkill(Skill.SKILL_Pesca);
 		m_flags.Trabajando = true;
 	}
 
 	private boolean suertePescarRed() {
 		final short[] suerte = { 60, 54, 49, 43, 38, 32, 27, 21, 16, 11, 11 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Pesca] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Pesca] / 10)]);
 		return (Util.Azar(1, rango) < 6);
 	}
 
 	private void doPescarRed() {
 		m_estads.quitarStamina(m_clase.getEsfuerzoPescar());
-		int skills = m_estads.userSkills[SKILL_Pesca];
+		int skills = m_estads.userSkills[Skill.SKILL_Pesca];
 		if (skills == 0) {
 			return;
 		}
@@ -3628,7 +3621,7 @@ public class Client extends BaseCharacter implements Constants {
 		} else {
 			enviarMensaje("¡No has pescado nada!", FontType.INFO);
 		}
-		subirSkill(SKILL_Pesca);
+		subirSkill(Skill.SKILL_Pesca);
 	}
 
 	public void doWLC(short x, short y, short tLong) {
@@ -3656,7 +3649,7 @@ public class Client extends BaseCharacter implements Constants {
 		MapObject obj = null;
 		
 		switch (tLong) {
-		case SKILL_Proyectiles:
+		case Skill.SKILL_Proyectiles:
 			// Nos aseguramos que este usando un arma de proyectiles
 			if (!m_inv.tieneArmaEquipada()) {
 				return;
@@ -3711,7 +3704,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			enviarObjetoInventario(slotMunicion);
 			break;
-		case SKILL_Magia:
+		case Skill.SKILL_Magia:
 			if (!intervaloPermiteLanzarSpell()) {
 				return;
 			}
@@ -3727,7 +3720,7 @@ public class Client extends BaseCharacter implements Constants {
 					FontType.INFO);
 			}
 			break;
-		case SKILL_Pesca:
+		case Skill.SKILL_Pesca:
 			if (!intervaloPermiteTrabajar()) {
 				return;
 			}
@@ -3769,7 +3762,7 @@ public class Client extends BaseCharacter implements Constants {
 					FontType.INFO);
 			}
 			break;
-		case SKILL_Robar:
+		case Skill.SKILL_Robar:
 			if (!mapa.esZonaSegura()) {
 				if (!intervaloPermiteTrabajar()) {
 					return;
@@ -3801,7 +3794,7 @@ public class Client extends BaseCharacter implements Constants {
 					FontType.INFO);
 			}
 			break;
-		case SKILL_Talar:
+		case Skill.SKILL_Talar:
 			if (!intervaloPermiteTrabajar()) {
 				return;
 			}
@@ -3831,7 +3824,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("No hay ningun arbol ahi.", FontType.INFO);
 			}
 			break;
-		case SKILL_Mineria:
+		case Skill.SKILL_Mineria:
 			if (!intervaloPermiteTrabajar()) {
 				return;
 			}
@@ -3862,7 +3855,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("Ahi no hay ningun yacimiento.", FontType.INFO);
 			}
 			break;
-		case SKILL_Domar:
+		case Skill.SKILL_Domar:
 			// Modificado 25/11/02
 			// Optimizado y solucionado el bug de la doma de
 			// criaturas hostiles.
@@ -3890,7 +3883,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("No hay ninguna criatura alli!.", FontType.INFO);
 			}
 			break;
-		case SKILL_FundirMetal:
+		case Skill.SKILL_FundirMetal:
 			mapa.consultar(this, x, y);
 			if (m_flags.TargetObj > 0) {
 				if (server.getInfoObjeto(m_flags.TargetObj).ObjType == OBJTYPE_FRAGUA) {
@@ -3902,7 +3895,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("Ahi no hay ninguna fragua.", FontType.INFO);
 			}
 			break;
-		case SKILL_Herreria:
+		case Skill.SKILL_Herreria:
 			mapa.consultar(this, x, y);
 			if (m_flags.TargetObj > 0) {
 				if (server.getInfoObjeto(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
@@ -3927,17 +3920,17 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		
 		switch (val) {
-		case SKILL_Robar:
-			enviar(serverPacketID.MSG_TO1, SKILL_Robar);
+		case Skill.SKILL_Robar:
+			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Robar);
 			break;
-		case SKILL_Magia:
-			enviar(serverPacketID.MSG_TO1, SKILL_Magia);
+		case Skill.SKILL_Magia:
+			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Magia);
 			//System.out.println("se");
 			break;
-		case SKILL_Domar:
-			enviar(serverPacketID.MSG_TO1, SKILL_Domar);
+		case Skill.SKILL_Domar:
+			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Domar);
 			break;
-		case SKILL_Ocultarse:
+		case Skill.SKILL_Ocultarse:
 			if (m_flags.Navegando) {
 				if (m_flags.UltimoMensaje != 3) {
 					enviarMensaje("No puedes ocultarte si estas navegando.",
@@ -5088,7 +5081,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteMostrarse() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Ocultarse] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Ocultarse] / 10)]);
 		if (m_clase != ThiefClass.getInstance()) {
 			rango += 50;
 		}
@@ -5103,7 +5096,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteOcultarse() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Ocultarse] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Ocultarse] / 10)]);
 		if (m_clase != ThiefClass.getInstance()) {
 			rango += 50;
 		}
@@ -5121,7 +5114,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doOcultarse() {
 		if (suerteOcultarse()) {
 			volverseOculto();
-			subirSkill(SKILL_Ocultarse);
+			subirSkill(Skill.SKILL_Ocultarse);
 		} else {
 			if (m_flags.UltimoMensaje != 4) {
 				enviarMensaje("¡No has logrado esconderte!", FontType.INFO);
@@ -5518,13 +5511,13 @@ public class Client extends BaseCharacter implements Constants {
 			// if (lvl > MAX_SKILLS)
 			// return;
 
-			if (m_estads.getUserSkill(skill) >= MAX_SKILL_POINTS) {
+			if (m_estads.getUserSkill(skill) >= Skill.MAX_SKILL_POINTS) {
 				return;
 			}
 			if (aumenta == 7
-					&& m_estads.getUserSkill(skill) < levelSkill[lvl]) {
+					&& m_estads.getUserSkill(skill) < Skill.levelSkill[lvl]) {
 				m_estads.addSkillPoints(skill, (byte) 1);
-				enviarMensaje("¡Has mejorado tu skill " + skillsNames[skill]
+				enviarMensaje("¡Has mejorado tu skill " + Skill.skillsNames[skill]
 						+ " en un punto!. Ahora tienes "
 						+ m_estads.getUserSkill(skill) + " pts.",
 					FontType.INFO);
@@ -5537,7 +5530,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 	
 	public void userAsignaSkill(int skill, int amount) {
-		if (m_estads.getUserSkill(skill) >= MAX_SKILL_POINTS || 
+		if (m_estads.getUserSkill(skill) >= Skill.MAX_SKILL_POINTS || 
 			m_estads.getUserSkill(skill) + (amount) > 100    ||
 			m_estads.SkillPts < amount ) return;
 		
@@ -5553,7 +5546,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void enviarSkills() {
 		// Comando ESKI
 		List<Byte> skills = new LinkedList<Byte>();
-		for (int i = 0; i <= MAX_SKILLS; i++) {
+		for (int i = 0; i <= Skill.MAX_SKILLS; i++) {
 			
 			if (i == 0) {
 				skills.add((byte) m_estads.getSkillPoints());
@@ -5577,14 +5570,14 @@ public class Client extends BaseCharacter implements Constants {
 	public void modificarSkills(String s) {
 		// Comando "SKSE" Modificar skills
 		StringTokenizer st = new StringTokenizer(s, ",");
-		byte skills[] = new byte[MAX_SKILLS + 1];
-		for (int i = 1; i <= MAX_SKILLS; i++) {
+		byte skills[] = new byte[Skill.MAX_SKILLS + 1];
+		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
 			skills[i] = Byte.parseByte(st.nextToken());
 		}
 		// Prevenir el hackeo de los skills
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		int total = 0;
-		for (int i = 1; i <= MAX_SKILLS; i++) {
+		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
 			if (skills[i] < 0) {
 				Log.logHack(m_nick + " IP:" + m_ip
 						+ " trató de hackear los skills (skill negativo).");
@@ -5648,23 +5641,23 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public long poderEvasionEscudo() {
-		return (long) ((m_estads.userSkills[SKILL_Defensa] * m_clase
+		return (long) ((m_estads.userSkills[Skill.SKILL_Defensa] * m_clase
 			.modEvasionDeEscudoClase()) / 2);
 	}
 
 	public double poderEvasion() {
 		double tmp = 0;
-		if (m_estads.userSkills[SKILL_Tacticas] < 31) {
-			tmp = m_estads.userSkills[SKILL_Tacticas]
+		if (m_estads.userSkills[Skill.SKILL_Tacticas] < 31) {
+			tmp = m_estads.userSkills[Skill.SKILL_Tacticas]
 					* m_clase.modificadorEvasion();
-		} else if (m_estads.userSkills[SKILL_Tacticas] < 61) {
-			tmp = (m_estads.userSkills[SKILL_Tacticas] + m_estads.userAtributos[ATRIB_AGILIDAD])
+		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 61) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + m_estads.userAtributos[ATRIB_AGILIDAD])
 					* m_clase.modificadorEvasion();
-		} else if (m_estads.userSkills[SKILL_Tacticas] < 91) {
-			tmp = (m_estads.userSkills[SKILL_Tacticas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 91) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
 					* m_clase.modificadorEvasion();
 		} else {
-			tmp = (m_estads.userSkills[SKILL_Tacticas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
 					* m_clase.modificadorEvasion();
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
@@ -5672,17 +5665,17 @@ public class Client extends BaseCharacter implements Constants {
 
 	public double poderAtaqueArma() {
 		double tmp = 0;
-		if (m_estads.userSkills[SKILL_Armas] < 31) {
-			tmp = m_estads.userSkills[SKILL_Armas]
+		if (m_estads.userSkills[Skill.SKILL_Armas] < 31) {
+			tmp = m_estads.userSkills[Skill.SKILL_Armas]
 					* m_clase.modificadorPoderAtaqueArmas();
-		} else if (m_estads.userSkills[SKILL_Armas] < 61) {
-			tmp = ((m_estads.userSkills[SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
+		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 61) {
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
 				.modificadorPoderAtaqueArmas());
-		} else if (m_estads.userSkills[SKILL_Armas] < 91) {
-			tmp = ((m_estads.userSkills[SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
+		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 91) {
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
 				.modificadorPoderAtaqueArmas());
 		} else {
-			tmp = ((m_estads.userSkills[SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
 				.modificadorPoderAtaqueArmas());
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
@@ -5690,17 +5683,17 @@ public class Client extends BaseCharacter implements Constants {
 
 	public double poderAtaqueProyectil() {
 		double tmp = 0;
-		if (m_estads.userSkills[SKILL_Proyectiles] < 31) {
-			tmp = (m_estads.userSkills[SKILL_Proyectiles] * m_clase
+		if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 31) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * m_clase
 				.modificadorPoderAtaqueProyectiles());
-		} else if (m_estads.userSkills[SKILL_Proyectiles] < 61) {
-			tmp = ((m_estads.userSkills[SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
+		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 61) {
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
 				.modificadorPoderAtaqueProyectiles());
-		} else if (m_estads.userSkills[SKILL_Proyectiles] < 91) {
-			tmp = ((m_estads.userSkills[SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
+		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 91) {
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
 				.modificadorPoderAtaqueProyectiles());
 		} else {
-			tmp = ((m_estads.userSkills[SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
 				.modificadorPoderAtaqueProyectiles());
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
@@ -5708,17 +5701,17 @@ public class Client extends BaseCharacter implements Constants {
 
 	public double poderAtaqueWresterling() {
 		double tmp = 0;
-		if (m_estads.userSkills[SKILL_Wresterling] < 31) {
-			tmp = (m_estads.userSkills[SKILL_Wresterling] * m_clase
+		if (m_estads.userSkills[Skill.SKILL_Wresterling] < 31) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * m_clase
 				.modificadorPoderAtaqueArmas());
-		} else if (m_estads.userSkills[SKILL_Wresterling] < 61) {
-			tmp = (m_estads.userSkills[SKILL_Wresterling] + m_estads.userAtributos[ATRIB_AGILIDAD])
+		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 61) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + m_estads.userAtributos[ATRIB_AGILIDAD])
 					* m_clase.modificadorPoderAtaqueArmas();
-		} else if (m_estads.userSkills[SKILL_Wresterling] < 91) {
-			tmp = (m_estads.userSkills[SKILL_Wresterling] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 91) {
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
 					* m_clase.modificadorPoderAtaqueArmas();
 		} else {
-			tmp = (m_estads.userSkills[SKILL_Wresterling] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
 					* m_clase.modificadorPoderAtaqueArmas();
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
@@ -5743,12 +5736,12 @@ public class Client extends BaseCharacter implements Constants {
 		if (huboImpacto) {
 			if (m_inv.tieneArmaEquipada()) {
 				if (m_inv.getArma().esProyectil()) {
-					subirSkill(SKILL_Proyectiles);
+					subirSkill(Skill.SKILL_Proyectiles);
 				} else {
-					subirSkill(SKILL_Armas);
+					subirSkill(Skill.SKILL_Armas);
 				}
 			} else {
-				subirSkill(SKILL_Wresterling);
+				subirSkill(Skill.SKILL_Wresterling);
 			}
 		}
 		return huboImpacto;
@@ -5757,8 +5750,8 @@ public class Client extends BaseCharacter implements Constants {
 	public boolean npcImpacto(Npc npc) {
 		double userEvasion = poderEvasion();
 		long npcPoderAtaque = npc.getPoderAtaque();
-		long skillTacticas = m_estads.userSkills[SKILL_Tacticas];
-		long skillDefensa = m_estads.userSkills[SKILL_Defensa];
+		long skillTacticas = m_estads.userSkills[Skill.SKILL_Tacticas];
+		long skillDefensa = m_estads.userSkills[Skill.SKILL_Defensa];
 		// Esta usando un escudo ???
 		if (m_inv.tieneEscudoEquipado()) {
 			userEvasion += poderEvasionEscudo();
@@ -5775,7 +5768,7 @@ public class Client extends BaseCharacter implements Constants {
 				// Se rechazo el ataque con el escudo
 				enviarSonido(SND_ESCUDO);
 				//enviar(MSG_7);
-				subirSkill(SKILL_Defensa);
+				subirSkill(Skill.SKILL_Defensa);
 			}
 		}
 		return impacto;
@@ -5875,7 +5868,7 @@ public class Client extends BaseCharacter implements Constants {
 			// Trata de apuñalar por la espalda al enemigo
 			if (puedeApuñalar()) {
 				apuñalar(npc, daño);
-				subirSkill(SKILL_Apuñalar);
+				subirSkill(Skill.SKILL_Apuñalar);
 			}
 		}
 		if (npc.getEstads().MinHP <= 0) {
@@ -5895,7 +5888,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public boolean puedeApuñalar() {
 		if (m_inv.tieneArmaEquipada()) {
-			return ((m_estads.userSkills[SKILL_Apuñalar] >= MIN_APUÑALAR) && m_inv
+			return ((m_estads.userSkills[Skill.SKILL_Apuñalar] >= MIN_APUÑALAR) && m_inv
 				.getArma().apuñala())
 					|| ((m_clase == AssassinClass.getInstance()) && m_inv
 						.getArma().apuñala());
@@ -6141,8 +6134,8 @@ public class Client extends BaseCharacter implements Constants {
 
 	public boolean usuarioImpacto(Client victima) {
 		double probExito = 0;
-		long skillTacticas = victima.m_estads.userSkills[SKILL_Tacticas];
-		long skillDefensa = victima.m_estads.userSkills[SKILL_Defensa];
+		long skillTacticas = victima.m_estads.userSkills[Skill.SKILL_Tacticas];
+		long skillDefensa = victima.m_estads.userSkills[Skill.SKILL_Defensa];
 		ObjectInfo arma = m_inv.getArma();
 		boolean proyectil = (arma != null) && arma.esProyectil();
 		// Calculamos el poder de evasion...
@@ -6180,19 +6173,19 @@ public class Client extends BaseCharacter implements Constants {
 					enviarSonido(SND_ESCUDO);
 					//enviar(MSG_8);
 					//victima.enviar(MSG_7);
-					victima.subirSkill(SKILL_Defensa);
+					victima.subirSkill(Skill.SKILL_Defensa);
 				}
 			}
 		}
 		if (huboImpacto) {
 			if (arma != null) {
 				if (!proyectil) {
-					subirSkill(SKILL_Armas);
+					subirSkill(Skill.SKILL_Armas);
 				} else {
-					subirSkill(SKILL_Proyectiles);
+					subirSkill(Skill.SKILL_Proyectiles);
 				}
 			} else {
-				subirSkill(SKILL_Wresterling);
+				subirSkill(Skill.SKILL_Wresterling);
 			}
 		}
 		return huboImpacto;
@@ -6264,16 +6257,16 @@ public class Client extends BaseCharacter implements Constants {
 		if (!m_flags.Hambre && !m_flags.Sed) {
 			if (m_inv.tieneArmaEquipada()) {
 				// Si usa un arma quizas suba "Combate con armas"
-				subirSkill(SKILL_Armas);
+				subirSkill(Skill.SKILL_Armas);
 			} else {
 				// sino tal vez lucha libre
-				subirSkill(SKILL_Wresterling);
+				subirSkill(Skill.SKILL_Wresterling);
 			}
-			subirSkill(SKILL_Tacticas);
+			subirSkill(Skill.SKILL_Tacticas);
 			// Trata de apuñalar por la espalda al enemigo
 			if (puedeApuñalar()) {
 				apuñalar(victima, daño);
-				subirSkill(SKILL_Apuñalar);
+				subirSkill(Skill.SKILL_Apuñalar);
 			}
 		}
 		if (victima.m_estads.MinHP <= 0) {
@@ -6470,7 +6463,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteApuñalar() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 5, 5 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Apuñalar] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Apuñalar] / 10)]);
 		return (Util.Azar(1, rango) == 3);
 	}
 
@@ -6481,7 +6474,7 @@ public class Client extends BaseCharacter implements Constants {
 			victimaNPC.getEstads().MinHP -= daño;
 			enviarMensaje("Has apuñalado a la criatura por " + daño,
 				FontType.FIGHT);
-			subirSkill(SKILL_Apuñalar);
+			subirSkill(Skill.SKILL_Apuñalar);
 			victimaNPC.calcularDarExp(this, daño);
 		} else {
 			enviarMensaje("¡No has logrado apuñalar a tu enemigo!",
@@ -7397,7 +7390,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean suerteMeditar() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 5, 5 };
-		short rango = (suerte[(short) (m_estads.userSkills[SKILL_Meditar] / 10)]);
+		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Meditar] / 10)]);
 		return (Util.Azar(1, rango) == 1);
 	}
 
@@ -7425,7 +7418,7 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!",
 				FontType.INFO);
 			refreshStatus(3);
-			subirSkill(SKILL_Meditar);
+			subirSkill(Skill.SKILL_Meditar);
 		}
 	}
 
@@ -7781,7 +7774,7 @@ public class Client extends BaseCharacter implements Constants {
 	private boolean puedeConstruir(short objid) {
 		ObjectInfo info = server.getInfoObjeto(objid);
 		return herreroTieneMateriales(objid)
-				&& m_estads.getUserSkill(SKILL_Herreria) >= info.SkHerreria;
+				&& m_estads.getUserSkill(Skill.SKILL_Herreria) >= info.SkHerreria;
 	}
 
 	private boolean puedeConstruirHerreria(short objid) {
@@ -7820,7 +7813,7 @@ public class Client extends BaseCharacter implements Constants {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
 					new InventoryObject(objid, 1));
 			}
-			subirSkill(SKILL_Herreria);
+			subirSkill(Skill.SKILL_Herreria);
 			enviarInventario();
 			enviarSonido(MARTILLOHERRERO);
 			m_flags.Trabajando = true;
@@ -7843,7 +7836,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (carpinteroTieneMateriales(objid)
-				&& m_estads.getUserSkill(SKILL_Carpinteria) >= info.SkCarpinteria
+				&& m_estads.getUserSkill(Skill.SKILL_Carpinteria) >= info.SkCarpinteria
 				&& puedeConstruirCarpintero(objid)
 				&& m_inv.getHerramienta().ObjIndex == SERRUCHO_CARPINTERO) {
 			carpinteroQuitarMateriales(objid);
@@ -7852,7 +7845,7 @@ public class Client extends BaseCharacter implements Constants {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
 					new InventoryObject(objid, 1));
 			}
-			subirSkill(SKILL_Carpinteria);
+			subirSkill(Skill.SKILL_Carpinteria);
 			enviarInventario();
 			enviarSonido(LABUROCARPINTERO);
 			m_flags.Trabajando = true;

@@ -46,7 +46,7 @@ public class MapObject {
 	}
 
 	public ObjectInfo getInfo() {
-		return AojServer.getInstance().getInfoObjeto(this.obj_ind);
+		return AojServer.instance().getInfoObjeto(this.obj_ind);
 	}
 
 	@Override

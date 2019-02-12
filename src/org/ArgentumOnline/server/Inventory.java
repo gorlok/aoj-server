@@ -32,7 +32,6 @@ package org.ArgentumOnline.server;
 public class Inventory {
     
     InventoryObject objs[] = null;
-    //short cantItems = 0;
     
     /** Creates a new instance of Inventory */
     public Inventory(int size) {

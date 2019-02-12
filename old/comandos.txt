@@ -1,0 +1,234 @@
+COMANDOS DE CONSEJEROS:
+/HORA Envía un mensaje Broadcast con la hora del servidor.
+
+/NENE número de mapa Muestra los npcs de el MAPA.
+
+/TELEP YO mapa x y Teleporta al consejero, al mapa número MAPA, coordenadas X e Y.
+
+/TELEPLOC Teleporta al gm/consejero a la posición del último click.
+
+/IRA nick Teleporta al gm/consejero donde se encuentra el personaje.
+
+/DONDE nick Muestra la posición delpersonaje.
+
+/SHOW SOS Muestra los mensajes de ayuda de los personajes.
+
+/GMSG texto Mensaje broadcast entre personajes del Staff.
+
+/REM texto Salva un comentario en los logs.
+
+/TRABAJANDO Muestra la lista de los personajes que están trabajando.
+
+/PANELGM Despliega el Panel de GMs.
+
+/INVISIBLE Hace invisible al gm/consejero.
+
+/RMATA Mata el NPC clickeado previamente, sin impedir su respawn.
+
+/SILENCIAR nick Impide que el usuario envíe utilice el comando /denunciar.
+
+/CARCEL nick@motivo@tiempo Manda al personaje en a la prisión por el motivo y el tiempo (en minutos) expuestos.
+
+/ADVERTENCIA nick@motivo Crea un registro en el prontuario del personaje, en el que se indica la observación que se le hizo.
+
+/PENAS nick Muestra el prontuario del personaje.
+
+
+COMANDOS DE SEMIDIOSES:
+
+/REVIVIR nick Revive el personaje.
+
+/INFO nick Muestra las estadísticas del personaje.
+
+/SKILLS nick Muestra los Skills del personaje.
+
+/INV nick Muestra el inventario del personaje.
+
+/BOV nick Muestra el inventario del personaje.
+
+/BAL nick Muestra el oro en el banco del personaje.
+
+/STAT nick Muestra las estadísticas del personaje.
+
+/TELEP nick mapa x y Teleporta el personaje, al mapa y coordenadas indicadas.
+
+/SUM nick Trae el personaje a donde se encuentra el GM.
+
+/SEGUIR Hace que el npc anteriormente clickeado te siga.
+
+/RESETINV Resetea el inventario del npc clickeado anteriormente.
+
+/GMSG texto Mesnsaje broadcast para dialogar entre los miembros del Staff.
+
+/LIMPIAR Llama a la limpieza de mundo.
+
+/RMSG texto Mensaje broadcast para todos los usuarios.
+
+/ECHAR nick Echa al personaje.
+
+/EJECUTAR nick Mata al personaje.
+
+/LLUVIA Activa/desactiva la lluvia.
+
+/PERDON nick Vuelve ciudadano al personaje (sólo aplicable a newbies).
+
+/BAN motivo@nick Prohibe la entrada al personaje, por los motivos expuestos.
+
+/UNBAN nick Permite entrar a los personajes anteriormente baneados.
+
+/CC Muestra una lista de criaturas para sumonear.
+
+/ONLINEGM Muestra la lista de Consejeros GMs y Dioses online.
+
+/ONLINEMAP Muestra la lista de personajes que hay en el mapa.
+
+/ONCLAN clan Muestra la lista de miembros del clan que se encuentran online.
+
+/NICK2IP nick Muestra la IP del personaje.
+
+/IP2NICK nick ó IP Muestra los personajes que hay online con esa IP o con la IP del personaje cuyo nick se pone.
+
+
+COMANDOS DE DIOSES:
+
+/REINICIAR Por favor, mucho cuidado con este comando ya que reinicia el server. Esto provoca que se cierren todas las conexiones activas y se vuelve a cargar los mapas. Se pierde el estado en el que se encontraba el mundo antes de reiniciar.
+
+/MOD "nick" oro "cantidad" Modifica el oro que posee el personaje.
+
+/MOD "nick" exp "cantidad" Modifica la experiencia que posee el personaje.
+
+/MOD "nick" level "número" Modifica el nivel que posee el personaje.
+
+/MOD "nick" ciu "cantidad" Modifica los ciudadanos matados que posee el personaje.
+
+/MOD "nick" cri "cantidad" Modifica los criminales matados que posee el personaje.
+
+/MOD "nick" head "número de head" Modifica la cabeza del personaje hasta que reloguee. Si se hace con el personaje offline el cambio es permanente.
+
+/MOD "nick" body "número de body" Modifica el cuerpo del personaje hasta que reloguee. Si se hace con el personaje offline el cambio es permanente.
+
+/MOD "nick" clase "clase" Modifica la clase del personaje.
+
+/MOD "nick" skills "skill" "cantidad" Modifica la cantidad de skillpoints que posee el personaje en la habilidad indicada.
+
+/MOD "nick" skillslibres "cantidad" Modifica la cantidad de skillpoints libres que posee el personaje.
+
+/RACC número Sumonea la criatura "número" con respawn.
+
+/ACC número Sumonea la criatura "número" sin respawn.
+
+/MATA Elimina sin respawn a la criatura clikeada anteriormente.
+
+/MASSKILL Elimina a todos los npcs del campo de visión del Dios.
+
+/SMSG Mensaje en forma de msgbox a todos los users.
+
+/CT mapa X Y Crea un teleport hacia la posición indicada.
+
+/DT Destruye el teleport clikeado anteriormente.
+
+/DEST Parado arriba de cualquier objeto lo destruye, incluyendo puertas, carteles, fogatas, árboles, etc.
+
+/BLOQ Bloquea la posición en la que se está parado.
+
+/NAVE Setea el modo navegando.
+
+/CONDEN Vuelve criminal al personaje.
+
+/SETDESC Setea una descripción customizada al personaje que se clickeó previamente.
+
+/DOBACKUP Inicia el worldsave.
+
+/BORRAR SOS Borra la cola de mensajes de ayuda de los usuarios.
+
+/MD5 nick Pide al cliente un reporte de MD5.
+
+/SMD5 nick Muestra el md5 reportado.
+
+/MASSDEST Remueve todos los objetos del área de visión del Dios.
+
+/TRIGGER número de trigger Cambia el trigger del tile en que se encuentra parado el Dios, por el seleccionado.
+
+/BANIPLIST Muestra la lista de IPs baneadas.
+
+/BANIPRELOAD Recargar Lista de IPs baneadas.
+
+/BANIP nick o ip Banea la ip del personaje.
+
+/UNBANIP ip Desbannea la ip, no así el personaje con el que se la banneo.
+
+/BANCLAN clan Banea un clan y todos sus miembros (incluso offline).
+
+/CI número de ítem Crea 100 unidades del ítem seleccionado.
+
+/LASTIP nick Muestra la última IP con la cual logeó el personaje.
+
+/AI1 número de ítem
+
+/AI2 número de ítem
+
+/AI3 número de ítem
+
+/AI4 número de ítem
+
+/AC1 número de ítem
+
+/AC2 número de ítem
+
+/AC3 número de ítem
+
+/AC4 número de ítem
+
+Estos comandos cambian el número de ítem que se da al enlistarse (Armadura faccionaria).
+
+/HABILITAR Habilita/deshabilita el server para usuarios comunes.
+
+/APAGAR Apaga el servidor. (¡NO USAR!)
+
+/RAJAR nick Echa de la facción al personaje, Reseteando las facciones a 0, incluso los criminales y ciudadanos matandos (Puede volverse a enlistar en cuaquier facción).
+
+/RAJARCLAN nick Echa del clan al personaje.
+
+/NOCAOS nick Expulsa y prohibe el reingreso de un personaje en la Legión Oscura.
+
+/NOREAL nick Expulsa y prohibe el reingreso de un personaje en la Armada Real.
+
+/LASTEMAIL nick Muestra el e-mail que figura en la ficha del pj.
+
+/ACEPTCONSE nick Acepta al personaje en el Consejo de Banderbill.
+
+/ACEPTCONSECAOS nick Acepta al personaje en el Concilio de las Sombras.
+
+/KICKCONSE nick Remueve al personaje del Consejo de Banderbill o del Concilio del Caos.
+
+/ANAME nick@nick nuevo Copia un charfile cambiándole el nombre. Se utiliza para cambiar los nicks de los personajes que tienen nicks ilegales.
+
+/APASS nick1@nick2 Pone la password del pj "nick2" en el pj "nick1".
+
+/AEMAIL nick-mail Cambia el mail en la ficha del personaje.
+
+/GUARDAMAPA Guarda el mapa en que te encuentras.
+
+/FORCEMIDI número Fuerza un midi (archivo de música) a todo el mundo.
+
+/FORCEWAV número Fuerza un wav (archivo de sonido) a todo el mundo.
+
+/MODMAPINFO "Propiedad" "0 ó 1"
+
+Propiedades: PK o Backup.
+
+1 = Activado 0 = Desactivado.
+
+PK: zona segura o no.
+
+Backup: determina si el mapa se guarda en los WorldSaves.
+
+/GRABAR Graba los personajes.
+
+/SHOW INT Muestra el frmMain del servidor (no usar si no les piden!).
+
+/PASSDAY Pasa un día.
+
+/ECHARTODOSPJS Echa a todos los personajes no Admin del server.
+
+/TCPESTATS Estadísticas de bytes entrada / salida.

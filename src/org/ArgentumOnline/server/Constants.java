@@ -252,35 +252,6 @@ public interface Constants {
     final static int ATRIB_CARISMA = 3;
     final static int ATRIB_CONSTITUCION = 4;
     
-    //// SKILLS
-    final static int MAX_SKILLS = 21;
-    final static int MAX_SKILL_POINTS = 100;
-    
-    final static int SKILL_ZERO = 0;
-    final static int SKILL_Suerte = 1;
-    final static int SKILL_Magia = 2;
-    final static int SKILL_Robar = 3;
-    final static int SKILL_Tacticas = 4;
-    final static int SKILL_Armas = 5;
-    final static int SKILL_Meditar = 6;
-    final static int SKILL_Apuñalar = 7;
-    final static int SKILL_Ocultarse = 8;
-    final static int SKILL_Supervivencia = 9;
-    final static int SKILL_Talar = 10;
-    final static int SKILL_Comerciar = 11;
-    final static int SKILL_Defensa = 12;
-    final static int SKILL_Pesca = 13;
-    final static int SKILL_Mineria = 14;
-    final static int SKILL_Carpinteria = 15;
-    final static int SKILL_Herreria = 16;
-    final static int SKILL_Liderazgo = 17;
-    final static int SKILL_Domar = 18;
-    final static int SKILL_Proyectiles = 19;
-    final static int SKILL_Wresterling = 20;
-    final static int SKILL_Navegacion = 21;
-    
-    
-    final static int SKILL_FundirMetal = 88;
     
     // Estadisticas
     final static int STAT_MAXELV = 99;
@@ -367,39 +338,6 @@ public interface Constants {
 
     final static short LoopAdEternum = 999;
     final static short FXSANGRE = 14;
-    
-    final static byte levelSkill[] = {
-        0, 3, 5, 7, 10, 13, 15, 17, 20, 23, 25,
-        27, 30, 33, 35, 37, 40, 43, 45, 47, 50,
-        53, 55, 57, 60, 63, 65, 67, 70, 73, 75,
-        77, 80, 83, 85, 87, 90, 93, 95, 97, 100,
-        100, 100, 100, 100, 100, 100, 100, 100, 100, 100
-    };
-    
-    final static String skillsNames[] = {
-        "",
-        "Suerte",
-        "Magia",
-        "Robar",
-        "Tacticas de combate",
-        "Combate con armas",
-        "Meditar",
-        "Apuñalar",
-        "Ocultarse",
-        "Supervivencia",
-        "Talar arboles",
-        "Comercio",
-        "Defensa con escudos",
-        "Pesca",
-        "Mineria",
-        "Carpinteria",
-        "Herreria",
-        "Liderazgo",
-        "Domar animales",
-        "Armas de proyectiles",
-        "Wresterling",
-        "Navegacion"
-    };
     
     // Sonidos
     final static int SOUND_BUMP = 1;

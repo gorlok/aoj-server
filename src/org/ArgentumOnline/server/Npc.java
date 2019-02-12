@@ -25,14 +25,17 @@
  */
 package org.ArgentumOnline.server;
 
-import misc.astar.Node;
+import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.ArgentumOnline.server.protocol.serverPacketID;
-import org.ArgentumOnline.server.util.*;
+import org.ArgentumOnline.server.util.FontType;
+import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Log;
+import org.ArgentumOnline.server.util.Util;
 
-import java.util.*;
-
-import static org.ArgentumOnline.server.protocol.serverPacketID.*;
+import misc.astar.Node;
 
 /**
  *
@@ -225,7 +228,7 @@ public class Npc extends BaseCharacter implements Constants {
     
     public static Npc spawnNpc(int indiceNPC, WorldPos orig, boolean conFX, boolean conRespawn) {
         // Crea un NPC del tipo indiceNPC
-    	AojServer server = AojServer.getInstance();
+    	AojServer server = AojServer.instance();
         Npc npc = server.crearNPC(indiceNPC, false);
         if (!conRespawn) {
 			npc.m_flags.set(FLAG_RESPAWN, false);
@@ -1618,7 +1621,7 @@ public class Npc extends BaseCharacter implements Constants {
         	cliente.enviar(serverPacketID.msgN1, (byte) 0);
         }
         // -----Tal vez suba los skills------
-        cliente.subirSkill(SKILL_Tacticas);
+        cliente.subirSkill(Skill.SKILL_Tacticas);
         cliente.refreshStatus(5);
         // Controla el nivel del usuario
         cliente.checkUserLevel();
@@ -2086,7 +2089,7 @@ public class Npc extends BaseCharacter implements Constants {
                 double monto = ((info.Valor / 3) * cant);
                 cliente.getEstads().agregarOro((int) monto);
                 // tal vez suba el skill comerciar ;-)
-                cliente.subirSkill(SKILL_Comerciar);
+                cliente.subirSkill(Skill.SKILL_Comerciar);
             } else {
                 cliente.enviarMensaje("No puedo cargar tantos objetos.", FontType.INFO);
             }
@@ -2193,7 +2196,7 @@ public class Npc extends BaseCharacter implements Constants {
     	if (!cliente.esGM() == false) {
 			return estadoVidaExacta();
 		}
-        short skSup = cliente.getEstads().getUserSkill(SKILL_Supervivencia);
+        short skSup = cliente.getEstads().getUserSkill(Skill.SKILL_Supervivencia);
         double vidaPct = this.getEstads().MinHP / this.getEstads().MaxHP;
         if (skSup < 11) {
         	return "(Dudoso)";

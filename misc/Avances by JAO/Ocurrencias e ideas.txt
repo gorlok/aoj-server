@@ -1,0 +1,13 @@
+-Plus sistema de Mascotas:
+•Agregar en un formulario, con tres pictures, con posición, vida, y tiempo de existencia restante para las macotas. Que tenga boton de sumonear, o curar, o reestablecer tiempo de existencia (la primera consume energía, las dos últimas mana)
+•Agregar opción:
+ *Hostil: Se centra en atacar Usuarios
+ *Entrenamiento: Se centra en atacar NPCS
+
+---
+
+¿Dejar de usar BMP y empezar a usar DDS?
+
+https://www.aconvert.com/image/bmp-to-dds/
+
+Podes utilizar el formato DDS que esta soportado en D3DXCreateTexture, en google simplemente buscas un conversor de BMP/PNG a DDS y ya esta

@@ -1,0 +1,82 @@
+**************************************************************************************************************************************************************************
+**************************************************************************************************************************************************************************
+*************************************************************PROTOCOLO BINARIO IMPLEMENTADO****************************************************************************
+*************************************************************----------by JAO--------------****************************************************************************
+*************************************************************UserForos Agushh/Thorkes......****************************************************************************
+***********************************************************************************************************************************************************************
+***********************************************************************************************************************************************************************
+
+{Este texto contiene todos los avances y anotaciones del proyecto, desde principios del 2018 hasta 2019}
+
+Data:
+*El servidor funciona con el cliente v11.2 de AO. Veré si más adelante puedo utilizar otra versión.
+*Servidor hecho en JAVA, basado en la version 0.8.5 desarrollada por Pablo Lilia (Gorlock)
+
+
+<<-----VERSION 0.9----->>
+
+-ABRIL 2018
+•Clases para el sistema de areas implementado. Estas areas permiten, si se quiere, usar mapas más grandes que de 100x100. SOLO AGREGUÉ LAS CLASES, FALTA IMPLEMENTARLAS _
+ Y TESTEARLAS.
+
+
+-MAYO 2018
+•¡Protocolo Binario!
+  -Cliente: Eliminado el viejo protocolo. Ahora usa el de la 0.13.
+ -Servidor: Lectura de paquetes por medio de la clase BytesReader (extraída de JFénix13, gracias Thusing!). Escritura de paquetes por medio de array de bytes (ByteBuffer).
+
+De momento, solo se puede loguear y caminar por el servidor. Cuando se loguea, ya se manda toda la info del char.
+
+*PENDIENTE: .ORGANIZAR TODO EL CÓDIGO, TANTO SERVER COMO CLIENTE, Y SEGUIR AGREGANDO COSAS.
+            .Revisar el chequeo de tiles cuando se camina
+            .Que se puedan ver los demás chars
+            .Agregar la acción del click
+            .etc
+
+-JUNIO 2018
+*El protocolo funciona bien. Dado que versiones actuales de AO utilizan un protocolo compatible, he decidido abandonar el viejo cliente de AO y utilizar
+ la versión 12.3. Utilizo esta versión porque no trae demasiadas cosas innecesarias a nivel código. Todo lo mencionado en meses anteriores, se ha testeado
+ y aparentemente, funciona bien. 
+*Borré lo que había hecho del sistema de áreas, no me gustaba. Volveré a empezar con ello en un futuro próximo.
+*Ya se pueden crear personajes.
+*Los skills ya no se asignan al momento de crear personajes, sino que al loguear con un pj nuevo, se tienen 10 skillspoints para asignar.
+
+-JULIO 2018
+*Al chupar oro tarda demasiado en updatear (Listo)
+*El /salir llama directamente al closesocket en vez del closeuser (listo)
+*Falta implementar la telca L para corregir el lag (Listo)
+*Los botones para acomodar hechizos no funcionan bien (solucionado)
+*Eliminar mascotas al pasar de mapa (Listo)
+*Que no se pueda invocar mascotas en zona segura (listo)
+*Agregar seguro a hechizos para no atacar guardias (listo)
+*Si pones /SALIR en zona insegura, y posteriormente te moves, el juego sigue contando y cuando llega a cero te desloguea igual (SOLUCIONADO).
+*Ahora se pueden introducir comandos en el server. Por ejemplo, si en consola introducís “1” hace reload de admins.
+*Arreglado error que al atacar sin arma crasheaba el servidor (array index off, posición negativa dentro de array).
+*Agregado nuevo sistema de seguros para impedir atacar npcs o personajes ciudadanos
+
+-AGOSTO 2018
+*Al salir de newbie dungeon que te tire unas monedas para comprar ropa (pendiente)
+*Hacer más faciles los dados (Listo)
+*Falta que el servidor envíe los skills del pj al cliente (Listo)
+*Boveda y /BOVEDA (Listo)
+*Si hay un objeto, y clickeas más a la derecha, aparece en consola como si lo hubieras cliqueado
+*Cuando un NPC pega cuerpo a cuerpo no le aparece a la víctima en pantalla (Listo)
+*Completar las estadísticas (Listo)
+*/EST
+*Falta el paquete ParadOK (Listo)
+*Falta el paquete MSG_DOK (descansar)
+*El hechizo inmovilizar NO anda (CREO que es un problema de dateo, no de programación)
+*Falta q se pueda activar/desc el seguro. Void cambiarSeguro() (Listo)
+
+Implementaciones adicionales
+•Formulario de estadísticas interactivo
+•Sistema de áreas
+
+---------------WELCOME 2019--------------
+-ENERO 2019
+*Nueva carga de mapas para correr los archivos de versiones 12.1 o superiores (hasta 13.0 testeado).
+*Hice MUCHAS correciones sobre el sistema de áreas. Ya no deberían aparecer más clones. Estuve dos horas matando npcs y recorriendo el mundo y no tuve problemas,
+ pero debería testearse más a fondo. Ya están codeadas las áreas para ver a otros usuarios también, sin embargo, todavía no está implementado. Hay que buscar los 
+ procedimientos adecuados y reemplazar debidamente.
+
+

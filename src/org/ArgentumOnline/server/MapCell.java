@@ -137,7 +137,7 @@ public class MapCell {
     }
     
     public Npc getNpc() {
-        return AojServer.getInstance().getNPC(this.m_npc);
+        return AojServer.instance().getNPC(this.m_npc);
     }
     
     public void setNpc(Npc npc) {

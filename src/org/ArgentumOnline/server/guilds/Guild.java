@@ -35,8 +35,6 @@ import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 
-import org.ArgentumOnline.server.protocol.serverPacketID;
-
 /**
  * @author Pablo F. Lillia
  */
@@ -113,6 +111,7 @@ public class Guild {
         Client cliente;
         for (String member: this.members) {
             cliente = this.server.getUsuario(member);
+            // FIXME
            // cliente.enviar(MSG_TW, sonido);            
         }
     }
@@ -394,7 +393,7 @@ public class Guild {
         for (String member: this.members) {
             cliente = this.server.getUsuario(member);
             if (cliente.getNick().equalsIgnoreCase(name)) {
-            	this.members.remove(cliente);          
+            	this.members.remove(cliente.getNick());          
             }
         }
     }

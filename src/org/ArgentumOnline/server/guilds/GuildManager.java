@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -616,7 +617,7 @@ public class GuildManager {
             cliente.enviarMensaje("Para fundar un clan debes de ser nivel 20 o superior", FontType.GUILD);
             return false;
         }
-        if (cliente.getEstads().userSkills[Constants.SKILL_Liderazgo] < 90) {
+        if (cliente.getEstads().userSkills[Skill.SKILL_Liderazgo] < 90) {
             cliente.enviarMensaje("Para fundar un clan necesitás al menos 90 pts en liderazgo", FontType.GUILD);
             return false;
         }

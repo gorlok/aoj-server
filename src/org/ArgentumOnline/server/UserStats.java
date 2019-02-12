@@ -28,8 +28,8 @@ package org.ArgentumOnline.server;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.util.*;
-import org.ArgentumOnline.server.classes.*;
+import org.ArgentumOnline.server.classes.CharClass;
+import org.ArgentumOnline.server.util.Util;
 
 /**
  * Estadísticas de usuarios: Stamina, Mana, Hambre y Sed, Oro, etc.
@@ -60,7 +60,7 @@ public class UserStats extends CharStats {
     int ELV = 0; // Nivel
     int ELU = 0; // Exp. Max del nivel
     
-    public byte userSkills[] = new byte[MAX_SKILLS+1];
+    public byte userSkills[] = new byte[Skill.MAX_SKILLS+1];
     public byte userAtributos[] = new byte[NUMATRIBUTOS];
     byte userAtributosBackup[] = new byte[NUMATRIBUTOS];
     
@@ -122,13 +122,13 @@ public class UserStats extends CharStats {
 
     public void addSkillPoints(int skill, byte cant) {
         this.userSkills[skill] += cant;
-        if (this.userSkills[skill] > MAX_SKILL_POINTS) {
-			this.userSkills[skill] = MAX_SKILL_POINTS;
+        if (this.userSkills[skill] > Skill.MAX_SKILL_POINTS) {
+			this.userSkills[skill] = Skill.MAX_SKILL_POINTS;
 		}
     }
 
     public void subirSkills(byte[] incSkills) {
-        for (int i = 1; i <= MAX_SKILLS; i++) {
+        for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
             this.SkillPts -= incSkills[i];
             this.userSkills[i] += incSkills[i];
             if (this.userSkills[i] > 100) {

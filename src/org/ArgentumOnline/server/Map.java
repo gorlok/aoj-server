@@ -25,16 +25,31 @@
  */
 package org.ArgentumOnline.server;
 
-import java.io.*;
-import java.util.*;
+import static org.ArgentumOnline.server.protocol.serverPacketID.MSG_CCNPC;
+import static org.ArgentumOnline.server.protocol.serverPacketID.MSG_HO;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 
-import org.ArgentumOnline.server.util.*;
 import org.ArgentumOnline.server.areas.areasAO;
 import org.ArgentumOnline.server.protocol.serverPacketID;
-
-import static org.ArgentumOnline.server.protocol.serverPacketID.*;
+import org.ArgentumOnline.server.util.BytesReader;
+import org.ArgentumOnline.server.util.FontType;
+import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Log;
+import org.ArgentumOnline.server.util.Util;
 
 /**
  *
@@ -237,7 +252,7 @@ public class Map implements Constants {
         } catch (java.io.IOException e) {
             Log.serverLogger().warning("Error leyendo archivo de mapa " + this.nroMapa);
         } catch (Exception e) {
-        	Log.serverLogger().warning("Error");
+        	Log.serverLogger().warning("Error con mapa " + this.nroMapa);
         }
     }
     
@@ -306,20 +321,26 @@ public class Map implements Constants {
     private void loadMapFile(String mapFileName, boolean loadBackup)
     throws java.io.IOException {
 
-            File map = new File("worldBackup" + File.separator + mapFileName);
-            
-            if (!map.exists()) {
-            	System.out.println("Error, archivo de mapa inexistente: " + mapFileName);
-            	return;
-            }
-            
-            try {
+	    File map = new File("worldBackup" + File.separator + mapFileName);
+	    byte[] bytes = null;
+	    
+	    if (!loadBackup || !map.exists()) {
+	        bytes = readBytesFromJar(mapFileName);
+	    } else {
+	        bytes = Files.readAllBytes(map.toPath());
+	    }
+	    
+	    if (bytes == null) {
+	    	System.out.println("Error, archivo de mapa inexistente: " + mapFileName);
+	    	return;            	
+	    }
+	    
+	    try {
             	 
             int byflags = 0;
-            byte[] array = Files.readAllBytes(map.toPath());
             BytesReader getter = new BytesReader();
                  
-            getter.setBytes(array);
+            getter.setBytes(bytes);
             
             this.version = getter.readShort();
             
@@ -358,13 +379,37 @@ public class Map implements Constants {
                 }
             }         
             
-            
-            } catch(Exception e) {
-            	System.out.println("error");
-            }
-            
-
+        } catch (Exception e) {
+        	System.out.println("ERROR LOADING " + mapFileName);
+        }
     }
+
+	private byte[] readBytesFromJar(String mapFileName) throws MalformedURLException, IOException {
+		byte[] bytes = null;
+		URL url = new URL("jar:file:mapas.jar!/mapas/" + mapFileName);
+		URLConnection jar;
+		InputStream is = null;
+		ByteArrayOutputStream buffer = null;
+		byte[] data;
+		try {
+		    jar = url.openConnection();
+		    is = jar.getInputStream();
+			buffer = new ByteArrayOutputStream();
+		    long size = jar.getContentLengthLong();
+			int nRead;
+			data = new byte[(int)size];
+			while ((nRead = is.read(data, 0, data.length)) != -1) {
+			  buffer.write(data, 0, nRead);
+			}
+			bytes = buffer.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (is != null) is.close();
+			if (buffer != null) buffer.close();
+		}
+		return bytes;
+	}
     
     
     /**
@@ -1158,7 +1203,7 @@ public class Map implements Constants {
             return;
         }
         int suerte = 0;
-        int skillSupervivencia = cliente.getEstads().getUserSkill(SKILL_Supervivencia);        
+        int skillSupervivencia = cliente.getEstads().getUserSkill(Skill.SKILL_Supervivencia);        
         if (skillSupervivencia == 0) {
 			suerte = 0;
 		} else if (skillSupervivencia < 6) {
@@ -1178,7 +1223,7 @@ public class Map implements Constants {
         }
         // Si no tiene hambre o sed quizas suba el skill supervivencia
         if (!cliente.getFlags().Hambre && !cliente.getFlags().Sed) {
-			cliente.subirSkill(SKILL_Supervivencia);
+			cliente.subirSkill(Skill.SKILL_Supervivencia);
 		}
     }
     

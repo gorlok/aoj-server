@@ -37,8 +37,8 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Selector;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
@@ -46,19 +46,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 
 import org.ArgentumOnline.server.guilds.GuildManager;
+import org.ArgentumOnline.server.protocol.ClientProcessThread;
 import org.ArgentumOnline.server.protocol.serverPacketID;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
-import org.ArgentumOnline.server.protocol.oProcess;
 
 /** 
  * AOJava main class.
@@ -68,11 +67,7 @@ public class AojServer implements Constants {
 	
 	public manageServer manager = new manageServer(this);
 	
-	//agush: manage process client in another thread \
-
-    public static oProcess processThread = new oProcess();
-
-    //agush: manage process client in another thread \
+    private ClientProcessThread processThread;
     
     private ServerSocketChannel server;
     private Selector selector;
@@ -126,30 +121,24 @@ public class AojServer implements Constants {
     
     private boolean m_showDebug = false;
     
-    private Properties prop = null;
-    
     private GuildManager m_guildMngr;
     
-    private static AojServer m_instance = null;
     
-    /** Creates a new instance of Server */
-    public AojServer() {
+    private AojServer() {
     	this.m_guildMngr = new GuildManager(this);
     }
 
-    public static AojServer getInstance() {
-        if (m_instance == null) {
-			m_instance = new AojServer();
+    private static AojServer instance = null;
+    
+    public static AojServer instance() {
+        if (instance == null) {
+			instance = new AojServer();
 		}
-        return m_instance;
+        return instance;
     }
     
     public GuildManager getGuildMngr() {
     	return this.m_guildMngr;
-    }
-    
-    public Properties getConfig() {
-    	return this.prop;
     }
     
     public Collection<Client> getClientes() {
@@ -286,9 +275,6 @@ public class AojServer implements Constants {
         return usuarios;
     }
     
-    /** Start point for the server
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
         try {
@@ -302,39 +288,21 @@ public class AojServer implements Constants {
 		} else {
 			Log.serverLogger().info("Arrancando sin usar backup");
 		}
-        AojServer.getInstance().run(loadBackup);
+        AojServer.instance().run(loadBackup);
         Log.stop();
     }
     
     
-    /** Inicializa el socket del servidor. */
     private void initServerSocket() 
     throws java.io.IOException {
-        /* FIXME
-        'Misc
-        CrcSubKey = val(GetVar(IniPath & "Server.ini", "INIT", "CrcSubKey"))
-        ServerIp = GetVar(IniPath & "Server.ini", "INIT", "ServerIp")
-        Temporal = InStr(1, ServerIp, ".")
-        Temporal1 = (Mid(ServerIp, 1, Temporal - 1) And &H7F) * 16777216
-        ServerIp = Mid(ServerIp, Temporal + 1, Len(ServerIp))
-        Temporal = InStr(1, ServerIp, ".")
-        Temporal1 = Temporal1 + Mid(ServerIp, 1, Temporal - 1) * 65536
-        ServerIp = Mid(ServerIp, Temporal + 1, Len(ServerIp))
-        Temporal = InStr(1, ServerIp, ".")
-        Temporal1 = Temporal1 + Mid(ServerIp, 1, Temporal - 1) * 256
-        ServerIp = Mid(ServerIp, Temporal + 1, Len(ServerIp))
-        MixedKey = (Temporal1 + ServerIp) Xor &H65F64B42
-        */
         this.server = ServerSocketChannel.open();
         this.server.configureBlocking(false);
-        //server.socket().bind(new InetSocketAddress(InetAddress.getLocalHost(), SERVER_PORT));
         this.server.socket().bind(new InetSocketAddress(SERVER_PORT));
         Log.serverLogger().info("Escuchando en el puerto " + SERVER_PORT);
         this.selector = Selector.open();
         this.server.register(this.selector, SelectionKey.OP_ACCEPT);
     }
     
-    /** Acepta una conexión nueva. */
     private void acceptConnection() 
     throws java.io.IOException {
         // get client socket channel.
@@ -349,7 +317,6 @@ public class AojServer implements Constants {
         Log.serverLogger().fine("NUEVA CONEXION");
     }
     
-    /** Cerrar una conexión. */
     public void closeConnection(Client cliente) 
     throws java.io.IOException {
         Log.serverLogger().fine("cerrando conexion");
@@ -376,7 +343,7 @@ public class AojServer implements Constants {
             	cliente.lengthClient.add(this.serverBuffer.limit());
             	cliente.colaClient.put(this.serverBuffer.array());
                 
-                this.processThread.addClientQueue(cliente);
+                getProcessThread().addClientQueue(cliente);
             }else {
             	cliente.doSALIR();
             }
@@ -397,25 +364,12 @@ public class AojServer implements Constants {
         return System.nanoTime() / 1000000;
     }
     
-    /*
-    public void setupCleanShutdown() {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                AOServer.getInstance().shutdown();
-            }
-        });
-    }
-    */
-    
     /** Main loop of the game. */
     public void run(boolean loadBackup) {
-        this.prop = Util.getProperties(this, "config.properties");
-        
         loadAllData(loadBackup);
         
-        //Maldito VB xD!, corregir esto
-        this.processThread.setearVariables(this);
-        this.processThread.start();
+        this.processThread = new ClientProcessThread();
+        getProcessThread().start();
         
         this.manager.start();
         
@@ -627,8 +581,6 @@ public class AojServer implements Constants {
     	showMemoryStatus("loadNombresInvalidos ready");
         cargarSpawnList();
     	showMemoryStatus("cargarSpawnList ready");
-        cargarApuestas();
-    	showMemoryStatus("cargarApuestas ready");
         loadMOTD();
     	showMemoryStatus("loadMOTD ready");
         //System.gc(); // Para decirle a la VM que es buen momento para liberar algo de memoria.
@@ -869,18 +821,6 @@ public class AojServer implements Constants {
         }
     }
     
- /*  fixme - fixme - fixme - fixme - fixme - fixme - fixme - 
-    Sub InicializaEstadisticas()
-        Dim Ta As Long
-        Ta = GetTickCount()
-        Call EstadisticasWeb.Inicializa(frmMain.hWnd)
-        Call EstadisticasWeb.Informar(CANTIDAD_MAPAS, NumMaps)
-        Call EstadisticasWeb.Informar(CANTIDAD_ONLINE, NumUsers)
-        Call EstadisticasWeb.Informar(UPTIME_SERVER, (Ta - startTime) / 1000)
-        Call EstadisticasWeb.Informar(RECORD_USUARIOS, recordusuarios)
-    End Sub
- */
-    
     private void loadCiudades() {
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
@@ -900,7 +840,6 @@ public class AojServer implements Constants {
         return this.m_ciudades[ciudad];
     }
     
-    // -------> interval 200
     private void FX_Timer() {
     	for (Map mapa: this.m_mapas) {
             if ((Util.Azar(1, 150) < 12) && (mapa.getCantUsuarios() > 0)) {
@@ -909,25 +848,21 @@ public class AojServer implements Constants {
         }
     }
     
-    // ---------> Interval 40
     private void gameTimer() {
         // <<<<<< Procesa eventos de los usuarios >>>>>>
     	for (Client cli: getClientes()) {
-            // Conexion activa?
             if (cli != null && cli.getId() > 0) {
                 cli.procesarEventos();
             }
         }
     }
     
-    /// ---------> Interval 4000
     private void npcAtacaTimer() {
     	for (Npc npc: getNpcs()) {
             npc.setPuedeAtacar(true);
         }
     }
     
-    // Interval = 3000
     private void timerOculto() {
     	for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0) {
@@ -938,7 +873,6 @@ public class AojServer implements Constants {
         }
     }
     
-    //       Interval        =   60000
     private void lluviaTimer() {
         if (!this.m_lloviendo) {
 			return;
@@ -952,7 +886,6 @@ public class AojServer implements Constants {
     
     public void enviarATodos(serverPacketID msg, Object... params) {
     	for (Client cli: getClientes()) {
-            // Conexion activa?
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 cli.enviar(msg, params);
             }
@@ -961,7 +894,6 @@ public class AojServer implements Constants {
     
     public void enviarAAdmins(serverPacketID msg, Object... params) {
     	for (Client cli: getClientes()) {
-            // Conexion activa?
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
                 cli.enviar(msg, params);
             }
@@ -970,7 +902,6 @@ public class AojServer implements Constants {
     
     public void enviarMensajeAAdmins(String msg, FontType fuente) {
     	for (Client cli: getClientes()) {
-            // Conexion activa?
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
                 cli.enviarMensaje(msg, fuente);
             }
@@ -992,9 +923,7 @@ public class AojServer implements Constants {
         enviarATodos(serverPacketID.userRain);
     }
     
-    //       Interval        =   60000
     private void lluviaEvent() {
-        // Private Sub tLluviaEvent_Timer()
         if (!this.m_lloviendo) {
             this.minutosSinLluvia++;
             if (this.minutosSinLluvia >= 15 && this.minutosSinLluvia < 1440) {
@@ -1063,11 +992,7 @@ public class AojServer implements Constants {
     
     private void checkIdleUser() {
     	for (Client cliente: getClientes()) {
-            // Conexion activa?
-            if (cliente != null && 
-            		cliente.getId() > 0 && 
-            		cliente.isLogged()) {
-                // Actualiza el contador de inactividad
+            if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
                 cliente.m_counters.IdleCount++;
                 if (cliente.m_counters.IdleCount >= IdleLimit) {
                     cliente.enviarError("Demasiado tiempo inactivo. Has sido desconectado.");
@@ -1116,7 +1041,7 @@ public class AojServer implements Constants {
         purgarPenas();
         //checkIdleUser();
         // <<<<<-------- Log the number of users online ------>>>
-        Log.serverLogger().info("Usuarios en linea: " + getUsuariosConectados().size());
+        Log.serverLogger().info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
         // <<<<<-------- Log the number of users online ------>>>
     }
 
@@ -1203,14 +1128,6 @@ public class AojServer implements Constants {
         /////////// FIXME
         // Sub LogBan(ByVal BannedIndex As Integer, ByVal UserIndex As Integer, ByVal motivo As String)
         System.out.println(" BAN: " + bannedUser + " by " + gm + " reason: " + motivo);
-        //Call WriteVar(App.Path & "\logs\" & "BanDetail.dat", UserList(BannedIndex).Name, "BannedBy", UserList(UserIndex).Name)
-        //Call WriteVar(App.Path & "\logs\" & "BanDetail.dat", UserList(BannedIndex).Name, "Reason", motivo)
-        //'Log interno del servidor, lo usa para hacer un UNBAN general de toda la gente banned
-        //Dim mifile As Integer
-        //mifile = FreeFile
-        //Open App.Path & "\logs\GenteBanned.log" For Append Shared As #mifile
-        //Print #mifile, UserList(BannedIndex).Name
-        //Close #mifile
     }
     
     public void unBan(String usuario) {
@@ -1219,11 +1136,6 @@ public class AojServer implements Constants {
         /////////// FIXME
         // Public Function UnBan(ByVal Name As String) As Boolean
         System.out.println(" UNBAN: " + usuario);
-        // Unban the character
-        // Call WriteVar(App.Path & "\charfile\" & Name & ".chr", "FLAGS", "Ban", "0")
-        // Remove it from the banned people database
-        // Call WriteVar(App.Path & "\logs\" & "BanDetail.dat", Name, "BannedBy", "NOBODY")
-        // Call WriteVar(App.Path & "\logs\" & "BanDetail.dat", Name, "Reason", "NOONE")
     }
   
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
@@ -1322,7 +1234,6 @@ public class AojServer implements Constants {
             }
         }
         for (Npc npc: spawnNPCs) {
-            //npc.reSpawnNpc(npc.getOrig()); // TODO: PROBAR !!!
             npc.reSpawnNpc();
         }
     }    
@@ -1381,14 +1292,6 @@ public class AojServer implements Constants {
        // cliente.enviar(MSG_MFOR);
     }
 
-    private void cargarApuestas() {
-        /* fixme
-        Apuestas.Ganancias = val(GetVar(DatPath & "apuestas.dat", "Main", "Ganancias"))
-        Apuestas.Perdidas = val(GetVar(DatPath & "apuestas.dat", "Main", "Perdidas"))
-        Apuestas.Jugadas = val(GetVar(DatPath & "apuestas.dat", "Main", "Jugadas"))
-        */
-    }
-
     private void loadMOTD() {
         try {
             String msg;
@@ -1419,151 +1322,10 @@ public class AojServer implements Constants {
             Log.serverLogger().log(Level.SEVERE, "ERROR EN guardarMOTD()", e);
         }
     }
-    
-/*
-    Public Function MD5ok(ByVal md5formateado As String) As Boolean
-        Dim i As Integer
-        If MD5ClientesActivado = 1 Then
-            For i = 0 To UBound(MD5s)
-                If (md5formateado = MD5s(i)) Then
-                    MD5ok = True
-                    Exit Function
-                End If
-            Next i
-            MD5ok = False
-        Else
-            MD5ok = True
-        End If
-    End Function
 
-    Public Sub MD5sCarga()
-        Dim LoopC As Integer
-        MD5ClientesActivado = val(GetVar(IniPath & "Server.ini", "MD5Hush", "Activado"))
-        If MD5ClientesActivado = 1 Then
-            ReDim MD5s(val(GetVar(IniPath & "Server.ini", "MD5Hush", "MD5Aceptados")))
-            For LoopC = 0 To UBound(MD5s)
-                MD5s(LoopC) = GetVar(IniPath & "Server.ini", "MD5Hush", "MD5Aceptado" & (LoopC + 1))
-                MD5s(LoopC) = txtOffset(hexMd52Asc(MD5s(LoopC)), 53)
-            Next LoopC
-        End If
-    End Sub
+	private ClientProcessThread getProcessThread() {
+		return processThread;
+	}
 
-    Public Sub BanIpAgrega(ByVal ip As String)
-        BanIps.Add ip
-        Call BanIpGuardar
-    End Sub
-
-    Public Function BanIpBuscar(ByVal ip As String) As Long
-        Dim Dale As Boolean
-        Dim LoopC As Long
-        Dale = True
-        LoopC = 1
-        Do While LoopC <= BanIps.Count And Dale
-            Dale = (BanIps.Item(LoopC) <> ip)
-            LoopC = LoopC + 1
-        Loop
-        If Dale Then
-            BanIpBuscar = 0
-        Else
-            BanIpBuscar = LoopC
-        End If
-    End Function
-
-    Public Function BanIpQuita(ByVal ip As String) As Boolean
-        On Error Resume Next
-        Dim N As Long
-        N = BanIpBuscar(ip)
-        If N > 0 Then
-            BanIps.Remove N
-            BanIpQuita = True
-        Else
-            BanIpQuita = False
-        End If
-    End Function
-
-    Public Sub BanIpGuardar()
-        Dim ArchivoBanIp As String
-        Dim ArchN As Long
-        Dim LoopC As Long
-        ArchivoBanIp = App.Path & "\Dat\BanIps.dat"
-        ArchN = FreeFile()
-        Open ArchivoBanIp For Output As #ArchN
-        For LoopC = 1 To BanIps.Count
-            Print #ArchN, BanIps.Item(LoopC)
-        Next LoopC
-        Close #ArchN
-    End Sub
-
-    Public Sub BanIpCargar()
-        Dim ArchN As Long
-        Dim Tmp As String
-        Dim ArchivoBanIp As String
-        ArchivoBanIp = App.Path & "\Dat\BanIps.dat"
-        Do While BanIps.Count > 0
-            BanIps.Remove 1
-        Loop
-        ArchN = FreeFile()
-        Open ArchivoBanIp For Input As #ArchN
-        Do While Not EOF(ArchN)
-            Line Input #ArchN, Tmp
-            BanIps.Add Tmp
-        Loop
-        Close #ArchN
-    End Sub
-
-    Public Sub ActualizaEstadisticasWeb()
-        Static Andando As Boolean
-        Static Contador As Long
-        Dim Tmp As Boolean
-        Contador = Contador + 1
-        If Contador >= 10 Then
-            Contador = 0
-            Tmp = EstadisticasWeb.EstadisticasAndando()
-            If Andando = False And Tmp = True Then
-                Call InicializaEstadisticas
-            End If
-            Andando = Tmp
-        End If
-    End Sub
-
-    Public Sub ActualizaStatsES()
-        Static TUlt As Single
-        Dim Transcurrido As Single
-        Transcurrido = Timer - TUlt
-        If Transcurrido >= 5 Then
-            TUlt = Timer
-            With TCPESStats
-                .BytesEnviadosXSEG = CLng(.BytesEnviados / Transcurrido)
-                .BytesRecibidosXSEG = CLng(.BytesRecibidos / Transcurrido)
-                .BytesEnviados = 0
-                .BytesRecibidos = 0
-                If .BytesEnviadosXSEG > .BytesEnviadosXSEGMax Then
-                    .BytesEnviadosXSEGMax = .BytesEnviadosXSEG
-                    .BytesEnviadosXSEGCuando = CDate(Now)
-                End If
-                If .BytesRecibidosXSEG > .BytesRecibidosXSEGMax Then
-                    .BytesRecibidosXSEGMax = .BytesRecibidosXSEG
-                    .BytesRecibidosXSEGCuando = CDate(Now)
-                End If
-                If frmEstadisticas.Visible Then
-                    Call frmEstadisticas.ActualizaStats
-                End If
-            End With
-        End If
-    End Sub
-
-    Public Function UserDarPrivilegioLevel(ByVal Name As String) As Long
-        If EsDios(Name) Then
-            UserDarPrivilegioLevel = 3
-        ElseIf EsSemiDios(Name) Then
-            UserDarPrivilegioLevel = 2
-        ElseIf EsConsejero(Name) Then
-            UserDarPrivilegioLevel = 1
-        Else
-            UserDarPrivilegioLevel = 0
-        End If
-    End Function
- */
-    
 }
 

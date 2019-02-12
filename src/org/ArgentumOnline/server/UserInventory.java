@@ -29,9 +29,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.protocol.serverPacketID;
-import org.ArgentumOnline.server.util.*;
-
-import static org.ArgentumOnline.server.protocol.serverPacketID.*;
+import org.ArgentumOnline.server.util.FontType;
+import org.ArgentumOnline.server.util.Log;
+import org.ArgentumOnline.server.util.Util;
 
 /**
  * @author Pablo F. Lillia
@@ -583,7 +583,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getArmasHerrero()[i]);
-            if (info.SkHerreria <= this.dueño.m_estads.userSkills[SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
+            if (info.SkHerreria <= this.dueño.m_estads.userSkills[Skill.SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
                 if (info.ObjType == OBJTYPE_WEAPON) {
                 	params.add(info.Nombre + " (" + info.MinHIT + "/" + info.MaxHIT + ")");
                 	params.add(this.server.getArmasHerrero()[i]);
@@ -600,7 +600,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getObjCarpintero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getObjCarpintero()[i]);
-            if (info.SkCarpinteria <= this.dueño.m_estads.userSkills[SKILL_Carpinteria] / this.dueño.m_clase.modCarpinteria()) {
+            if (info.SkCarpinteria <= this.dueño.m_estads.userSkills[Skill.SKILL_Carpinteria] / this.dueño.m_clase.modCarpinteria()) {
             	params.add(info.Nombre + " (" + info.Madera + ")");
             	params.add(this.server.getObjCarpintero()[i]);
             }
@@ -612,7 +612,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmadurasHerrero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getArmadurasHerrero()[i]);
-            if (info.SkHerreria <= this.dueño.m_estads.userSkills[SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
+            if (info.SkHerreria <= this.dueño.m_estads.userSkills[Skill.SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
             	params.add(info.Nombre + " (" + info.MinDef + "/" + info.MaxDef + ")");
             	params.add(this.server.getArmadurasHerrero()[i]);
             }
@@ -838,16 +838,16 @@ public class UserInventory extends Inventory implements Constants {
                     	
                     	break;
                     case OBJTYPE_RED_PESCA:
-                        this.dueño.enviar(serverPacketID.userWork, SKILL_Pesca);
+                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Pesca);
                         break;
                     case OBJTYPE_HACHA_LEÑADOR:
-                        this.dueño.enviar(serverPacketID.userWork, SKILL_Talar);
+                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Talar);
                         break;
                     case OBJTYPE_PIQUETE_MINERO:
-                        this.dueño.enviar(serverPacketID.userWork, SKILL_Mineria);
+                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Mineria);
                         break;
                     case OBJTYPE_MARTILLO_HERRERO:
-                        this.dueño.enviar(serverPacketID.userWork, SKILL_Herreria);
+                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Herreria);
                         break;
                     case OBJTYPE_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();

@@ -6,8 +6,6 @@ package org.ArgentumOnline.server.protocol;
 * @userforos: Agushh, Thorkes
 * FIXME
 */
-
-
 public enum serverPacketID { 
 	login		        ((byte) 1),
 	msgErr              ((byte) 2),

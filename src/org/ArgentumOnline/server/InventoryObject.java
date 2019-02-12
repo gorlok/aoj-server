@@ -67,7 +67,7 @@ public class InventoryObject {
 
 	public boolean esRobable() {
 		// Determina qué objetos son robables.
-		AojServer server = AojServer.getInstance();
+		AojServer server = AojServer.instance();
 		ObjectInfo info = server.getInfoObjeto(this.objid);
 		return !this.equipado && info.Real == 0 && info.Caos == 0
 				&& info.ObjType != Constants.OBJTYPE_LLAVES

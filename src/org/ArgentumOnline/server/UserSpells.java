@@ -742,7 +742,7 @@ public class UserSpells implements Constants {
 			client.enviarMensaje("No tienes suficiente mana.", FontType.INFO);
 			return false;
 		}
-		if (client.getEstads().userSkills[SKILL_Magia] < hechizo.MinSkill) {
+		if (client.getEstads().userSkills[Skill.SKILL_Magia] < hechizo.MinSkill) {
 			client.enviarMensaje(
 					"No tienes suficientes puntos de magia para lanzar este hechizo.",
 					FontType.INFO);
@@ -790,7 +790,7 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(SKILL_Magia);
+			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
 			client.refreshStatus(3);
@@ -813,7 +813,7 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(SKILL_Magia);
+			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
 			client.refreshStatus(3);
@@ -835,7 +835,7 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(SKILL_Magia);
+			client.subirSkill(Skill.SKILL_Magia);
 			client.getFlags().TargetNpc = 0;
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
