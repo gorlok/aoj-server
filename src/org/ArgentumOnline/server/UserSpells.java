@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_CEGU;
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_DUMB;
@@ -39,7 +39,6 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * @author Gorlok
- *
  */
 public class UserSpells implements Constants {
 
@@ -90,12 +89,12 @@ public class UserSpells implements Constants {
 		}
 		if (isSlotEmpty(slot)) {
 			//client.enviar(MSG_SHS, slot, 0, "(None)");
-			client.enviar(serverPacketID.MSG_SHS, (byte) slot, (short) 0, "(Vacío)");
+			client.enviar(ServerPacketID.MSG_SHS, (byte) slot, (short) 0, "(Vacío)");
 			return;
 		}
 		Spell spell = server.getHechizo(getSpell(slot));
 		//client.enviar(MSG_SHS, slot, spell.getId(), spell.getName());
-		client.enviar(serverPacketID.MSG_SHS, (byte) slot, (short) spell.getId(), spell.getName());
+		client.enviar(ServerPacketID.MSG_SHS, (byte) slot, (short) spell.getId(), spell.getName());
 	}
 
 	public void sendMeSpellInfo(short slot) {
@@ -235,7 +234,6 @@ public class UserSpells implements Constants {
 	}
 
 	public boolean hechizoEstadoUsuario() {
-		Map mapa = server.getMapa(client.getPos().mapa);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		Client targetUser = server.getCliente(client.getFlags().TargetUser);
 		if (hechizo.Invisibilidad == 1) {
@@ -291,7 +289,7 @@ public class UserSpells implements Constants {
 				}
 				targetUser.m_flags.Paralizado = true;
 				targetUser.m_counters.Paralisis = IntervaloParalizado;
-				targetUser.enviar(serverPacketID.paradOk);
+				targetUser.enviar(ServerPacketID.paradOk);
 				infoHechizo();
 				return true;
 			}
@@ -299,7 +297,7 @@ public class UserSpells implements Constants {
 		if (hechizo.RemoverParalisis == 1) {
 			if (targetUser.m_flags.Paralizado) {
 				targetUser.m_flags.Paralizado = false;
-				targetUser.enviar(serverPacketID.paradOk);
+				targetUser.enviar(ServerPacketID.paradOk);
 				infoHechizo();
 				return true;
 			}

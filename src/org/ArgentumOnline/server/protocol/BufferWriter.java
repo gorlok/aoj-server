@@ -12,7 +12,7 @@ public class BufferWriter {
 	private BufferWriter() {
 	}
 	
-	public static void write(ByteBuffer buf, serverPacketID msg, Object... params) {
+	public static void write(ByteBuffer buf, ServerPacketID msg, Object... params) {
 		
 		buf.put(msg.binCode());
 		

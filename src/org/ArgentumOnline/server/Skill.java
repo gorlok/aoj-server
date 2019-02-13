@@ -1,5 +1,8 @@
 package org.ArgentumOnline.server;
 
+/**
+ * @author gorlok
+ */
 public class Skill {
 	
 	//// SKILLS

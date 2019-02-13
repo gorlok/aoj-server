@@ -26,8 +26,7 @@
 package org.ArgentumOnline.server;
 
 /**
- *
- * @author  pablo
+ * @author gorlok
  */
 public interface Constants {
     
@@ -58,15 +57,6 @@ public interface Constants {
     Public TCPESStats As TCPESStats
      */
 	
-	final static int NORTH = 0;
-	final static int SOUTH = 1;
-	final static int EAST = 2;
-	final static int WEST = 3;
-	final static int SW = 4;
-	final static int NE = 5;
-	final static int NW = 6;
-	final static int SE = 7;
-	
 	final static int max_border_y = 1;
 	final static int min_border_y = 2;
 	final static int max_border_x = 3;
@@ -77,7 +67,7 @@ public interface Constants {
 	final static short heading_s = 3;
 	final static short heading_w = 4;
 
-    final static String VERSION = "0.8.5 (ALPHA)";
+    final static String VERSION = "0.12.3";
     final static int SERVER_PORT = 7666;
     
     final static int CRCKEY = 1234;

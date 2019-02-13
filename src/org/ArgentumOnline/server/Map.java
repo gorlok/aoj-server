@@ -25,8 +25,8 @@
  */
 package org.ArgentumOnline.server;
 
-import static org.ArgentumOnline.server.protocol.serverPacketID.MSG_CCNPC;
-import static org.ArgentumOnline.server.protocol.serverPacketID.MSG_HO;
+import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_CCNPC;
+import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_HO;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import org.ArgentumOnline.server.areas.areasAO;
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.areas.AreasAO;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -59,7 +59,7 @@ public class Map implements Constants {
     
     /** Número de mapa. */
     private short nroMapa;
-    areasAO areasData = new areasAO();
+    AreasAO areasData = new AreasAO();
     
     // Cabecera archivo .map
     private short version   = 0;
@@ -522,7 +522,7 @@ public class Map implements Constants {
 		           // enviarATodos(MSG_QDL, cliente.getId());
 		            //enviarATodos(serverPacketID.MSG_BP, cliente.getId());
 		            //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.MSG_BP, cliente.getId());
-	        		this.areasData.sendToUserArea(cliente, serverPacketID.MSG_BP, cliente.getId());
+	        		this.areasData.sendToUserArea(cliente, ServerPacketID.MSG_BP, cliente.getId());
 	        	} finally {
 	        		this.m_clients.remove(cliente);
 	        		// Nuevo sistema de areas by JAO
@@ -554,7 +554,7 @@ public class Map implements Constants {
         //areasData.updateNpcArea(npc);
 		//this.areasData.sendToArea(x, y, npc.getId(), serverPacketID.MSG_MP, npc.getId(), x, y);
         this.areasData.checkUpdateNeededNpc(npc, npc.getInfoChar().getDir());
-        this.areasData.sendToNPCArea(npc, serverPacketID.MSG_MP, npc.getId(), x, y);
+        this.areasData.sendToNPCArea(npc, ServerPacketID.MSG_MP, npc.getId(), x, y);
         
     }
     
@@ -592,7 +592,7 @@ public class Map implements Constants {
         int y = npc.getPos().y;
         try {
 	      //  enviarATodos(MSG_QDL, npc.getId());
-	        enviarAlArea((short) x, (short) y, serverPacketID.MSG_BP, npc.getId());
+	        enviarAlArea((short) x, (short) y, ServerPacketID.MSG_BP, npc.getId());
         } finally {
             this.m_cells[x-1][y-1].setNpc(null);
 	        this.m_npcs.remove(npc);
@@ -654,7 +654,7 @@ public class Map implements Constants {
         //this.areasData.setObjArea(x, y, objid);
         //enviarAlArea(x,y, serverPacketID.MSG_HO, grhIndex, x ,y);
         
-        this.areasData.sendToAreaByPos(this, x, y,serverPacketID.MSG_HO, grhIndex, x ,y);
+        this.areasData.sendToAreaByPos(this, x, y,ServerPacketID.MSG_HO, grhIndex, x ,y);
         
         //enviarAlArea(x,y, serverPacketID.MSG_HO, grhIndex,x,y);
         
@@ -671,7 +671,7 @@ public class Map implements Constants {
     	this.bloquesConObjetos.remove(this.m_cells[x-1][y-1]);
         this.m_cells[x-1][y-1].quitarObjeto();
        // enviarATodos(serverPacketID.MSG_BO, x, y);
-        enviarAlArea(x,y,serverPacketID.MSG_BO, x,y);
+        enviarAlArea(x,y,ServerPacketID.MSG_BO, x,y);
     }
     
     public void bloquearTerreno(int x, int y) {
@@ -682,7 +682,7 @@ public class Map implements Constants {
         short mx = (short) x;
         short my = (short) y;
         
-        enviarAlArea(mx,my, serverPacketID.MSG_BQ, mx, my, (short) 1);
+        enviarAlArea(mx,my, ServerPacketID.MSG_BQ, mx, my, (short) 1);
     }
     
     public void desbloquearTerreno(int x, int y) {
@@ -693,7 +693,7 @@ public class Map implements Constants {
         short mx = (short) x;
         short my = (short) y;
         
-        enviarAlArea(mx,my, serverPacketID.MSG_BQ, mx, my, (short) 0);
+        enviarAlArea(mx,my, ServerPacketID.MSG_BQ, mx, my, (short) 0);
         
     }
     
@@ -715,7 +715,7 @@ public class Map implements Constants {
             }
             obj = getObjeto(obj.x, obj.y);
             enviarPuerta(obj);
-            enviarAlArea(obj.x, obj.y, serverPacketID.MSG_TW, (byte) SND_PUERTA, obj.x, obj.y);
+            enviarAlArea(obj.x, obj.y, ServerPacketID.MSG_TW, (byte) SND_PUERTA, obj.x, obj.y);
         }
     }
     
@@ -731,20 +731,20 @@ public class Map implements Constants {
             }
             
           //  System.out.println("Envío puerta: " + obj.x + "-" + obj.y);
-            enviarAlArea(obj.x,obj.y,serverPacketID.MSG_HO, obj.getInfo().GrhIndex, obj.x, obj.y);
+            enviarAlArea(obj.x,obj.y,ServerPacketID.MSG_HO, obj.getInfo().GrhIndex, obj.x, obj.y);
         }
     }
     
     public void enviarCFX(short x, short y, int id, int fx, int val) {
        // enviarAlArea(x, y, MSG_CFX, id, fx, val);
-    	enviarAlArea(x,y,serverPacketID.MSG_FX, (short) id, (short) fx, (short) val);
+    	enviarAlArea(x,y,ServerPacketID.MSG_FX, (short) id, (short) fx, (short) val);
     }
     
-    public void enviarATodos(serverPacketID msg, Object... params) {
+    public void enviarATodos(ServerPacketID msg, Object... params) {
         enviarATodosExc(-1, msg, params);
     }
     
-    public void enviarATodosExc(int excepto, serverPacketID msg, Object... params) {
+    public void enviarATodosExc(int excepto, ServerPacketID msg, Object... params) {
         for (Object element : this.m_clients) {
             Client cliente = (Client) element;
             if (cliente.getId() != excepto) {
@@ -757,16 +757,16 @@ public class Map implements Constants {
         }
     }
     
-    public void enviarAlArea(short x, short y, serverPacketID msg, Object... params) {
+    public void enviarAlArea(short x, short y, ServerPacketID msg, Object... params) {
         enviarAlArea(x, y, -1, msg, params);
     }
         
-    public void enviarAlArea(short pos_x, short pos_y, int excepto, serverPacketID msg, Object... params) {
+    public void enviarAlArea(short pos_x, short pos_y, int excepto, ServerPacketID msg, Object... params) {
     	//areasData.sendToArea(pos_x, pos_y, excepto, msg, params);
     	areasData.sendToAreaButIndex(this, pos_x, pos_y, excepto, msg, params);
     }
     
-    public void enviarAlAreaAdminsNoConsejeros(short pos_x, short pos_y, serverPacketID msg, Object... params) {
+    public void enviarAlAreaAdminsNoConsejeros(short pos_x, short pos_y, ServerPacketID msg, Object... params) {
         short x1 = (short) (pos_x - MinXBorder + 1);
         short x2 = (short) (pos_x + MaxXBorder + 1);
         short y1 = (short) (pos_y - MinYBorder + 1);
@@ -870,7 +870,7 @@ public class Map implements Constants {
 		//this.areasData.updateUserArea(cliente);
 		//this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.MSG_MP, cliente.getId(), x, y);
         
-        this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(), serverPacketID.MSG_MP, cliente.getId(), x, y);
+        this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(), ServerPacketID.MSG_MP, cliente.getId(), x, y);
         this.areasData.checkUpdateNeededUser(cliente, cliente.getInfoChar().getDir());
         
     }
@@ -1750,7 +1750,7 @@ public class Map implements Constants {
     
     public void construirAreaNpc(Client cliente, Npc npc) {
     //	cliente.enviar(MSG_CC, npc.ccParams());
-    	cliente.enviar(serverPacketID.MSG_CCNPC, npc.ccParams());
+    	cliente.enviar(ServerPacketID.MSG_CCNPC, npc.ccParams());
     }
     
     //when user enter in the game, or change map

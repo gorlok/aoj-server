@@ -45,7 +45,7 @@ import org.ArgentumOnline.server.classes.ThiefClass;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildInfo;
 import org.ArgentumOnline.server.protocol.BufferWriter;
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -55,19 +55,19 @@ import org.ArgentumOnline.server.util.Util;
  * @author gorlok
  */
 public class Client extends BaseCharacter implements Constants {
-	
+
 	public int areaID = 0;
-	
+
 	public int areaPerteneceX = 0;
 	public int areaPerteneceY = 0;
-	
+
 	public int areaRecibeX = 0;
 	public int areaRecibeY = 0;
-	
+
 	public int minX = 0;
 	public int minY = 0;
-	
-	public List <Integer> lengthClient = new LinkedList<Integer>();
+
+	public List<Integer> lengthClient = new LinkedList<Integer>();
 
 	/** Character universal id. */
 	short m_id = 0;
@@ -154,7 +154,7 @@ public class Client extends BaseCharacter implements Constants {
 	public Client(SocketChannel socketChannel, AojServer aoserver) {
 		this.clientBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 		this.clientBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		
+
 		this.server = aoserver;
 		this.m_id = server.getNextId();
 		this.m_spells = new UserSpells(server, this);
@@ -162,100 +162,126 @@ public class Client extends BaseCharacter implements Constants {
 		this.m_inv = new UserInventory(this.server, this, 20);
 		this.m_faccion = new Factions(this.server, this);
 		this.socketChannel = socketChannel;
-		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel
-			.socket().getRemoteSocketAddress();
+		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
 		if (addr != null) {
 			this.m_ip = addr.getAddress().getHostAddress();
 			Log.serverLogger().info(this.m_nick + " conectado desde " + this.m_ip);
 		}
 	}
-	
+
 	/**
 	 * JAO: with this, we set the user area ID
 	 */
-	public void setArea(int id) {System.out.println("AREAID:" + id);
-		this.areaID = id;}
-	
+	public void setArea(int id) {
+		System.out.println("AREAID:" + id);
+		this.areaID = id;
+	}
+
 	/**
 	 * JAO: setter in X area
 	 */
-	public void setAreaPerteneceX(int value) {this.areaPerteneceX = value;}
-	
+	public void setAreaPerteneceX(int value) {
+		this.areaPerteneceX = value;
+	}
+
 	/**
 	 * JAO: setter in Y area
 	 */
-	
-	public void setAreaPerteneceY(int value) {this.areaPerteneceY = value;}
-	
+
+	public void setAreaPerteneceY(int value) {
+		this.areaPerteneceY = value;
+	}
+
 	/**
 	 * JAO: adyacent X user area
 	 */
-	
-	public void setAreaRecibeX(int value) {this.areaRecibeX = value;}
-	
+
+	public void setAreaRecibeX(int value) {
+		this.areaRecibeX = value;
+	}
+
 	/**
 	 * JAO: adyacent Y user area
 	 */
-	
-	public void setAreaRecibeY(int value) {this.areaRecibeY = value;}
-	
+
+	public void setAreaRecibeY(int value) {
+		this.areaRecibeY = value;
+	}
+
 	/**
 	 * JAO: min x pos area
 	 */
-	
-	public void setMinX(int value) {this.minX = value;}
-	
+
+	public void setMinX(int value) {
+		this.minX = value;
+	}
+
 	/**
 	 * JAO: min y pos area
 	 */
-	
-	public void setMinY(int value) {this.minY = value;}
-	
+
+	public void setMinY(int value) {
+		this.minY = value;
+	}
+
 	/**
 	 * JAO: return the area id
 	 */
-	
-	public int getArea() {return this.areaID;}
-	
+
+	public int getArea() {
+		return this.areaID;
+	}
+
 	/**
 	 * JAO: give the area in X
 	 */
-	
-	public int getAreaPerteneceX() {return this.areaPerteneceX;}
-	
+
+	public int getAreaPerteneceX() {
+		return this.areaPerteneceX;
+	}
+
 	/**
 	 * JAO: give the area in Y
 	 */
-	
-	public int getAreaPerteneceY() {return this.areaPerteneceY;}
-	
+
+	public int getAreaPerteneceY() {
+		return this.areaPerteneceY;
+	}
+
 	/**
-	 * JAO: give the adyacent area X 
+	 * JAO: give the adyacent area X
 	 */
-	
-	public int getAreaRecibeX() {return this.areaRecibeX;}
-	
+
+	public int getAreaRecibeX() {
+		return this.areaRecibeX;
+	}
+
 	/**
 	 * JAO: give the adyacent area Y
 	 */
-	
-	public int getAreaRecibeY() {return this.areaRecibeY;}
-	
+
+	public int getAreaRecibeY() {
+		return this.areaRecibeY;
+	}
+
 	/**
 	 * JAO: return the lowest value in X
 	 */
-	
-	public int getMinX() {return this.minX;}
-	
-	/**
-	 * JAO: return the lowest value in Y 
-	 */
-	
-	public int getMinY() {return this.minY;}
-	
+
+	public int getMinX() {
+		return this.minX;
+	}
 
 	/**
-	 * Gives the current user level. 
+	 * JAO: return the lowest value in Y
+	 */
+
+	public int getMinY() {
+		return this.minY;
+	}
+
+	/**
+	 * Gives the current user level.
 	 */
 	public int level() {
 		return m_estads.ELV;
@@ -272,6 +298,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user id.
+	 * 
 	 * @return id
 	 */
 	public short getId() {
@@ -280,6 +307,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user race.
+	 * 
 	 * @return race
 	 */
 	public short getRaza() {
@@ -288,6 +316,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user position.
+	 * 
 	 * @return position
 	 */
 	public WorldPos getPos() {
@@ -296,6 +325,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user nickname.
+	 * 
 	 * @return nickname
 	 */
 	public String getNick() {
@@ -304,6 +334,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user character class.
+	 * 
 	 * @return the character's class
 	 */
 	public CharClass getClase() {
@@ -321,6 +352,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is criminal.
+	 * 
 	 * @return true if character is criminal.
 	 */
 	public boolean esCriminal() {
@@ -329,6 +361,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is alive (not a ghost).
+	 * 
 	 * @return true if character is alive (not a ghost).
 	 */
 	public boolean estaVivo() {
@@ -337,6 +370,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is not visible.
+	 * 
 	 * @return true if the character is not visible.
 	 */
 	public boolean estaInvisible() {
@@ -345,14 +379,16 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is hidden.
+	 * 
 	 * @return true if the character is hidden.
 	 */
 	public boolean estaOculto() {
 		return m_flags.Oculto;
 	}
 
-	/** 
+	/**
 	 * Returns true if the character is sailing.
+	 * 
 	 * @return true if the character is sailing.
 	 */
 	public boolean estaNavegando() {
@@ -361,6 +397,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is a god.
+	 * 
 	 * @return true if the character is a god.
 	 */
 	public boolean esDios() {
@@ -369,6 +406,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is a half-god.
+	 * 
 	 * @return true if the character is a half-god.
 	 */
 	public boolean esSemiDios() {
@@ -377,6 +415,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is an adviser.
+	 * 
 	 * @return true if the character is an adviser.
 	 */
 	public boolean esConsejero() {
@@ -385,6 +424,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is a game master.
+	 * 
 	 * @return true if the character is a game master.
 	 */
 	public boolean esGM() {
@@ -393,14 +433,16 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the character is working.
+	 * 
 	 * @return true if the character is working.
 	 */
 	public boolean estaTrabajando() {
 		return m_flags.Trabajando;
 	}
 
-	/** 
+	/**
 	 * Gives the user's stats.
+	 * 
 	 * @return the user's stats.
 	 */
 	public UserStats getEstads() {
@@ -409,18 +451,20 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user's reputation.
+	 * 
 	 * @return the user's reputation.
 	 */
 	public Reputation getReputacion() {
 		return m_reputacion;
 	}
-	
+
 	public short thatDir() {
 		return m_infoChar.getDir();
 	}
 
 	/**
 	 * Gives the user's flags.
+	 * 
 	 * @return user's flags
 	 */
 	public UserFlags getFlags() {
@@ -429,6 +473,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user's counters.
+	 * 
 	 * @return user's counters.
 	 */
 	public UserCounters getCounters() {
@@ -437,6 +482,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives a string representation of the user.
+	 * 
 	 * @return string representation of the user.
 	 */
 	@Override
@@ -446,6 +492,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user's faction.
+	 * 
 	 * @return user's faction.
 	 */
 	public Factions getFaccion() {
@@ -454,6 +501,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user's inventory.
+	 * 
 	 * @return user's inventory.
 	 */
 	public UserInventory getInv() {
@@ -462,6 +510,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Returns true if the user has the attack lock.
+	 * 
 	 * @return true if the user has the attack lock.
 	 */
 	public boolean tieneSeguro() {
@@ -470,22 +519,23 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Sends a message to the user.
-	 * @param msg is the message type to send.
+	 * 
+	 * @param msg    is the message type to send.
 	 * @param params is the parameters of the message (optional).
 	 */
-	public synchronized void enviar(serverPacketID msg, Object... params) {
+	public synchronized void enviar(ServerPacketID msg, Object... params) {
 		if (m_saliendo) {
 			return;
 		}
 		try {
 			Log.serverLogger().fine(">>" + m_nick + ">> " + msg);
-			
+
 			this.clientBuffer.clear();
-		    
+
 			BufferWriter.write(this.clientBuffer, msg, params);
-			
+
 			this.clientBuffer.flip();
-			
+
 			if (socketChannel.write(clientBuffer) == 0) {
 				// FIXME: ESTO SIGNIFICA QUE NO PUDO ESCRIBIR, HAY QUE ENCOLAR
 				// SI NO ESCRIBIO TODO!!!
@@ -499,6 +549,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	/**
 	 * Gives the user's status: citizen or criminal.
+	 * 
 	 * @return the user's status.
 	 */
 	public String getEstado() {
@@ -521,15 +572,13 @@ public class Client extends BaseCharacter implements Constants {
 				mapa.m_pk = (valor == 1);
 				enviarMensaje("PK cambiado.", FontType.INFO);
 			}
-			enviarMensaje("Mapa " + m_pos.mapa + " PK: "
-					+ (mapa.m_pk ? "SI" : "NO"), FontType.INFO);
+			enviarMensaje("Mapa " + m_pos.mapa + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.INFO);
 		} else if (accion.equalsIgnoreCase("BACKUP")) {
 			if (valor == 0 || valor == 1) {
 				mapa.m_backup = (valor == 1);
 				enviarMensaje("BACKUP cambiado.", FontType.INFO);
 			}
-			enviarMensaje("Mapa " + m_pos.mapa + " Backup: "
-					+ (mapa.m_backup ? "SI" : "NO"), FontType.INFO);
+			enviarMensaje("Mapa " + m_pos.mapa + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.INFO);
 		}
 	}
 
@@ -552,8 +601,8 @@ public class Client extends BaseCharacter implements Constants {
 				usuario.refreshStatus(1);
 			} else {
 				enviarMensaje(
-					"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
-					FontType.INFO);
+						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
+						FontType.INFO);
 			}
 		} else if (accion.equalsIgnoreCase("EXP")) {
 			if (valor < 1000000) {
@@ -562,8 +611,8 @@ public class Client extends BaseCharacter implements Constants {
 				usuario.refreshStatus(5);
 			} else {
 				enviarMensaje(
-					"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
-					FontType.INFO);
+						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
+						FontType.INFO);
 			}
 		} else if (accion.equalsIgnoreCase("BODY")) {
 			usuario.m_infoChar.m_cuerpo = (short) valor;
@@ -654,8 +703,7 @@ public class Client extends BaseCharacter implements Constants {
 		Log.logGM(m_nick, "/TRIGGER " + t + " " + m_pos);
 		Map mapa = server.getMapa(m_pos.mapa);
 		mapa.setTrigger(m_pos.x, m_pos.y, t);
-		enviarMensaje("Trigger " + mapa.getTrigger(m_pos.x, m_pos.y)
-				+ " en " + m_pos, FontType.INFO);
+		enviarMensaje("Trigger " + mapa.getTrigger(m_pos.x, m_pos.y) + " en " + m_pos, FontType.INFO);
 	}
 
 	public void doMassDest() {
@@ -691,7 +739,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			sb.delete(sb.length() - 2, sb.length());
 		}
-		//enviar(MSG_ZMOTD, sb.toString());
+		// enviar(MSG_ZMOTD, sb.toString());
 	}
 
 	public void doFinCambiarMOTD(String s) {
@@ -700,8 +748,7 @@ public class Client extends BaseCharacter implements Constants {
 		String CRLF = "" + (char) 13 + (char) 10;
 		Log.logGM(m_nick, "ZMOTD " + s);
 		Vector<String> motd = new Vector<String>();
-		for (StringTokenizer st = new StringTokenizer(s, CRLF); st
-			.hasMoreTokens();) {
+		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
 			motd.add(st.nextToken());
 		}
 		server.setMOTD(motd);
@@ -721,23 +768,20 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /BORRAR SOS
 		// Comando para borrar todos pedidos /GM pendientes
 		server.getPedidosAyudaGM().clear();
-		enviarMensaje("Todos los /GM pendientes han sido eliminados.",
-			FontType.INFO);
+		enviarMensaje("Todos los /GM pendientes han sido eliminados.", FontType.INFO);
 		Log.logGM(m_nick, "/BORRAR SOS");
 	}
 
 	public void doComandoNave() {
 		// Comando /NAVE
 		// Comando para depurar la navegacion
-		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.",
-			FontType.INFO);
+		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
 	}
 
 	public void doShowInt() {
 		// Comando /SHOW INT
 		// Comando para abrir la ventana de config de intervalos en el server.
-		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.",
-			FontType.INFO);
+		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
 	}
 
 	public void doActualizarMandamientosClan(String s) {
@@ -749,13 +793,11 @@ public class Client extends BaseCharacter implements Constants {
 	public void doFundarClan() {
 		// Comando /FUNDARCLAN
 		if (m_guildInfo.m_fundoClan) {
-			enviarMensaje(
-				"Ya has fundado un clan, solo se puede fundar uno por personaje.",
-				FontType.INFO);
+			enviarMensaje("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.INFO);
 			return;
 		}
 		if (server.getGuildMngr().canCreateGuild(this)) {
-		//	enviar(MSG_SHOWFUN);
+			// enviar(MSG_SHOWFUN);
 		}
 	}
 
@@ -781,13 +823,11 @@ public class Client extends BaseCharacter implements Constants {
 		// Salir del clan.
 		// Comando /SALIRCLAN
 		if (m_guildInfo.esGuildLeader()) {
-			enviarMensaje("Eres líder del clan, no puedes salir del mismo.",
-				FontType.INFO);
+			enviarMensaje("Eres líder del clan, no puedes salir del mismo.", FontType.INFO);
 		} else if (!esMiembroClan()) {
 			enviarMensaje("No perteneces a ningún clan.", FontType.INFO);
 		} else {
-			m_guild.enviarMensaje(m_nick + " decidió dejar el clan.",
-				FontType.GUILD);
+			m_guild.enviarMensaje(m_nick + " decidió dejar el clan.", FontType.GUILD);
 			salirClan();
 		}
 	}
@@ -811,12 +851,8 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void enviarMensajeVotacion() {
-		enviarMensaje(
-			"Hoy es la votación para elegir un nuevo lider del clan!!.",
-			FontType.GUILD);
-		enviarMensaje(
-			"La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.",
-			FontType.GUILD);
+		enviarMensaje("Hoy es la votación para elegir un nuevo lider del clan!!.", FontType.GUILD);
+		enviarMensaje("La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.", FontType.GUILD);
 		enviarMensaje("Para votar escribe /VOTO NICKNAME.", FontType.GUILD);
 		enviarMensaje("Solo se computarÁ un voto por miembro.", FontType.GUILD);
 	}
@@ -938,7 +974,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doPanelGM() {
 		// Comando /PANELGM
-		//enviar(MSG_ABPANEL);
+		// enviar(MSG_ABPANEL);
 	}
 
 	public void doListaUsuarios() {
@@ -951,7 +987,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (msg.length() > 0 && msg.charAt(msg.length() - 1) == ',') {
 			msg.deleteCharAt(msg.length() - 1);
 		}
-		//enviar(MSG_LISTUSU, msg.toString());
+		// enviar(MSG_LISTUSU, msg.toString());
 	}
 
 	public void doApostar(int cant) {
@@ -963,36 +999,28 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		Npc npc;
-		if (m_flags.TargetNpc == 0
-				|| (npc = server.getNPC(m_flags.TargetNpc)) == null) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, has clic izquierdo sobre él.",
-				FontType.INFO);
+		if (m_flags.TargetNpc == 0 || (npc = server.getNPC(m_flags.TargetNpc)) == null) {
+			enviarMensaje("Primero tienes que seleccionar un personaje, has clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 10) {
-			hablar(COLOR_BLANCO, "Estás demasiado lejos. No te escucho.", npc
-				.getId());
+			hablar(COLOR_BLANCO, "Estás demasiado lejos. No te escucho.", npc.getId());
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_TIMBERO) {
-			hablar(COLOR_BLANCO, "No tengo ningun interes en apostar.", npc
-				.getId());
+			hablar(COLOR_BLANCO, "No tengo ningun interes en apostar.", npc.getId());
 			return;
 		}
 		if (cant < 0) {
-			hablar(COLOR_BLANCO, "Has ingresado una apuesta inválida.", npc
-				.getId());
+			hablar(COLOR_BLANCO, "Has ingresado una apuesta inválida.", npc.getId());
 			return;
 		}
 		if (cant < 1) {
-			hablar(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", npc
-				.getId());
+			hablar(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", npc.getId());
 			return;
 		}
 		if (cant > APUESTA_MAXIMA) {
-			hablar(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA
-					+ " monedas.", npc.getId());
+			hablar(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", npc.getId());
 			return;
 		}
 		if (m_estads.oro < cant) {
@@ -1001,20 +1029,17 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (Util.Azar(1, 100) <= 47) {
 			m_estads.agregarOro(cant);
-			hablar(COLOR_BLANCO, "Felicidades! Has ganado " + cant
-					+ " monedas de oro!", npc.getId());
+			hablar(COLOR_BLANCO, "Felicidades! Has ganado " + cant + " monedas de oro!", npc.getId());
 			/*
-			 * fixme Apuestas.Perdidas += cant; Call WriteVar(DatPath &
-			 * "apuestas.dat", "Main", "Perdidas", CStr(Apuestas.Perdidas))
+			 * fixme Apuestas.Perdidas += cant; Call WriteVar(DatPath & "apuestas.dat",
+			 * "Main", "Perdidas", CStr(Apuestas.Perdidas))
 			 */
 		} else {
 			m_estads.quitarOro(cant);
-			hablar(COLOR_BLANCO, "Lo siento, has perdido " + cant
-					+ " monedas de oro.", npc.getId());
+			hablar(COLOR_BLANCO, "Lo siento, has perdido " + cant + " monedas de oro.", npc.getId());
 			/*
-			 * fixme Apuestas.Ganancias = Apuestas.Ganancias + N Call
-			 * WriteVar(DatPath & "apuestas.dat", "Main", "Ganancias",
-			 * CStr(Apuestas.Ganancias))
+			 * fixme Apuestas.Ganancias = Apuestas.Ganancias + N Call WriteVar(DatPath &
+			 * "apuestas.dat", "Main", "Ganancias", CStr(Apuestas.Ganancias))
 			 */
 		}
 		/*
@@ -1031,8 +1056,7 @@ public class Client extends BaseCharacter implements Constants {
 		long mins = tsegs / 60;
 		long horas = mins / 60;
 		long dias = horas / 24;
-		String msg = dias + " dias, " + horas + " horas, " + mins
-				+ " minutos, " + segs + " segundos.";
+		String msg = dias + " dias, " + horas + " horas, " + mins + " minutos, " + segs + " segundos.";
 		enviarMensaje("Uptime: " + msg, FontType.INFO);
 	}
 
@@ -1050,8 +1074,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraImperial1(short armadura) {
 		// Comando /AI1
 		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 1 es "
-					+ Factions.ArmaduraImperial1, FontType.INFO);
+			enviarMensaje("Armadura Imperial 1 es " + Factions.ArmaduraImperial1, FontType.INFO);
 		} else {
 			Factions.ArmaduraImperial1 = armadura;
 			enviarMensaje("Armadura Imperial 1 actualizada.", FontType.INFO);
@@ -1061,8 +1084,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraImperial2(short armadura) {
 		// Comando /AI2
 		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 2 es "
-					+ Factions.ArmaduraImperial2, FontType.INFO);
+			enviarMensaje("Armadura Imperial 2 es " + Factions.ArmaduraImperial2, FontType.INFO);
 		} else {
 			Factions.ArmaduraImperial2 = armadura;
 			enviarMensaje("Armadura Imperial 2 actualizada.", FontType.INFO);
@@ -1072,8 +1094,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraImperial3(short armadura) {
 		// Comando /AI3
 		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 3 es "
-					+ Factions.ArmaduraImperial3, FontType.INFO);
+			enviarMensaje("Armadura Imperial 3 es " + Factions.ArmaduraImperial3, FontType.INFO);
 		} else {
 			Factions.ArmaduraImperial3 = armadura;
 			enviarMensaje("Armadura Imperial 3 actualizada.", FontType.INFO);
@@ -1083,8 +1104,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraImperial4(short armadura) {
 		// Comando /AI4
 		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Imperial es "
-					+ Factions.TunicaMagoImperial, FontType.INFO);
+			enviarMensaje("Tunica Mago Imperial es " + Factions.TunicaMagoImperial, FontType.INFO);
 		} else {
 			Factions.TunicaMagoImperial = armadura;
 			enviarMensaje("Tunica Mago Imperial actualizada.", FontType.INFO);
@@ -1094,20 +1114,17 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraImperial5(short armadura) {
 		// Comando /AI5
 		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Imperial Enanos es "
-					+ Factions.TunicaMagoImperialEnanos, FontType.INFO);
+			enviarMensaje("Tunica Mago Imperial Enanos es " + Factions.TunicaMagoImperialEnanos, FontType.INFO);
 		} else {
 			Factions.TunicaMagoImperialEnanos = armadura;
-			enviarMensaje("Tunica Mago Imperial Enanos actualizada.",
-				FontType.INFO);
+			enviarMensaje("Tunica Mago Imperial Enanos actualizada.", FontType.INFO);
 		}
 	}
 
 	public void doArmaduraCaos1(short armadura) {
 		// Comando /AC1
 		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 1 es " + Factions.ArmaduraCaos1,
-				FontType.INFO);
+			enviarMensaje("Armadura Caos 1 es " + Factions.ArmaduraCaos1, FontType.INFO);
 		} else {
 			Factions.ArmaduraCaos1 = armadura;
 			enviarMensaje("Armadura Caos 1 actualizada.", FontType.INFO);
@@ -1117,8 +1134,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraCaos2(short armadura) {
 		// Comando /AC2
 		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 2 es " + Factions.ArmaduraCaos2,
-				FontType.INFO);
+			enviarMensaje("Armadura Caos 2 es " + Factions.ArmaduraCaos2, FontType.INFO);
 		} else {
 			Factions.ArmaduraCaos2 = armadura;
 			enviarMensaje("Armadura Caos 2 actualizada.", FontType.INFO);
@@ -1128,8 +1144,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraCaos3(short armadura) {
 		// Comando /AC3
 		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 3 es " + Factions.ArmaduraCaos3,
-				FontType.INFO);
+			enviarMensaje("Armadura Caos 3 es " + Factions.ArmaduraCaos3, FontType.INFO);
 		} else {
 			Factions.ArmaduraCaos3 = armadura;
 			enviarMensaje("Armadura Caos 3 actualizada.", FontType.INFO);
@@ -1139,8 +1154,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraCaos4(short armadura) {
 		// Comando /AC4
 		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Caos es " + Factions.TunicaMagoCaos,
-				FontType.INFO);
+			enviarMensaje("Tunica Mago Caos es " + Factions.TunicaMagoCaos, FontType.INFO);
 		} else {
 			Factions.TunicaMagoCaos = armadura;
 			enviarMensaje("Tunica Mago Caos actualizada.", FontType.INFO);
@@ -1150,8 +1164,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doArmaduraCaos5(short armadura) {
 		// Comando /AC5
 		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Caos Enanos es "
-					+ Factions.TunicaMagoCaosEnanos, FontType.INFO);
+			enviarMensaje("Tunica Mago Caos Enanos es " + Factions.TunicaMagoCaosEnanos, FontType.INFO);
 		} else {
 			Factions.TunicaMagoCaosEnanos = armadura;
 			enviarMensaje("Tunica Mago Caos Enanos actualizada.", FontType.INFO);
@@ -1171,15 +1184,12 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		enviarMensaje(usuario.getNick() + " tiene " + m_cantMascotas
-				+ " mascotas.", FontType.DEBUG);
+		enviarMensaje(usuario.getNick() + " tiene " + m_cantMascotas + " mascotas.", FontType.DEBUG);
 		for (int i = 0; i < m_mascotas.length; i++) {
 			if (m_mascotas[i] != null) {
-				enviarMensaje(" mascota " + m_mascotas[i].getName() + "["
-						+ (i + 1) + "] esta en " + m_mascotas[i].getPos()
-						+ " tiempo="
-						+ m_mascotas[i].getContadores().TiempoExistencia,
-					FontType.DEBUG);
+				enviarMensaje(" mascota " + m_mascotas[i].getName() + "[" + (i + 1) + "] esta en "
+						+ m_mascotas[i].getPos() + " tiempo=" + m_mascotas[i].getContadores().TiempoExistencia,
+						FontType.DEBUG);
 			}
 		}
 	}
@@ -1187,32 +1197,21 @@ public class Client extends BaseCharacter implements Constants {
 	public void doEnlistar() {
 		// Comando /ENLISTAR
 		Npc npc;
-		if (getFlags().TargetNpc == 0
-				|| (npc = server.getNPC(getFlags().TargetNpc)) == null) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y haz clic izquierdo sobre él.",
-				FontType.INFO);
+		if (getFlags().TargetNpc == 0 || (npc = server.getNPC(getFlags().TargetNpc)) == null) {
+			enviarMensaje("Primero tienes que seleccionar un personaje, y haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		if (!npc.esNoble()) {
-			hablar(
-				COLOR_BLANCO,
-				"Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
-				npc.getId());
+			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
+					npc.getId());
 			return;
 		}
 		if (!estaVivo()) {
-			hablar(
-				COLOR_BLANCO,
-				"¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!",
-				npc.getId());
+			hablar(COLOR_BLANCO, "¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!", npc.getId());
 			return;
 		}
 		if (getPos().distancia(npc.getPos()) > 4) {
-			hablar(
-				COLOR_BLANCO,
-				"Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!",
-				npc.getId());
+			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
 			return;
 		}
 		if (!npc.esFaccion()) {
@@ -1225,45 +1224,32 @@ public class Client extends BaseCharacter implements Constants {
 	public void doRecompensa() {
 		// Comando /RECOMPENSA
 		Npc npc;
-		if (getFlags().TargetNpc == 0
-				|| (npc = server.getNPC(getFlags().TargetNpc)) == null) {
-			enviarMensaje(
-				"Debes seleccionar un personaje. Haz clic izquierdo sobre él.",
-				FontType.INFO);
+		if (getFlags().TargetNpc == 0 || (npc = server.getNPC(getFlags().TargetNpc)) == null) {
+			enviarMensaje("Debes seleccionar un personaje. Haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		if (!npc.esNoble()) {
-			hablar(
-				COLOR_BLANCO,
-				"Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
-				npc.getId());
+			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
+					npc.getId());
 			return;
 		}
 		if (!estaVivo()) {
-			hablar(
-				COLOR_BLANCO,
-				"¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!",
-				npc.getId());
+			hablar(COLOR_BLANCO, "¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!", npc.getId());
 			return;
 		}
 		if (getPos().distancia(npc.getPos()) > 4) {
-			hablar(
-				COLOR_BLANCO,
-				"Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!",
-				npc.getId());
+			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
 			return;
 		}
 		if (!npc.esFaccion()) {
 			if (!getFaccion().ArmadaReal) {
-				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!",
-					npc.getId());
+				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
 			}
 			getFaccion().recompensaArmadaReal(npc);
 		} else {
 			if (!getFaccion().FuerzasCaos) {
-				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!",
-					npc.getId());
+				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
 				return;
 			}
 			getFaccion().recompensaCaos(npc);
@@ -1281,57 +1267,44 @@ public class Client extends BaseCharacter implements Constants {
 		short x = getPos().x;
 		short y = (short) (getPos().y - 1);
 		if (mapa.hayObjeto(x, y)) {
-			enviarMensaje(
-				"Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
-				FontType.WARNING);
+			enviarMensaje("Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
+					FontType.WARNING);
 			return;
 		}
 		if (mapa.hayTeleport(x, y)) {
-			enviarMensaje(
-				"Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.",
-				FontType.WARNING);
+			enviarMensaje("Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.", FontType.WARNING);
 			return;
 		}
 		Map mapaDest = server.getMapa(dest_mapa);
 		if (mapaDest == null || !MapPos.isValid(dest_x, dest_y)) {
-			enviarMensaje("Ups! Debes indicar coordenadas válidas.",
-				FontType.WARNING);
+			enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.WARNING);
 			return;
 		}
 		mapa.crearTeleport(x, y, dest_mapa, dest_x, dest_y);
-		Log.logGM(m_nick, "Creó un teleport: " + m_pos
-				+ " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
+		Log.logGM(m_nick, "Creó un teleport: " + m_pos + " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
 		enviarMensaje("¡Teleport creado!", FontType.INFO);
 	}
 
 	public void doDestruirTeleport() {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
-		if (getFlags().TargetMap == 0 || getFlags().TargetX == 0
-				|| getFlags().TargetY == 0) {
-			enviarMensaje(
-				"Debes hacer clic sobre el Teleport que deseas destruir.",
-				FontType.WARNING);
+		if (getFlags().TargetMap == 0 || getFlags().TargetX == 0 || getFlags().TargetY == 0) {
+			enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.WARNING);
 			return;
 		}
 		short m = getFlags().TargetMap;
 		Map mapa = server.getMapa(m);
 		if (mapa == null) {
-			enviarMensaje(
-				"Debes hacer clic sobre el Teleport que deseas destruir.",
-				FontType.WARNING);
+			enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.WARNING);
 			return;
 		}
 		short x = getFlags().TargetX;
 		short y = getFlags().TargetY;
 		if (!mapa.hayTeleport(x, y)) {
-			enviarMensaje(
-				"¡Debes hacer clic sobre el Teleport que deseas destruir!",
-				FontType.WARNING);
+			enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.WARNING);
 			return;
 		}
-		Log.logGM(m_nick, "Destruyó un teleport, con /DT mapa=" + m
-				+ " x=" + x + " y=" + y);
+		Log.logGM(m_nick, "Destruyó un teleport, con /DT mapa=" + m + " x=" + x + " y=" + y);
 		mapa.destruirTeleport(x, y);
 	}
 
@@ -1340,9 +1313,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /MATA indiceNpc
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null) {
-			enviarMensaje(
-				"Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!",
-				FontType.INFO);
+			enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.INFO);
 			return;
 		}
 		npc.quitarNPC();
@@ -1370,31 +1341,27 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void doEnviarMiniEstadisticas() {
-		enviar(serverPacketID.littleStats, (int) m_faccion.CiudadanosMatados,
-				(int)m_faccion.CriminalesMatados, (int) m_estads.usuariosMatados,
-				(int)m_estads.NPCsMuertos, m_clase.getName(),
-				(int)m_counters.Pena);
-		
+		enviar(ServerPacketID.littleStats, (int) m_faccion.CiudadanosMatados, (int) m_faccion.CriminalesMatados,
+				(int) m_estads.usuariosMatados, (int) m_estads.NPCsMuertos, m_clase.getName(), (int) m_counters.Pena);
+
 		sendUserAtributos();
 		enviarSkills();
 		doEnviarFama();
-		
+
 	}
 
 	public void doIniciarAventura() {
 		// Comando /AVENTURA
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 4) {
@@ -1408,16 +1375,14 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /REWARD
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 4) {
@@ -1431,16 +1396,14 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /INFOQ
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 4) {
@@ -1454,16 +1417,14 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /MERINDO
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 4) {
@@ -1477,16 +1438,14 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /ADIVINA
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
+					FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 4) {
@@ -1539,7 +1498,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /SMSG
 		s = s.trim();
 		Log.logGM(m_nick, "Envió el mensaje del sistema: " + s);
-		//server.enviarATodos(MSG_SYSMSG, s);
+		// server.enviarATodos(MSG_SYSMSG, s);
 	}
 
 	public void doBanIP(String s) {
@@ -1556,20 +1515,15 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		List<String> bannedIPs = server.getBannedIPs();
 		if (bannedIPs.contains(ip)) {
-			enviarMensaje("La IP " + ip
-					+ " ya se encuentra en la lista de bans.", FontType.INFO);
+			enviarMensaje("La IP " + ip + " ya se encuentra en la lista de bans.", FontType.INFO);
 			return;
 		}
 		bannedIPs.add(ip);
-		server.enviarMensajeAAdmins(m_nick + " Baneo la IP " + ip,
-			FontType.FIGHT);
+		server.enviarMensajeAAdmins(m_nick + " Baneo la IP " + ip, FontType.FIGHT);
 		if (usuario != null) {
-			server.logBan(usuario.m_nick, m_nick,
-				"Ban por IP desde Nick");
-			server.enviarMensajeAAdmins(m_nick + " echo a "
-					+ usuario.m_nick + ".", FontType.FIGHT);
-			server.enviarMensajeAAdmins(m_nick + " Banned a "
-					+ usuario.m_nick + ".", FontType.FIGHT);
+			server.logBan(usuario.m_nick, m_nick, "Ban por IP desde Nick");
+			server.enviarMensajeAAdmins(m_nick + " echo a " + usuario.m_nick + ".", FontType.FIGHT);
+			server.enviarMensajeAAdmins(m_nick + " Banned a " + usuario.m_nick + ".", FontType.FIGHT);
 			// Ponemos el flag de ban a 1
 			usuario.m_flags.Ban = true;
 			Log.logGM(m_nick, "Echo a " + usuario.m_nick);
@@ -1585,11 +1539,9 @@ public class Client extends BaseCharacter implements Constants {
 		List<String> bannedIPs = server.getBannedIPs();
 		if (bannedIPs.contains(s)) {
 			bannedIPs.remove(s);
-			enviarMensaje("La IP " + s + " se ha quitado de la lista de bans.",
-				FontType.INFO);
+			enviarMensaje("La IP " + s + " se ha quitado de la lista de bans.", FontType.INFO);
 		} else {
-			enviarMensaje("La IP " + s
-					+ " NO se encuentra en la lista de bans.", FontType.INFO);
+			enviarMensaje("La IP " + s + " NO se encuentra en la lista de bans.", FontType.INFO);
 		}
 	}
 
@@ -1633,8 +1585,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		npc.getInv().clear();
-		enviarMensaje("El inventario del npc " + npc.getName()
-				+ " ha sido vaciado.", FontType.INFO);
+		enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.INFO);
 		Log.logGM(m_nick, "/RESETINV " + npc.toString());
 	}
 
@@ -1648,7 +1599,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /RMSG
 		Log.logGM(m_nick, "Mensaje Broadcast: " + s);
 		if (!s.equals("")) {
-		//	server.enviarATodos(MSG_TALK, s + FontType.TALK);
+			// server.enviarATodos(MSG_TALK, s + FontType.TALK);
 		}
 	}
 
@@ -1661,7 +1612,7 @@ public class Client extends BaseCharacter implements Constants {
 		for (String name : server.getSpawnListNames()) {
 			params.add(name);
 		}
-		//enviar(MSG_SPL, params.toArray());
+		// enviar(MSG_SPL, params.toArray());
 	}
 
 	public void doSPA(short index) {
@@ -1669,8 +1620,7 @@ public class Client extends BaseCharacter implements Constants {
 		// SPA
 		short[] spawnList = server.getSpawnList();
 		if (index > 0 && index <= spawnList.length) {
-			Npc npc = Npc.spawnNpc(spawnList[index - 1], m_pos, true,
-				false);
+			Npc npc = Npc.spawnNpc(spawnList[index - 1], m_pos, true, false);
 			Log.logGM(m_nick, "Sumoneo al Npc " + npc.toString());
 		}
 	}
@@ -1695,12 +1645,9 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		Log.logGM(m_nick, "Hizo /SUM " + s);
 		if (usuario.warpUser(m_pos.mapa, m_pos.x, m_pos.y, true)) {
-			enviarMensaje(usuario.m_nick + " ha sido trasportado.",
-				FontType.INFO);
+			enviarMensaje(usuario.m_nick + " ha sido trasportado.", FontType.INFO);
 			usuario.enviarMensaje("Has sido trasportado.", FontType.INFO);
-			Log.logGM(m_nick, "/SUM " + usuario.m_nick + " Map:"
-					+ m_pos.mapa + " X:" + m_pos.x + " Y:"
-					+ m_pos.y);
+			Log.logGM(m_nick, "/SUM " + usuario.m_nick + " Map:" + m_pos.mapa + " X:" + m_pos.x + " Y:" + m_pos.y);
 		}
 	}
 
@@ -1712,25 +1659,20 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuario.m_flags.Privilegios > m_flags.Privilegios) {
-			enviarMensaje(
-				"No puedes encarcelar a usuarios de mayor jerarquia a la tuya!",
-				FontType.INFO);
+			enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
 		Log.logGM(m_nick, "/BAN " + nombre + " por: " + motivo);
 		server.logBan(usuario.m_nick, m_nick, motivo);
-		server.enviarMensajeAAdmins(m_nick + " echo a "
-				+ usuario.m_nick + ".", FontType.FIGHT);
-		server.enviarMensajeAAdmins(m_nick + " Banned a "
-				+ usuario.m_nick + ".", FontType.FIGHT);
+		server.enviarMensajeAAdmins(m_nick + " echo a " + usuario.m_nick + ".", FontType.FIGHT);
+		server.enviarMensajeAAdmins(m_nick + " Banned a " + usuario.m_nick + ".", FontType.FIGHT);
 		// Ponemos el flag de ban a 1
 		usuario.m_flags.Ban = true;
 		if (usuario.esGM()) {
 			m_flags.Ban = true;
 			doSALIR();
-			server.enviarMensajeAAdmins(m_nick
-					+ " banned from this server por bannear un Administrador.",
-				FontType.FIGHT);
+			server.enviarMensajeAAdmins(m_nick + " banned from this server por bannear un Administrador.",
+					FontType.FIGHT);
 		}
 		Log.logGM(m_nick, "Echo a " + usuario.m_nick);
 		Log.logGM(m_nick, "BAN a " + usuario.m_nick);
@@ -1755,14 +1697,12 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuario.m_flags.Privilegios > m_flags.Privilegios) {
-			enviarMensaje(
-				"No puedes encarcelar a usuarios de mayor jerarquia a la tuya!",
-				FontType.INFO);
+			enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
-		//server.enviarATodos(MSG_TALK, m_nick + " echo a "
-		//		+ usuario.m_nick + ".", FontType.INFO.toString());
-	//	usuario.doSALIR();
+		// server.enviarATodos(MSG_TALK, m_nick + " echo a "
+		// + usuario.m_nick + ".", FontType.INFO.toString());
+		// usuario.doSALIR();
 		Log.logGM(m_nick, "Echó a " + usuario.m_nick);
 	}
 
@@ -1776,9 +1716,7 @@ public class Client extends BaseCharacter implements Constants {
 			minutos = Short.parseShort(st.nextToken());
 			nombre = st.nextToken();
 		} catch (Exception e) {
-			enviarMensaje(
-				"Error en el comando. Formato: /CARCEL minutos usuario",
-				FontType.WARNING);
+			enviarMensaje("Error en el comando. Formato: /CARCEL minutos usuario", FontType.WARNING);
 			return;
 		}
 		Client usuario = server.getUsuario(nombre);
@@ -1787,19 +1725,16 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuario.m_flags.Privilegios > m_flags.Privilegios) {
-			enviarMensaje(
-				"No puedes encarcelar a usuarios de mayor jerarquia a la tuya!",
-				FontType.INFO);
+			enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
 		if (usuario.m_counters.Pena > 0) {
-			enviarMensaje("El usuario ya esta en la carcel. Le quedan "
-					+ m_counters.Pena + " minutos.", FontType.WARNING);
+			enviarMensaje("El usuario ya esta en la carcel. Le quedan " + m_counters.Pena + " minutos.",
+					FontType.WARNING);
 			return;
 		}
 		if (minutos > 30) {
-			enviarMensaje("No puedes encarcelar por mas de 30 minutos!",
-				FontType.INFO);
+			enviarMensaje("No puedes encarcelar por mas de 30 minutos!", FontType.INFO);
 			return;
 		}
 		usuario.encarcelar(minutos, m_nick);
@@ -1816,18 +1751,14 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (usuario.esNewbie()) {
 			if (usuario.m_reputacion.esIntachable()) {
-				enviarMensaje("No hay que perdonarle a " + usuario.getNick(),
-					FontType.INFO);
+				enviarMensaje("No hay que perdonarle a " + usuario.getNick(), FontType.INFO);
 				return;
 			}
 			usuario.volverCiudadano();
-			enviarMensaje(usuario.getNick() + " ha sido perdonado.",
-				FontType.INFO);
-			usuario.enviarMensaje("Los dioses te han perdonado por esta vez.",
-				FontType.INFO);
+			enviarMensaje(usuario.getNick() + " ha sido perdonado.", FontType.INFO);
+			usuario.enviarMensaje("Los dioses te han perdonado por esta vez.", FontType.INFO);
 		} else {
-			Log.logGM(m_nick,
-				"Intento perdonar un personaje de nivel avanzado.");
+			Log.logGM(m_nick, "Intento perdonar un personaje de nivel avanzado.");
 			enviarMensaje("Solo se permite perdonar newbies.", FontType.INFO);
 		}
 	}
@@ -1842,14 +1773,12 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuario.m_reputacion.esCriminal()) {
-			enviarMensaje(usuario.getNick() + " ya es un criminal condenado.",
-				FontType.INFO);
+			enviarMensaje(usuario.getNick() + " ya es un criminal condenado.", FontType.INFO);
 			return;
 		}
 		usuario.volverCriminal();
 		enviarMensaje(usuario.getNick() + " ha sido condenado.", FontType.INFO);
-		usuario.enviarMensaje("Los dioses te han condenado por tus acciones.",
-			FontType.INFO);
+		usuario.enviarMensaje("Los dioses te han condenado por tus acciones.", FontType.INFO);
 	}
 
 	public void doRevivir(String s) {
@@ -1869,8 +1798,7 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje(usuario.m_nick + " no esta muerto!", FontType.INFO);
 		} else {
 			usuario.revivirUsuario();
-			usuario.enviarMensaje(m_nick + " te ha resucitado.",
-				FontType.INFO);
+			usuario.enviarMensaje(m_nick + " te ha resucitado.", FontType.INFO);
 			Log.logGM(m_nick, "Resucitó a " + usuario.m_nick);
 		}
 	}
@@ -1909,57 +1837,45 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void sendUserStatsTxt(Client usuario) {
 		enviarMensaje("Estadisticas de: " + usuario.m_nick, FontType.INFO_B);
-		enviarMensaje("Nivel: " + usuario.m_estads.ELV + "  EXP: "
-				+ usuario.m_estads.Exp + "/" + usuario.m_estads.ELU,
-			FontType.INFO);
-		enviarMensaje("Salud: " + usuario.m_estads.MinHP + "/"
-				+ usuario.m_estads.MaxHP + "  Mana: " + usuario.m_estads.MinMAN
-				+ "/" + usuario.m_estads.MaxMAN + "  Energia: "
-				+ usuario.m_estads.MinSta + "/" + usuario.m_estads.MaxSta,
-			FontType.INFO);
+		enviarMensaje("Nivel: " + usuario.m_estads.ELV + "  EXP: " + usuario.m_estads.Exp + "/" + usuario.m_estads.ELU,
+				FontType.INFO);
+		enviarMensaje("Salud: " + usuario.m_estads.MinHP + "/" + usuario.m_estads.MaxHP + "  Mana: "
+				+ usuario.m_estads.MinMAN + "/" + usuario.m_estads.MaxMAN + "  Energia: " + usuario.m_estads.MinSta
+				+ "/" + usuario.m_estads.MaxSta, FontType.INFO);
 		if (usuario.m_inv.tieneArmaEquipada()) {
-			enviarMensaje("Menor Golpe/Mayor Golpe: " + usuario.m_estads.MinHIT
-					+ "/" + usuario.m_estads.MaxHIT + " ("
-					+ m_inv.getArma().MinHIT + "/"
-					+ m_inv.getArma().MaxHIT + ")", FontType.INFO);
+			enviarMensaje("Menor Golpe/Mayor Golpe: " + usuario.m_estads.MinHIT + "/" + usuario.m_estads.MaxHIT + " ("
+					+ m_inv.getArma().MinHIT + "/" + m_inv.getArma().MaxHIT + ")", FontType.INFO);
 		} else {
-			enviarMensaje("Menor Golpe/Mayor Golpe: " + usuario.m_estads.MinHIT
-					+ "/" + usuario.m_estads.MaxHIT, FontType.INFO);
+			enviarMensaje("Menor Golpe/Mayor Golpe: " + usuario.m_estads.MinHIT + "/" + usuario.m_estads.MaxHIT,
+					FontType.INFO);
 		}
 		if (usuario.m_inv.tieneArmaduraEquipada()) {
-			enviarMensaje("(CUERPO) Min Def/Max Def: "
-					+ usuario.m_inv.getArmadura().MinDef + "/"
+			enviarMensaje("(CUERPO) Min Def/Max Def: " + usuario.m_inv.getArmadura().MinDef + "/"
 					+ usuario.m_inv.getArmadura().MaxDef, FontType.INFO);
 		} else {
 			enviarMensaje("(CUERPO) Min Def/Max Def: 0", FontType.INFO);
 		}
 		if (usuario.m_inv.tieneCascoEquipado()) {
-			enviarMensaje("(CABEZA) Min Def/Max Def: "
-					+ m_inv.getCasco().MinDef + "/"
-					+ m_inv.getCasco().MaxDef, FontType.INFO);
+			enviarMensaje("(CABEZA) Min Def/Max Def: " + m_inv.getCasco().MinDef + "/" + m_inv.getCasco().MaxDef,
+					FontType.INFO);
 		} else {
 			enviarMensaje("(CABEZA) Min Def/Max Def: 0", FontType.INFO);
 		}
 		if (esMiembroClan()) {
-			enviarMensaje("Clan: " + usuario.m_guildInfo.m_guildName,
-				FontType.INFO);
+			enviarMensaje("Clan: " + usuario.m_guildInfo.m_guildName, FontType.INFO);
 			if (usuario.m_guildInfo.m_esGuildLeader) {
-				if (usuario.m_guildInfo.m_clanFundado
-					.equals(usuario.m_guildInfo.m_guildName)) {
+				if (usuario.m_guildInfo.m_clanFundado.equals(usuario.m_guildInfo.m_guildName)) {
 					enviarMensaje("Status: Fundador/Lider", FontType.INFO);
 				} else {
 					enviarMensaje("Status: Lider", FontType.INFO);
 				}
 			} else {
-				enviarMensaje("Status: " + usuario.m_guildInfo.m_guildPoints,
-					FontType.INFO);
+				enviarMensaje("Status: " + usuario.m_guildInfo.m_guildPoints, FontType.INFO);
 			}
-			enviarMensaje("User GuildPoints: "
-					+ usuario.m_guildInfo.m_guildPoints, FontType.INFO);
+			enviarMensaje("User GuildPoints: " + usuario.m_guildInfo.m_guildPoints, FontType.INFO);
 		}
-		enviarMensaje("Oro: " + usuario.m_estads.oro + "  Posicion: "
-				+ usuario.m_pos.x + "," + usuario.m_pos.y + " en mapa "
-				+ usuario.m_pos.mapa, FontType.INFO);
+		enviarMensaje("Oro: " + usuario.m_estads.oro + "  Posicion: " + usuario.m_pos.x + "," + usuario.m_pos.y
+				+ " en mapa " + usuario.m_pos.mapa, FontType.INFO);
 	}
 
 	public void doInvUser(String s) {
@@ -1976,14 +1892,12 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void sendUserInvTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
-		enviarMensaje(" Tiene " + usuario.m_inv.getCantObjs() + " objetos.",
-			FontType.INFO);
+		enviarMensaje(" Tiene " + usuario.m_inv.getCantObjs() + " objetos.", FontType.INFO);
 		for (int i = 1; i <= usuario.m_inv.getSize(); i++) {
 			if (usuario.m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info = server.getInfoObjeto(usuario.m_inv
-					.getObjeto(i).objid);
-				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:"
-						+ usuario.m_inv.getObjeto(i).cant, FontType.INFO);
+				ObjectInfo info = server.getInfoObjeto(usuario.m_inv.getObjeto(i).objid);
+				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_inv.getObjeto(i).cant,
+						FontType.INFO);
 			}
 		}
 	}
@@ -2002,14 +1916,12 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void sendUserBovTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
-		enviarMensaje(" Tiene " + usuario.m_bancoInv.getCantObjs()
-				+ " objetos.", FontType.INFO);
+		enviarMensaje(" Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
 		for (int i = 1; i <= usuario.m_bancoInv.getSize(); i++) {
 			if (usuario.m_bancoInv.getObjeto(i).objid > 0) {
-				ObjectInfo info = server.getInfoObjeto(usuario.m_bancoInv
-					.getObjeto(i).objid);
-				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:"
-						+ usuario.m_bancoInv.getObjeto(i).cant, FontType.INFO);
+				ObjectInfo info = server.getInfoObjeto(usuario.m_bancoInv.getObjeto(i).objid);
+				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_bancoInv.getObjeto(i).cant,
+						FontType.INFO);
 			}
 		}
 	}
@@ -2029,8 +1941,7 @@ public class Client extends BaseCharacter implements Constants {
 	private void sendUserSkillsTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			enviarMensaje(" " + Skill.skillsNames[i] + " = "
-					+ usuario.m_estads.userSkills[i], FontType.INFO);
+			enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.m_estads.userSkills[i], FontType.INFO);
 		}
 	}
 
@@ -2052,15 +1963,14 @@ public class Client extends BaseCharacter implements Constants {
 		GmRequest pedido = new GmRequest(m_nick, s);
 		if (!pedidos.contains(pedido)) {
 			pedidos.add(pedido);
-			enviarMensaje(
-				"El mensaje ha sido entregado, ahora solo debes esperar que se desocupe algun GM.",
-				FontType.INFO);
+			enviarMensaje("El mensaje ha sido entregado, ahora solo debes esperar que se desocupe algun GM.",
+					FontType.INFO);
 		} else {
 			pedidos.remove(pedido);
 			pedidos.add(pedido);
 			enviarMensaje(
-				"Ya habias mandado un mensaje, tu mensaje ha sido movido al final de la cola de mensajes. Ten paciencia.",
-				FontType.INFO);
+					"Ya habias mandado un mensaje, tu mensaje ha sido movido al final de la cola de mensajes. Ten paciencia.",
+					FontType.INFO);
 		}
 	}
 
@@ -2072,8 +1982,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doEnviarHora() {
 		// Comando /HORA
-		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat(
-			"dd/MM/yyyy");
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
 		java.util.Date ahora = new java.util.Date();
 		String fecha = df.format(ahora);
 		df = new java.text.SimpleDateFormat("HH:mm");
@@ -2097,22 +2006,19 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			Log.logGM(m_nick, "consultó /DONDE " + usuario.m_nick);
 		}
-		enviarMensaje("Ubicacion de " + usuario.m_nick + ": "
-				+ usuario.m_pos.mapa + ", " + usuario.m_pos.x + ", "
+		enviarMensaje("Ubicacion de " + usuario.m_nick + ": " + usuario.m_pos.mapa + ", " + usuario.m_pos.x + ", "
 				+ usuario.m_pos.y + ".", FontType.INFO);
 	}
 
 	public void doEnviarCantidadHostiles(short m) {
 		if (m < 1) {
-			enviarMensaje("Has ingresado un número de mapa inválido.",
-				FontType.INFO);
+			enviarMensaje("Has ingresado un número de mapa inválido.", FontType.INFO);
 			return;
 		}
 		Map mapa = server.getMapa(m);
 		if (mapa != null) {
-			Log.logGM(m_nick,
-				"Consultó el número de enemigos en el mapa, /NENE " + m);
-		//	enviar(MSG_NENE, mapa.getCantHostiles());
+			Log.logGM(m_nick, "Consultó el número de enemigos en el mapa, /NENE " + m);
+			// enviar(MSG_NENE, mapa.getCantHostiles());
 		} else {
 			enviarMensaje("El mapa no existe.", FontType.INFO);
 		}
@@ -2120,11 +2026,9 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doTeleploc() {
 		// Comando /TELEPLOC
-		if (warpUser(m_flags.TargetMap, m_flags.TargetX,
-			m_flags.TargetY, true)) {
-			Log.logGM(m_nick, "hizo un /TELEPLOC a x="
-					+ m_flags.TargetX + " y=" + m_flags.TargetY
-					+ " mapa=" + m_pos.mapa);
+		if (warpUser(m_flags.TargetMap, m_flags.TargetX, m_flags.TargetY, true)) {
+			Log.logGM(m_nick,
+					"hizo un /TELEPLOC a x=" + m_flags.TargetX + " y=" + m_flags.TargetY + " mapa=" + m_pos.mapa);
 		}
 	}
 
@@ -2132,8 +2036,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {
-			enviarMensaje("Parámetros incorrectos: /TELEP usuario mapa x y",
-				FontType.WARNING);
+			enviarMensaje("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.WARNING);
 			return;
 		}
 		Map mapa = server.getMapa(m);
@@ -2159,11 +2062,9 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuario.warpUser(m, x, y, true)) {
-			usuario.enviarMensaje(usuario.m_nick + " transportado.",
-				FontType.INFO);
-			Log.logGM(m_nick, "Transportó con un /TELEP a "
-					+ usuario.m_nick + " hacia el mapa=" + m + " x=" + x
-					+ " y=" + y);
+			usuario.enviarMensaje(usuario.m_nick + " transportado.", FontType.INFO);
+			Log.logGM(m_nick,
+					"Transportó con un /TELEP a " + usuario.m_nick + " hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}
 	}
 
@@ -2171,9 +2072,9 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /SHOW SOS
 		for (GmRequest pedido : server.getPedidosAyudaGM()) {
 			// enviar("RSOS" + pedido.usuario + ": " + pedido.msg);
-			//enviar(MSG_RSOS, pedido.usuario);
+			// enviar(MSG_RSOS, pedido.usuario);
 		}
-		//	enviar(MSG_MSOS);
+		// enviar(MSG_MSOS);
 	}
 
 	public void doFinAyuda(String s) {
@@ -2194,13 +2095,10 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (warpUser(usuario.m_pos.mapa, usuario.m_pos.x, usuario.m_pos.y, true)) {
 			if (!m_flags.AdminInvisible) {
-				usuario.enviarMensaje(m_nick
-						+ " se ha trasportado hacia donde te encuentras.",
-					FontType.INFO);
+				usuario.enviarMensaje(m_nick + " se ha trasportado hacia donde te encuentras.", FontType.INFO);
 			}
-			Log.logGM(m_nick, "Hizo un /IRA " + usuario.m_nick + " mapa="
-					+ usuario.m_pos.mapa + " x=" + usuario.m_pos.x + " y="
-					+ usuario.m_pos.y);
+			Log.logGM(m_nick, "Hizo un /IRA " + usuario.m_nick + " mapa=" + usuario.m_pos.mapa + " x=" + usuario.m_pos.x
+					+ " y=" + usuario.m_pos.y);
 		}
 	}
 
@@ -2219,9 +2117,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2245,9 +2141,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2278,8 +2172,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Salir del modo comercio Usuario
 		if (m_comUsu.destUsu > 0 && m_comUsu.destUsu == m_id) {
 			Client destUsu = server.getCliente(m_comUsu.destUsu);
-			destUsu.enviarMensaje(m_nick
-					+ " ha dejado de comerciar con vos.", FontType.TALK);
+			destUsu.enviarMensaje(m_nick + " ha dejado de comerciar con vos.", FontType.TALK);
 			if (destUsu != null) {
 				destUsu.finComerciarUsu();
 			}
@@ -2293,7 +2186,7 @@ public class Client extends BaseCharacter implements Constants {
 		m_comUsu.destUsu = 0;
 		m_comUsu.objeto = 0;
 		m_flags.Comerciando = false;
-		enviar(serverPacketID.MSG_FINCOM);
+		enviar(ServerPacketID.MSG_FINCOM);
 	}
 
 	public void doRechazarComerciarUsuario() {
@@ -2301,12 +2194,10 @@ public class Client extends BaseCharacter implements Constants {
 		// Rechazar el cambio
 		if (m_comUsu.destUsu > 0) {
 			Client destUsu = server.getCliente(m_comUsu.destUsu);
-			destUsu.enviarMensaje(m_nick + " ha rechazado tu oferta.",
-				FontType.TALK);
+			destUsu.enviarMensaje(m_nick + " ha rechazado tu oferta.", FontType.TALK);
 			destUsu.finComerciarUsu();
 		}
-		enviarMensaje("Has rechazado la oferta del otro usuario.",
-			FontType.TALK);
+		enviarMensaje("Has rechazado la oferta del otro usuario.", FontType.TALK);
 		finComerciarUsu();
 	}
 
@@ -2326,8 +2217,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		m_comUsu.acepto = true;
 		if (!destUsu.m_comUsu.acepto) {
-			enviarMensaje("El otro usuario aun no ha aceptado tu oferta.",
-				FontType.TALK);
+			enviarMensaje("El otro usuario aun no ha aceptado tu oferta.", FontType.TALK);
 			return;
 		}
 		boolean terminarAhora = false;
@@ -2384,8 +2274,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (agregados < obj2_cant) {
 				// Tiro al piso lo que no pude guardar en el inventario.
 				Map mapa = server.getMapa(m_pos.mapa);
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(obj2_objid, obj2_cant - agregados));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(obj2_objid, obj2_cant - agregados));
 			}
 			destUsu.quitarObjetos(obj2_objid, obj2_cant);
 		}
@@ -2404,7 +2293,7 @@ public class Client extends BaseCharacter implements Constants {
 				// Tiro al piso los items que no se agregaron al inventario.
 				Map mapa = server.getMapa(destUsu.m_pos.mapa);
 				mapa.tirarItemAlPiso(destUsu.m_pos.x, destUsu.m_pos.y,
-					new InventoryObject(obj1_objid, obj1_objid - agregados));
+						new InventoryObject(obj1_objid, obj1_objid - agregados));
 			}
 			quitarObjetos(obj1_objid, obj1_cant);
 		}
@@ -2460,8 +2349,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (destUsu.m_comUsu.acepto) {
 			// NO NO NO vos te estas pasando de listo...
 			destUsu.m_comUsu.acepto = false;
-			destUsu.enviarMensaje(m_nick + " ha cambiado su oferta.",
-				FontType.TALK);
+			destUsu.enviarMensaje(m_nick + " ha cambiado su oferta.", FontType.TALK);
 		}
 		// Es la ofrenda de respuesta :)
 		destUsu.recibirObjetoTransaccion();
@@ -2485,9 +2373,9 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (objid > 0 && cant > 0) {
 			ObjectInfo info = server.getInfoObjeto(objid);
-			//destUsu.enviar(MSG_COMUSUINV, 1, objid, info.Nombre, cant, 0,
-			//	info.GrhIndex, info.ObjType, info.MaxHIT, info.MinHIT,
-			//	info.MaxDef, info.Valor / 3);
+			// destUsu.enviar(MSG_COMUSUINV, 1, objid, info.Nombre, cant, 0,
+			// info.GrhIndex, info.ObjType, info.MaxHIT, info.MinHIT,
+			// info.MaxDef, info.Valor / 3);
 		}
 	}
 
@@ -2501,9 +2389,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2521,8 +2407,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (cant > 0 && cant <= m_estads.oro) {
 			m_estads.banco += cant;
 			m_estads.oro -= cant;
-			hablar(COLOR_BLANCO, "Tienes " + m_estads.banco
-					+ " monedas de oro en tu cuenta.", npc.getId());
+			hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
 		} else {
 			hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
 		}
@@ -2541,11 +2426,8 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		Npc npc;
-		if (m_flags.TargetNpc == 0
-				|| (npc = server.getNPC(m_flags.TargetNpc)) == null) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+		if (m_flags.TargetNpc == 0 || (npc = server.getNPC(m_flags.TargetNpc)) == null) {
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		if (npc.getPos().distancia(m_pos) > 10) {
@@ -2554,16 +2436,14 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (npc.esBanquero()) {
 			if (!existePersonaje()) {
-				enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!",
-					FontType.WARNING);
+				enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.WARNING);
 				doSALIR();
 				return;
 			}
 			if (cant > 0 && cant <= m_estads.banco) {
 				m_estads.banco -= cant;
 				m_estads.oro += cant;
-				hablar(COLOR_BLANCO, "Tienes " + m_estads.banco
-						+ " monedas de oro en tu cuenta.", npc.getId());
+				hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
 			} else {
 				hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
 			}
@@ -2573,25 +2453,19 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_faccion.ArmadaReal) {
 				if (!npc.esFaccion()) {
 					m_faccion.expulsarFaccionReal();
-					hablar(
-						COLOR_BLANCO,
-						"Serás bienvenido a las fuerzas imperiales si deseas regresar.",
-						npc.getId());
+					hablar(COLOR_BLANCO, "Serás bienvenido a las fuerzas imperiales si deseas regresar.", npc.getId());
 				} else {
 					hablar(COLOR_BLANCO, "¡¡¡Sal de aquí bufón!!!", npc.getId());
 				}
 			} else if (m_faccion.FuerzasCaos) {
 				if (npc.esFaccion()) {
 					m_faccion.expulsarFaccionCaos();
-					hablar(COLOR_BLANCO, "Ya volverás arrastrándote.", npc
-						.getId());
+					hablar(COLOR_BLANCO, "Ya volverás arrastrándote.", npc.getId());
 				} else {
-					hablar(COLOR_BLANCO, "Sal de aquí maldito criminal", npc
-						.getId());
+					hablar(COLOR_BLANCO, "Sal de aquí maldito criminal", npc.getId());
 				}
 			} else {
-				hablar(COLOR_BLANCO, "¡No perteneces a ninguna fuerza!", npc
-					.getId());
+				hablar(COLOR_BLANCO, "¡No perteneces a ninguna fuerza!", npc.getId());
 			}
 		}
 	}
@@ -2606,9 +2480,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2619,8 +2491,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (npc.esBanquero()) {
 			iniciarDeposito();
 		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.",
-				FontType.INFO);
+			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
 		}
 	}
 
@@ -2634,9 +2505,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2645,8 +2514,7 @@ public class Client extends BaseCharacter implements Constants {
 			// User deposita el item del slot rdata
 			userDepositaItem(slot, cant);
 		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.",
-				FontType.INFO);
+			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
 		}
 	}
 
@@ -2660,9 +2528,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -2671,16 +2537,14 @@ public class Client extends BaseCharacter implements Constants {
 			// User retira el item del slot rdata
 			userRetiraItem(slot, cant);
 		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.",
-				FontType.INFO);
+			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
 		}
 	}
 
 	private void userDepositaItem(short slot, int cant) {
 		// El usuario deposita un item
 		refreshStatus(1);
-		if (m_inv.getObjeto(slot).cant > 0
-				&& !m_inv.getObjeto(slot).equipado) {
+		if (m_inv.getObjeto(slot).cant > 0 && !m_inv.getObjeto(slot).equipado) {
 			if (cant > 0 && cant > m_inv.getObjeto(slot).cant) {
 				cant = m_inv.getObjeto(slot).cant;
 			}
@@ -2703,8 +2567,7 @@ public class Client extends BaseCharacter implements Constants {
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
 		for (int i = 1; i <= m_bancoInv.getSize(); i++) {
-			if (m_bancoInv.getObjeto(i).objid == objid
-					&& m_bancoInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
+			if (m_bancoInv.getObjeto(i).objid == objid && m_bancoInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
 			}
@@ -2738,10 +2601,10 @@ public class Client extends BaseCharacter implements Constants {
 			enviarInventario();
 			// Actualizamos el banco
 			updateBanUserInv();
-			//ventana update
+			// ventana update
 			updateVentanaBanco(slot, 0);
 		}
-		
+
 	}
 
 	private void userReciveObj(short slot, int cant) {
@@ -2752,8 +2615,7 @@ public class Client extends BaseCharacter implements Constants {
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
 		for (short i = 1; i <= m_inv.getSize(); i++) {
-			if (m_inv.getObjeto(i).objid == objid
-					&& m_inv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
+			if (m_inv.getObjeto(i).objid == objid && m_inv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
 			}
@@ -2786,7 +2648,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	private void updateVentanaBanco(short slot, int npc_inv) {
-		enviar(serverPacketID.bancoOk);
+		enviar(ServerPacketID.bancoOk);
 	}
 
 	private void iniciarDeposito() {
@@ -2794,8 +2656,8 @@ public class Client extends BaseCharacter implements Constants {
 		updateBanUserInv();
 		// Actualizamos el dinero
 		refreshStatus(1);
-		
-		enviar(serverPacketID.wBank);
+
+		enviar(ServerPacketID.wBank);
 
 		m_flags.Comerciando = true;
 	}
@@ -2806,7 +2668,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_bancoInv.getObjeto(slot).objid > 0) {
 			sendBanObj(slot, m_bancoInv.getObjeto(slot));
 		} else {
-			enviar(serverPacketID.oBank, (byte) slot, (short) 0);
+			enviar(ServerPacketID.oBank, (byte) slot, (short) 0);
 		}
 	}
 
@@ -2821,11 +2683,10 @@ public class Client extends BaseCharacter implements Constants {
 	private void sendBanObj(short slot, InventoryObject obj_inv) {
 		if (obj_inv != null) {
 			ObjectInfo info = server.getInfoObjeto(obj_inv.objid);
-			enviar(serverPacketID.oBank, (byte) slot, info.ObjIndex, info.Nombre, obj_inv.cant,
-				info.GrhIndex, (byte) info.ObjType, info.MaxHIT, info.MinHIT,
-				info.MaxDef);
+			enviar(ServerPacketID.oBank, (byte) slot, info.ObjIndex, info.Nombre, obj_inv.cant, info.GrhIndex,
+					(byte) info.ObjType, info.MaxHIT, info.MinHIT, info.MaxDef);
 		} else {
-			//enviar(serverPacketID.oBank, (byte) slot, (short) 0);
+			// enviar(serverPacketID.oBank, (byte) slot, (short) 0);
 		}
 	}
 
@@ -2833,21 +2694,18 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando FINBAN
 		// User sale del modo BANCO
 		m_flags.Comerciando = false;
-		enviar(serverPacketID.fBank);
+		enviar(ServerPacketID.fBank);
 	}
 
 	public void cambiarPasswd(String s) {
 		// Comando /PASSWD
 		s = s.trim();
 		if (s.length() < 6) {
-			enviarMensaje("El password debe tener al menos 6 caracteres.",
-				FontType.INFO);
+			enviarMensaje("El password debe tener al menos 6 caracteres.", FontType.INFO);
 		} else if (s.length() > 20) {
-			enviarMensaje("El password puede tener hasta 20 caracteres.",
-				FontType.INFO);
+			enviarMensaje("El password puede tener hasta 20 caracteres.", FontType.INFO);
 		} else {
-			enviarMensaje("El password ha sido cambiado. ¡Cuídalo!",
-				FontType.INFO);
+			enviarMensaje("El password ha sido cambiado. ¡Cuídalo!", FontType.INFO);
 			m_password = s;
 		}
 	}
@@ -2898,16 +2756,13 @@ public class Client extends BaseCharacter implements Constants {
 		short slot = Short.parseShort(s);
 		if (npc.getCantMascotas() < MAXMASCOTASENTRENADOR) {
 			if (slot > 0 && slot <= npc.getCantCriaturas()) {
-				Npc criatura = Npc.spawnNpc(npc.getCriaturaIndex(slot), npc
-					.getPos(), true, false);
+				Npc criatura = Npc.spawnNpc(npc.getCriaturaIndex(slot), npc.getPos(), true, false);
 				if (criatura != null) {
 					npc.agregarMascota(criatura);
 				}
 			}
 		} else {
-			hablar(COLOR_BLANCO,
-				"No puedo traer mas criaturas, mata las existentes!", npc
-					.getId());
+			hablar(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());
 		}
 	}
 
@@ -2934,13 +2789,12 @@ public class Client extends BaseCharacter implements Constants {
 		if (!npc.comercia()) {
 			// npc.hablarAlArea(COLOR_BLANCO, "No tengo ningun interes en
 			// comerciar.");
-			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.",
-				npc.getId());
+			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
-		//StringTokenizer st = new StringTokenizer(s, ",");
-		//short slot = Short.parseShort(st.nextToken());
-		//int cant = Short.parseShort(st.nextToken());
+		// StringTokenizer st = new StringTokenizer(s, ",");
+		// short slot = Short.parseShort(st.nextToken());
+		// int cant = Short.parseShort(st.nextToken());
 		if (slot < 1 || slot > npc.getInv().getSize()) {
 			return;
 		}
@@ -2969,8 +2823,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// ¿El Npc puede comerciar?
 		if (!npc.comercia()) {
-			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.",
-				npc.getId());
+			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
 
@@ -2989,8 +2842,7 @@ public class Client extends BaseCharacter implements Constants {
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
 		for (short i = 1; i <= m_inv.getSize(); i++) {
-			if (m_inv.getObjeto(i).objid == objid
-					&& (m_inv.getObjeto(i).cant + cant) <= MAX_INVENTORY_OBJS) {
+			if (m_inv.getObjeto(i).objid == objid && (m_inv.getObjeto(i).cant + cant) <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
 			}
@@ -3033,14 +2885,14 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void updateVentanaComercio(short slot, short npcInv) {
-		//enviar(MSG_TRANSOK, slot, npcInv);
-		enviar (serverPacketID.tradeOk);
-		
+		// enviar(MSG_TRANSOK, slot, npcInv);
+		enviar(ServerPacketID.tradeOk);
+
 	}
 
 	public void doFinComerciar() {
 		m_flags.Comerciando = false;
-		enviar(serverPacketID.MSG_FINCOM);
+		enviar(ServerPacketID.MSG_FINCOM);
 	}
 
 	public double descuento() {
@@ -3086,22 +2938,19 @@ public class Client extends BaseCharacter implements Constants {
 				if (npc.getDesc().length() > 0) {
 					// npc.hablarAlArea(COLOR_BLANCO, "No tengo ningun interes
 					// en comerciar.");
-					hablar(COLOR_BLANCO,
-						"No tengo ningun interes en comerciar.", npc.getId());
+					hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 				}
 				return;
 			}
 			if (npc.getPos().distancia(m_pos) > 3) {
-				enviarMensaje("Estas demasiado lejos del vendedor.",
-					FontType.INFO);
+				enviarMensaje("Estas demasiado lejos del vendedor.", FontType.INFO);
 				return;
 			}
 			// Iniciamos el comercio con el Npc
 			iniciarComercioNPC(npc);
 			// ///// FIXME - TODO
 		} else {
-			enviarMensaje("Primero haz clic izquierdo sobre el personaje.",
-				FontType.INFO);
+			enviarMensaje("Primero haz clic izquierdo sobre el personaje.", FontType.INFO);
 		}
 	}
 
@@ -3113,7 +2962,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Atcualizamos el dinero
 		refreshStatus(1);
 		// Mostramos la ventana pa' comerciar y ver ladear la osamenta. jajaja
-	//	enviar(MSG_INITCOM);
+		// enviar(MSG_INITCOM);
 		m_flags.Comerciando = true;
 	}
 
@@ -3125,9 +2974,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -3147,22 +2994,17 @@ public class Client extends BaseCharacter implements Constants {
 	public void doDescansar() {
 		// Comando /DESCANSAR
 		if (!estaVivo()) {
-			enviarMensaje(
-				"¡¡Estas muerto!! Solo podes usar items cuando estas vivo.",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
 			return;
 		}
 		Map mapa = server.getMapa(m_pos.mapa);
 		if (mapa == null) {
 			return;
 		}
-		if (mapa.hayObjeto(m_pos.x, m_pos.y)
-				&& mapa.getObjeto(m_pos.x, m_pos.y).obj_ind == FOGATA) {
-			//enviar(MSG_DOK);
+		if (mapa.hayObjeto(m_pos.x, m_pos.y) && mapa.getObjeto(m_pos.x, m_pos.y).obj_ind == FOGATA) {
+			// enviar(MSG_DOK);
 			if (!m_flags.Descansar) {
-				enviarMensaje(
-					"Te acomodas junto a la fogata y comienzas a descansar.",
-					FontType.INFO);
+				enviarMensaje("Te acomodas junto a la fogata y comienzas a descansar.", FontType.INFO);
 			} else {
 				enviarMensaje("Te levantas.", FontType.INFO);
 			}
@@ -3171,11 +3013,10 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_flags.Descansar) {
 				enviarMensaje("Te levantas.", FontType.INFO);
 				m_flags.Descansar = false;
-				//enviar(MSG_DOK);
+				// enviar(MSG_DOK);
 				return;
 			}
-			enviarMensaje("No hay ninguna fogata junto a la cual descansar.",
-				FontType.INFO);
+			enviarMensaje("No hay ninguna fogata junto a la cual descansar.", FontType.INFO);
 		}
 	}
 
@@ -3184,18 +3025,16 @@ public class Client extends BaseCharacter implements Constants {
 		sendUserStatsTxt(this);
 	}
 
-	//or long?...
+	// or long?...
 	public void doEnviarFama() {
-		enviar(serverPacketID.userFame, (int) m_reputacion.asesinoRep,
-			(int) m_reputacion.bandidoRep,
-			(int) m_reputacion.burguesRep,
-			(int) m_reputacion.ladronRep,
-			(int) m_reputacion.nobleRep,
-			(int) m_reputacion.plebeRep);
+		enviar(ServerPacketID.userFame, (int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
+				(int) m_reputacion.burguesRep, (int) m_reputacion.ladronRep, (int) m_reputacion.nobleRep,
+				(int) m_reputacion.plebeRep);
 	}
 
 	/**
 	 * Send spell information to user.
+	 * 
 	 * @param spell slot number
 	 */
 	public void doInfoHechizo(String s) {
@@ -3204,16 +3043,13 @@ public class Client extends BaseCharacter implements Constants {
 		short slot = Short.parseShort(s);
 		m_spells.sendMeSpellInfo(slot);
 	}
-	
+
 	public void doNavega() {
 		double modNave = m_clase.modNavegacion();
 		ObjectInfo barco = m_inv.getBarco();
 		if (m_estads.userSkills[Skill.SKILL_Navegacion] / modNave < barco.MinSkill) {
-			enviarMensaje(
-				"No tenes suficientes conocimientos para usar este barco.",
-				FontType.INFO);
-			enviarMensaje("Necesitas " + (int) (barco.MinSkill * modNave)
-					+ " puntos en navegacion.", FontType.INFO);
+			enviarMensaje("No tenes suficientes conocimientos para usar este barco.", FontType.INFO);
+			enviarMensaje("Necesitas " + (int) (barco.MinSkill * modNave) + " puntos en navegacion.", FontType.INFO);
 			return;
 		}
 		if (!m_flags.Navegando) {
@@ -3254,20 +3090,17 @@ public class Client extends BaseCharacter implements Constants {
 			}
 		}
 		enviarCP();
-		enviar(serverPacketID.navigateToggle);
+		enviar(ServerPacketID.navigateToggle);
 	}
 
 	public void tratarDeHacerFogata() {
-		WorldPos pos = new WorldPos(m_flags.TargetObjMap,
-			m_flags.TargetObjX, m_flags.TargetObjY);
+		WorldPos pos = new WorldPos(m_flags.TargetObjMap, m_flags.TargetObjX, m_flags.TargetObjY);
 		Map mapa = server.getMapa(pos.mapa);
 		if (!mapa.isLegalPos(pos, false)) {
 			return;
 		}
 		if (mapa.getObjeto(pos.x, pos.y).obj_cant < 3) {
-			enviarMensaje(
-				"Necesitas al menos tres troncos para hacer una fogata.",
-				FontType.INFO);
+			enviarMensaje("Necesitas al menos tres troncos para hacer una fogata.", FontType.INFO);
 			return;
 		}
 		final short indiceSuerte[] = { 0, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 };
@@ -3294,8 +3127,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void usarItem(short slot) {
-		if (m_inv.getObjeto(slot) != null
-				&& m_inv.getObjeto(slot).objid == 0) {
+		if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid == 0) {
 			return;
 		}
 		m_inv.useInvItem(slot);
@@ -3303,16 +3135,12 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void doLingotes() {
 		if (m_inv.getObjeto(m_flags.TargetObjInvSlot).cant < 5) {
-			enviarMensaje(
-				"No tienes suficientes minerales para hacer un lingote.",
-				FontType.INFO);
+			enviarMensaje("No tienes suficientes minerales para hacer un lingote.", FontType.INFO);
 			return;
 		}
-		ObjectInfo info = server
-			.getInfoObjeto(m_flags.TargetObjInvIndex);
+		ObjectInfo info = server.getInfoObjeto(m_flags.TargetObjInvIndex);
 		if (info.ObjType != OBJTYPE_MINERALES) {
-			enviarMensaje("Debes utilizar minerales para hacer un lingote.",
-				FontType.INFO);
+			enviarMensaje("Debes utilizar minerales para hacer un lingote.", FontType.INFO);
 			return;
 		}
 		m_inv.quitarUserInvItem(m_flags.TargetObjInvSlot, 5);
@@ -3321,15 +3149,13 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Has obtenido un lingote!!!", FontType.INFO);
 			Map mapa = server.getMapa(m_pos.mapa);
 			if (m_inv.agregarItem(info.LingoteIndex, 1) < 1) {
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(info.LingoteIndex, 1));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(info.LingoteIndex, 1));
 			}
 			enviarMensaje("¡Has obtenido un lingote!", FontType.INFO);
 		} else {
 			if (m_flags.UltimoMensaje != 7) {
-				enviarMensaje(
-					"Los minerales no eran de buena calidad, no has logrado hacer un lingote.",
-					FontType.INFO);
+				enviarMensaje("Los minerales no eran de buena calidad, no has logrado hacer un lingote.",
+						FontType.INFO);
 				m_flags.UltimoMensaje = 7;
 			}
 		}
@@ -3338,24 +3164,19 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void fundirMineral() {
 		if (m_flags.TargetObjInvIndex > 0) {
-			ObjectInfo info = server
-				.getInfoObjeto(m_flags.TargetObjInvIndex);
+			ObjectInfo info = server.getInfoObjeto(m_flags.TargetObjInvIndex);
 			if (info.ObjType == OBJTYPE_MINERALES
-					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria]
-							/ m_clase.modFundicion()) {
+					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria] / m_clase.modFundicion()) {
 				doLingotes();
 			} else {
-				enviarMensaje(
-					"No tenes conocimientos de mineria suficientes para trabajar este mineral.",
-					FontType.INFO);
+				enviarMensaje("No tenes conocimientos de mineria suficientes para trabajar este mineral.",
+						FontType.INFO);
 			}
 		}
 	}
 
 	private double calcularPoderDomador() {
-		return m_estads.userAtributos[ATRIB_CARISMA]
-				* (m_estads.userSkills[Skill.SKILL_Domar] / m_clase
-					.modDomar())
+		return m_estads.userAtributos[ATRIB_CARISMA] * (m_estads.userSkills[Skill.SKILL_Domar] / m_clase.modDomar())
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3);
@@ -3364,8 +3185,7 @@ public class Client extends BaseCharacter implements Constants {
 	private void doDomar(Npc npc) {
 		if (m_cantMascotas < MAXMASCOTAS) {
 			if (npc.getAmo() == this) {
-				enviarMensaje("La criatura ya te ha aceptado como su amo.",
-					FontType.INFO);
+				enviarMensaje("La criatura ya te ha aceptado como su amo.", FontType.INFO);
 				return;
 			}
 			if (npc.getAmo() != null) {
@@ -3379,16 +3199,13 @@ public class Client extends BaseCharacter implements Constants {
 				m_mascotas[slot - 1] = npc;
 				npc.setAmo(this);
 				npc.followAmo();
-				enviarMensaje("La criatura te ha aceptado como su amo.",
-					FontType.INFO);
+				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
 				subirSkill(Skill.SKILL_Domar);
 				// hacemos respawn del npc para reponerlo.
-				Npc.spawnNpc(npc.getNPCtype(), new WorldPos(npc.getPos().mapa,
-					(short) 0, (short) 0), false, true);
+				Npc.spawnNpc(npc.getNPCtype(), new WorldPos(npc.getPos().mapa, (short) 0, (short) 0), false, true);
 			} else {
 				if (m_flags.UltimoMensaje != 5) {
-					enviarMensaje("No has logrado domar la criatura.",
-						FontType.INFO);
+					enviarMensaje("No has logrado domar la criatura.", FontType.INFO);
 					m_flags.UltimoMensaje = 5;
 				}
 			}
@@ -3415,8 +3232,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
 				Map mapa = server.getMapa(m_pos.mapa);
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, cant - agregados));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarMensaje("¡Has extraido algunos minerales!", FontType.INFO);
 		} else {
@@ -3444,14 +3260,12 @@ public class Client extends BaseCharacter implements Constants {
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, cant - agregados));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarMensaje("¡Has conseguido algo de leña!", FontType.INFO);
 		} else {
 			if (m_flags.UltimoMensaje != 8) {
-				enviarMensaje("No has conseguido leña. Intenta otra vez.",
-					FontType.INFO);
+				enviarMensaje("No has conseguido leña. Intenta otra vez.", FontType.INFO);
 				m_flags.UltimoMensaje = 8;
 			}
 		}
@@ -3503,13 +3317,11 @@ public class Client extends BaseCharacter implements Constants {
 			Map mapa = server.getMapa(m_pos.mapa);
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, cant - agregados));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarObjetoInventario(slot);
 			ObjectInfo info = server.getInfoObjeto(objid);
-			enviarMensaje("Has robado " + cant + " " + info.Nombre,
-				FontType.INFO);
+			enviarMensaje("Has robado " + cant + " " + info.Nombre, FontType.INFO);
 		} else {
 			enviarMensaje("No has logrado robar un objetos.", FontType.INFO);
 		}
@@ -3523,40 +3335,32 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void doRobar(Client victima) {
 		Map mapa = server.getMapa(m_pos.mapa);
-		if (!mapa.esZonaSegura()
-				|| triggerZonaPelea(victima) != MapCell.TRIGGER6_AUSENTE) {
+		if (!mapa.esZonaSegura() || triggerZonaPelea(victima) != MapCell.TRIGGER6_AUSENTE) {
 			return;
 		}
 		if (m_flags.Privilegios < 2) {
 			if (suerteRobar()) {
 				// Exito robo
-				if ((Util.Azar(1, 50) < 25)
-						&& (m_clase == ThiefClass.getInstance())) {
+				if ((Util.Azar(1, 50) < 25) && (m_clase == ThiefClass.getInstance())) {
 					if (victima.m_inv.tieneObjetosRobables()) {
 						robarObjeto(victima);
 					} else {
-						enviarMensaje(victima.m_nick + " no tiene objetos.",
-							FontType.INFO);
+						enviarMensaje(victima.m_nick + " no tiene objetos.", FontType.INFO);
 					}
 				} else { // Roba oro
 					if (victima.m_estads.oro > 0) {
 						int n = Util.Azar(1, 100);
 						victima.m_estads.quitarOro(n);
 						m_estads.agregarOro(n);
-						enviarMensaje("Le has robado " + n
-								+ " monedas de oro a " + victima.m_nick,
-							FontType.INFO);
+						enviarMensaje("Le has robado " + n + " monedas de oro a " + victima.m_nick, FontType.INFO);
 					} else {
-						enviarMensaje(m_nick + " no tiene oro.",
-							FontType.INFO);
+						enviarMensaje(m_nick + " no tiene oro.", FontType.INFO);
 					}
 				}
 			} else {
 				enviarMensaje("¡No has logrado robar nada!", FontType.INFO);
-				victima.enviarMensaje("¡" + m_nick
-						+ " ha intentado robarte!", FontType.INFO);
-				victima.enviarMensaje("¡" + m_nick + " es un criminal!",
-					FontType.INFO);
+				victima.enviarMensaje("¡" + m_nick + " ha intentado robarte!", FontType.INFO);
+				victima.enviarMensaje("¡" + m_nick + " es un criminal!", FontType.INFO);
 			}
 			if (!esCriminal()) {
 				volverCriminal();
@@ -3580,8 +3384,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (suertePescarCaña()) {
 			Map mapa = server.getMapa(m_pos.mapa);
 			if (m_inv.agregarItem(OBJ_PESCADO, 1) < 1) {
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(OBJ_PESCADO, 1));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(OBJ_PESCADO, 1));
 			}
 			enviarMensaje("¡Has pescado un lindo pez!", FontType.INFO);
 		} else {
@@ -3607,15 +3410,12 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (suertePescarRed()) {
-			int cant = (m_clase == FishermanClass.getInstance()) ? Util
-				.Azar(1, 5) : 1;
-			short objid = (short) PESCADOS_RED[Util
-				.Azar(1, PESCADOS_RED.length) - 1];
+			int cant = (m_clase == FishermanClass.getInstance()) ? Util.Azar(1, 5) : 1;
+			short objid = (short) PESCADOS_RED[Util.Azar(1, PESCADOS_RED.length) - 1];
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				Map mapa = server.getMapa(m_pos.mapa);
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, cant - agregados));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarMensaje("¡Has pescado algunos peces!", FontType.INFO);
 		} else {
@@ -3627,17 +3427,16 @@ public class Client extends BaseCharacter implements Constants {
 	public void doWLC(short x, short y, short tLong) {
 		// Comando WLC
 		// Clic izquierdo en modo trabajo
-		//StringTokenizer st = new StringTokenizer(s, ",");
-		//short x = Short.parseShort(st.nextToken());
-		//short y = Short.parseShort(st.nextToken());
-		//short tLong = Short.parseShort(st.nextToken());
-	//	Log.serverLogger().fine("x=" + x);
-	//	Log.serverLogger().fine("y=" + y);
-	//	Log.serverLogger().fine("tLong=" + tLong);
-		
+		// StringTokenizer st = new StringTokenizer(s, ",");
+		// short x = Short.parseShort(st.nextToken());
+		// short y = Short.parseShort(st.nextToken());
+		// short tLong = Short.parseShort(st.nextToken());
+		// Log.serverLogger().fine("x=" + x);
+		// Log.serverLogger().fine("y=" + y);
+		// Log.serverLogger().fine("tLong=" + tLong);
+
 		MapPos pos = new MapPos(x, y);
-		if (!estaVivo() || m_flags.Descansar || m_flags.Meditando
-				|| !pos.isValid()) {
+		if (!estaVivo() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
 		}
 		if (!m_pos.inRangoVision(pos)) {
@@ -3647,7 +3446,7 @@ public class Client extends BaseCharacter implements Constants {
 		Map mapa = server.getMapa(m_pos.mapa);
 		Client tu = null;
 		MapObject obj = null;
-		
+
 		switch (tLong) {
 		case Skill.SKILL_Proyectiles:
 			// Nos aseguramos que este usando un arma de proyectiles
@@ -3688,8 +3487,8 @@ public class Client extends BaseCharacter implements Constants {
 				if (m_flags.Seguro) {
 					if (!tu.esCriminal()) {
 						enviarMensaje(
-							"No puedes atacar a ciudadanos, para hacerlo, antes debes desactivar el seguro con la tecla S",
-							FontType.FIGHT);
+								"No puedes atacar a ciudadanos, para hacerlo, antes debes desactivar el seguro con la tecla S",
+								FontType.FIGHT);
 						return;
 					}
 				}
@@ -3698,8 +3497,7 @@ public class Client extends BaseCharacter implements Constants {
 			// Consumir munición.
 			int slotMunicion = m_inv.getMunicionSlot();
 			m_inv.quitarUserInvItem(m_inv.getMunicionSlot(), 1);
-			if (m_inv.getObjeto(slotMunicion) != null
-					&& m_inv.getObjeto(slotMunicion).cant > 0) {
+			if (m_inv.getObjeto(slotMunicion) != null && m_inv.getObjeto(slotMunicion).cant > 0) {
 				m_inv.equipar(slotMunicion);
 			}
 			enviarObjetoInventario(slotMunicion);
@@ -3708,16 +3506,14 @@ public class Client extends BaseCharacter implements Constants {
 			if (!intervaloPermiteLanzarSpell()) {
 				return;
 			}
-			if (esConsejero()) 
+			if (esConsejero())
 				return;
 			mapa.consultar(this, x, y);
 			if (m_flags.Hechizo > 0) {
 				m_spells.lanzarHechizo(server.getHechizo(m_flags.Hechizo));
 				m_flags.Hechizo = 0;
 			} else {
-				enviarMensaje(
-					"¡Primero selecciona el hechizo que deseas lanzar!",
-					FontType.INFO);
+				enviarMensaje("¡Primero selecciona el hechizo que deseas lanzar!", FontType.INFO);
 			}
 			break;
 		case Skill.SKILL_Pesca:
@@ -3725,19 +3521,16 @@ public class Client extends BaseCharacter implements Constants {
 				return;
 			}
 			if (!m_inv.tieneHerramientaEquipada()) {
-				enviarMensaje("Deberías equiparte la caña o la red.",
-					FontType.INFO);
+				enviarMensaje("Deberías equiparte la caña o la red.", FontType.INFO);
 				return;
 			}
 			if (m_inv.getHerramienta().ObjIndex != OBJTYPE_CAÑA
 					&& m_inv.getHerramienta().ObjIndex != OBJTYPE_RED_PESCA) {
-				enviarMensaje("Deberías equiparte la caña o la red.",
-					FontType.INFO);
+				enviarMensaje("Deberías equiparte la caña o la red.", FontType.INFO);
 				return;
 			}
 			if (mapa.getTrigger(m_pos.x, m_pos.y) == 1) {
-				enviarMensaje("No puedes pescar desde donde te encuentras.",
-					FontType.INFO);
+				enviarMensaje("No puedes pescar desde donde te encuentras.", FontType.INFO);
 				return;
 			}
 			if (mapa.hayAgua(x, y)) {
@@ -3747,19 +3540,15 @@ public class Client extends BaseCharacter implements Constants {
 					doPescarCaña();
 					break;
 				case OBJTYPE_RED_PESCA:
-					if (m_pos
-						.distancia(new WorldPos(m_pos.mapa, x, y)) > 2) {
-						enviarMensaje("Estás demasiado lejos para pescar.",
-							FontType.INFO);
+					if (m_pos.distancia(new WorldPos(m_pos.mapa, x, y)) > 2) {
+						enviarMensaje("Estás demasiado lejos para pescar.", FontType.INFO);
 						return;
 					}
 					doPescarRed();
 					break;
 				}
 			} else {
-				enviarMensaje(
-					"No hay agua donde pescar. Busca un lago, rio o mar.",
-					FontType.INFO);
+				enviarMensaje("No hay agua donde pescar. Busca un lago, rio o mar.", FontType.INFO);
 			}
 			break;
 		case Skill.SKILL_Robar:
@@ -3768,20 +3557,17 @@ public class Client extends BaseCharacter implements Constants {
 					return;
 				}
 				mapa.consultar(this, x, y);
-				if (m_flags.TargetUser > 0
-						&& m_flags.TargetUser != m_id) {
+				if (m_flags.TargetUser > 0 && m_flags.TargetUser != m_id) {
 					tu = server.getCliente(m_flags.TargetUser);
 					if (tu.estaVivo()) {
 						WorldPos wpaux = new WorldPos(m_pos.mapa, x, y);
 						if (wpaux.distancia(m_pos) > 2) {
-							enviarMensaje("Estas demasiado lejos.",
-								FontType.INFO);
+							enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 							return;
 						}
 						// Nos aseguramos que el trigger le permite robar
 						if (mapa.getTrigger(tu.getPos().x, tu.getPos().y) == 4) {
-							enviarMensaje("No podes robar aquí.",
-								FontType.WARNING);
+							enviarMensaje("No podes robar aquí.", FontType.WARNING);
 							return;
 						}
 						doRobar(tu);
@@ -3790,8 +3576,7 @@ public class Client extends BaseCharacter implements Constants {
 					enviarMensaje("No hay a quien robarle!.", FontType.INFO);
 				}
 			} else {
-				enviarMensaje("¡No podes robarle en zonas seguras!.",
-					FontType.INFO);
+				enviarMensaje("¡No podes robarle en zonas seguras!.", FontType.INFO);
 			}
 			break;
 		case Skill.SKILL_Talar:
@@ -3799,13 +3584,11 @@ public class Client extends BaseCharacter implements Constants {
 				return;
 			}
 			if (!m_inv.tieneHerramientaEquipada()) {
-				enviarMensaje("Deberías equiparte el hacha de leñador.",
-					FontType.INFO);
+				enviarMensaje("Deberías equiparte el hacha de leñador.", FontType.INFO);
 				return;
 			}
 			if (m_inv.getHerramienta().ObjIndex != HACHA_LEÑADOR) {
-				enviarMensaje("Deberías equiparte el hacha de leñador.",
-					FontType.INFO);
+				enviarMensaje("Deberías equiparte el hacha de leñador.", FontType.INFO);
 				return;
 			}
 			obj = mapa.getObjeto(x, y);
@@ -3848,8 +3631,7 @@ public class Client extends BaseCharacter implements Constants {
 					enviarSonido(SOUND_MINERO);
 					doMineria();
 				} else {
-					enviarMensaje("Ahi no hay ningun yacimiento.",
-						FontType.INFO);
+					enviarMensaje("Ahi no hay ningun yacimiento.", FontType.INFO);
 				}
 			} else {
 				enviarMensaje("Ahi no hay ningun yacimiento.", FontType.INFO);
@@ -3869,15 +3651,12 @@ public class Client extends BaseCharacter implements Constants {
 						return;
 					}
 					if (npc.atacadoPorUsuario()) {
-						enviarMensaje(
-							"No puedes domar una criatura que está luchando con un jugador.",
-							FontType.INFO);
+						enviarMensaje("No puedes domar una criatura que está luchando con un jugador.", FontType.INFO);
 						return;
 					}
 					doDomar(npc);
 				} else {
-					enviarMensaje("No puedes domar a esa criatura.",
-						FontType.INFO);
+					enviarMensaje("No puedes domar a esa criatura.", FontType.INFO);
 				}
 			} else {
 				enviarMensaje("No hay ninguna criatura alli!.", FontType.INFO);
@@ -3901,7 +3680,7 @@ public class Client extends BaseCharacter implements Constants {
 				if (server.getInfoObjeto(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
 					m_inv.enviarArmasConstruibles();
 					m_inv.enviarArmadurasConstruibles();
-					//enviar(MSG_SFH);
+					// enviar(MSG_SFH);
 				} else {
 					enviarMensaje("Ahi no hay ningun yunque.", FontType.INFO);
 				}
@@ -3918,23 +3697,21 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("¡¡Estas muerto!!.", FontType.INFO);
 			return;
 		}
-		
+
 		switch (val) {
 		case Skill.SKILL_Robar:
-			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Robar);
+			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Robar);
 			break;
 		case Skill.SKILL_Magia:
-			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Magia);
-			//System.out.println("se");
+			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Magia);
 			break;
 		case Skill.SKILL_Domar:
-			enviar(serverPacketID.MSG_TO1, Skill.SKILL_Domar);
+			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Domar);
 			break;
 		case Skill.SKILL_Ocultarse:
 			if (m_flags.Navegando) {
 				if (m_flags.UltimoMensaje != 3) {
-					enviarMensaje("No puedes ocultarte si estas navegando.",
-						FontType.INFO);
+					enviarMensaje("No puedes ocultarte si estas navegando.", FontType.INFO);
 					m_flags.UltimoMensaje = 3;
 				}
 				return;
@@ -3960,9 +3737,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.",
-				FontType.INFO);
+			enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -3974,13 +3749,11 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (!existePersonaje()) {
-			enviarMensaje("!!El personaje no existe, cree uno nuevo.",
-				FontType.INFO);
+			enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.INFO);
 			doSALIR();
 			return;
 		}
-		hablar(COLOR_BLANCO, "Tienes " + m_estads.banco
-				+ " monedas de oro en tu cuenta.", npc.getId());
+		hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
 	}
 
 	public void doLanzarHechizo(short slot) {
@@ -3992,14 +3765,12 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		m_spells.castSpell(slot);
 	}
-	
+
 	public void doInformacion() {
 		// Comando /INFORMACION
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.",
-				FontType.INFO);
+			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
@@ -4012,35 +3783,30 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (!npc.esFaccion()) {
 			if (!m_faccion.ArmadaReal) {
-				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!",
-					npc.getId());
+				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
 			}
-			hablar(
-				COLOR_BLANCO,
-				"Tu deber es combatir criminales, cada 100 criminales que derrotes te dare una recompensa.",
-				npc.getId());
+			hablar(COLOR_BLANCO,
+					"Tu deber es combatir criminales, cada 100 criminales que derrotes te dare una recompensa.",
+					npc.getId());
 		} else {
 			if (!m_faccion.FuerzasCaos) {
-				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!",
-					npc.getId());
+				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
 				return;
 			}
-			hablar(
-				COLOR_BLANCO,
-				"Tu deber es sembrar el caos y la desesperanza, cada 100 ciudadanos que derrotes te dare una recompensa.",
-				npc.getId());
+			hablar(COLOR_BLANCO,
+					"Tu deber es sembrar el caos y la desesperanza, cada 100 ciudadanos que derrotes te dare una recompensa.",
+					npc.getId());
 		}
 	}
 
 	public void doMeditar() {
 		// Comando /MEDITAR
 		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Solo los vivos pueden meditar.",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Solo los vivos pueden meditar.", FontType.INFO);
 			return;
 		}
-		enviar(serverPacketID.medOk);
+		enviar(ServerPacketID.medOk);
 		if (!m_flags.Meditando) {
 			enviarMensaje("Comienzas a meditar.", FontType.INFO);
 		} else {
@@ -4050,8 +3816,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_flags.Meditando) {
 			m_counters.tInicioMeditar = server.getMillis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
-			enviarMensaje("Te estás concentrando. En " + segs
-					+ " segundos comenzarás a meditar.", FontType.INFO);
+			enviarMensaje("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.INFO);
 			m_infoChar.m_loops = LoopAdEternum;
 			if (m_estads.ELV < 15) {
 				enviarCFX(FXMEDITARCHICO, LoopAdEternum);
@@ -4074,32 +3839,24 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /RESUCITAR
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Primero selecciona un sacerdote, haciendo clic izquierdo sobre el.",
-				FontType.INFO);
+			enviarMensaje("Primero selecciona un sacerdote, haciendo clic izquierdo sobre el.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (!npc.esSacerdote()) {
-			enviarMensaje(
-				"No poseo el poder de revivir a otros, mejor encuentra un sacerdote.",
-				FontType.INFO);
+			enviarMensaje("No poseo el poder de revivir a otros, mejor encuentra un sacerdote.", FontType.INFO);
 			return;
 		}
 		if (estaVivo()) {
-			enviarMensaje("¡JA! Debes estar muerto para resucitarte.",
-				FontType.INFO);
+			enviarMensaje("¡JA! Debes estar muerto para resucitarte.", FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 10) {
-			enviarMensaje(
-				"El sacerdote no puede resucitarte debido a que estas demasiado lejos.",
-				FontType.INFO);
+			enviarMensaje("El sacerdote no puede resucitarte debido a que estas demasiado lejos.", FontType.INFO);
 			return;
 		}
 		if (!existePersonaje()) {
-			enviarMensaje("!!El personaje no existe, cree uno nuevo.",
-				FontType.INFO);
+			enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.INFO);
 			doSALIR();
 			return;
 		}
@@ -4111,32 +3868,24 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando /CURAR
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje(
-				"Antes debes seleccionar un sacerdote, haciendo clic izquierdo sobre el.",
-				FontType.INFO);
+			enviarMensaje("Antes debes seleccionar un sacerdote, haciendo clic izquierdo sobre el.", FontType.INFO);
 			return;
 		}
 		Npc npc = server.getNPC(m_flags.TargetNpc);
 		if (!npc.esSacerdote()) {
-			enviarMensaje(
-				"No poseo el poder para curar a otros, mejor encuentra un sacerdote.",
-				FontType.INFO);
+			enviarMensaje("No poseo el poder para curar a otros, mejor encuentra un sacerdote.", FontType.INFO);
 			return;
 		}
 		if (!estaVivo()) {
-			enviarMensaje(
-				"¡Solo puedo curar a los vivos! ¡Resucítate primero!",
-				FontType.INFO);
+			enviarMensaje("¡Solo puedo curar a los vivos! ¡Resucítate primero!", FontType.INFO);
 			return;
 		}
 		if (m_pos.distancia(npc.getPos()) > 10) {
-			enviarMensaje(
-				"El sacerdote no puede curarte porque estas demasiado lejos.",
-				FontType.INFO);
+			enviarMensaje("El sacerdote no puede curarte porque estas demasiado lejos.", FontType.INFO);
 			return;
 		}
 		m_estads.MinHP = m_estads.MaxHP;
-		//enviarEstadsUsuario();
+		// enviarEstadsUsuario();
 		refreshStatus(2);
 		enviarMensaje("¡¡Has sido curado!!", FontType.INFO);
 	}
@@ -4148,8 +3897,7 @@ public class Client extends BaseCharacter implements Constants {
 			s = s.substring(0, MAX_MENSAJE);
 		}
 		if (!Util.asciiValidos(s)) {
-			enviarMensaje("La descripcion tiene caracteres invalidos.",
-				FontType.INFO);
+			enviarMensaje("La descripcion tiene caracteres invalidos.", FontType.INFO);
 			return;
 		}
 		m_desc = s;
@@ -4159,21 +3907,27 @@ public class Client extends BaseCharacter implements Constants {
 	/**
 	 * Change user look direction
 	 * 
-	 * @param dir
-	 *            is new direction
+	 * @param dir is new direction
 	 */
 	public void changeDir(short dir) {
-			
-			Map mapa = server.getMapa(m_pos.mapa);
-			short crimi = 0;
-			if (esCriminal()) crimi = 1;
-			
-			mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
-			
-			//mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi, m_flags.Privilegios);
-			
-			m_infoChar.m_dir = dir;
-			
+
+		Map mapa = server.getMapa(m_pos.mapa);
+		short crimi = 0;
+		if (esCriminal())
+			crimi = 1;
+
+		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
+				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
+
+		// mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.CC, getId(),
+		// m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(),
+		// getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(),
+		// m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(),
+		// crimi, m_flags.Privilegios);
+
+		m_infoChar.m_dir = dir;
+
 	}
 
 	public void enviarCP() {
@@ -4183,13 +3937,19 @@ public class Client extends BaseCharacter implements Constants {
 		if (mapa == null) {
 			return;
 		}
-		
-		short crimi = 0;
-		if (esCriminal()) crimi = 1;
 
-		mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
-		
-		//mapa.enviarATodos(serverPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
+		short crimi = 0;
+		if (esCriminal())
+			crimi = 1;
+
+		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
+				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
+
+		// mapa.enviarATodos(serverPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+		// m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(),
+		// m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.m_fx,
+		// m_infoChar.m_loops);
 
 	}
 
@@ -4201,7 +3961,7 @@ public class Client extends BaseCharacter implements Constants {
 		// UserList(UserIndex).PrevCRC = UserList(UserIndex).RandKey
 		// UserList(UserIndex).PacketNumber = 100
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	//	enviar(MSG_VAL, (short) 345, (short) 343);
+		// enviar(MSG_VAL, (short) 345, (short) 343);
 	}
 
 	public void doSALIR() {
@@ -4229,9 +3989,9 @@ public class Client extends BaseCharacter implements Constants {
 				try {
 					if (server.estaLloviendo()) {
 						// Detener la lluvia.
-						enviar(serverPacketID.userRain);
+						enviar(ServerPacketID.userRain);
 					}
-					enviar(serverPacketID.finOk);
+					enviar(ServerPacketID.finOk);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -4250,8 +4010,7 @@ public class Client extends BaseCharacter implements Constants {
 				try {
 					saveUser();
 				} catch (Exception ex) {
-					Log.serverLogger().severe(
-						"ERROR EN doSALIR() - saveUser(): " + ex.getMessage());
+					Log.serverLogger().severe("ERROR EN doSALIR() - saveUser(): " + ex.getMessage());
 					ex.printStackTrace();
 				}
 			}
@@ -4265,10 +4024,9 @@ public class Client extends BaseCharacter implements Constants {
 		m_estads.userAtributos[2] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[3] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[4] = (byte) (Util.Azar(16, 18));
-		
-		enviar(serverPacketID.dropDices, m_estads.userAtributos[0],
-			m_estads.userAtributos[1], m_estads.userAtributos[2],
-			m_estads.userAtributos[3], m_estads.userAtributos[4]);
+
+		enviar(ServerPacketID.dropDices, m_estads.userAtributos[0], m_estads.userAtributos[1],
+				m_estads.userAtributos[2], m_estads.userAtributos[3], m_estads.userAtributos[4]);
 	}
 
 	public void borrarPersonaje(String s) {
@@ -4281,10 +4039,8 @@ public class Client extends BaseCharacter implements Constants {
 	/**
 	 * Procesa el clic izquierdo del mouse sobre el mapa
 	 * 
-	 * @param x
-	 *            es la posición x del clic
-	 * @param y
-	 *            es la posición y del clic
+	 * @param x es la posición x del clic
+	 * @param y es la posición y del clic
 	 */
 	public void clicIzquierdoMapa(short x, short y) {
 		// Clic con el botón primario del mouse
@@ -4297,10 +4053,8 @@ public class Client extends BaseCharacter implements Constants {
 	/**
 	 * Procesa el clic derecho del mouse sobre el mapa
 	 * 
-	 * @param x
-	 *            es la posición x del clic
-	 * @param y
-	 *            es la posición y del clic
+	 * @param x es la posición x del clic
+	 * @param y es la posición y del clic
 	 */
 	public void clicDerechoMapa(short x, short y) {
 		Map mapa = server.getMapa(m_pos.mapa);
@@ -4336,8 +4090,8 @@ public class Client extends BaseCharacter implements Constants {
 				Npc npc;
 				if (obj != null) {
 					m_flags.TargetObj = obj.getInfo().ObjIndex;
-					//enviar(MSG_SELE, obj.getInfo().ObjType,
-					//	obj.getInfo().Nombre, "OBJ");
+					// enviar(MSG_SELE, obj.getInfo().ObjType,
+					// obj.getInfo().Nombre, "OBJ");
 					if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
 					}
@@ -4349,9 +4103,7 @@ public class Client extends BaseCharacter implements Constants {
 							return;
 						}
 						if (npc.getPos().distancia(getPos()) > 3) {
-							enviarMensaje(
-								"Estás demasiado lejos del vendedor.",
-								FontType.INFO);
+							enviarMensaje("Estás demasiado lejos del vendedor.", FontType.INFO);
 							return;
 						}
 						// Iniciamos el comercio con el Npc
@@ -4364,9 +4116,7 @@ public class Client extends BaseCharacter implements Constants {
 						// Extensión de AOJ - 16/08/2004
 						// Doble clic sobre el banquero hace /BOVEDA
 						if (npc.getPos().distancia(getPos()) > 3) {
-							enviarMensaje(
-								"Estás demasiado lejos del banquero.",
-								FontType.INFO);
+							enviarMensaje("Estás demasiado lejos del banquero.", FontType.INFO);
 							return;
 						}
 						iniciarDeposito();
@@ -4399,16 +4149,14 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			Map mapa = server.getMapa(m_pos.mapa);
 			if (mapa != null) {
-				mapa.enviarAlArea(m_pos.x, m_pos.y, serverPacketID.dialog,
-					COLOR_BLANCO, s, getId());
+				mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.dialog, COLOR_BLANCO, s, getId());
 			}
 			if (esConsejero()) {
 				Log.logGM(m_nick, "El consejero dijo: " + s);
 			}
 		} else {
-			enviarMensaje(
-				"¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
+					FontType.INFO);
 		}
 	}
 
@@ -4420,16 +4168,15 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			Map mapa = server.getMapa(m_pos.mapa);
 			if (mapa != null) {
-			//	mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
-				//	COLOR_ROJO, s, getId());
+				// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
+				// COLOR_ROJO, s, getId());
 			}
 			if (esConsejero()) {
 				Log.logGM(m_nick, "El consejero gritó: " + s);
 			}
 		} else {
-			enviarMensaje(
-				"¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
+					FontType.INFO);
 		}
 	}
 
@@ -4449,32 +4196,28 @@ public class Client extends BaseCharacter implements Constants {
 				}
 				Client usuario = server.getUsuario(nombre);
 				if (usuario != null) {
-					if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario
-						.getId()) == null) {
-						enviarMensaje("Estas muy lejos de " + nombre,
-							FontType.INFO);
+					if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario.getId()) == null) {
+						enviarMensaje("Estas muy lejos de " + nombre, FontType.INFO);
 					} else {
 						if (esConsejero()) {
-							Log.logGM(m_nick, "El consejero le susurró a "
-									+ nombre + ": " + s);
+							Log.logGM(m_nick, "El consejero le susurró a " + nombre + ": " + s);
 						}
-						//usuario.enviarHabla(COLOR_AZUL, s, getId());
-						//enviarHabla(COLOR_AZUL, s, getId());
-						//if (!esGM() || esConsejero()) {
-						//	mapa.enviarAlAreaAdminsNoConsejeros(m_pos.x,
-							//	m_pos.y, MSG_TALK, COLOR_AMARILLO, "a "
-								//		+ usuario.getNick() + "> " + s, this
-								//	.getId());
-						//}
+						// usuario.enviarHabla(COLOR_AZUL, s, getId());
+						// enviarHabla(COLOR_AZUL, s, getId());
+						// if (!esGM() || esConsejero()) {
+						// mapa.enviarAlAreaAdminsNoConsejeros(m_pos.x,
+						// m_pos.y, MSG_TALK, COLOR_AMARILLO, "a "
+						// + usuario.getNick() + "> " + s, this
+						// .getId());
+						// }
 					}
 				} else {
 					enviarMensaje("Usuario inexistente.", FontType.INFO);
 				}
 			}
 		} else {
-			enviarMensaje(
-				"¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
+					FontType.INFO);
 		}
 	}
 
@@ -4486,29 +4229,27 @@ public class Client extends BaseCharacter implements Constants {
 			doSALIR();
 			return;
 		}
-		
+
 		if (m_counters.Saliendo) {
-			enviarMensaje("/SALIR cancelado!.",
-					FontType.INFO);
+			enviarMensaje("/SALIR cancelado!.", FontType.INFO);
 			m_counters.Saliendo = false;
 		}
-		
+
 		if (m_flags.Paralizado) {
 			if (m_flags.UltimoMensaje != 1) {
-				enviarMensaje("No puedes moverte por estar paralizado.",
-					FontType.INFO);
+				enviarMensaje("No puedes moverte por estar paralizado.", FontType.INFO);
 				m_flags.UltimoMensaje = 1;
 			}
 			return;
 		}
 		if (m_flags.Descansar) {
 			m_flags.Descansar = false;
-		//	enviar(MSG_DOK);
+			// enviar(MSG_DOK);
 			enviarMensaje("Has dejado de descansar.", FontType.INFO);
 		}
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(serverPacketID.medOk);
+			enviar(ServerPacketID.medOk);
 			enviarMensaje("Dejas de meditar.", FontType.INFO);
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -4528,43 +4269,40 @@ public class Client extends BaseCharacter implements Constants {
 		m_flags.Oculto = false;
 		m_flags.Invisible = false;
 		Map m = server.getMapa(m_pos.mapa);
-	//	m.enviarATodos(MSG_NOVER, m_id, 0);
+		// m.enviarATodos(MSG_NOVER, m_id, 0);
 	}
 
 	private void moverUsuario(short dir) {
 		WorldPos new_pos = new WorldPos(m_pos);
 		new_pos.mirarDir(dir);
-		
+
 		Map mapa = server.getMapa(m_pos.mapa);
 		if (mapa == null) {
 			return;
 		}
 		m_infoChar.setDir(dir);
-		if (new_pos.isValid() && mapa.isFree(new_pos.x, new_pos.y)
-				&& !mapa.estaBloqueado(new_pos.x, new_pos.y)) {
+		if (new_pos.isValid() && mapa.isFree(new_pos.x, new_pos.y) && !mapa.estaBloqueado(new_pos.x, new_pos.y)) {
 			mapa.mover(this, new_pos.x, new_pos.y);
 			if (mapa.hayTeleport(new_pos.x, new_pos.y)) {
 				WorldPos pos = mapa.getTeleport(new_pos.x, new_pos.y);
-				boolean conFX = (mapa.hayObjeto(new_pos.x, new_pos.y) && mapa
-					.getObjeto(new_pos.x, new_pos.y).getInfo().ObjType == OBJTYPE_TELEPORT);
+				boolean conFX = (mapa.hayObjeto(new_pos.x, new_pos.y)
+						&& mapa.getObjeto(new_pos.x, new_pos.y).getInfo().ObjType == OBJTYPE_TELEPORT);
 				boolean enviarData = m_pos.mapa != pos.mapa;
 				cambiarMapa(pos.mapa, pos.x, pos.y, conFX, enviarData);
 			}
-		}
-		else {
+		} else {
 			enviarPU();
 		}
 	}
 
 	public void doAtacar() {
 		if (!estaVivo()) {
-			enviarMensaje("¡¡No puedes atacar a nadie por estar muerto!!",
-				FontType.INFO);
+			enviarMensaje("¡¡No puedes atacar a nadie por estar muerto!!", FontType.INFO);
 			return;
 		}
-		if (esConsejero()) { 
-			enviarMensaje("¡¡No puedes atacar a nadie!!", FontType.INFO); 
-			return; 
+		if (esConsejero()) {
+			enviarMensaje("¡¡No puedes atacar a nadie!!", FontType.INFO);
+			return;
 		} else {
 			if (m_inv.tieneArmaEquipada()) {
 				if (m_inv.getArma().esProyectil()) {
@@ -4581,14 +4319,12 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void enviarPU() {
-		enviar(serverPacketID.MSG_PU, m_pos.x, m_pos.y);
+		enviar(ServerPacketID.MSG_PU, m_pos.x, m_pos.y);
 	}
 
 	public void agarrarObjeto() {
 		if (!estaVivo()) {
-			enviarMensaje(
-				"¡¡Estas muerto!! Los muertos no pueden recoger objetos.",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden recoger objetos.", FontType.INFO);
 			return;
 		}
 		if (esConsejero()) {
@@ -4601,14 +4337,11 @@ public class Client extends BaseCharacter implements Constants {
 	public void tirarObjeto(short slot, int cant) {
 		// Tirar item
 		if (!estaVivo()) {
-			enviarMensaje(
-				"¡¡Estas muerto!! Los muertos no pueden tirar objetos.",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden tirar objetos.", FontType.INFO);
 			return;
 		}
 		if (estaNavegando()) {
-			enviarMensaje("No puedes tirar objetos mientras navegas.",
-				FontType.INFO);
+			enviarMensaje("No puedes tirar objetos mientras navegas.", FontType.INFO);
 			return;
 		}
 		if (esConsejero()) {
@@ -4617,12 +4350,11 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (slot == FLAGORO) {
 			tirarOro(cant);
-			//enviarEstadsUsuario();
+			// enviarEstadsUsuario();
 			refreshStatus(1);
 		} else {
 			if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
-				if (m_inv.getObjeto(slot) != null
-						&& m_inv.getObjeto(slot).objid > 0) {
+				if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid > 0) {
 					m_inv.dropObj(slot, cant);
 				}
 			}
@@ -4638,19 +4370,15 @@ public class Client extends BaseCharacter implements Constants {
 			if (!obj.getInfo().esAgarrable()) {
 				enviarMensaje("El objeto no se puede agarrar.", FontType.INFO);
 			} else {
-				int agregados = m_inv.agregarItem(obj.obj_ind,
-					obj.obj_cant);
+				int agregados = m_inv.agregarItem(obj.obj_ind, obj.obj_cant);
 				if (agregados < obj.obj_cant) {
 					mapa.quitarObjeto(m_pos.x, m_pos.y);
-					mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-						new InventoryObject(obj.obj_ind, obj.obj_cant
-								- agregados));
+					mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(obj.obj_ind, obj.obj_cant - agregados));
 				} else {
 					// Quitamos el objeto
 					mapa.quitarObjeto(m_pos.x, m_pos.y);
 					if (esGM()) {
-						Log.logGM(m_nick, "Agarró: " + obj.obj_ind
-								+ " objeto=" + obj.getInfo().Nombre);
+						Log.logGM(m_nick, "Agarró: " + obj.obj_ind + " objeto=" + obj.getInfo().Nombre);
 					}
 				}
 			}
@@ -4662,16 +4390,13 @@ public class Client extends BaseCharacter implements Constants {
 	public void equiparObjeto(short slot) {
 		// Comando EQUI
 		if (!estaVivo()) {
-			enviarMensaje(
-				"¡¡Estas muerto!! Solo puedes usar items cuando estas vivo.",
-				FontType.INFO);
+			enviarMensaje("¡¡Estas muerto!! Solo puedes usar items cuando estas vivo.", FontType.INFO);
 			return;
 		}
-		//StringTokenizer st = new StringTokenizer(s, ",");
-		//short slot = Short.parseShort(st.nextToken());
+		// StringTokenizer st = new StringTokenizer(s, ",");
+		// short slot = Short.parseShort(st.nextToken());
 		if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
-			if (m_inv.getObjeto(slot) != null
-					&& m_inv.getObjeto(slot).objid > 0) {
+			if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid > 0) {
 				m_inv.equipar(slot); // EquiparInvItem
 			}
 		}
@@ -4683,104 +4408,104 @@ public class Client extends BaseCharacter implements Constants {
 			enviarObjetoInventario(i);
 		}
 	}
-	
+
 	public void setNullObject(int slot) {
-		enviar(serverPacketID.deleteObject, (byte) slot);
+		enviar(ServerPacketID.deleteObject, (byte) slot);
 	}
 
 	public void enviarObjetoInventario(int slot) {
-				InventoryObject objInv = m_inv.getObjeto(slot);
-				
-				if (objInv != null && objInv.objid != 0) {
-					ObjectInfo io = server.getInfoObjeto(objInv.objid);
-					
-					enviar(serverPacketID.MSG_CSI, (byte) slot, objInv.objid, io.Nombre, (short) objInv.cant,
-								(byte) (objInv.equipado ? 1 : 0), io.GrhIndex, (byte) io.ObjType, io.MaxHIT,
-								io.MinHIT, io.MaxDef, (int) io.Valor);
-					
+		InventoryObject objInv = m_inv.getObjeto(slot);
 
-				} else {
-					enviar(serverPacketID.MSG_CSI, (byte) slot, (short) 0 );
-				}
+		if (objInv != null && objInv.objid != 0) {
+			ObjectInfo io = server.getInfoObjeto(objInv.objid);
+
+			enviar(ServerPacketID.MSG_CSI, (byte) slot, objInv.objid, io.Nombre, (short) objInv.cant,
+					(byte) (objInv.equipado ? 1 : 0), io.GrhIndex, (byte) io.ObjType, io.MaxHIT, io.MinHIT, io.MaxDef,
+					(int) io.Valor);
+
+		} else {
+			enviar(ServerPacketID.MSG_CSI, (byte) slot, (short) 0);
+		}
 	}
 
 	private void enviarIndiceUsuario() {
-		//enviar(MSG_UI, getId());
-		enviar(serverPacketID.IP, getId());
+		// enviar(MSG_UI, getId());
+		enviar(ServerPacketID.IP, getId());
 	}
 
 	public void enviarMensaje(String msg, FontType fuente) {
-	//	enviar(MSG_TALK, msg, fuente.toString());
-		enviar(serverPacketID.talk, msg, fuente.toString());
+		// enviar(MSG_TALK, msg, fuente.toString());
+		enviar(ServerPacketID.talk, msg, fuente.toString());
 	}
 
 	public void enviarHabla(int color, String msg, short id) {
-	//	enviar(MSG_DIALOG, color, msg, id);
-		enviar(serverPacketID.dialog, color, msg, id);
+		// enviar(MSG_DIALOG, color, msg, id);
+		enviar(ServerPacketID.dialog, color, msg, id);
 	}
-	
+
 	public void refreshStatus(int value) {
 		byte id = (byte) value;
-		
+
 		switch (value) {
-		
-		case 1: //GOLD
-			enviar(serverPacketID.MSG_REFRESH, id, m_estads.oro);
+
+		case 1: // GOLD
+			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.oro);
 			break;
-		
-		case 2: //user hp
-			enviar(serverPacketID.MSG_REFRESH, id, (short) m_estads.MinHP, (short) m_estads.MaxHP);
+
+		case 2: // user hp
+			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinHP, (short) m_estads.MaxHP);
 			break;
-			
-		case 3: //user mana
-			enviar(serverPacketID.MSG_REFRESH, id, (short) m_estads.MinMAN, (short) m_estads.MaxMAN);
+
+		case 3: // user mana
+			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinMAN, (short) m_estads.MaxMAN);
 			break;
-		
+
 		case 4: // user stamina
-			enviar(serverPacketID.MSG_REFRESH, id, (short)  m_estads.MinSta, (short) m_estads.MaxSta);
+			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinSta, (short) m_estads.MaxSta);
 			break;
-			
-		case 5: //user level, exp & elu
-			enviar(serverPacketID.MSG_REFRESH, id, m_estads.ELV, m_estads.Exp, m_estads.ELU);
+
+		case 5: // user level, exp & elu
+			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.ELV, m_estads.Exp, m_estads.ELU);
 			break;
-			
+
 		default:
 			return;
-			
+
 		}
-		
+
 	}
 
 	public void enviarEstadsHambreSed() {
 		// Ejemplo: EHYS100,100,100,100
 		// "EHYS" MaxAGU MinAGU MaxHam MinHam
-		//enviar(MSG_EHYS, m_estads.MaxAGU, m_estads.MinAGU,
-	//		m_estads.MaxHam, m_estads.MinHam);
+		// enviar(MSG_EHYS, m_estads.MaxAGU, m_estads.MinAGU,
+		// m_estads.MaxHam, m_estads.MinHam);
 	}
-	
+
 	public void petDelete() {
 		int i = 0;
-		
-		while (i < m_mascotas.length){
-			
-			  if (m_mascotas[i] != null){
-				  
-		       Npc npc;
-		
-		       npc = m_mascotas[i];
-		       m_mascotas[i].liberarDeAmo();
-		       m_mascotas[i] = null;
-		       m_cantMascotas--;
-		       
-		       npc.quitarNPC();
-		       
-		       //Evitamos crear una variable al dope
-		       if (i < 1) enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
+
+		while (i < m_mascotas.length) {
+
+			if (m_mascotas[i] != null) {
+
+				Npc npc;
+
+				npc = m_mascotas[i];
+				m_mascotas[i].liberarDeAmo();
+				m_mascotas[i] = null;
+				m_cantMascotas--;
+
+				npc.quitarNPC();
+
+				// Evitamos crear una variable al dope
+				if (i < 1)
+					enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
 
 			}
-			  
-			  i++;
-			  
+
+			i++;
+
 		}
 
 	}
@@ -4792,9 +4517,8 @@ public class Client extends BaseCharacter implements Constants {
 		cambiarMapa(mapa, x, y, true, true);
 	}
 
-	private void cambiarMapa(short mapa, short x, short y, boolean conFX,
-			boolean enviarData) {
-		
+	private void cambiarMapa(short mapa, short x, short y, boolean conFX, boolean enviarData) {
+
 		short oldMap = m_pos.mapa;
 		if (m_pos.mapa != 0) {
 			Map m = server.getMapa(m_pos.mapa);
@@ -4803,71 +4527,73 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			if (m.estaCliente(this) && !m.salir(this)) {
 				// No pudo salir del mapa :)
-				Log.serverLogger().severe(
-					this + "> No pudo salir del mapa actual");
+				Log.serverLogger().severe(this + "> No pudo salir del mapa actual");
 			}
 		}
 		Map m = server.getMapa(mapa);
 		if (m == null) {
 			return;
 		}
-		
-		//Agus:Mapa restringido?
+
+		// Agus:Mapa restringido?
 		if (m.getForbbiden() && !esNewbie()) {
-			warpUser (getPos().mapa, this.m_pos.x--, this.m_pos.y--, true);
+			warpUser(getPos().mapa, this.m_pos.x--, this.m_pos.y--, true);
 			return;
 		}
-		
-		WorldPos pos_libre = m.closestLegalPosPj(x, y, m_flags.Navegando,
-			esGM());
+
+		WorldPos pos_libre = m.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 		if (m.entrar(this, pos_libre.x, pos_libre.y)) {
 			m_pos = new WorldPos(mapa, pos_libre.x, pos_libre.y);
-			
+
 			Map old = server.getMapa(oldMap);
-			
-			//Agus: check if user pet exists
-			if (oldMap != mapa) petDelete();
-			
+
+			// Agus: check if user pet exists
+			if (oldMap != mapa)
+				petDelete();
+
 			if (enviarData) {
-				enviar(serverPacketID.CMP, mapa);				
+				enviar(ServerPacketID.CMP, mapa);
 			}
-			
+
 			short crimi = 0;
-			if (esCriminal()) crimi = 1;
-			
-			//enviar(serverPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi, m_flags.Privilegios);
-			
+			if (esCriminal())
+				crimi = 1;
+
+			// enviar(serverPacketID.CC, getId(), m_infoChar.getCuerpo(),
+			// m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y,
+			// m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
+			// m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi,
+			// m_flags.Privilegios);
+
 			m.areasData.loadUser(this);
 			enviarPU();
-			
-			//old.areasData.userDisconnect(this);
-			//old.areasData.resetUser(this);
-			//old.areasData.sendToArea(x, y, this.m_id, serverPacketID.MSG_BP, this.m_id);
-			//old.areasData.sendToArea(m, x, y, serverPacketID.MSG_BP, this.m_id);
-			
-			//m.areasData.areasLogged(this);
-			
-			
+
+			// old.areasData.userDisconnect(this);
+			// old.areasData.resetUser(this);
+			// old.areasData.sendToArea(x, y, this.m_id, serverPacketID.MSG_BP, this.m_id);
+			// old.areasData.sendToArea(m, x, y, serverPacketID.MSG_BP, this.m_id);
+
+			// m.areasData.areasLogged(this);
+
 			if (conFX) {
 				enviarCFX(1, 0);
 				if (m_flags.UserLogged) { // No hacer sonido en el LOGIN.
 					enviarSonido(SND_WARP);
 				}
 			}
-			//enviarIP();
+			// enviarIP();
 			if (enviarData) {
 				// Enviarme los m_clients del mapa, sin contarme a mi
-				//m.enviarClientes(this);
+				// m.enviarClientes(this);
 				// Enviarme los objetos del mapa.
-			//	m.enviarObjetos(this);
+				// m.enviarObjetos(this);
 				// Enviarme las posiciones bloqueadas del mapa.
 				m.enviarBQs(this);
 			}
 		} else {
-			enviarMensaje("No se pudo entrar en el mapa deseado",
-				FontType.WARNING);
+			enviarMensaje("No se pudo entrar en el mapa deseado", FontType.WARNING);
 		}
-		
+
 	}
 
 	public void enviarCFX(int fx, int val) {
@@ -4912,19 +4638,17 @@ public class Client extends BaseCharacter implements Constants {
 		// Quitar el dialogo
 		Map mapa = server.getMapa(m_pos.mapa);
 		if (mapa != null) {
-			//mapa.enviarATodos(MSG_QDL, m_id);
-			//enviar(MSG_QTDL);
+			// mapa.enviarATodos(MSG_QDL, m_id);
+			// enviar(MSG_QTDL);
 		}
 		// Si el destino es distinto a la posición actual
 		if (m_pos.mapa != m || m_pos.x != x || m_pos.y != y) {
 			short oldMap = m_pos.mapa;
 			Map newMap = server.getMapa(m);
-			WorldPos pos_libre = newMap.closestLegalPosPj(x, y,
-				m_flags.Navegando, esGM());
+			WorldPos pos_libre = newMap.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 			if (pos_libre == null) {
-				Log.serverLogger().fine(
-					"WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m
-							+ " x=" + x + " y=" + y);
+				Log.serverLogger()
+						.fine("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m + " x=" + x + " y=" + y);
 				return false;
 			}
 			x = pos_libre.x;
@@ -4938,19 +4662,18 @@ public class Client extends BaseCharacter implements Constants {
 		enviarPU();
 		// Call UpdateUserMap(UserIndex)
 		// Seguis invisible al pasar de mapa
-		if ((m_flags.Invisible || m_flags.Oculto)
-				&& !m_flags.AdminInvisible) {
-			//mapa.enviarATodos(MSG_NOVER, m_id, 1);
+		if ((m_flags.Invisible || m_flags.Oculto) && !m_flags.AdminInvisible) {
+			// mapa.enviarATodos(MSG_NOVER, m_id, 1);
 		}
 		if (conFX && !m_flags.AdminInvisible) { // FX
 			enviarSonido(SND_WARP);
 			enviarCFX(FXWARP, 0);
 		}
 		// warpMascotas();
-		
-		//Agus: byte bye user pet...
+
+		// Agus: byte bye user pet...
 		petDelete();
-		
+
 		return true;
 	}
 
@@ -4961,8 +4684,7 @@ public class Client extends BaseCharacter implements Constants {
 		Npc npc;
 		WorldPos lugarLibre;
 		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] != null
-					&& m_mascotas[i].m_contadores.TiempoExistencia > 0) {
+			if (m_mascotas[i] != null && m_mascotas[i].m_contadores.TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa.
 				oldMapa = server.getMapa(m_mascotas[i].getPos().mapa);
 				oldMapa.salir(m_mascotas[i]);
@@ -4976,22 +4698,19 @@ public class Client extends BaseCharacter implements Constants {
 				// Es una mascota domada.
 				if (m_mascotas[i].puedeReSpawn()) {
 					// La mascota puede hacer respawn
-					oldMapa = server
-						.getMapa(m_mascotas[i].getPos().mapa);
+					oldMapa = server.getMapa(m_mascotas[i].getPos().mapa);
 					newMapa = server.getMapa(m_pos.mapa);
-					lugarLibre = newMapa.closestLegalPosNpc(m_pos.x,
-						m_pos.y, m_mascotas[i].esAguaValida(),
-						m_mascotas[i].esTierraInvalida(), true);
+					lugarLibre = newMapa.closestLegalPosNpc(m_pos.x, m_pos.y, m_mascotas[i].esAguaValida(),
+							m_mascotas[i].esTierraInvalida(), true);
 					if (lugarLibre != null) {
 						// La mascota lo sigue al nuevo mapa, y mantiene su
 						// control.
 						oldMapa.salir(m_mascotas[i]);
 						// envio un BP adicional, porque ya sali del mapa y
 						// sino no soy notificado de que salio la mascota.
-						//enviar(MSG_QDL, m_mascotas[i].getId());
-						//enviar(MSG_BP, m_mascotas[i].getId());
-						if (newMapa.entrar(m_mascotas[i], lugarLibre.x,
-							lugarLibre.y)) {
+						// enviar(MSG_QDL, m_mascotas[i].getId());
+						// enviar(MSG_BP, m_mascotas[i].getId());
+						if (newMapa.entrar(m_mascotas[i], lugarLibre.x, lugarLibre.y)) {
 							// FIXME !!!
 						}
 					} else {
@@ -5032,24 +4751,19 @@ public class Client extends BaseCharacter implements Constants {
 			}
 		}
 		if (m_cantMascotas != 0) {
-			System.out
-				.println("ERROR: Luego de quitarMascotas() la cant de mascotas != 0 !!!");
+			System.out.println("ERROR: Luego de quitarMascotas() la cant de mascotas != 0 !!!");
 		}
 	}
 
 	public void encarcelar(int minutos, String gm_name) {
 		m_counters.Pena = minutos;
-		if (warpUser(AojServer.WP_PRISION.mapa, AojServer.WP_PRISION.x,
-			AojServer.WP_PRISION.y, true)) {
+		if (warpUser(AojServer.WP_PRISION.mapa, AojServer.WP_PRISION.x, AojServer.WP_PRISION.y, true)) {
 			if (gm_name == null) {
-				enviarMensaje(
-					"Has sido encarcelado, deberas permanecer en la carcel "
-							+ minutos + " minutos.", FontType.INFO);
+				enviarMensaje("Has sido encarcelado, deberas permanecer en la carcel " + minutos + " minutos.",
+						FontType.INFO);
 			} else {
-				enviarMensaje(
-					gm_name
-							+ " te ha encarcelado, deberas permanecer en la carcel "
-							+ minutos + " minutos.", FontType.INFO);
+				enviarMensaje(gm_name + " te ha encarcelado, deberas permanecer en la carcel " + minutos + " minutos.",
+						FontType.INFO);
 			}
 		}
 	}
@@ -5057,14 +4771,10 @@ public class Client extends BaseCharacter implements Constants {
 	public void efectoLluvia() {
 		if (m_flags.UserLogged) {
 			Map mapa = server.getMapa(m_pos.mapa);
-			if (server.estaLloviendo()
-					&& mapa.intemperie(m_pos.x, m_pos.y)
-					&& mapa.getZona() != ZONA_DUNGEON) {
+			if (server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y) && mapa.getZona() != ZONA_DUNGEON) {
 				int modifi = Util.porcentaje(m_estads.MaxSta, 3);
 				m_estads.quitarStamina(modifi);
-				enviarMensaje(
-					"¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.",
-					FontType.INFO);
+				enviarMensaje("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.INFO);
 				refreshStatus(4);
 			}
 		}
@@ -5075,7 +4785,7 @@ public class Client extends BaseCharacter implements Constants {
 			m_counters.Paralisis--;
 		} else {
 			m_flags.Paralizado = false;
-			enviar(serverPacketID.paradOk);
+			enviar(ServerPacketID.paradOk);
 		}
 	}
 
@@ -5107,7 +4817,7 @@ public class Client extends BaseCharacter implements Constants {
 		m_flags.Oculto = true;
 		m_flags.Invisible = true;
 		Map mapa = server.getMapa(m_pos.mapa);
-		//mapa.enviarATodos(MSG_NOVER, m_id, 1);
+		// mapa.enviarATodos(MSG_NOVER, m_id, 1);
 		enviarMensaje("¡Te has escondido entre las sombras!", FontType.INFO);
 	}
 
@@ -5127,14 +4837,14 @@ public class Client extends BaseCharacter implements Constants {
 	public void decirPalabrasMagicas(String palabrasMagicas) {
 		hablar(COLOR_CYAN, palabrasMagicas, m_id);
 	}
-	
+
 	public void paralizar(Spell hechizo) {
 		if (!getFlags().Paralizado) {
 			getFlags().Paralizado = true;
 			getCounters().Paralisis = IntervaloParalizado;
 			enviarSonido(hechizo.WAV);
 			enviarCFX(hechizo.FXgrh, hechizo.loops);
-			enviar(serverPacketID.paradOk);
+			enviar(ServerPacketID.paradOk);
 		}
 	}
 
@@ -5142,16 +4852,15 @@ public class Client extends BaseCharacter implements Constants {
 		if (texto.length() > MAX_TEXTO_HABLAR) {
 			texto = texto.substring(0, MAX_TEXTO_HABLAR);
 		}
-		
+
 		short id = (short) quienId;
-		
+
 		Map mapa = server.getMapa(m_pos.mapa);
 		if (mapa != null) {
-			
-			
-			mapa.enviarAlArea(getPos().x, getPos().y,serverPacketID.dialog, color, texto, (short) quienId);
-			//mapa.enviarATodos(serverPacketID.dialog, color, texto, (short) quienId);
-			
+
+			mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.dialog, color, texto, (short) quienId);
+			// mapa.enviarATodos(serverPacketID.dialog, color, texto, (short) quienId);
+
 		}
 	}
 
@@ -5172,7 +4881,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (npc == null) {
 			return null;
 		}
-		
+
 		m_cantMascotas++;
 		int slot = freeMascotaSlot();
 		m_mascotas[slot - 1] = npc;
@@ -5183,23 +4892,26 @@ public class Client extends BaseCharacter implements Constants {
 		npc.enviarSonido(SND_WARP);
 		npc.enviarCFX(FXWARP, 0);
 		npc.activar();
-		
+
 		return npc;
 	}
 
 	public Object[] ccParams() {
-		//Object[] params = { m_infoChar.getCuerpo(),
-		//		m_infoChar.getCabeza(), m_infoChar.getDir(), getId(),
-		//		getPos().x, getPos().y, m_infoChar.getArma(),
-		//		m_infoChar.getEscudo(), m_infoChar.getFX(), (short) 999,
-		//		m_infoChar.getCasco(), m_nick + getClan(),
-		//		(esCriminal() ? 255 : 0), m_flags.Privilegios };
-		
+		// Object[] params = { m_infoChar.getCuerpo(),
+		// m_infoChar.getCabeza(), m_infoChar.getDir(), getId(),
+		// getPos().x, getPos().y, m_infoChar.getArma(),
+		// m_infoChar.getEscudo(), m_infoChar.getFX(), (short) 999,
+		// m_infoChar.getCasco(), m_nick + getClan(),
+		// (esCriminal() ? 255 : 0), m_flags.Privilegios };
+
 		short crimi = 0;
-	    if (esCriminal()) crimi = 1;
-		
-		Object[] params = {getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi, m_flags.Privilegios};
-		
+		if (esCriminal())
+			crimi = 1;
+
+		Object[] params = { getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x,
+				getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(),
+				(short) 999, m_nick + getClan(), crimi, m_flags.Privilegios };
+
 		return params;
 	}
 
@@ -5220,30 +4932,34 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void enviarCC() {
-		
-		//{getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y ,m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi, m_flags.Privilegios};
-		
-		enviar(serverPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y ,m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(), (short) 1, m_flags.Privilegios);
+
+		// {getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(),
+		// m_infoChar.getDir(), getPos().x, getPos().y ,m_infoChar.getArma(),
+		// m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short)
+		// 999, m_nick + getClan(), crimi, m_flags.Privilegios};
+
+		enviar(ServerPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(),
+				getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
+				m_infoChar.getFX(), (short) 999, m_nick + getClan(), (short) 1, m_flags.Privilegios);
 	}
 
 	/*
-	 * private void enviarATodosCC() { Mapa m =
-	 * server.getMapa(m_pos.mapa); if (m == null) return;
-	 * m.enviarATodos(getCC()); }
+	 * private void enviarATodosCC() { Mapa m = server.getMapa(m_pos.mapa); if (m ==
+	 * null) return; m.enviarATodos(getCC()); }
 	 */
 
 	private void enviarIP() {
-	//	enviar(MSG_IP, getId());
+		// enviar(MSG_IP, getId());
 	}
 
 	private void enviarLogged() {
-	//	enviar(MSG_LOGGED);
-		enviar(serverPacketID.login);
+		// enviar(MSG_LOGGED);
+		enviar(ServerPacketID.login);
 	}
 
 	private void enviarCambioMapa(short mapa) {
-	//	enviar(MSG_CM, (short) mapa);
-		//enviarMidi(13);
+		// enviar(MSG_CM, (short) mapa);
+		// enviarMidi(13);
 	}
 
 	private void enviarMidi(int midi) {
@@ -5251,19 +4967,20 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	private void enviarMidi(String midi) {
-	//	enviar(MSG_TM, midi);
+		// enviar(MSG_TM, midi);
 	}
 
 	public void enviarObjeto(int objId, int x, int y) {
 		short grhIndex = server.getInfoObjeto(objId).GrhIndex;
-		
-		enviar(serverPacketID.MSG_HO, grhIndex, (short) x, (short) y);
+
+		enviar(ServerPacketID.MSG_HO, grhIndex, (short) x, (short) y);
 	}
 
 	public void enviarBQ(int x, int y, boolean bloqueado) {
 		short bq = 0;
-		if (bloqueado) bq = 1;
-		enviar(serverPacketID.MSG_BQ, (short) x, (short) y, bq);
+		if (bloqueado)
+			bq = 1;
+		enviar(ServerPacketID.MSG_BQ, (short) x, (short) y, bq);
 	}
 
 	public void cuerpoDesnudo() {
@@ -5293,8 +5010,8 @@ public class Client extends BaseCharacter implements Constants {
 		Map mapa = server.getMapa(m_pos.mapa);
 		// Sonido
 		if (mapa != null) {
-			//mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TW, sonido);
-			mapa.enviarAlArea(m_pos.x, m_pos.y, serverPacketID.MSG_TW, (byte) sonido, m_pos.x,m_pos.y);
+			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TW, sonido);
+			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.MSG_TW, (byte) sonido, m_pos.x, m_pos.y);
 		}
 	}
 
@@ -5306,7 +5023,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Sonido
 		enviarSonido(SND_USERMUERTE);
 		// Quitar el dialogo del usuario muerto
-		//mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_QDL, m_id);
+		// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_QDL, m_id);
 		m_estads.MinHP = 0;
 		m_estads.MinSta = 0;
 		m_flags.AtacadoPorNpc = 0;
@@ -5324,17 +5041,17 @@ public class Client extends BaseCharacter implements Constants {
 		// <<<< Paralisis >>>>
 		if (m_flags.Paralizado) {
 			m_flags.Paralizado = false;
-			enviar(serverPacketID.paradOk);
+			enviar(ServerPacketID.paradOk);
 		}
 		// <<<< Descansando >>>>
 		if (m_flags.Descansar) {
 			m_flags.Descansar = false;
-			//enviar(MSG_DOK);
+			// enviar(MSG_DOK);
 		}
 		// <<<< Meditando >>>>
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(serverPacketID.medOk);
+			enviar(ServerPacketID.medOk);
 		}
 		// desequipar armadura
 		if (m_inv.tieneArmaduraEquipada()) {
@@ -5397,8 +5114,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void tirarTodo() {
 		Map mapa = server.getMapa(m_pos.mapa);
-		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS
-				|| esGM()) {
+		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS || esGM()) {
 			return;
 		}
 		tirarTodosLosItems();
@@ -5408,13 +5124,10 @@ public class Client extends BaseCharacter implements Constants {
 	private void tirarTodosLosItems() {
 		Map m = server.getMapa(m_pos.mapa);
 		for (int i = 1; i <= m_inv.getSize(); i++) {
-			if (m_inv.getObjeto(i) != null
-					&& m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = server.getInfoObjeto(m_inv
-					.getObjeto(i).objid);
+			if (m_inv.getObjeto(i) != null && m_inv.getObjeto(i).objid > 0) {
+				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
 				if (info_obj.itemSeCae()) {
-					InventoryObject obj_inv = new InventoryObject(m_inv
-						.getObjeto(i).objid, m_inv.getObjeto(i).cant);
+					InventoryObject obj_inv = new InventoryObject(m_inv.getObjeto(i).objid, m_inv.getObjeto(i).cant);
 					m_inv.quitarUserInvItem(i, obj_inv.cant);
 					enviarObjetoInventario(i);
 					if (info_obj.itemSeCae()) {
@@ -5429,11 +5142,9 @@ public class Client extends BaseCharacter implements Constants {
 		Map m = server.getMapa(m_pos.mapa);
 		for (int i = 1; i <= m_inv.getSize(); i++) {
 			if (m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = server.getInfoObjeto(m_inv
-					.getObjeto(i).objid);
+				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
 				if (!info_obj.esNewbie() && info_obj.itemSeCae()) {
-					InventoryObject obj_inv = new InventoryObject(m_inv
-						.getObjeto(i).objid, m_inv.getObjeto(i).cant);
+					InventoryObject obj_inv = new InventoryObject(m_inv.getObjeto(i).objid, m_inv.getObjeto(i).cant);
 					m_inv.quitarUserInvItem(i, obj_inv.cant);
 					enviarObjetoInventario(i);
 					if (info_obj.itemSeCae()) {
@@ -5453,8 +5164,7 @@ public class Client extends BaseCharacter implements Constants {
 		if ((cantidad > 0) && (cantidad <= m_estads.oro)) {
 			while ((cantidad > 0) && (m_estads.oro > 0)) {
 				InventoryObject oi = new InventoryObject(OBJ_ORO, cantidad);
-				if ((cantidad > MAX_INVENTORY_OBJS)
-						&& (m_estads.oro > MAX_INVENTORY_OBJS)) {
+				if ((cantidad > MAX_INVENTORY_OBJS) && (m_estads.oro > MAX_INVENTORY_OBJS)) {
 					oi.cant = MAX_INVENTORY_OBJS;
 					m_estads.oro -= MAX_INVENTORY_OBJS;
 					cantidad -= oi.cant;
@@ -5464,9 +5174,8 @@ public class Client extends BaseCharacter implements Constants {
 					cantidad -= oi.cant;
 				}
 				if (esGM()) {
-					Log.logGM(m_nick, "Tiró " + oi.cant
-							+ " unidades del objeto "
-							+ server.getInfoObjeto(oi.objid).Nombre);
+					Log.logGM(m_nick,
+							"Tiró " + oi.cant + " unidades del objeto " + server.getInfoObjeto(oi.objid).Nombre);
 				}
 				m.tirarItemAlPiso(m_pos.x, m_pos.y, oi);
 			}
@@ -5514,29 +5223,25 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_estads.getUserSkill(skill) >= Skill.MAX_SKILL_POINTS) {
 				return;
 			}
-			if (aumenta == 7
-					&& m_estads.getUserSkill(skill) < Skill.levelSkill[lvl]) {
+			if (aumenta == 7 && m_estads.getUserSkill(skill) < Skill.levelSkill[lvl]) {
 				m_estads.addSkillPoints(skill, (byte) 1);
-				enviarMensaje("¡Has mejorado tu skill " + Skill.skillsNames[skill]
-						+ " en un punto!. Ahora tienes "
-						+ m_estads.getUserSkill(skill) + " pts.",
-					FontType.INFO);
+				enviarMensaje("¡Has mejorado tu skill " + Skill.skillsNames[skill] + " en un punto!. Ahora tienes "
+						+ m_estads.getUserSkill(skill) + " pts.", FontType.INFO);
 				m_estads.addExp((byte) 50);
-				enviarMensaje("¡Has ganado 50 puntos de experiencia!",
-					FontType.FIGHT);
+				enviarMensaje("¡Has ganado 50 puntos de experiencia!", FontType.FIGHT);
 				checkUserLevel();
 			}
 		}
 	}
-	
+
 	public void userAsignaSkill(int skill, int amount) {
-		if (m_estads.getUserSkill(skill) >= Skill.MAX_SKILL_POINTS || 
-			m_estads.getUserSkill(skill) + (amount) > 100    ||
-			m_estads.SkillPts < amount ) return;
-		
+		if (m_estads.getUserSkill(skill) >= Skill.MAX_SKILL_POINTS || m_estads.getUserSkill(skill) + (amount) > 100
+				|| m_estads.SkillPts < amount)
+			return;
+
 		m_estads.addSkillPoints(skill, (byte) amount);
 		m_estads.SkillPts -= amount;
-		
+
 	}
 
 	public boolean esNewbie() {
@@ -5547,19 +5252,19 @@ public class Client extends BaseCharacter implements Constants {
 		// Comando ESKI
 		List<Byte> skills = new LinkedList<Byte>();
 		for (int i = 0; i <= Skill.MAX_SKILLS; i++) {
-			
+
 			if (i == 0) {
 				skills.add((byte) m_estads.getSkillPoints());
 			} else {
-			skills.add(m_estads.getUserSkill(i));
+				skills.add(m_estads.getUserSkill(i));
 			}
 		}
-		
-		enviar(serverPacketID.userSkills, skills.toArray());
+
+		enviar(ServerPacketID.userSkills, skills.toArray());
 	}
 
 	public void enviarSubirNivel(int pts) {
-		//enviar(MSG_SUNI, pts);
+		// enviar(MSG_SUNI, pts);
 	}
 
 	public void envenenar() {
@@ -5579,8 +5284,7 @@ public class Client extends BaseCharacter implements Constants {
 		int total = 0;
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
 			if (skills[i] < 0) {
-				Log.logHack(m_nick + " IP:" + m_ip
-						+ " trató de hackear los skills (skill negativo).");
+				Log.logHack(m_nick + " IP:" + m_ip + " trató de hackear los skills (skill negativo).");
 				m_estads.setSkillPoints(0); // Pierde los skills points
 				// acumulados por tramposo!
 				doSALIR(); // Cerrar la conexion como castigo.
@@ -5589,8 +5293,7 @@ public class Client extends BaseCharacter implements Constants {
 			total += skills[i];
 		}
 		if (total > m_estads.SkillPts) {
-			Log.logHack(m_nick + " IP:" + m_ip
-					+ " trató de hackear los skills (skills > SkillPts).");
+			Log.logHack(m_nick + " IP:" + m_ip + " trató de hackear los skills (skills > SkillPts).");
 			m_estads.setSkillPoints(0); // Pierde los skills points
 			// acumulados
 			// por tramposo!
@@ -5622,8 +5325,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_inv.quitarObjsNewbie();
 				salirDeDN();
 			}
-			m_estads.ELU *= (m_estads.ELV < 11) ? 1.5
-					: ((m_estads.ELV < 25) ? 1.3 : 1.2);
+			m_estads.ELU *= (m_estads.ELV < 11) ? 1.5 : ((m_estads.ELV < 25) ? 1.3 : 1.2);
 			m_clase.subirEstads(this);
 			enviarSkills();
 			enviarSubirNivel(pts);
@@ -5641,15 +5343,13 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public long poderEvasionEscudo() {
-		return (long) ((m_estads.userSkills[Skill.SKILL_Defensa] * m_clase
-			.modEvasionDeEscudoClase()) / 2);
+		return (long) ((m_estads.userSkills[Skill.SKILL_Defensa] * m_clase.modEvasionDeEscudoClase()) / 2);
 	}
 
 	public double poderEvasion() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Tacticas] < 31) {
-			tmp = m_estads.userSkills[Skill.SKILL_Tacticas]
-					* m_clase.modificadorEvasion();
+			tmp = m_estads.userSkills[Skill.SKILL_Tacticas] * m_clase.modificadorEvasion();
 		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 61) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + m_estads.userAtributos[ATRIB_AGILIDAD])
 					* m_clase.modificadorEvasion();
@@ -5666,17 +5366,16 @@ public class Client extends BaseCharacter implements Constants {
 	public double poderAtaqueArma() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Armas] < 31) {
-			tmp = m_estads.userSkills[Skill.SKILL_Armas]
-					* m_clase.modificadorPoderAtaqueArmas();
+			tmp = m_estads.userSkills[Skill.SKILL_Armas] * m_clase.modificadorPoderAtaqueArmas();
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 61) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
-				.modificadorPoderAtaqueArmas());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD])
+					* m_clase.modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 91) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
-				.modificadorPoderAtaqueArmas());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+					* m_clase.modificadorPoderAtaqueArmas());
 		} else {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
-				.modificadorPoderAtaqueArmas());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+					* m_clase.modificadorPoderAtaqueArmas());
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
 	}
@@ -5684,17 +5383,16 @@ public class Client extends BaseCharacter implements Constants {
 	public double poderAtaqueProyectil() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 31) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * m_clase
-				.modificadorPoderAtaqueProyectiles());
+			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * m_clase.modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 61) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD]) * m_clase
-				.modificadorPoderAtaqueProyectiles());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD])
+					* m_clase.modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 91) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
-				.modificadorPoderAtaqueProyectiles());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+					* m_clase.modificadorPoderAtaqueProyectiles());
 		} else {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD])) * m_clase
-				.modificadorPoderAtaqueProyectiles());
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+					* m_clase.modificadorPoderAtaqueProyectiles());
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
 	}
@@ -5702,8 +5400,7 @@ public class Client extends BaseCharacter implements Constants {
 	public double poderAtaqueWresterling() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Wresterling] < 31) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * m_clase
-				.modificadorPoderAtaqueArmas());
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * m_clase.modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 61) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + m_estads.userAtributos[ATRIB_AGILIDAD])
 					* m_clase.modificadorPoderAtaqueArmas();
@@ -5730,8 +5427,7 @@ public class Client extends BaseCharacter implements Constants {
 			// Peleando con puños
 			poderAtaque = poderAtaqueWresterling();
 		}
-		double probExito = Util.Max(10, Util.Min(90, 50 + ((poderAtaque - npc
-			.getPoderEvasion()) * 0.4)));
+		double probExito = Util.Max(10, Util.Min(90, 50 + ((poderAtaque - npc.getPoderEvasion()) * 0.4)));
 		boolean huboImpacto = (Util.Azar(1, 100) <= probExito);
 		if (huboImpacto) {
 			if (m_inv.tieneArmaEquipada()) {
@@ -5756,18 +5452,16 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_inv.tieneEscudoEquipado()) {
 			userEvasion += poderEvasionEscudo();
 		}
-		double probExito = Util.Max(10, Util.Min(90,
-			50 + ((npcPoderAtaque - userEvasion) * 0.4)));
+		double probExito = Util.Max(10, Util.Min(90, 50 + ((npcPoderAtaque - userEvasion) * 0.4)));
 		boolean impacto = (Util.Azar(1, 100) <= probExito);
 		// ¿El usuario esta usando un escudo ???
 		if (!impacto && m_inv.tieneEscudoEquipado()) {
-			double probRechazo = Util.Max(10, Util.Min(90,
-				100 * (skillDefensa / (skillDefensa + skillTacticas))));
+			double probRechazo = Util.Max(10, Util.Min(90, 100 * (skillDefensa / (skillDefensa + skillTacticas))));
 			boolean rechazo = (Util.Azar(1, 100) <= probRechazo);
 			if (rechazo) {
 				// Se rechazo el ataque con el escudo
 				enviarSonido(SND_ESCUDO);
-				//enviar(MSG_7);
+				// enviar(MSG_7);
 				subirSkill(Skill.SKILL_Defensa);
 			}
 		}
@@ -5797,14 +5491,12 @@ public class Client extends BaseCharacter implements Constants {
 					}
 				} else { // daño comun
 					if (arma.esProyectil()) {
-						modifClase = m_clase
-							.modicadorDañoClaseProyectiles();
+						modifClase = m_clase.modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
 							ObjectInfo proyectil = m_inv.getMunicion();
-							dañoArma += Util.Azar(proyectil.MinHIT,
-								proyectil.MaxHIT);
+							dañoArma += Util.Azar(proyectil.MinHIT, proyectil.MaxHIT);
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
@@ -5820,14 +5512,12 @@ public class Client extends BaseCharacter implements Constants {
 					dañoMaxArma = 1;
 				} else {
 					if (arma.esProyectil()) {
-						modifClase = m_clase
-							.modicadorDañoClaseProyectiles();
+						modifClase = m_clase.modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
 							ObjectInfo proyectil = m_inv.getMunicion();
-							dañoArma += Util.Azar(proyectil.MinHIT,
-								proyectil.MaxHIT);
+							dañoArma += Util.Azar(proyectil.MinHIT, proyectil.MaxHIT);
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
@@ -5839,9 +5529,8 @@ public class Client extends BaseCharacter implements Constants {
 			}
 		}
 		dañoUsuario = Util.Azar(m_estads.MinHIT, m_estads.MaxHIT);
-		double daño = (((3 * dañoArma)
-				+ ((dañoMaxArma / 5) * Util.Max(0,
-					(m_estads.userAtributos[ATRIB_FUERZA] - 15))) + dañoUsuario) * modifClase);
+		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Util.Max(0, (m_estads.userAtributos[ATRIB_FUERZA] - 15)))
+				+ dañoUsuario) * modifClase);
 		return (int) daño;
 	}
 
@@ -5849,8 +5538,7 @@ public class Client extends BaseCharacter implements Constants {
 		int daño = calcularDaño(npc);
 		// esta navegando? si es asi le sumamos el daño del barco
 		if (m_flags.Navegando) {
-			daño += Util.Azar(m_inv.getBarco().MinHIT, m_inv
-				.getBarco().MaxHIT);
+			daño += Util.Azar(m_inv.getBarco().MinHIT, m_inv.getBarco().MaxHIT);
 		}
 		daño -= npc.getEstads().Def;
 		if (daño < 0) {
@@ -5858,11 +5546,11 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		npc.getEstads().MinHP -= daño;
 		if (daño > 0) {
-			enviar(serverPacketID.MSG_USERHITNPC, daño);
+			enviar(ServerPacketID.MSG_USERHITNPC, daño);
 			npc.calcularDarExp(this, daño);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(serverPacketID.MSG_USERSWING);
+			enviar(ServerPacketID.MSG_USERSWING);
 		}
 		if (npc.getEstads().MinHP > 0) {
 			// Trata de apuñalar por la espalda al enemigo
@@ -5888,10 +5576,8 @@ public class Client extends BaseCharacter implements Constants {
 
 	public boolean puedeApuñalar() {
 		if (m_inv.tieneArmaEquipada()) {
-			return ((m_estads.userSkills[Skill.SKILL_Apuñalar] >= MIN_APUÑALAR) && m_inv
-				.getArma().apuñala())
-					|| ((m_clase == AssassinClass.getInstance()) && m_inv
-						.getArma().apuñala());
+			return ((m_estads.userSkills[Skill.SKILL_Apuñalar] >= MIN_APUÑALAR) && m_inv.getArma().apuñala())
+					|| ((m_clase == AssassinClass.getInstance()) && m_inv.getArma().apuñala());
 		}
 		return false;
 	}
@@ -5903,8 +5589,7 @@ public class Client extends BaseCharacter implements Constants {
 		int cant_quitar;
 		for (int i = 1; i <= m_inv.getSize(); i++) {
 			if (m_inv.getObjeto(i).objid == objIdx) {
-				cant_quitar = m_inv.getObjeto(i).cant < cant ? m_inv
-					.getObjeto(i).cant : cant;
+				cant_quitar = m_inv.getObjeto(i).cant < cant ? m_inv.getObjeto(i).cant : cant;
 				cant -= cant_quitar;
 				m_inv.desequipar(i);
 				m_inv.quitarUserInvItem(i, cant_quitar);
@@ -5950,17 +5635,17 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			break;
 		}
-		//enviar(MSG_N2, lugar, daño);
-		enviar(serverPacketID.msgN1, (byte) 1, lugar, daño);
+		// enviar(MSG_N2, lugar, daño);
+		enviar(ServerPacketID.msgN1, (byte) 1, lugar, daño);
 		if (m_flags.Privilegios == 0) {
 			m_estads.MinHP -= daño;
 		}
-		
+
 		refreshStatus(2);
-		
+
 		// Muere el usuario
 		if (m_estads.MinHP <= 0) {
-			//enviar(MSG_6); // Le informamos que ha muerto ;)
+			// enviar(MSG_6); // Le informamos que ha muerto ;)
 			// Si lo mato un guardia
 			if (esCriminal() && npc.m_NPCtype == Npc.NPCTYPE_GUARDIAS) {
 				m_reputacion.decAsesino(vlAsesino / 4);
@@ -6002,8 +5687,8 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	/**
-	 * Las mascotas que tienen como objetivo al Npc target, deben volver a
-	 * seguir al amo
+	 * Las mascotas que tienen como objetivo al Npc target, deben volver a seguir al
+	 * amo
 	 */
 	public void mascotasFollowAmo(Npc target) {
 		for (Npc element : m_mascotas) {
@@ -6018,24 +5703,17 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Estás muy lejos para disparar.", FontType.FIGHT);
 			return;
 		}
-		if (m_faccion.ArmadaReal && npc.getAmo() != null
-				&& !npc.getAmo().esCriminal()) {
-			enviarMensaje(
-				"Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
-				FontType.WARNING);
+		if (m_faccion.ArmadaReal && npc.getAmo() != null && !npc.getAmo().esCriminal()) {
+			enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
+					FontType.WARNING);
 			return;
 		}
-		if (npc.getAmo() != null && m_flags.Seguro
-				&& !npc.getAmo().esCriminal()) {
-			enviarMensaje(
-				"Debes quitar el seguro para atacar a una mascota de un ciudadano.",
-				FontType.WARNING);
+		if (npc.getAmo() != null && m_flags.Seguro && !npc.getAmo().esCriminal()) {
+			enviarMensaje("Debes quitar el seguro para atacar a una mascota de un ciudadano.", FontType.WARNING);
 			return;
 		}
 		if (npc.getEstads().Alineacion == 0 && m_flags.Seguro) {
-			enviarMensaje(
-				"Debes quitar el seguro para atacar a una criatura no hostil.",
-				FontType.WARNING);
+			enviarMensaje("Debes quitar el seguro para atacar a una criatura no hostil.", FontType.WARNING);
 			return;
 		}
 		npcAtacado(npc);
@@ -6048,7 +5726,7 @@ public class Client extends BaseCharacter implements Constants {
 			userDañoNpc(npc);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(serverPacketID.MSG_USERSWING);
+			enviar(ServerPacketID.MSG_USERSWING);
 		}
 	}
 
@@ -6086,7 +5764,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (intervaloPermiteAtacar()) {
 			// Pierde stamina
 			if (m_estads.MinSta >= 10) {
-			//	m_estads.quitarStamina(Util.Azar(1, 10));
+				// m_estads.quitarStamina(Util.Azar(1, 10));
 			} else {
 				enviarMensaje("Estas muy cansado para luchar.", FontType.INFO);
 				return;
@@ -6103,8 +5781,8 @@ public class Client extends BaseCharacter implements Constants {
 			// Look for user
 			if (cliente != null) {
 				usuarioAtacaUsuario(cliente);
-		//		enviarEstadsUsuario();
-		//		cliente.enviarEstadsUsuario();
+				// enviarEstadsUsuario();
+				// cliente.enviarEstadsUsuario();
 				return;
 			}
 			// Look for Npc
@@ -6112,9 +5790,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (npc != null) {
 				if (npc.getAttackable()) {
 					if (npc.getAmo() != null && mapa.esZonaSegura()) {
-						enviarMensaje(
-							"No podés atacar mascotas en zonas seguras",
-							FontType.FIGHT);
+						enviarMensaje("No podés atacar mascotas en zonas seguras", FontType.FIGHT);
 						return;
 					}
 					usuarioAtacaNpc(npc);
@@ -6153,26 +5829,23 @@ public class Client extends BaseCharacter implements Constants {
 			} else {
 				poderAtaque = poderAtaqueArma();
 			}
-			probExito = Util.Max(10, Util.Min(90,
-				50 + ((poderAtaque - userPoderEvasion) * 0.4)));
+			probExito = Util.Max(10, Util.Min(90, 50 + ((poderAtaque - userPoderEvasion) * 0.4)));
 		} else {
 			poderAtaque = poderAtaqueWresterling();
-			probExito = Util.Max(10, Util.Min(90,
-				50 + ((poderAtaque - userPoderEvasion) * 0.4)));
+			probExito = Util.Max(10, Util.Min(90, 50 + ((poderAtaque - userPoderEvasion) * 0.4)));
 		}
 		boolean huboImpacto = (Util.Azar(1, 100) <= probExito);
 		// el usuario esta usando un escudo ???
 		if (victima.m_inv.tieneEscudoEquipado()) {
 			// Fallo ???
 			if (!huboImpacto) {
-				double probRechazo = Util.Max(10, Util.Min(90,
-					100 * (skillDefensa / (skillDefensa + skillTacticas))));
+				double probRechazo = Util.Max(10, Util.Min(90, 100 * (skillDefensa / (skillDefensa + skillTacticas))));
 				boolean huboRechazo = (Util.Azar(1, 100) <= probRechazo);
 				if (huboRechazo) {
 					// Se rechazo el ataque con el escudo!
 					enviarSonido(SND_ESCUDO);
-					//enviar(MSG_8);
-					//victima.enviar(MSG_7);
+					// enviar(MSG_8);
+					// victima.enviar(MSG_7);
 					victima.subirSkill(Skill.SKILL_Defensa);
 				}
 			}
@@ -6208,8 +5881,8 @@ public class Client extends BaseCharacter implements Constants {
 			userDañoUser(victima);
 		} else {
 			enviarSonido(SOUND_SWING);
-			//enviar(MSG_U1);
-			//victima.enviar(MSG_U3, m_nick);
+			// enviar(MSG_U1);
+			// victima.enviar(MSG_U3, m_nick);
 		}
 	}
 
@@ -6251,8 +5924,8 @@ public class Client extends BaseCharacter implements Constants {
 				}
 			}
 		}
-		//enviar(MSG_N5, lugar, daño, victima.getNick());
-		//victima.enviar(MSG_N4, lugar, daño, getNick());
+		// enviar(MSG_N5, lugar, daño, victima.getNick());
+		// victima.enviar(MSG_N4, lugar, daño, getNick());
 		victima.m_estads.quitarHP(daño);
 		if (!m_flags.Hambre && !m_flags.Sed) {
 			if (m_inv.tieneArmaEquipada()) {
@@ -6289,10 +5962,8 @@ public class Client extends BaseCharacter implements Constants {
 		int daExp = victima.m_estads.ELV * 2;
 		m_estads.addExp(daExp);
 		// Lo mata
-		this
-			.enviarMensaje("Has matado " + victima.m_nick + "!", FontType.FIGHT);
-		enviarMensaje("Has ganado " + daExp + " puntos de experiencia.",
-			FontType.FIGHT);
+		this.enviarMensaje("Has matado " + victima.m_nick + "!", FontType.FIGHT);
+		enviarMensaje("Has ganado " + daExp + " puntos de experiencia.", FontType.FIGHT);
 		victima.enviarMensaje(m_nick + " te ha matado!", FontType.FIGHT);
 		if (triggerZonaPelea(victima) != MapCell.TRIGGER6_PERMITE) {
 			if (!victima.esCriminal()) {
@@ -6306,8 +5977,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		victima.userDie();
 		m_estads.incUsuariosMatados();
-		Log.serverLogger().info(
-			"ASESINATO: " + m_nick + " asesino a " + victima.m_nick);
+		Log.serverLogger().info("ASESINATO: " + m_nick + " asesino a " + victima.m_nick);
 	}
 
 	public void contarMuerte(Client usuarioMuerto) {
@@ -6318,8 +5988,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (usuarioMuerto.esCriminal()) {
-			if (!m_flags.LastCrimMatado
-				.equalsIgnoreCase(usuarioMuerto.m_nick)) {
+			if (!m_flags.LastCrimMatado.equalsIgnoreCase(usuarioMuerto.m_nick)) {
 				m_flags.LastCrimMatado = usuarioMuerto.m_nick;
 				m_faccion.CriminalesMatados++;
 			}
@@ -6328,8 +5997,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_faccion.RecompensasReal = 0;
 			}
 		} else {
-			if (!m_flags.LastCiudMatado
-				.equalsIgnoreCase(usuarioMuerto.m_nick)) {
+			if (!m_flags.LastCiudMatado.equalsIgnoreCase(usuarioMuerto.m_nick)) {
 				m_flags.LastCiudMatado = usuarioMuerto.m_nick;
 				m_faccion.CiudadanosMatados++;
 			}
@@ -6398,9 +6066,7 @@ public class Client extends BaseCharacter implements Constants {
 			return false;
 		}
 		if (mapa.esZonaSegura()) {
-			enviarMensaje(
-				"Esta es una zona segura, aqui no puedes atacar usuarios.",
-				FontType.WARNING);
+			enviarMensaje("Esta es una zona segura, aqui no puedes atacar usuarios.", FontType.WARNING);
 			return false;
 		}
 		if (mapa.getTrigger(victima.getPos().x, victima.getPos().y) == 4) {
@@ -6408,22 +6074,17 @@ public class Client extends BaseCharacter implements Constants {
 			return false;
 		}
 		if (!victima.esCriminal() && m_faccion.ArmadaReal) {
-			enviarMensaje(
-				"Los soldados del Ejercito Real tienen prohibido atacar ciudadanos.",
-				FontType.WARNING);
+			enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar ciudadanos.", FontType.WARNING);
 			return false;
 		}
 		if (victima.m_faccion.FuerzasCaos && m_faccion.FuerzasCaos) {
-			enviarMensaje(
-				"Los seguidores de las Fuerzas del Caos tienen prohibido atacarse entre sí.",
-				FontType.WARNING);
+			enviarMensaje("Los seguidores de las Fuerzas del Caos tienen prohibido atacarse entre sí.",
+					FontType.WARNING);
 			return false;
 		}
 		// Se asegura que la victima no es un GM
 		if (victima.esGM()) {
-			enviarMensaje(
-				"¡¡No puedes atacar a los administradores del juego!!",
-				FontType.WARNING);
+			enviarMensaje("¡¡No puedes atacar a los administradores del juego!!", FontType.WARNING);
 			return false;
 		}
 		if (!victima.estaVivo()) {
@@ -6431,15 +6092,14 @@ public class Client extends BaseCharacter implements Constants {
 			return false;
 		}
 		if (!estaVivo()) {
-			enviarMensaje("No puedes atacar porque estas muerto.",
-				FontType.INFO);
+			enviarMensaje("No puedes atacar porque estas muerto.", FontType.INFO);
 			return false;
 		}
 		if (m_flags.Seguro) {
 			if (!victima.esCriminal()) {
 				enviarMensaje(
-					"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla S.",
-					FontType.FIGHT);
+						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla S.",
+						FontType.FIGHT);
 				return false;
 			}
 		}
@@ -6447,14 +6107,10 @@ public class Client extends BaseCharacter implements Constants {
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == 7) {
 			if (mapa.getTrigger(m_pos.x, m_pos.y) == 7
 					&& mapa.getTrigger(victima.getPos().x, victima.getPos().y) != 7) {
-				enviarMensaje(
-					"Para atacar a ese usuario, él se debe encontrar en tu misma zona.",
-					FontType.FIGHT);
+				enviarMensaje("Para atacar a ese usuario, él se debe encontrar en tu misma zona.", FontType.FIGHT);
 			} else if (mapa.getTrigger(m_pos.x, m_pos.y) != 7
 					&& mapa.getTrigger(victima.getPos().x, victima.getPos().y) == 7) {
-				enviarMensaje(
-					"Para atacar a ese usuario, debes encontrarte en la misma zona que él.",
-					FontType.FIGHT);
+				enviarMensaje("Para atacar a ese usuario, debes encontrarte en la misma zona que él.", FontType.FIGHT);
 			}
 			return false;
 		}
@@ -6472,13 +6128,11 @@ public class Client extends BaseCharacter implements Constants {
 		if (suerteApuñalar()) {
 			daño *= 2;
 			victimaNPC.getEstads().MinHP -= daño;
-			enviarMensaje("Has apuñalado a la criatura por " + daño,
-				FontType.FIGHT);
+			enviarMensaje("Has apuñalado a la criatura por " + daño, FontType.FIGHT);
 			subirSkill(Skill.SKILL_Apuñalar);
 			victimaNPC.calcularDarExp(this, daño);
 		} else {
-			enviarMensaje("¡No has logrado apuñalar a tu enemigo!",
-				FontType.FIGHT);
+			enviarMensaje("¡No has logrado apuñalar a tu enemigo!", FontType.FIGHT);
 		}
 	}
 
@@ -6487,13 +6141,10 @@ public class Client extends BaseCharacter implements Constants {
 		if (suerteApuñalar()) {
 			daño *= 1.5;
 			victimaUsuario.m_estads.MinHP -= daño;
-			enviarMensaje("Has apuñalado a " + victimaUsuario.m_nick + " por "
-					+ daño, FontType.FIGHT);
-			victimaUsuario.enviarMensaje("Te ha apuñalado " + m_nick
-					+ " por " + daño, FontType.FIGHT);
+			enviarMensaje("Has apuñalado a " + victimaUsuario.m_nick + " por " + daño, FontType.FIGHT);
+			victimaUsuario.enviarMensaje("Te ha apuñalado " + m_nick + " por " + daño, FontType.FIGHT);
 		} else {
-			enviarMensaje("¡No has logrado apuñalar a tu enemigo!",
-				FontType.FIGHT);
+			enviarMensaje("¡No has logrado apuñalar a tu enemigo!", FontType.FIGHT);
 		}
 	}
 
@@ -6526,17 +6177,15 @@ public class Client extends BaseCharacter implements Constants {
 	public boolean esMascotaCiudadano(Npc npc) {
 		if (npc.getAmo() != null) {
 			if (!npc.getAmo().esCriminal()) {
-				npc.getAmo().enviarMensaje(
-					"¡¡" + m_nick + " esta atacando a tu mascota!!",
-					FontType.FIGHT);
+				npc.getAmo().enviarMensaje("¡¡" + m_nick + " esta atacando a tu mascota!!", FontType.FIGHT);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void connectNewUser(String nick, String clave, short raza, short genero, CharClass clase,
-			String email, short hogar) {
+	public void connectNewUser(String nick, String clave, short raza, short genero, CharClass clase, String email,
+			short hogar) {
 		// Validar los datos recibidos :-)
 		m_nick = nick;
 		if (!server.nombrePermitido(m_nick)) {
@@ -6571,8 +6220,8 @@ public class Client extends BaseCharacter implements Constants {
 		// }
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		inicializarAtributos(raza);
-		//m_estads.setSkills(skills);
-		
+		// m_estads.setSkills(skills);
+
 		m_estads.SkillPts = 10;
 
 		m_password = clave;
@@ -6590,34 +6239,27 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		// ???????????????? INVENTARIO ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
 		m_inv.clear();
-		m_inv.setObjeto(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100,
-			false));
-		m_inv.setObjeto(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100,
-			false));
+		m_inv.setObjeto(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100, false));
+		m_inv.setObjeto(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100, false));
 		m_inv.setArma(3, new InventoryObject(DAGA_NEWBIES, 1, true));
 		switch (raza) {
 		case RAZA_HUMANO:
-			m_inv.setArmadura(4, new InventoryObject(
-				VESTIMENTAS_COMUNES_NEWBIES_1, 1, true));
+			m_inv.setArmadura(4, new InventoryObject(VESTIMENTAS_COMUNES_NEWBIES_1, 1, true));
 			break;
 		case RAZA_ELFO:
-			m_inv.setArmadura(4, new InventoryObject(
-				VESTIMENTAS_COMUNES_NEWBIES_2, 1, true));
+			m_inv.setArmadura(4, new InventoryObject(VESTIMENTAS_COMUNES_NEWBIES_2, 1, true));
 			break;
 		case RAZA_ELFO_OSCURO:
-			m_inv.setArmadura(4, new InventoryObject(
-				VESTIMENTAS_COMUNES_NEWBIES_3, 1, true));
+			m_inv.setArmadura(4, new InventoryObject(VESTIMENTAS_COMUNES_NEWBIES_3, 1, true));
 			break;
 		case RAZA_ENANO:
-			m_inv.setArmadura(4, new InventoryObject(ROPA_ENANO_NEWBIES,
-				1, true));
+			m_inv.setArmadura(4, new InventoryObject(ROPA_ENANO_NEWBIES, 1, true));
 			break;
 		case RAZA_GNOMO:
-			m_inv.setArmadura(4, new InventoryObject(ROPA_ENANO_NEWBIES,
-				1, true));
+			m_inv.setArmadura(4, new InventoryObject(ROPA_ENANO_NEWBIES, 1, true));
 			break;
 		}
-		
+
 		saveUser();
 		connectUser(nick, clave);
 	}
@@ -6668,7 +6310,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void enviarError(String msg) {
 		Log.serverLogger().fine("ERROR: " + msg);
-		enviar(serverPacketID.msgErr, msg);
+		enviar(ServerPacketID.msgErr, msg);
 	}
 
 	public void saveUser() {
@@ -6687,48 +6329,27 @@ public class Client extends BaseCharacter implements Constants {
 
 			ini.setValue("COUNTERS", "Pena", m_counters.Pena);
 
-			ini
-				.setValue("FACCIONES", "EjercitoReal",
-					m_faccion.ArmadaReal);
-			ini.setValue("FACCIONES", "EjercitoCaos",
-				m_faccion.FuerzasCaos);
-			ini.setValue("FACCIONES", "CiudMatados",
-				m_faccion.CiudadanosMatados);
-			ini.setValue("FACCIONES", "CrimMatados",
-				m_faccion.CriminalesMatados);
-			ini.setValue("FACCIONES", "rArCaos",
-				m_faccion.RecibioArmaduraCaos);
-			ini.setValue("FACCIONES", "rArReal",
-				m_faccion.RecibioArmaduraReal);
-			ini.setValue("FACCIONES", "rExCaos",
-				m_faccion.RecibioExpInicialCaos);
-			ini.setValue("FACCIONES", "rExReal",
-				m_faccion.RecibioExpInicialReal);
-			ini
-				.setValue("FACCIONES", "recCaos",
-					m_faccion.RecompensasCaos);
-			ini
-				.setValue("FACCIONES", "recReal",
-					m_faccion.RecompensasReal);
+			ini.setValue("FACCIONES", "EjercitoReal", m_faccion.ArmadaReal);
+			ini.setValue("FACCIONES", "EjercitoCaos", m_faccion.FuerzasCaos);
+			ini.setValue("FACCIONES", "CiudMatados", m_faccion.CiudadanosMatados);
+			ini.setValue("FACCIONES", "CrimMatados", m_faccion.CriminalesMatados);
+			ini.setValue("FACCIONES", "rArCaos", m_faccion.RecibioArmaduraCaos);
+			ini.setValue("FACCIONES", "rArReal", m_faccion.RecibioArmaduraReal);
+			ini.setValue("FACCIONES", "rExCaos", m_faccion.RecibioExpInicialCaos);
+			ini.setValue("FACCIONES", "rExReal", m_faccion.RecibioExpInicialReal);
+			ini.setValue("FACCIONES", "recCaos", m_faccion.RecompensasCaos);
+			ini.setValue("FACCIONES", "recReal", m_faccion.RecompensasReal);
 
-			ini.setValue("GUILD", "EsGuildLeader",
-				m_guildInfo.m_esGuildLeader);
+			ini.setValue("GUILD", "EsGuildLeader", m_guildInfo.m_esGuildLeader);
 			ini.setValue("GUILD", "Echadas", m_guildInfo.m_echadas);
-			ini
-				.setValue("GUILD", "Solicitudes",
-					m_guildInfo.m_solicitudes);
-			ini.setValue("GUILD", "SolicitudesRechazadas",
-				m_guildInfo.m_solicitudesRechazadas);
-			ini.setValue("GUILD", "VecesFueGuildLeader",
-				m_guildInfo.m_vecesFueGuildLeader);
+			ini.setValue("GUILD", "Solicitudes", m_guildInfo.m_solicitudes);
+			ini.setValue("GUILD", "SolicitudesRechazadas", m_guildInfo.m_solicitudesRechazadas);
+			ini.setValue("GUILD", "VecesFueGuildLeader", m_guildInfo.m_vecesFueGuildLeader);
 			ini.setValue("GUILD", "YaVoto", m_guildInfo.m_yaVoto);
 			ini.setValue("GUILD", "FundoClan", m_guildInfo.m_fundoClan);
 			ini.setValue("GUILD", "GuildName", m_guildInfo.m_guildName);
-			ini
-				.setValue("GUILD", "ClanFundado",
-					m_guildInfo.m_clanFundado);
-			ini.setValue("GUILD", "ClanesParticipo",
-				m_guildInfo.m_clanesParticipo);
+			ini.setValue("GUILD", "ClanFundado", m_guildInfo.m_clanFundado);
+			ini.setValue("GUILD", "ClanesParticipo", m_guildInfo.m_clanesParticipo);
 			ini.setValue("GUILD", "GuildPts", m_guildInfo.m_guildPoints);
 
 			ini.setValue("QUEST", "NroQuest", m_quest.m_nroQuest);
@@ -6742,13 +6363,11 @@ public class Client extends BaseCharacter implements Constants {
 			// ¿Fueron modificados los atributos del usuario?
 			if (!m_flags.TomoPocion) {
 				for (int i = 0; i < m_estads.userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1),
-						m_estads.userAtributos[i]);
+					ini.setValue("ATRIBUTOS", "AT" + (i + 1), m_estads.userAtributos[i]);
 				}
 			} else {
 				for (int i = 0; i < m_estads.userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1),
-						m_estads.userAtributosBackup[i]);
+					ini.setValue("ATRIBUTOS", "AT" + (i + 1), m_estads.userAtributosBackup[i]);
 				}
 			}
 
@@ -6766,8 +6385,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("INIT", "Desc", m_desc);
 			ini.setValue("INIT", "Heading", m_infoChar.m_dir);
 
-			if (m_flags.Muerto || m_flags.Invisible
-					|| m_flags.Navegando) {
+			if (m_flags.Muerto || m_flags.Invisible || m_flags.Navegando) {
 				ini.setValue("INIT", "Head", m_origChar.m_cabeza);
 				ini.setValue("INIT", "Body", m_origChar.m_cuerpo);
 			} else {
@@ -6779,8 +6397,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("INIT", "Escudo", m_infoChar.m_escudo);
 			ini.setValue("INIT", "Casco", m_infoChar.m_casco);
 			ini.setValue("INIT", "LastIP", m_ip);
-			ini.setValue("INIT", "Position", m_pos.mapa + "-"
-					+ m_pos.x + "-" + m_pos.y);
+			ini.setValue("INIT", "Position", m_pos.mapa + "-" + m_pos.x + "-" + m_pos.y);
 
 			ini.setValue("STATS", "GLD", m_estads.oro);
 			ini.setValue("STATS", "BANCO", m_estads.banco);
@@ -6811,8 +6428,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("STATS", "ELV", m_estads.ELV);
 			ini.setValue("STATS", "ELU", m_estads.ELU);
 
-			ini.setValue("MUERTES", "UserMuertes",
-				m_estads.usuariosMatados);
+			ini.setValue("MUERTES", "UserMuertes", m_estads.usuariosMatados);
 			// ini.setValue("MUERTES", "CrimMuertes",
 			// m_estads.criminalesMatados);
 			ini.setValue("MUERTES", "NpcsMuertes", m_estads.NPCsMuertos);
@@ -6824,8 +6440,7 @@ public class Client extends BaseCharacter implements Constants {
 					cant--;
 				} else {
 					ini.setValue("BancoInventory", "Obj" + (i + 1),
-						m_bancoInv.getObjeto(i + 1).objid + "-"
-								+ m_bancoInv.getObjeto(i + 1).cant);
+							m_bancoInv.getObjeto(i + 1).objid + "-" + m_bancoInv.getObjeto(i + 1).cant);
 				}
 			}
 			ini.setValue("BancoInventory", "CantidadItems", cant);
@@ -6836,12 +6451,8 @@ public class Client extends BaseCharacter implements Constants {
 					ini.setValue("Inventory", "Obj" + (i + 1), "0-0-0");
 					cant--;
 				} else {
-					ini.setValue("Inventory", "Obj" + (i + 1), m_inv
-						.getObjeto(i + 1).objid
-							+ "-"
-							+ m_inv.getObjeto(i + 1).cant
-							+ "-"
-							+ (m_inv.getObjeto(i + 1).equipado ? 1 : 0));
+					ini.setValue("Inventory", "Obj" + (i + 1), m_inv.getObjeto(i + 1).objid + "-"
+							+ m_inv.getObjeto(i + 1).cant + "-" + (m_inv.getObjeto(i + 1).equipado ? 1 : 0));
 				}
 			}
 			ini.setValue("Inventory", "CantidadItems", cant);
@@ -6898,8 +6509,7 @@ public class Client extends BaseCharacter implements Constants {
 			// Guardar todo
 			ini.store(getPjFile(m_nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE,
-				m_nick + ": ERROR EN SAVEUSER()", e);
+			Log.serverLogger().log(Level.SEVERE, m_nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
@@ -6907,14 +6517,14 @@ public class Client extends BaseCharacter implements Constants {
 		m_nick = nick;
 		m_password = passwd;
 		try {
-			
+
 			// ¿Existe el personaje?
 			if (!existePersonaje()) {
 				enviarError("El personaje no existe. Compruebe el nombre de usuario.");
 				m_nick = "";
 				return;
 			}
-			
+
 			IniFile ini = new IniFile(getPjFile(m_nick));
 			// Reseteamos los FLAGS
 			m_flags.Escondido = false;
@@ -6927,7 +6537,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarError("Perdon, pero ya esta conectado.");
 				return;
 			}
-			
+
 			// ¿Es el passwd valido?
 			if (!m_password.equals(ini.getString("INIT", "Password"))) {
 				enviarError("Clave incorrecta.");
@@ -6940,22 +6550,19 @@ public class Client extends BaseCharacter implements Constants {
 				enviarError("Error en el personaje.");
 				return;
 			}
-			
+
 			loadUserReputacion(ini);
-			
+
 			if (server.esDios(m_nick)) {
 				m_flags.Privilegios = 3;
 				System.out.println("Im");
-				Log.logGM(m_nick, "El GM-DIOS se conectó desde la ip="
-						+ m_ip);
+				Log.logGM(m_nick, "El GM-DIOS se conectó desde la ip=" + m_ip);
 			} else if (server.esSemiDios(m_nick)) {
 				m_flags.Privilegios = 2;
-				Log.logGM(m_nick, "El GM-SEMIDIOS se conectó desde la ip="
-						+ m_ip);
+				Log.logGM(m_nick, "El GM-SEMIDIOS se conectó desde la ip=" + m_ip);
 			} else if (server.esConsejero(m_nick)) {
 				m_flags.Privilegios = 1;
-				Log.logGM(m_nick,
-					"El GM-CONSEJERO se conectó desde la ip=" + m_ip);
+				Log.logGM(m_nick, "El GM-CONSEJERO se conectó desde la ip=" + m_ip);
 			} else {
 				// Usuario no privilegiado.
 				m_flags.Privilegios = 0;
@@ -6969,43 +6576,37 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_inv.armaSlot == 0) {
 				m_infoChar.m_arma = NingunArma;
 			}
-			
+
 			if (m_flags.Navegando) {
-				m_infoChar.m_cuerpo = !estaVivo() ? iFragataFantasmal
-						: m_inv.getBarco().Ropaje;
+				m_infoChar.m_cuerpo = !estaVivo() ? iFragataFantasmal : m_inv.getBarco().Ropaje;
 				m_infoChar.m_cabeza = 0;
 				m_infoChar.m_arma = NingunArma;
 				m_infoChar.m_escudo = NingunEscudo;
 				m_infoChar.m_casco = NingunCasco;
 			}
-			
+
 			enviarInventario();
 			m_spells.enviarHechizos();
-			
+
 			int max_refresh = 5;
-			
+
 			for (int i = 1; i <= max_refresh; i++) {
 				refreshStatus(i);
 			}
-			
+
 			if (m_pos.mapa == 0) {
 				// Posicion de comienzo
 				if (m_hogar == CIUDAD_NIX) {
-					m_pos = new WorldPos(server
-						.getCiudadPos(CIUDAD_NIX));
+					m_pos = new WorldPos(server.getCiudadPos(CIUDAD_NIX));
 				} else if (m_hogar == CIUDAD_ULLA) {
-					m_pos = new WorldPos(server
-						.getCiudadPos(CIUDAD_ULLA));
+					m_pos = new WorldPos(server.getCiudadPos(CIUDAD_ULLA));
 				} else if (m_hogar == CIUDAD_BANDER) {
-					m_pos = new WorldPos(server
-						.getCiudadPos(CIUDAD_BANDER));
+					m_pos = new WorldPos(server.getCiudadPos(CIUDAD_BANDER));
 				} else if (m_hogar == CIUDAD_LINDOS) {
-					m_pos = new WorldPos(server
-						.getCiudadPos(CIUDAD_LINDOS));
+					m_pos = new WorldPos(server.getCiudadPos(CIUDAD_LINDOS));
 				} else {
 					m_hogar = CIUDAD_ULLA;
-					m_pos = new WorldPos(server
-						.getCiudadPos(CIUDAD_ULLA));
+					m_pos = new WorldPos(server.getCiudadPos(CIUDAD_ULLA));
 				}
 			} else {
 				// if (MapData(m_pos.Map, m_pos.x,
@@ -7013,30 +6614,30 @@ public class Client extends BaseCharacter implements Constants {
 				// Call CloseSocket(MapData(m_pos.Map, m_pos.x,
 				// m_pos.y).UserIndex)
 			}
-			
-			//agush ;-)
-			if (server.estaLloviendo()) enviar(serverPacketID.userRain);
+
+			// agush ;-)
+			if (server.estaLloviendo())
+				enviar(ServerPacketID.userRain);
 
 			if (!esCriminal()) {
 				m_flags.Seguro = true;
-				enviar(serverPacketID.safeToggle, (byte) 1);
-			}else {
-				enviar(serverPacketID.safeToggle, (byte) 0);
-			    m_flags.Seguro = false;
-		}
-			
+				enviar(ServerPacketID.safeToggle, (byte) 1);
+			} else {
+				enviar(ServerPacketID.safeToggle, (byte) 0);
+				m_flags.Seguro = false;
+			}
+
 			Map mapa = server.getMapa(m_pos.mapa);
 			cambiarMapa(m_pos.mapa, m_pos.x, m_pos.y);
-			
+
 			enviarIndiceUsuario();
-			
+
 			m_flags.UserLogged = true;
-			
+
 			enviarLogged();
-			
+
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE,
-				"ERROR EN connectUser(), nick=" + m_nick, e);
+			Log.serverLogger().log(Level.SEVERE, "ERROR EN connectUser(), nick=" + m_nick, e);
 			enviarError("Hubo un error iniciando el personaje.");
 		} finally {
 			if (!m_flags.UserLogged) {
@@ -7047,8 +6648,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	private boolean validateChr() {
-		return m_infoChar.m_cabeza != 0 && m_infoChar.m_cuerpo != 0
-				&& validateSkills();
+		return m_infoChar.m_cabeza != 0 && m_infoChar.m_cuerpo != 0 && validateSkills();
 	}
 
 	private boolean validateSkills() {
@@ -7070,22 +6670,19 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		enviarMensaje("Mensaje del dia:", FontType.INFO);
 		for (String line : motd) {
-		//	enviar(MSG_MOTD, line);
+			// enviar(MSG_MOTD, line);
 		}
 	}
 
 	public void doServerVersion() {
-		enviarMensaje("-=<>[ Bienvenido a Argentun Online ]<>=-",
-			FontType.WELLCOME);
-		enviarMensaje("-< Running in AOJ: JAVA Powered Server >-",
-			FontType.WELLCOME);
+		enviarMensaje("-=<>[ Bienvenido a Argentun Online ]<>=-", FontType.WELLCOME);
+		enviarMensaje("-=<>[    Powered by AOJ Server     ]<>=-", FontType.WELLCOME);
 		enviarMensaje("Server version: " + VERSION, FontType.WELLCOME);
 	}
 
 	public void doDebug(String s) {
 		if ("".equals(s)) {
-			enviarMensaje("DEBUG: "
-					+ (server.isShowDebug() ? "ON" : "OFF"), FontType.INFO);
+			enviarMensaje("DEBUG: " + (server.isShowDebug() ? "ON" : "OFF"), FontType.INFO);
 		} else if (s.equalsIgnoreCase("ON")) {
 			server.setShowDebug(true);
 			enviarMensaje("DEBUG: activado", FontType.INFO);
@@ -7104,18 +6701,12 @@ public class Client extends BaseCharacter implements Constants {
 	private void loadUserInit(IniFile ini) throws java.io.IOException {
 		m_faccion.ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
 		m_faccion.FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
-		m_faccion.CiudadanosMatados = ini.getLong("FACCIONES",
-			"CiudMatados");
-		m_faccion.CriminalesMatados = ini.getLong("FACCIONES",
-			"CrimMatados");
-		m_faccion.RecibioArmaduraCaos = ini.getShort("FACCIONES",
-			"rArCaos") == 1;
-		m_faccion.RecibioArmaduraReal = ini.getShort("FACCIONES",
-			"rArReal") == 1;
-		m_faccion.RecibioExpInicialCaos = ini.getShort("FACCIONES",
-			"rExCaos") == 1;
-		m_faccion.RecibioExpInicialReal = ini.getShort("FACCIONES",
-			"rExReal") == 1;
+		m_faccion.CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
+		m_faccion.CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
+		m_faccion.RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
+		m_faccion.RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
+		m_faccion.RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
+		m_faccion.RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
 		m_faccion.RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
 		m_faccion.RecompensasReal = ini.getShort("FACCIONES", "recReal");
 
@@ -7134,11 +6725,9 @@ public class Client extends BaseCharacter implements Constants {
 		m_counters.Pena = ini.getLong("COUNTERS", "Pena");
 		m_email = ini.getString("CONTACTO", "Email");
 		m_genero = (byte) ini.getShort("INIT", "Genero");
-		m_clase = CharClassManager.getInstance().getClase(
-			ini.getString("INIT", "Clase").toUpperCase());
+		m_clase = CharClassManager.getInstance().getClase(ini.getString("INIT", "Clase").toUpperCase());
 		if (m_clase == null) {
-			throw new java.io.IOException("Clase desconocida: "
-					+ ini.getString("INIT", "Clase").toUpperCase());
+			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
 		m_raza = (byte) ini.getShort("INIT", "Raza");
 		m_hogar = (byte) ini.getShort("INIT", "Hogar");
@@ -7171,8 +6760,7 @@ public class Client extends BaseCharacter implements Constants {
 
 		m_desc = ini.getString("INIT", "Desc");
 		{
-			StringTokenizer st = new StringTokenizer(ini.getString("INIT",
-				"Position"), "-");
+			StringTokenizer st = new StringTokenizer(ini.getString("INIT", "Position"), "-");
 			m_pos.mapa = Short.parseShort(st.nextToken());
 			m_pos.x = Short.parseShort(st.nextToken());
 			m_pos.y = Short.parseShort(st.nextToken());
@@ -7183,8 +6771,8 @@ public class Client extends BaseCharacter implements Constants {
 		for (int i = 0; i < m_bancoInv.getSize(); i++) {
 			String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
-			m_bancoInv.setObjeto(i + 1, new InventoryObject(Short
-				.parseShort(st.nextToken()), Short.parseShort(st.nextToken())));
+			m_bancoInv.setObjeto(i + 1,
+					new InventoryObject(Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken())));
 		}
 
 		// int cant = ini.getInt("Inventory", "CantidadItems");
@@ -7192,9 +6780,8 @@ public class Client extends BaseCharacter implements Constants {
 		for (int i = 0; i < m_inv.getSize(); i++) {
 			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
-			m_inv.setObjeto(i + 1, new InventoryObject(Short.parseShort(st
-				.nextToken()), Short.parseShort(st.nextToken()), Short
-				.parseShort(st.nextToken()) == 1));
+			m_inv.setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
+					Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken()) == 1));
 		}
 		m_inv.armaSlot = ini.getShort("Inventory", "WeaponEqpSlot");
 		if (m_inv.armaSlot > 0) {
@@ -7221,8 +6808,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_inv.municionSlot > 0) {
 			m_inv.municionEquipada = true;
 		}
-		m_inv.herramientaSlot = ini.getShort("Inventory",
-			"HerramientaSlot");
+		m_inv.herramientaSlot = ini.getShort("Inventory", "HerramientaSlot");
 		if (m_inv.herramientaSlot > 0) {
 			m_inv.herramientaEquipada = true;
 		}
@@ -7230,22 +6816,17 @@ public class Client extends BaseCharacter implements Constants {
 		m_cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
 		for (int i = 0; i < m_cantMascotas; i++) {
-			m_mascotas[i] = server.getNPC(ini.getShort("Mascotas",
-				"Mas" + (i + 1)));
+			m_mascotas[i] = server.getNPC(ini.getShort("Mascotas", "Mas" + (i + 1)));
 		}
 
 		m_guildInfo.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
-		m_guildInfo.m_esGuildLeader = ini.getShort("Guild",
-			"EsGuildLeader") == 1;
+		m_guildInfo.m_esGuildLeader = ini.getShort("Guild", "EsGuildLeader") == 1;
 		m_guildInfo.m_echadas = ini.getLong("Guild", "Echadas");
 		m_guildInfo.m_solicitudes = ini.getLong("Guild", "Solicitudes");
-		m_guildInfo.m_solicitudesRechazadas = ini.getLong("Guild",
-			"SolicitudesRechazadas");
-		m_guildInfo.m_vecesFueGuildLeader = ini.getLong("Guild",
-			"VecesFueGuildLeader");
+		m_guildInfo.m_solicitudesRechazadas = ini.getLong("Guild", "SolicitudesRechazadas");
+		m_guildInfo.m_vecesFueGuildLeader = ini.getLong("Guild", "VecesFueGuildLeader");
 		m_guildInfo.m_yaVoto = ini.getShort("Guild", "YaVoto") == 1;
-		m_guildInfo.m_clanesParticipo = ini.getLong("Guild",
-			"ClanesParticipo");
+		m_guildInfo.m_clanesParticipo = ini.getLong("Guild", "ClanesParticipo");
 		m_guildInfo.m_guildPoints = ini.getLong("Guild", "GuildPts");
 		m_guildInfo.m_clanFundado = ini.getString("Guild", "ClanFundado");
 		m_guildInfo.m_guildName = ini.getString("Guild", "GuildName");
@@ -7258,14 +6839,12 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void loadUserStats(IniFile ini) {
 		for (int i = 0; i < NUMATRIBUTOS; i++) {
-			m_estads.userAtributos[i] = (byte) ini.getShort("ATRIBUTOS",
-				"AT" + (i + 1));
+			m_estads.userAtributos[i] = (byte) ini.getShort("ATRIBUTOS", "AT" + (i + 1));
 			m_estads.userAtributosBackup[i] = m_estads.userAtributos[i];
 		}
 
 		for (int i = 1; i < m_estads.userSkills.length; i++) {
-			m_estads.userSkills[i] = (byte) ini.getShort("SKILLS", "SK"
-					+ i);
+			m_estads.userSkills[i] = (byte) ini.getShort("SKILLS", "SK" + i);
 		}
 
 		for (int slot = 1; slot <= m_spells.getCount(); slot++) {
@@ -7320,10 +6899,10 @@ public class Client extends BaseCharacter implements Constants {
 		} else {
 			if (m_flags.Ceguera) {
 				m_flags.Ceguera = false;
-				//enviar(MSG_NSEGUE);
+				// enviar(MSG_NSEGUE);
 			} else {
 				m_flags.Estupidez = false;
-				//enviar(MSG_NESTUP);
+				// enviar(MSG_NESTUP);
 			}
 		}
 	}
@@ -7334,13 +6913,11 @@ public class Client extends BaseCharacter implements Constants {
 		} else {
 			Map mapa = server.getMapa(m_pos.mapa);
 			if (mapa.getTerreno() == TERRENO_NIEVE) {
-				enviarMensaje(
-					"¡¡Estas muriendo de frio, abrígate o morirás!!.",
-					FontType.INFO);
+				enviarMensaje("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.INFO);
 				int modifi = Util.porcentaje(m_estads.MaxHP, 5);
 				m_estads.MinHP -= modifi;
 				refreshStatus(2);
-				
+
 				if (m_estads.MinHP < 1) {
 					enviarMensaje("¡¡Has muerto de frio!!.", FontType.INFO);
 					m_estads.MinHP = 0;
@@ -7351,9 +6928,7 @@ public class Client extends BaseCharacter implements Constants {
 					// PFL...
 					int modifi = Util.porcentaje(m_estads.MaxSta, 5);
 					m_estads.quitarStamina(modifi);
-					enviarMensaje(
-						"¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.",
-						FontType.INFO);
+					enviarMensaje("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.INFO);
 				}
 			}
 			m_counters.Frio = 0;
@@ -7372,12 +6947,11 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_counters.HPCounter < intervalo) {
 				m_counters.HPCounter++;
 			} else {
-				int mashit = Util.Azar(2, Util.porcentaje(m_estads.MaxSta,
-					5));
+				int mashit = Util.Azar(2, Util.porcentaje(m_estads.MaxSta, 5));
 				m_counters.HPCounter = 0;
 				m_estads.MinHP += mashit;
 				refreshStatus(2);
-				
+
 				if (m_estads.MinHP > m_estads.MaxHP) {
 					m_estads.MinHP = m_estads.MaxHP;
 				}
@@ -7405,7 +6979,7 @@ public class Client extends BaseCharacter implements Constants {
 		m_counters.IdleCount = 0;
 		if (m_estads.MinMAN >= m_estads.MaxMAN) {
 			enviarMensaje("Has terminado de meditar.", FontType.INFO);
-			enviar(serverPacketID.medOk);
+			enviar(ServerPacketID.medOk);
 			m_flags.Meditando = false;
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -7415,8 +6989,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (suerteMeditar()) {
 			int cant = Util.porcentaje(m_estads.MaxMAN, 3);
 			m_estads.aumentarMana(cant);
-			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!",
-				FontType.INFO);
+			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!", FontType.INFO);
 			refreshStatus(3);
 			subirSkill(Skill.SKILL_Meditar);
 		}
@@ -7426,8 +6999,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_counters.Veneno < IntervaloVeneno) {
 			m_counters.Veneno++;
 		} else {
-			enviarMensaje("Estas envenenado, si no te curas moriras.",
-				FontType.VENENO);
+			enviarMensaje("Estas envenenado, si no te curas moriras.", FontType.VENENO);
 			m_counters.Veneno = 0;
 			m_estads.MinHP -= Util.Azar(1, 5);
 			refreshStatus(2);
@@ -7458,10 +7030,9 @@ public class Client extends BaseCharacter implements Constants {
 			m_estads.restoreAtributos();
 		}
 	}
-	
+
 	public void sendUserAtributos() {
-		enviar(serverPacketID.userAtri, m_estads.userAtributos[0],
-				m_estads.userAtributos[1], m_estads.userAtributos[2],
+		enviar(ServerPacketID.userAtri, m_estads.userAtributos[0], m_estads.userAtributos[1], m_estads.userAtributos[2],
 				m_estads.userAtributos[3], m_estads.userAtributos[4]);
 	}
 
@@ -7509,8 +7080,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_counters.STACounter++;
 			} else {
 				m_counters.STACounter = 0;
-				int massta = Util.Azar(1, Util.porcentaje(m_estads.MaxSta,
-					5));
+				int massta = Util.Azar(1, Util.porcentaje(m_estads.MaxSta, 5));
 				m_estads.aumentarStamina(massta);
 				refreshStatus(4);
 				// enviarMensaje("Te sientes menos cansado.", FontType.INFO);
@@ -7566,31 +7136,31 @@ public class Client extends BaseCharacter implements Constants {
 				duracionPociones();
 				bEnviarAyS = hambreYSed();
 				Map mapa = server.getMapa(m_pos.mapa);
-				if (!(server.estaLloviendo() && mapa.intemperie(
-					m_pos.x, m_pos.y))) {
-					if (!m_flags.Descansar && !m_flags.Hambre
-							&& !m_flags.Sed) {
+				if (!(server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y))) {
+					if (!m_flags.Descansar && !m_flags.Hambre && !m_flags.Sed) {
 						// No esta descansando
-						
-						if (sanar(SanaIntervaloSinDescansar)) refreshStatus(2);
-						if (recStamina(StaminaIntervaloSinDescansar)) refreshStatus(4);
-						
-						//bEnviarStats = sanar(SanaIntervaloSinDescansar);
-						//bEnviarStats = recStamina(StaminaIntervaloSinDescansar);
+
+						if (sanar(SanaIntervaloSinDescansar))
+							refreshStatus(2);
+						if (recStamina(StaminaIntervaloSinDescansar))
+							refreshStatus(4);
+
+						// bEnviarStats = sanar(SanaIntervaloSinDescansar);
+						// bEnviarStats = recStamina(StaminaIntervaloSinDescansar);
 					} else if (m_flags.Descansar) {
 						// esta descansando
-						
-						if (sanar(SanaIntervaloDescansar)) refreshStatus(2);
-						if (recStamina(StaminaIntervaloDescansar)) refreshStatus(4);
-						
-						//bEnviarStats = sanar(SanaIntervaloDescansar);
-						//bEnviarStats = recStamina(StaminaIntervaloDescansar);
+
+						if (sanar(SanaIntervaloDescansar))
+							refreshStatus(2);
+						if (recStamina(StaminaIntervaloDescansar))
+							refreshStatus(4);
+
+						// bEnviarStats = sanar(SanaIntervaloDescansar);
+						// bEnviarStats = recStamina(StaminaIntervaloDescansar);
 						// termina de descansar automaticamente
-						if (m_estads.MaxHP == m_estads.MinHP
-								&& m_estads.MaxSta == m_estads.MinSta) {
-							//enviar(MSG_DOK);
-							enviarMensaje("Has terminado de descansar.",
-								FontType.INFO);
+						if (m_estads.MaxHP == m_estads.MinHP && m_estads.MaxSta == m_estads.MinSta) {
+							// enviar(MSG_DOK);
+							enviarMensaje("Has terminado de descansar.", FontType.INFO);
 							m_flags.Descansar = false;
 						}
 					}
@@ -7607,9 +7177,9 @@ public class Client extends BaseCharacter implements Constants {
 					m_estads.MinAGU = 0;
 					userDie();
 				}
-				//if (bEnviarStats) {
-				//	enviarEstadsUsuario();
-				//}
+				// if (bEnviarStats) {
+				// enviarEstadsUsuario();
+				// }
 				if (bEnviarAyS) {
 					enviarEstadsHambreSed();
 				}
@@ -7691,8 +7261,7 @@ public class Client extends BaseCharacter implements Constants {
 	public boolean checkRazaUsaRopa(short objid) {
 		// Verifica si la raza puede usar esta ropa
 		ObjectInfo infoObj = server.getInfoObjeto(objid);
-		if (m_raza == RAZA_HUMANO || m_raza == RAZA_ELFO
-				|| m_raza == RAZA_ELFO_OSCURO) {
+		if (m_raza == RAZA_HUMANO || m_raza == RAZA_ELFO || m_raza == RAZA_ELFO_OSCURO) {
 			return !infoObj.esParaRazaEnana();
 		}
 		return infoObj.esParaRazaEnana();
@@ -7749,22 +7318,19 @@ public class Client extends BaseCharacter implements Constants {
 		ObjectInfo info = server.getInfoObjeto(objid);
 		if (info.LingH > 0) {
 			if (!tieneObjetos(LingoteHierro, info.LingH)) {
-				enviarMensaje("No tienes suficientes lingotes de hierro.",
-					FontType.INFO);
+				enviarMensaje("No tienes suficientes lingotes de hierro.", FontType.INFO);
 				return false;
 			}
 		}
 		if (info.LingP > 0) {
 			if (!tieneObjetos(LingotePlata, info.LingP)) {
-				enviarMensaje("No tienes suficientes lingotes de plata.",
-					FontType.INFO);
+				enviarMensaje("No tienes suficientes lingotes de plata.", FontType.INFO);
 				return false;
 			}
 		}
 		if (info.LingO > 0) {
 			if (!tieneObjetos(LingoteOro, info.LingO)) {
-				enviarMensaje("No tienes suficientes lingotes de oro.",
-					FontType.INFO);
+				enviarMensaje("No tienes suficientes lingotes de oro.", FontType.INFO);
 				return false;
 			}
 		}
@@ -7773,8 +7339,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	private boolean puedeConstruir(short objid) {
 		ObjectInfo info = server.getInfoObjeto(objid);
-		return herreroTieneMateriales(objid)
-				&& m_estads.getUserSkill(Skill.SKILL_Herreria) >= info.SkHerreria;
+		return herreroTieneMateriales(objid) && m_estads.getUserSkill(Skill.SKILL_Herreria) >= info.SkHerreria;
 	}
 
 	private boolean puedeConstruirHerreria(short objid) {
@@ -7810,8 +7375,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("Has construido la armadura!.", FontType.INFO);
 			}
 			if (m_inv.agregarItem(objid, 1) < 1) {
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, 1));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Herreria);
 			enviarInventario();
@@ -7835,15 +7399,12 @@ public class Client extends BaseCharacter implements Constants {
 		if (mapa == null) {
 			return;
 		}
-		if (carpinteroTieneMateriales(objid)
-				&& m_estads.getUserSkill(Skill.SKILL_Carpinteria) >= info.SkCarpinteria
-				&& puedeConstruirCarpintero(objid)
-				&& m_inv.getHerramienta().ObjIndex == SERRUCHO_CARPINTERO) {
+		if (carpinteroTieneMateriales(objid) && m_estads.getUserSkill(Skill.SKILL_Carpinteria) >= info.SkCarpinteria
+				&& puedeConstruirCarpintero(objid) && m_inv.getHerramienta().ObjIndex == SERRUCHO_CARPINTERO) {
 			carpinteroQuitarMateriales(objid);
 			enviarMensaje("¡Has construido el objeto!", FontType.INFO);
 			if (m_inv.agregarItem(objid, 1) < 1) {
-				mapa.tirarItemAlPiso(m_pos.x, m_pos.y,
-					new InventoryObject(objid, 1));
+				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Carpinteria);
 			enviarInventario();
@@ -7882,25 +7443,25 @@ public class Client extends BaseCharacter implements Constants {
 		if (eraCrimi) {
 			refreshCiu();
 		}
-		
+
 		System.out.println(this.getNick() + "ahora es ciuda");
-		
+
 	}
 
 	private void actualizarUserChar() {
 		Map mapa = server.getMapa(m_pos.mapa);
-		//mapa.enviarATodos(MSG_BP, getId());
-		//mapa.enviarATodos(MSG_CC, ccParams());
+		// mapa.enviarATodos(MSG_BP, getId());
+		// mapa.enviarATodos(MSG_CC, ccParams());
 	}
-	
+
 	private void refreshPk() {
 		Map mapa = server.getMapa(m_pos.mapa);
-		mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.updateStats, getId(), (byte) 1);
+		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.updateStats, getId(), (byte) 1);
 	}
-	
+
 	public void refreshCiu() {
 		Map mapa = server.getMapa(m_pos.mapa);
-		mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.updateStats, getId(), (byte) 0);
+		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.updateStats, getId(), (byte) 0);
 	}
 
 	public void cerrarUsuario() {
@@ -7914,25 +7475,21 @@ public class Client extends BaseCharacter implements Constants {
 				// es
 				// 10
 				// segundos
-				enviarMensaje("Cerrando... Se cerrará el juego en "
-						+ IntervaloCerrarConexion + " segundos...",
-					FontType.INFO);
+				enviarMensaje("Cerrando... Se cerrará el juego en " + IntervaloCerrarConexion + " segundos...",
+						FontType.INFO);
 			}
 		}
 	}
 
 	private void sendUserBovedaTxt(Client usuario) {
 		enviarMensaje("El usuario " + usuario.getNick(), FontType.INFO_B);
-		enviarMensaje(
-			"Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.",
-			FontType.INFO);
+		enviarMensaje("Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
 		InventoryObject obj;
 		ObjectInfo iobj;
 		for (int i = 1; i <= usuario.m_bancoInv.getSize(); i++) {
 			if ((obj = usuario.m_bancoInv.getObjeto(i)) != null) {
 				iobj = server.getInfoObjeto(obj.objid);
-				enviarMensaje(" Objeto " + i + ": " + iobj.Nombre
-						+ " Cantidad:" + obj.cant, FontType.INFO);
+				enviarMensaje(" Objeto " + i + ": " + iobj.Nombre + " Cantidad:" + obj.cant, FontType.INFO);
 			}
 		}
 	}
@@ -7947,15 +7504,13 @@ public class Client extends BaseCharacter implements Constants {
 				// Lista de objetos en el banco.
 				ObjectInfo iobj;
 				for (int i = 0; i < MAX_BANCOINVENTORY_SLOTS; i++) {
-					String tmp = ini.getString("BancoInventory", "Obj"
-							+ (i + 1));
+					String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
 					StringTokenizer st = new StringTokenizer(tmp, "-");
 					short objid = Short.parseShort(st.nextToken());
 					short cant = Short.parseShort(st.nextToken());
 					if (objid > 0) {
 						iobj = server.getInfoObjeto(objid);
-						enviarMensaje(" Objeto " + i + " " + iobj.Nombre
-								+ " Cantidad:" + cant, FontType.INFO);
+						enviarMensaje(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.INFO);
 					}
 				}
 			} catch (java.io.IOException e) {
@@ -7973,7 +7528,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (slot < 1 || slot > MAX_HECHIZOS) {
 			return;
 		}
-		
+
 		m_spells.moveSpell(slot, dir);
 	}
 
@@ -7981,15 +7536,12 @@ public class Client extends BaseCharacter implements Constants {
 		if (usuario == null) {
 			return;
 		}
-		enviarMensaje("Pj: " + usuario.getNick() + " Clase: "
-				+ usuario.m_clase.getName(), FontType.INFO_B);
-		enviarMensaje("CiudadanosMatados: "
-				+ usuario.getFaccion().CiudadanosMatados
-				+ " CriminalesMatados: "
-				+ usuario.getFaccion().CriminalesMatados + " UsuariosMatados: "
-				+ usuario.getEstads().usuariosMatados, FontType.INFO);
-		enviarMensaje("NPCsMuertos: " + usuario.getEstads().NPCsMuertos
-				+ " Pena: " + usuario.m_counters.Pena, FontType.INFO);
+		enviarMensaje("Pj: " + usuario.getNick() + " Clase: " + usuario.m_clase.getName(), FontType.INFO_B);
+		enviarMensaje("CiudadanosMatados: " + usuario.getFaccion().CiudadanosMatados + " CriminalesMatados: "
+				+ usuario.getFaccion().CriminalesMatados + " UsuariosMatados: " + usuario.getEstads().usuariosMatados,
+				FontType.INFO);
+		enviarMensaje("NPCsMuertos: " + usuario.getEstads().NPCsMuertos + " Pena: " + usuario.m_counters.Pena,
+				FontType.INFO);
 	}
 
 	private void sendUserMiniStatsTxtFromChar(String pj) {
@@ -7998,22 +7550,16 @@ public class Client extends BaseCharacter implements Constants {
 		if (Util.existeArchivo(getPjFile(pj))) {
 			try {
 				IniFile ini = new IniFile(getPjFile(pj));
-				enviarMensaje("Pj: " + pj + " Clase: "
-						+ ini.getString("INIT", "Clase"), FontType.INFO_B);
-				enviarMensaje("CiudadanosMatados: "
-						+ ini.getLong("FACCIONES", "CiudMatados")
-						+ " CriminalesMatados: "
-						+ ini.getLong("FACCIONES", "CrimMatados")
-						+ " UsuariosMatados: "
+				enviarMensaje("Pj: " + pj + " Clase: " + ini.getString("INIT", "Clase"), FontType.INFO_B);
+				enviarMensaje("CiudadanosMatados: " + ini.getLong("FACCIONES", "CiudMatados") + " CriminalesMatados: "
+						+ ini.getLong("FACCIONES", "CrimMatados") + " UsuariosMatados: "
 						+ ini.getInt("MUERTES", "UserMuertes"), FontType.INFO);
-				enviarMensaje("NPCsMuertos: "
-						+ ini.getInt("MUERTES", "NpcsMuertes") + " Pena: "
+				enviarMensaje("NPCsMuertos: " + ini.getInt("MUERTES", "NpcsMuertes") + " Pena: "
 						+ ini.getLong("COUNTERS", "PENA"), FontType.INFO);
 				boolean ban = ini.getShort("FLAGS", "Ban") == 1;
 				enviarMensaje("Ban: " + (ban ? "si" : "no"), FontType.INFO);
 				if (ban) {
-					enviarMensaje("Ban por: "
-							+ ini.getString("BAN", "BannedBy") + " Motivo: "
+					enviarMensaje("Ban por: " + ini.getString("BAN", "BannedBy") + " Motivo: "
 							+ ini.getString("BAN", "Reason"), FontType.FIGHT);
 				}
 			} catch (java.io.IOException e) {
@@ -8028,11 +7574,8 @@ public class Client extends BaseCharacter implements Constants {
 		if (Util.existeArchivo(getPjFile(pj))) {
 			try {
 				IniFile ini = new IniFile(getPjFile(pj));
-				enviarMensaje("Pj: " + pj + " Clase: "
-						+ ini.getString("INIT", "Clase"), FontType.INFO_B);
-				enviarMensaje("Tiene "
-						+ ini.getShort("Inventory", "CantidadItems")
-						+ " objetos.", FontType.INFO);
+				enviarMensaje("Pj: " + pj + " Clase: " + ini.getString("INIT", "Clase"), FontType.INFO_B);
+				enviarMensaje("Tiene " + ini.getShort("Inventory", "CantidadItems") + " objetos.", FontType.INFO);
 				ObjectInfo iobj;
 				for (int i = 0; i < MAX_INVENTORY_SLOTS; i++) {
 					String tmp = ini.getString("Inventory", "Obj" + (i + 1));
@@ -8041,8 +7584,7 @@ public class Client extends BaseCharacter implements Constants {
 					short cant = Short.parseShort(st.nextToken());
 					if (objid > 0) {
 						iobj = server.getInfoObjeto(objid);
-						enviarMensaje(" Objeto " + i + " " + iobj.Nombre
-								+ " Cantidad:" + cant, FontType.INFO);
+						enviarMensaje(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.INFO);
 					}
 				}
 			} catch (java.io.IOException e) {
@@ -8057,11 +7599,9 @@ public class Client extends BaseCharacter implements Constants {
 		if (victima == null) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}
-		int t1 = server.getMapa(m_pos.mapa).getTrigger(
-			m_pos.x, m_pos.y);
-		int t2 = server.getMapa(victima.getPos().mapa).getTrigger(
-			victima.getPos().x, victima.getPos().y);
-		if (t1 != MapCell.TRIGGER_ARENA_DUELOS && t2 != MapCell.TRIGGER_ARENA_DUELOS) { 
+		int t1 = server.getMapa(m_pos.mapa).getTrigger(m_pos.x, m_pos.y);
+		int t2 = server.getMapa(victima.getPos().mapa).getTrigger(victima.getPos().x, victima.getPos().y);
+		if (t1 != MapCell.TRIGGER_ARENA_DUELOS && t2 != MapCell.TRIGGER_ARENA_DUELOS) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}
 		if (t1 == t2) {
@@ -8083,10 +7623,8 @@ public class Client extends BaseCharacter implements Constants {
 			if (arma.envenena()) {
 				if (Util.Azar(1, 100) < 60) {
 					victima.m_flags.Envenenado = true;
-					victima.enviarMensaje(m_nick + " te ha envenenado!!",
-						FontType.FIGHT);
-					enviarMensaje("Has envenenado a " + victima.getNick()
-							+ "!!", FontType.FIGHT);
+					victima.enviarMensaje(m_nick + " te ha envenenado!!", FontType.FIGHT);
+					enviarMensaje("Has envenenado a " + victima.getNick() + "!!", FontType.FIGHT);
 				}
 			}
 		}
@@ -8099,31 +7637,23 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		try {
 			IniFile ini = new IniFile(getPjFile(pj));
-			StringBuffer sb = new StringBuffer(pj).append(",").append(
-				ini.getString("INIT", "Raza")).append(",").append(
-				ini.getString("INIT", "Clase")).append(",").append(
-				ini.getString("INIT", "Genero")).append(",").append(
-				ini.getString("STATS", "ELV")).append(",").append(
-				ini.getString("STATS", "GLD")).append(",").append(
-				ini.getString("STATS", "BANCO")).append(",").append(
-				ini.getString("REP", "Promedio")).append(",").append(
-				ini.getString("Guild", "FundoClan")).append(",").append(
-				ini.getString("Guild", "EsGuildLeader")).append(",").append(
-				ini.getString("Guild", "Echadas")).append(",")
-				.append(ini.getString("Guild", "Solicitudes"))
-				.append(",")
-				.append(ini.getString("Guild", "SolicitudesRechazadas"))
-				.append(",")
-				.append(ini.getString("Guild", "VecesFueGuildLeader"))
-				.append(",")
-				// .append(ini.getString("Guild", "YaVoto")).append(",")
-				.append(ini.getString("Guild", "ClanesParticipo")).append(",")
-				.append(ini.getString("Guild", "ClanFundado")).append(",")
-				.append(ini.getString("Guild", "GuildName")).append(",")
-				.append(ini.getString("FACCIONES", "EjercitoReal")).append(",")
-				.append(ini.getString("FACCIONES", "EjercitoCaos")).append(",")
-				.append(ini.getString("FACCIONES", "CiudMatados")).append(",")
-				.append(ini.getString("FACCIONES", "CiudMatados")).append(",");
+			StringBuffer sb = new StringBuffer(pj).append(",").append(ini.getString("INIT", "Raza")).append(",")
+					.append(ini.getString("INIT", "Clase")).append(",").append(ini.getString("INIT", "Genero"))
+					.append(",").append(ini.getString("STATS", "ELV")).append(",").append(ini.getString("STATS", "GLD"))
+					.append(",").append(ini.getString("STATS", "BANCO")).append(",")
+					.append(ini.getString("REP", "Promedio")).append(",").append(ini.getString("Guild", "FundoClan"))
+					.append(",").append(ini.getString("Guild", "EsGuildLeader")).append(",")
+					.append(ini.getString("Guild", "Echadas")).append(",").append(ini.getString("Guild", "Solicitudes"))
+					.append(",").append(ini.getString("Guild", "SolicitudesRechazadas")).append(",")
+					.append(ini.getString("Guild", "VecesFueGuildLeader")).append(",")
+					// .append(ini.getString("Guild", "YaVoto")).append(",")
+					.append(ini.getString("Guild", "ClanesParticipo")).append(",")
+					.append(ini.getString("Guild", "ClanFundado")).append(",")
+					.append(ini.getString("Guild", "GuildName")).append(",")
+					.append(ini.getString("FACCIONES", "EjercitoReal")).append(",")
+					.append(ini.getString("FACCIONES", "EjercitoCaos")).append(",")
+					.append(ini.getString("FACCIONES", "CiudMatados")).append(",")
+					.append(ini.getString("FACCIONES", "CiudMatados")).append(",");
 			return sb.toString();
 		} catch (java.io.IOException e) {
 			// fixme
@@ -8185,8 +7715,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("GUILD", "EsGuildLeader", esLider);
 			ini.store(getPjFile(nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE,
-				nick + ": ERROR EN SAVEUSER()", e);
+			Log.serverLogger().log(Level.SEVERE, nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
@@ -8201,8 +7730,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("GUILD", "GuildPts", guildPoints + addedGuildPts);
 			ini.store(getPjFile(nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE,
-				nick + ": ERROR EN SAVEUSER()", e);
+			Log.serverLogger().log(Level.SEVERE, nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 

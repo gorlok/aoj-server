@@ -52,12 +52,14 @@ import java.util.logging.Level;
 
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.protocol.ClientProcessThread;
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+
+import com.dosse.upnp.UPnP;
 
 /** 
  * AOJava main class.
@@ -65,9 +67,11 @@ import org.ArgentumOnline.server.util.Util;
  */
 public class AojServer implements Constants {
 	
-	public manageServer manager = new manageServer(this);
+	public ManageServer manager = new ManageServer(this);
 	
     private ClientProcessThread processThread;
+    
+    private boolean useUPnP = true;
     
     private ServerSocketChannel server;
     private Selector selector;
@@ -244,6 +248,7 @@ public class AojServer implements Constants {
     
     public void shutdown() {
         this.m_corriendo = false;
+        this.getProcessThread().endThread();
     }
     
     public List<String> getUsuarioConIP(String ip) {
@@ -301,6 +306,23 @@ public class AojServer implements Constants {
         Log.serverLogger().info("Escuchando en el puerto " + SERVER_PORT);
         this.selector = Selector.open();
         this.server.register(this.selector, SelectionKey.OP_ACCEPT);
+    }
+    
+    private void openUPnP() {
+    	if (this.useUPnP) {
+	        System.out.println("Attempting UPnP port forwarding...");
+	        if (UPnP.isUPnPAvailable()) { //is UPnP available?
+	            if (UPnP.isMappedTCP(SERVER_PORT)) { //is the port already mapped?
+	                System.out.println("UPnP port forwarding not enabled: port is already mapped");
+	            } else if (UPnP.openPortTCP(SERVER_PORT)) { //try to map port
+	                System.out.println("UPnP port forwarding enabled");
+	            } else {
+	                System.out.println("UPnP port forwarding failed");
+	            }
+	        } else {
+	            System.out.println("UPnP is not available");
+	        }
+    	}
     }
     
     private void acceptConnection() 
@@ -371,10 +393,9 @@ public class AojServer implements Constants {
         this.processThread = new ClientProcessThread();
         getProcessThread().start();
         
-        this.manager.start();
-        
         try {
             initServerSocket();
+            openUPnP();
             // Main loop.
             this.startTime = getMillis();
             long lastNpcAI = this.startTime;
@@ -389,6 +410,7 @@ public class AojServer implements Constants {
             long lastAutoSaveTimer = this.startTime;
             long lastPasarSegundoTimer = this.startTime;
             this.m_corriendo = true;
+            this.manager.start();
             //setupCleanShutdown();
             while (this.m_corriendo) {
                 // Wainting for events...
@@ -884,7 +906,7 @@ public class AojServer implements Constants {
         }
     }
     
-    public void enviarATodos(serverPacketID msg, Object... params) {
+    public void enviarATodos(ServerPacketID msg, Object... params) {
     	for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 cli.enviar(msg, params);
@@ -892,7 +914,7 @@ public class AojServer implements Constants {
         }
     }
     
-    public void enviarAAdmins(serverPacketID msg, Object... params) {
+    public void enviarAAdmins(ServerPacketID msg, Object... params) {
     	for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
                 cli.enviar(msg, params);
@@ -914,13 +936,13 @@ public class AojServer implements Constants {
     public void iniciarLluvia() {
         this.m_lloviendo = true;
         this.minutosSinLluvia = 0;
-        enviarATodos(serverPacketID.userRain);
+        enviarATodos(ServerPacketID.userRain);
     }
     
     public void detenerLluvia() {
         this.m_lloviendo = false;
         this.minutosSinLluvia = 0;
-        enviarATodos(serverPacketID.userRain);
+        enviarATodos(ServerPacketID.userRain);
     }
     
     private void lluviaEvent() {

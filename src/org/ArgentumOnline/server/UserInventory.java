@@ -28,7 +28,7 @@ package org.ArgentumOnline.server;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -838,16 +838,16 @@ public class UserInventory extends Inventory implements Constants {
                     	
                     	break;
                     case OBJTYPE_RED_PESCA:
-                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Pesca);
+                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Pesca);
                         break;
                     case OBJTYPE_HACHA_LEÑADOR:
-                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Talar);
+                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Talar);
                         break;
                     case OBJTYPE_PIQUETE_MINERO:
-                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Mineria);
+                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Mineria);
                         break;
                     case OBJTYPE_MARTILLO_HERRERO:
-                        this.dueño.enviar(serverPacketID.userWork, Skill.SKILL_Herreria);
+                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Herreria);
                         break;
                     case OBJTYPE_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();

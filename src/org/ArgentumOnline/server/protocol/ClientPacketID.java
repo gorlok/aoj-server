@@ -6,7 +6,7 @@ package org.ArgentumOnline.server.protocol;
 * @userforos: Agushh, Thorkes
 */
 
-public class clientPacketID {
+public class ClientPacketID {
 	
 	public enum ID {
         logged,

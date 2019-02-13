@@ -27,116 +27,116 @@ package org.ArgentumOnline.server;
 
 /**
  *
- * @author  pablo
+ * @author gorlok
  */
 public class WorldPos extends MapPos {
-    
-    public short mapa = 0;
-    
-    /** Creates a new instance of WorldPos */
-    public WorldPos() {
-        super();
-        this.mapa = 0;
-    }
-    
-    public WorldPos(short mapa, short x, short y) {
-        super(x, y);
-        this.mapa = mapa;
-    }
-    
-    public WorldPos(WorldPos pos) {
-        this.x = pos.x;
-        this.y = pos.y;
-        this.mapa = pos.mapa;
-    }
-    
-    @Override
+
+	public short mapa = 0;
+
+	/** Creates a new instance of WorldPos */
+	public WorldPos() {
+		super();
+		this.mapa = 0;
+	}
+
+	public WorldPos(short mapa, short x, short y) {
+		super(x, y);
+		this.mapa = mapa;
+	}
+
+	public WorldPos(WorldPos pos) {
+		this.x = pos.x;
+		this.y = pos.y;
+		this.mapa = pos.mapa;
+	}
+
+	@Override
 	public String toString() {
-        return "(mapa=" + this.mapa + ",x=" + this.x + ",y=" + this.y + ")";
-    }
-    
-    public void mirarDir(int dir) {
-        // HeadToPos
-        // *****************************************************************
-        // Toma una posicion y se mueve hacia donde esta perfilado
-        // *****************************************************************
-        switch (dir) {
-            case DIR_NORTH:
-                this.y--;
-                break;
-            case DIR_EAST:
-                this.x++;
-                break;
-            case DIR_SOUTH:
-                this.y++;
-                break;
-            case DIR_WEST:
-                this.x--;
-                break;
-            default:
-                return;
-        }
-    }
+		return "(mapa=" + this.mapa + ",x=" + this.x + ",y=" + this.y + ")";
+	}
 
-    public short findDirection(WorldPos target) {
-        // *****************************************************************
-        // Devuelve la direccion en la cual el target se encuentra
-        // desde pos, 0 si la direc es igual
-        // *****************************************************************
-        int dx = this.x - target.x;
-        int dy = this.y - target.y;
+	public void mirarDir(int dir) {
+		// HeadToPos
+		// *****************************************************************
+		// Toma una posicion y se mueve hacia donde esta perfilado
+		// *****************************************************************
+		switch (dir) {
+		case DIR_NORTH:
+			this.y--;
+			break;
+		case DIR_EAST:
+			this.x++;
+			break;
+		case DIR_SOUTH:
+			this.y++;
+			break;
+		case DIR_WEST:
+			this.x--;
+			break;
+		default:
+			return;
+		}
+	}
 
-        // NE
-        if (dx < 0 && dy > 0) {
+	public short findDirection(WorldPos target) {
+		// *****************************************************************
+		// Devuelve la direccion en la cual el target se encuentra
+		// desde pos, 0 si la direc es igual
+		// *****************************************************************
+		int dx = this.x - target.x;
+		int dy = this.y - target.y;
+
+		// NE
+		if (dx < 0 && dy > 0) {
 			return DIR_NORTH;
 		}
 
-        // NW
-        if (dx > 0 && dy > 0) {
+		// NW
+		if (dx > 0 && dy > 0) {
 			return DIR_WEST;
 		}
 
-        // SW
-        if (dx > 0 && dy < 0) {
+		// SW
+		if (dx > 0 && dy < 0) {
 			return DIR_WEST;
 		}
 
-        // SE
-        if (dx < 0 && dy < 0) {
-			return DIR_SOUTH;
-		}
-        
-        // Sur
-        if (dx == 0 && dy < 0) {
+		// SE
+		if (dx < 0 && dy < 0) {
 			return DIR_SOUTH;
 		}
 
-        // norte
-        if (dx == 0 && dy > 0) {
+		// Sur
+		if (dx == 0 && dy < 0) {
+			return DIR_SOUTH;
+		}
+
+		// norte
+		if (dx == 0 && dy > 0) {
 			return DIR_NORTH;
 		}
 
-        // oeste
-        if (dx > 0 && dy == 0) {
+		// oeste
+		if (dx > 0 && dy == 0) {
 			return DIR_WEST;
 		}
 
-        // este
-        if (dx < 0 && dy == 0) {
+		// este
+		if (dx < 0 && dy == 0) {
 			return DIR_EAST;
 		}
 
-        // misma
-        if (dx == 0 && dy == 0) {
+		// misma
+		if (dx == 0 && dy == 0) {
 			return DIR_NONE;
 		}
-        
-        return DIR_NONE;
-    }    
-    
-    public int distancia(WorldPos pos) {
-        // Encuentra la distancia entre dos WorldPos
-        return Math.abs(this.x - pos.x) + Math.abs(this.y - pos.y) + (Math.abs(this.mapa - pos.mapa) * 100);
-    }
-    
+
+		return DIR_NONE;
+	}
+
+	public int distancia(WorldPos pos) {
+		// Encuentra la distancia entre dos WorldPos
+		return Math.abs(this.x - pos.x) + Math.abs(this.y - pos.y) + (Math.abs(this.mapa - pos.mapa) * 100);
+	}
+
 }

@@ -7,7 +7,7 @@ import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Map;
 import org.ArgentumOnline.server.MapObject;
 import org.ArgentumOnline.server.Npc;
-import org.ArgentumOnline.server.protocol.serverPacketID;
+import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.Constants;
 
 
@@ -17,8 +17,7 @@ import org.ArgentumOnline.server.Constants;
  * Idea original: Juan Martín Sotuyo Dodero (Maraxus)
  * Implementado y adaptado a Java: Juan Agustín Oliva (JAO) -> juancho_isap14@hotmail.com
  */
-
-public class areasAO implements Constants{
+public class AreasAO implements Constants {
 	
 	/**
 	 * if a new user enter in the game, or change map,
@@ -68,7 +67,6 @@ public class areasAO implements Constants{
 	/**
 	 * Cargamos las áreas por mapa
 	 */
-	
 	public void initAreas(AojServer server, Map map) {
 		
 		this.server = server;
@@ -89,7 +87,6 @@ public class areasAO implements Constants{
 	/**
 	 * Envío de datos cuando un usuario cambia de área, y updatea el área ID y adyacentes
 	 */
-	
 	public void checkUpdateNeededUser(Client user, short dir) {
 		
 		if (user.getArea() == areasInfo[user.getPos().x][user.getPos().y]) return;
@@ -153,7 +150,7 @@ public class areasAO implements Constants{
 		
 	    }
     	
-    	user.enviar(serverPacketID.areasChange, user.getPos().x, user.getPos().y);
+    	user.enviar(ServerPacketID.areasChange, user.getPos().x, user.getPos().y);
     	
     	for(short x = (short) minX; x < maxX;x++) {
     		for(short y = (short) minY; y < maxY; y++) {
@@ -165,23 +162,23 @@ public class areasAO implements Constants{
     			if (user.getId() != tempInt && tempInt > 0) {
     				Client jao = this.server.getCliente(tempInt);
     				
-    				user.enviar(serverPacketID.CC, jao.ccParams());
-    				jao.enviar(serverPacketID.CC, user.ccParams());
+    				user.enviar(ServerPacketID.CC, jao.ccParams());
+    				jao.enviar(ServerPacketID.CC, user.ccParams());
     				
-    			} else if (dir == this.USER_NUEVO) {
-    				user.enviar(serverPacketID.CC, user.ccParams());
+    			} else if (dir == USER_NUEVO) {
+    				user.enviar(ServerPacketID.CC, user.ccParams());
     			}
     			
     			}
     			
     			if (map.hayNpc(x, y)) {
-    				user.enviar(serverPacketID.MSG_CCNPC, map.getNpc(x, y).ccParams());
+    				user.enviar(ServerPacketID.MSG_CCNPC, map.getNpc(x, y).ccParams());
     			}
     			
     			if (map.hayObjeto(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
-    				user.enviar(serverPacketID.MSG_HO, obj.getInfo().GrhIndex, x, y);
+    				user.enviar(ServerPacketID.MSG_HO, obj.getInfo().GrhIndex, x, y);
     				
     				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
@@ -203,14 +200,11 @@ public class areasAO implements Constants{
     	user.setAreaPerteneceY( (int) Math.pow(2, tempInt));
     	
     	user.setArea(areasInfo[user.getPos().x][user.getPos().y]);
-    	
-    	
 	}
 	
 	/**
 	 * ídem que el método checkUpdateNeededUser, pero con Npcs
 	 */
-	
 	public void checkUpdateNeededNpc(Npc npc, short dir) {
 		
 		if (npc.getArea() == areasInfo[npc.getPos().x][npc.getPos().y]) return;
@@ -281,7 +275,7 @@ public class areasAO implements Constants{
         			if (map.hayCliente(x, y)) {
         				Client jao = map.getCliente(x, y);
         				
-        				jao.enviar(serverPacketID.MSG_CCNPC, npc.ccParams());
+        				jao.enviar(ServerPacketID.MSG_CCNPC, npc.ccParams());
         				
         			}
         		}
@@ -322,7 +316,7 @@ public class areasAO implements Constants{
 		npc.setAreaPerteneceY(0);
 		npc.setAreaRecibeX(0);
 		npc.setAreaRecibeY(0);
-		this.checkUpdateNeededNpc(npc, this.USER_NUEVO);
+		this.checkUpdateNeededNpc(npc, USER_NUEVO);
 	}
 	
 	public void loadUser(Client npc) {
@@ -331,15 +325,14 @@ public class areasAO implements Constants{
 		npc.setAreaPerteneceY(0);
 		npc.setAreaRecibeX(0);
 		npc.setAreaRecibeY(0);
-		this.checkUpdateNeededUser(npc, this.USER_NUEVO);
+		this.checkUpdateNeededUser(npc, USER_NUEVO);
 	}
 	
 	/**
 	 * JAO: Enviamos la área según la posición que se pase por el parámetro. Este método se utiliza frecuentemente
 	 * para enviar al cliente los objetos en el piso
 	 */
-	
-	public void sendToAreaByPos(Map map, int areaX, int areaY, serverPacketID msg, Object... params) {
+	public void sendToAreaByPos(Map map, int areaX, int areaY, ServerPacketID msg, Object... params) {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
@@ -370,8 +363,7 @@ public class areasAO implements Constants{
 	/**
 	 * Envío al área, y adyacentes, de los parámetros especificados, pero no al index 'id'
 	 */
-	
-	public void sendToAreaButIndex(Map map, int areaX, int areaY, int id, serverPacketID msg, Object... params) {
+	public void sendToAreaButIndex(Map map, int areaX, int areaY, int id, ServerPacketID msg, Object... params) {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
@@ -401,8 +393,7 @@ public class areasAO implements Constants{
 	/**
 	 * Envío de datos al área del user, y adyacentes
 	 */
-	
-	public void sendToUserArea(Client user, serverPacketID msg, Object... params) {
+	public void sendToUserArea(Client user, ServerPacketID msg, Object... params) {
 		int areaX = user.areaPerteneceX;
 		int areaY = user.areaPerteneceY;
 		
@@ -430,8 +421,7 @@ public class areasAO implements Constants{
 	/**
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
-	
-	public void sendToUserAreaButIndex(Client user, serverPacketID msg, Object... params) {
+	public void sendToUserAreaButIndex(Client user, ServerPacketID msg, Object... params) {
 		int areaX = user.areaPerteneceX;
 		int areaY = user.areaPerteneceY;
 		
@@ -459,8 +449,7 @@ public class areasAO implements Constants{
 	/**
 	 * Envío de datos al área del NPC, y adyacentes
 	 */
-	
-	public void sendToNPCArea(Npc npc, serverPacketID msg, Object... params) {
+	public void sendToNPCArea(Npc npc, ServerPacketID msg, Object... params) {
 		int areaX = npc.areaPerteneceX;
 		int areaY = npc.areaPerteneceY;
 		
@@ -483,10 +472,6 @@ public class areasAO implements Constants{
 			}
 			
 		}
-		
-		
 	}
-	
-
 
 }

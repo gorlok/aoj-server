@@ -6,7 +6,7 @@ package org.ArgentumOnline.server.protocol;
 * @userforos: Agushh, Thorkes
 * FIXME
 */
-public enum serverPacketID { 
+public enum ServerPacketID { 
 	login		        ((byte) 1),
 	msgErr              ((byte) 2),
 	IP                  ((byte) 3), // index pj
@@ -56,7 +56,7 @@ public enum serverPacketID {
 	
 	private final byte binCode; 
 	
-	serverPacketID(byte bin) {
+	ServerPacketID(byte bin) {
 		this.binCode = bin;
 	}
 	

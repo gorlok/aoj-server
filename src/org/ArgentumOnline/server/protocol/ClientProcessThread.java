@@ -37,7 +37,7 @@ public class ClientProcessThread extends Thread {
 		try {
 			while (r.getPos() < length) {
 				r.mark();
-				clientPacketID.ID packet = clientPacketID.ID.values()[r.readByte()];
+				ClientPacketID.ID packet = ClientPacketID.ID.values()[r.readByte()];
 				switch (packet) {
 
 				case logged: // logged
@@ -215,9 +215,13 @@ public class ClientProcessThread extends Thread {
 		}
 	}
 
+	boolean actived = true;
+	public void endThread() {
+		this.actived = false;
+	}
+
 	@Override
 	public void run() {
-		boolean actived = true;
 
 		while (actived) {
 			try {
