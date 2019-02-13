@@ -20,6 +20,13 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<finalName>aoserver</finalName>
+					<outputDirectory>.</outputDirectory>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>org.ArgentumOnline.server.AojServer</mainClass>
+						</manifest>
+					</archive>
 				</configuration>
 			</plugin>
 		</plugins>

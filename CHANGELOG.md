@@ -2,6 +2,12 @@
 Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
+
+### 2019-02-13
+- Modificado: se mejoró la consola de gestión del servidor
+- Agregado: nuevo comando en la consola para mostrar threads
+- Corregido: en maven la generación del jar, carpeta destino y main-class.
+
 ### 2019-02-12
 - Agregado: soporte para UPnP. Se usa la implementación de [Federico Dossena](https://github.com/adolfintel/WaifUPnP).
 - Corregido: los threads no terminaban al finalizar el servidor.

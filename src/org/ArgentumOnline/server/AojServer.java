@@ -343,7 +343,7 @@ public class AojServer implements Constants {
     throws java.io.IOException {
         Log.serverLogger().fine("cerrando conexion");
         
-        this.m_clientSockets.remove(cliente);
+        this.m_clientSockets.remove(cliente.socketChannel);
         this.m_clientes_eliminar.add(cliente);
         cliente.socketChannel.close();
     }
@@ -611,7 +611,7 @@ public class AojServer implements Constants {
     
     public Npc crearNPC(int npc_ind, boolean loadBackup) {
         Npc npc = new Npc(npc_ind, loadBackup, this);
-        this.m_npcs.put(new Integer(npc.getId()), npc);
+        this.m_npcs.put(Integer.valueOf(npc.getId()), npc);
         return npc;
     }
     
@@ -620,7 +620,7 @@ public class AojServer implements Constants {
     }
     
     public Npc getNPC(int npcId) {
-        return this.m_npcs.get(new Integer(npcId));
+        return this.m_npcs.get(Integer.valueOf(npcId));
     }
     
     public Client getCliente(short id) {
@@ -752,6 +752,8 @@ public class AojServer implements Constants {
 			Factions.ArmaduraCaos3 = ini.getShort("INIT", "ArmaduraCaos3");
 			Factions.TunicaMagoCaos = ini.getShort("INIT", "TunicaMagoCaos");
 			Factions.TunicaMagoCaosEnanos = ini.getShort("INIT", "TunicaMagoCaosEnanos");
+			
+			System.out.println("Admins recargados");			
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
