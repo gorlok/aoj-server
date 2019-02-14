@@ -1,4 +1,4 @@
-# Changelog
+# Changelog (in Spanish)
 Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
