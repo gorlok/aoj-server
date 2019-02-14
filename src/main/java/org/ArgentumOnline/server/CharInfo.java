@@ -25,6 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
+import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.util.*;
 
 /**
@@ -75,8 +76,8 @@ public class CharInfo implements Constants {
     public short getLoops()     { return this.m_loops; }
     public short getDir()       { return this.m_dir; }
     
-    public void setDir(short dir) {
-        this.m_dir = dir;
+    public void setDir(Direction dir) {
+        this.m_dir = (short)dir.ordinal();
     }
     
     public void cuerpoDesnudo(int raza, int genero) {

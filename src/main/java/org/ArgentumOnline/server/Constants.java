@@ -29,6 +29,8 @@ package org.ArgentumOnline.server;
  * @author gorlok
  */
 public interface Constants {
+	
+	public final boolean DEBUG = false;
     
     /*
     Public Type tAPuestas
@@ -119,12 +121,6 @@ public interface Constants {
     
     final static int APUESTA_MAXIMA = 5000;
     
-    final static short DIR_NONE   = 0;
-    final static short DIR_NORTH  = 1;
-    final static short DIR_EAST   = 2;
-    final static short DIR_SOUTH  = 3;
-    final static short DIR_WEST   = 4;
-    
     final static short TERRENO_BOSQUE = 0;
     final static short TERRENO_DESIERTO = 1;
     final static short TERRENO_NIEVE = 2;
@@ -180,9 +176,9 @@ public interface Constants {
     final static short YWindow = 13;
     
     // Bordes del mapa
-    final static short MinXBorder = XMinMapSize + (XWindow / 2);
+    final static short MinXBorder = XMinMapSize + (XWindow / 2);  // 1 + (17/2) = 9
     final static short MaxXBorder = XMaxMapSize - (XWindow / 2);
-    final static short MinYBorder = YMinMapSize + (YWindow / 2);
+    final static short MinYBorder = YMinMapSize + (YWindow / 2);  // 1 + (13/2) = 7 
     final static short MaxYBorder = YMaxMapSize - (YWindow / 2);
     
     final static int COLOR_NEGRO    = 0x000000;

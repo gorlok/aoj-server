@@ -212,7 +212,7 @@ public class UserInventory extends Inventory implements Constants {
                 cant = this.objs[slot-1].cant;
             }
             // Check objeto en el suelo
-            Map mapa = this.server.getMapa(this.dueño.getPos().mapa);
+            Map mapa = this.server.getMapa(this.dueño.getPos().map);
             short x = this.dueño.getPos().x;
             short y = this.dueño.getPos().y;
             short objid = this.objs[slot-1].objid;
@@ -621,7 +621,7 @@ public class UserInventory extends Inventory implements Constants {
     }
 
     public void tirarTodosLosItemsNoNewbies() {
-        Map mapa = this.server.getMapa(this.dueño.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.dueño.m_pos.map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo obj = this.server.getInfoObjeto(element.objid);
@@ -651,7 +651,7 @@ public class UserInventory extends Inventory implements Constants {
         }
         this.dueño.getFlags().TargetObjInvIndex = obj.objid;
         this.dueño.getFlags().TargetObjInvSlot = slot;
-        Map mapa = this.server.getMapa(this.dueño.getPos().mapa);
+        Map mapa = this.server.getMapa(this.dueño.getPos().map);
         switch (info.ObjType) {
             case OBJTYPE_USEONCE:
                 if (!this.dueño.estaVivo()) {
@@ -882,13 +882,13 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarSonido(info.Snd1);
                 break;
             case OBJTYPE_BARCOS:
-                short m = this.dueño.getPos().mapa;
+                short m = this.dueño.getPos().map;
                 short x = this.dueño.getPos().x;
                 short y = this.dueño.getPos().y;
-                if (((mapa.isLegalPos(new WorldPos(m, (short) (x - 1), y), true) || 
-                mapa.isLegalPos(new WorldPos(m, x, (short) (y - 1)), true) || 
-                mapa.isLegalPos(new WorldPos(m, (short) (x + 1), y), true) || 
-                mapa.isLegalPos(new WorldPos(m, x, (short) (y + 1)), true)) &&
+                if (((mapa.isLegalPos(WorldPos.mxy(m, (short) (x - 1), y), true) || 
+                mapa.isLegalPos(WorldPos.mxy(m, x, (short) (y - 1)), true) || 
+                mapa.isLegalPos(WorldPos.mxy(m, (short) (x + 1), y), true) || 
+                mapa.isLegalPos(WorldPos.mxy(m, x, (short) (y + 1)), true)) &&
                 !this.dueño.getFlags().Navegando) || this.dueño.getFlags().Navegando) {
                     this.barcoSlot = slot;
                     this.dueño.doNavega();

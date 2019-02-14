@@ -43,7 +43,7 @@ public class UserCounters {
     int Invisibilidad = 0;
     long PiqueteC = 0;
     long Pena = 0;
-    WorldPos SendMapCounter = new WorldPos();
+    WorldPos SendMapCounter = WorldPos.empty();
     int Pasos = 0;
     boolean Saliendo = false;
     short SalirCounter = 0; // segundos para salir.

@@ -7,6 +7,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 - Modificado: se mejoró la consola de gestión del servidor
 - Agregado: nuevo comando en la consola para mostrar threads
 - Corregido: en maven la generación del jar, carpeta destino y main-class.
+- Agregado: pruebas unitarias con JUnit5, comenzando con clases básicas WorldPos y MapPos
 
 ### 2019-02-12
 - Agregado: soporte para UPnP. Se usa la implementación de [Federico Dossena](https://github.com/adolfintel/WaifUPnP).

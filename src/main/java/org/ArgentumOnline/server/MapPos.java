@@ -26,39 +26,37 @@
 package org.ArgentumOnline.server;
 
 /**
- *
- * @author  pablo
+ * @author gorlok
  */
 public class MapPos implements Constants {
-    
-    public short x;
-    public short y;
-    
-    /** Creates a new instance of MapPos */
-    public MapPos() {
-        this.x = 0;
-        this.y = 0;
-    }
-        
-    public MapPos(short x, short y) {
-        this.x = x;
-        this.y = y;
-    }
-    
-    public boolean isValid() {
-        return (this.x > 0) && (this.y > 0) && (this.x <= MAPA_ANCHO) && (this.y <= MAPA_ALTO);
-    }
-    
-    public static boolean isValid(short x, short y) {
-        return (x > 0) && (y > 0) && (x <= MAPA_ANCHO) && (y <= MAPA_ALTO);
-    }
-            
-    public boolean inRangoVision(MapPos pos) {
-        return (this.x > pos.x - MinXBorder && this.x < pos.x + MinXBorder && this.y > pos.y - MinYBorder && this.y < pos.y + MinYBorder);
-    }
 
-    public boolean inRangoVision(short xx, short yy) {
-        return (this.x > xx - MinXBorder && this.x < xx + MinXBorder && this.y > yy - MinYBorder && this.y < yy + MinYBorder);
-    }
+	public short x;
+	public short y;
+	
+	public static MapPos xy(int x, int y) {
+		return new MapPos((short)x, (short)y);
+	}
+
+	protected MapPos(short x, short y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	public boolean isValid() {
+		return (this.x > 0) && (this.y > 0) && (this.x <= MAPA_ANCHO) && (this.y <= MAPA_ALTO);
+	}
+
+	public static boolean isValid(int x, int y) {
+		return (x > 0) && (y > 0) && (x <= MAPA_ANCHO) && (y <= MAPA_ALTO);
+	}
+
+	public boolean inRangoVision(MapPos pos) {
+		return inRangoVision(pos.x, pos.y);
+	}
+
+	public boolean inRangoVision(int xx, int yy) {
+		return Math.abs(this.x - xx) < MinXBorder &&
+				Math.abs(this.y - yy) < MinYBorder;
+	}
 
 }

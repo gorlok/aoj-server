@@ -117,7 +117,7 @@ public class Factions implements Constants {
         if (!this.RecibioArmaduraReal) {
             short armadura = this.cliente.getClase().getArmaduraImperial(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMapa(this.cliente.getPos().mapa);
+                Map mapa = this.server.getMapa(this.cliente.getPos().map);
                 mapa.tirarItemAlPiso(this.cliente.getPos().x, this.cliente.getPos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraReal = true;
@@ -164,7 +164,7 @@ public class Factions implements Constants {
         if (!this.RecibioArmaduraCaos) {
             short armadura = this.cliente.getClase().getArmaduraCaos(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMapa(this.cliente.getPos().mapa);
+                Map mapa = this.server.getMapa(this.cliente.getPos().map);
                 mapa.tirarItemAlPiso(this.cliente.getPos().x, this.cliente.getPos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraCaos = true;

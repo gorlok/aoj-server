@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.util.BytesReader;
@@ -54,7 +55,7 @@ public class ClientProcessThread extends Thread {
 
 				case move: // move
 					short dir = r.readShort();
-					cliente.mover(dir);
+					cliente.mover(Direction.value(dir));
 					break;
 
 				case talk: // talk

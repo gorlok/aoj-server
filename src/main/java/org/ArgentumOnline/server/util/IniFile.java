@@ -378,23 +378,4 @@ public class IniFile {
         return getShort(section, key, (short)0);
     }
     
-/*
-    public static void main(String args[]) {
-        IniFile ini = new IniFile();
-        try {
-            ini.load("dat/Obj.dat");
-            System.out.println("NumOBJs=" + ini.getString("INIT", "NumOBJs", "0"));
-            System.out.println("OBJ209 Name=" + ini.getString("OBJ209", "Name", ""));
-            System.out.println("OBJ209 Info=" + ini.getString("OBJ209", "Info", ""));
-            System.out.println("OBJ209 Texto=" + ini.getString("OBJ209", "Texto", ""));
-            System.out.println("OBJ436 Name=" + ini.getString("OBJ436", "Name", ""));
-            System.out.println("OBJ565 Name=" + ini.getString("OBJ565", "Name", ""));
- 
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
- */
 }

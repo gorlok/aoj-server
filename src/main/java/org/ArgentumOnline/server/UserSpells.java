@@ -730,9 +730,9 @@ public class UserSpells implements Constants {
 				FontType.INFO);
 			return false;
 		}
-		WorldPos targetPos = new WorldPos(client.getFlags().TargetMap,
+		WorldPos targetPos = WorldPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
-		if (client.getPos().distancia(targetPos) > MAX_DISTANCIA_MAGIA) {
+		if (client.getPos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
 			client.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
 			return false;
 		}
@@ -761,7 +761,7 @@ public class UserSpells implements Constants {
 			return false;
 		}
 		
-		Map mapa = server.getMapa(client.getPos().mapa);
+		Map mapa = server.getMapa(client.getPos().map);
 		
 		if (mapa.esZonaSegura()) {
 			client.enviarMensaje("¡Estás en una zona segura!", FontType.INFO);
@@ -769,7 +769,7 @@ public class UserSpells implements Constants {
 		}
 		
 		boolean exito = false;
-		WorldPos targetPos = new WorldPos(client.getFlags().TargetMap,
+		WorldPos targetPos = WorldPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		for (int i = 0; i < hechizo.Cant; i++) {
@@ -843,7 +843,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void infoHechizo() {
-		Map mapa = server.getMapa(client.getPos().mapa);
+		Map mapa = server.getMapa(client.getPos().map);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		client.decirPalabrasMagicas(hechizo.PalabrasMagicas);
 		client.enviarSonido(hechizo.WAV);

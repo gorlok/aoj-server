@@ -183,12 +183,12 @@ public class MapCell {
     
     public WorldPos getTeleport() {
         //return m_dest;
-    	return new WorldPos(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
+    	return WorldPos.mxy(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
     }
     
     public void setTeleport(WorldPos dest) {
     	if (dest != null) {
-    		this.m_dest_mapa = dest.mapa;
+    		this.m_dest_mapa = dest.map;
     		this.m_dest_x = dest.x;
     		this.m_dest_y = dest.y;
     	} else {

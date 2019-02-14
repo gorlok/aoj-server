@@ -29,6 +29,7 @@ import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -194,15 +195,15 @@ public class Npc extends BaseCharacter implements Constants {
     
     Inventory m_inv = new Inventory(20);
     
-    WorldPos m_pos  = new WorldPos();
-    WorldPos m_orig  = new WorldPos();
+    WorldPos m_pos  = WorldPos.empty();
+    WorldPos m_orig  = WorldPos.empty();
     
     AojServer server;
     
     public static Npc crearNPC(int nroNPC, WorldPos orig, boolean bajoTecho, AojServer server) {
         // Crea un NPC del tipo NRONPC
         Npc npc = server.crearNPC(nroNPC, false);
-        Map mapa = server.getMapa(orig.mapa);
+        Map mapa = server.getMapa(orig.map);
         WorldPos tmp;
         tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), bajoTecho);
         
@@ -233,7 +234,7 @@ public class Npc extends BaseCharacter implements Constants {
         if (!conRespawn) {
 			npc.m_flags.set(FLAG_RESPAWN, false);
 		}
-        Map mapa = server.getMapa(orig.mapa);
+        Map mapa = server.getMapa(orig.map);
         boolean hayPosValida = false;
         WorldPos tmp;
         int i = 0;
@@ -248,7 +249,7 @@ public class Npc extends BaseCharacter implements Constants {
 			}
             if (mapa.testSpawnTriggerNpc(orig, false)) {
                 // Necesita ser respawned en un lugar especifico
-                npc.m_pos = new WorldPos(orig);
+                npc.m_pos = orig.copy();
                 
                 mapa.entrar(npc, orig.x, orig.y);
                 hayPosValida = true;
@@ -277,7 +278,7 @@ public class Npc extends BaseCharacter implements Constants {
         	if (respawnOrigPos()) {
         		spawnNpc(this.m_numero, this.m_orig, false, true); // TODO: PROBAR !!! 
         	} else {
-        		spawnNpc(this.m_numero, new WorldPos(this.m_pos.mapa, (short)0, (short)0), false, true); // TODO: PROBAR !!!
+        		spawnNpc(this.m_numero, WorldPos.mxy(this.m_pos.map, (short)0, (short)0), false, true); // TODO: PROBAR !!!
         	}
         } else {
         	System.out.println("{{{{{{{ DEBUG }}}}}}} NO PUEDE RESPAWN !!!");
@@ -318,7 +319,9 @@ public class Npc extends BaseCharacter implements Constants {
 	/**
 	 * JAO: with this, we set the user area ID
 	 */
-	public void setArea(int id) {System.out.println("AREAID:" + id);
+	public void setArea(int id) {
+		if (DEBUG)
+			System.out.println("AREAID:" + id);
 		this.areaID = id;}
 	
 	/**
@@ -743,7 +746,7 @@ public class Npc extends BaseCharacter implements Constants {
         this.m_numero = 0;
         this.m_poderAtaque = 0;
         this.m_poderEvasion = 0;
-        this.m_pos = new WorldPos();
+        this.m_pos = WorldPos.empty();
         this.m_skillDomar = 0;
         this.m_target = 0;
         this.m_targetNpc = null;
@@ -837,7 +840,7 @@ public class Npc extends BaseCharacter implements Constants {
         	boolean eraCrimi = cliente.esCriminal();
         	
             WorldPos pos = cliente.getPos();
-            Map m = this.server.getMapa(pos.mapa);
+            Map m = this.server.getMapa(pos.map);
             
             if (this.m_snd3 > 0) {
                // m.enviarAlArea(pos.x, pos.y, MSG_TW, this.m_snd3);
@@ -903,7 +906,7 @@ public class Npc extends BaseCharacter implements Constants {
         if (this.m_inv.getSize() > 0) {
             for (int i = 1; i <= this.m_inv.getSize(); i++) {
                 if (this.m_inv.getObjeto(i) != null && this.m_inv.getObjeto(i).objid > 0) {
-                    Map m = this.server.getMapa(this.m_pos.mapa);
+                    Map m = this.server.getMapa(this.m_pos.map);
                     m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(this.m_inv.getObjeto(i).objid, this.m_inv.getObjeto(i).cant));
                 }
             }
@@ -912,10 +915,11 @@ public class Npc extends BaseCharacter implements Constants {
     
     public void quitarNPC() {
     	
-    	System.out.println("NPC BORRADO");
+    	if (DEBUG)
+    		System.out.println("NPC BORRADO");
     	    	
         this.m_flags.set(FLAG_NPC_ACTIVE, false);
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         
         //JAO: Nuevo sistema de áreas!! ;-)
         //mapa.areasData.dieNpc(this);
@@ -949,7 +953,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void enviarMP() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {
            // mapa.enviarATodos(serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
             //mapa.enviarAlArea(getPos().x, getPos().y, -1, serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
@@ -957,15 +961,15 @@ public class Npc extends BaseCharacter implements Constants {
         }
     }
     
-    public void mover(short dir) {
+    public void mover(Direction dir) {
         long now = (new java.util.Date()).getTime();
         if ((now - this.m_lastMove) < 250) {
 			return;
 		}
         this.m_lastMove = now;
-        WorldPos newPos = new WorldPos(this.m_pos);
-        newPos.mirarDir(dir);
-        Map mapa = this.server.getMapa(newPos.mapa);
+        WorldPos newPos = this.m_pos.copy();
+        newPos.moveToDir(dir);
+        Map mapa = this.server.getMapa(newPos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1033,7 +1037,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void enviarSonido(int sonido) {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         // Sonido
         if (mapa != null) {
 			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) sonido, this.m_pos.x,this.m_pos.y);
@@ -1041,7 +1045,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void enviarCFX(int fx, int val) {
-        Map m = this.server.getMapa(this.m_pos.mapa);
+        Map m = this.server.getMapa(this.m_pos.map);
         if (m == null) {
 			return;
 		}
@@ -1052,7 +1056,7 @@ public class Npc extends BaseCharacter implements Constants {
         // NPCTirarOro
         // SI EL NPC TIENE ORO LO TIRAMOS
         if (this.m_giveGLD > 0) {
-            Map m = this.server.getMapa(this.m_pos.mapa);
+            Map m = this.server.getMapa(this.m_pos.map);
             m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(OBJ_ORO, this.m_giveGLD));
         }
     }
@@ -1100,7 +1104,7 @@ public class Npc extends BaseCharacter implements Constants {
         //WorldPos pos = m_maestroUser.getPos();
         if (this.m_nroExpresiones > 0) {
             int azar = Util.Azar(0, this.m_nroExpresiones - 1);
-            Map mapa = this.server.getMapa(this.m_pos.mapa);
+            Map mapa = this.server.getMapa(this.m_pos.map);
             if (mapa != null) {            
                 hablarAlArea(COLOR_BLANCO, this.m_expresiones[azar]);
             }
@@ -1108,7 +1112,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void hablarAlArea(int color, String texto) {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
         	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.dialog, color, texto, this.m_id);
@@ -1120,9 +1124,9 @@ public class Npc extends BaseCharacter implements Constants {
         this.m_flags.set(FLAG_HOSTIL, true);
     }
     
-    public void cambiarDir(short dir) {
+    public void cambiarDir(Direction dir) {
         // ChangeNPCChar
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {
             this.m_infoChar.setDir(dir);
 
@@ -1146,13 +1150,16 @@ public class Npc extends BaseCharacter implements Constants {
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
     
     private void guardiasAI() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
-        for (short dir = DIR_NORTH; dir < DIR_WEST; dir++) {
-            WorldPos pos = new WorldPos(this.m_pos);
-            pos.mirarDir(dir);
+        for (Direction dir : Direction.values()) {
+        	if (dir == Direction.NONE)
+        		continue;
+        	
+            WorldPos pos = this.m_pos.copy();
+            pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
@@ -1199,13 +1206,15 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void hostilMalvadoAI() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
-        for (short dir = DIR_NORTH; dir < DIR_WEST; dir++) {
-            WorldPos pos = new WorldPos(this.m_pos);
-            pos.mirarDir(dir);
+        for (Direction dir : Direction.values()) {
+        	if (dir == Direction.NONE)
+        		continue;
+            WorldPos pos = this.m_pos.copy();
+            pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
@@ -1224,13 +1233,15 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void hostilBuenoAI() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
-        for (short dir = DIR_NORTH; dir < DIR_WEST; dir++) {
-            WorldPos pos = new WorldPos(this.m_pos);
-            pos.mirarDir(dir);
+        for (Direction dir : Direction.values()) {
+        	if (dir == Direction.NONE)
+        		continue;
+            WorldPos pos = this.m_pos.copy();
+            pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
@@ -1249,13 +1260,13 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void irUsuarioCercano() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1265,9 +1276,9 @@ public class Npc extends BaseCharacter implements Constants {
                             if (cliente.estaVivo() && !cliente.estaInvisible() && !cliente.esGM()) {
                                 if (lanzaSpells()) {
                                    npcLanzaUnSpell(cliente);
-                            }
-                                 short dir = this.m_pos.findDirection(cliente.getPos());
-                                 mover(dir);
+                                }
+                                Direction dir = this.m_pos.findDirection(cliente.getPos());
+                                mover(dir);
                                 return;
                             }
                         }
@@ -1279,13 +1290,13 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void seguirAgresor() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1302,7 +1313,7 @@ public class Npc extends BaseCharacter implements Constants {
                                 if (lanzaSpells()) {
                                     npcLanzaUnSpell(cliente);
                                 }
-                                short dir = this.m_pos.findDirection(cliente.getPos());
+                                Direction dir = this.m_pos.findDirection(cliente.getPos());
                                 mover(dir);
                                 return;
                             }
@@ -1327,13 +1338,13 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void persigueCriminal() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1344,7 +1355,7 @@ public class Npc extends BaseCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            short dir = this.m_pos.findDirection(cliente.getPos());
+                            Direction dir = this.m_pos.findDirection(cliente.getPos());
                             mover(dir);
                             return;
                         }
@@ -1356,13 +1367,13 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void persigueCiudadano() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1370,7 +1381,7 @@ public class Npc extends BaseCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            short dir = this.m_pos.findDirection(cliente.getPos());
+                            Direction dir = this.m_pos.findDirection(cliente.getPos());
                             mover(dir);
                             return;
                         }
@@ -1389,19 +1400,19 @@ public class Npc extends BaseCharacter implements Constants {
         mover(dir);
         */
     	// FIXME: ESTO SE PUEDE OPTIMIZAR, YO SE QUIEN Y DONDE ESTA EL AMO !!!
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
                         if (cliente.estaVivo() && !cliente.estaInvisible() && getAmo() == cliente &&
-                        		getAmo().getPos().distancia(this.m_pos) > 3) {
-                            short dir = this.m_pos.findDirection(cliente.getPos());
+                        		getAmo().getPos().distance(this.m_pos) > 3) {
+                            Direction dir = this.m_pos.findDirection(cliente.getPos());
                             mover(dir);
                             return;
                         }
@@ -1415,18 +1426,18 @@ public class Npc extends BaseCharacter implements Constants {
     private void aiNpcAtacaNpc() {
     	// FIXME: ESTO SE PUEDE OPTIMIZAR TERRIBLEMENTE, 
     	// CONOCIENDO m_targetNpc no tengo que buscarlo en el mapa ;)
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     Npc npc = mapa.getNPC(x, y);
                     if (npc != null) {
                         if (this.m_targetNpc == npc) {
-                            short dir = this.m_pos.findDirection(pos);
+                            Direction dir = this.m_pos.findDirection(pos);
                             mover(dir);
                             npcAtacaNpc(npc);
                             return;
@@ -1445,7 +1456,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void moverAlAzar() {
-        mover((short) Util.Azar(1, 4));
+        mover(Direction.value(Util.Azar(1, 4)));
     }
     
     public void doAI() {
@@ -1585,7 +1596,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void npcAtacaUser(Client cliente) {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         // El npc puede atacar ???
         if (!puedeAtacar()) {
 			return;
@@ -1648,7 +1659,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     private void npcAtacaNpc(Npc victima) {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         
         // El npc puede atacar ???
         if (!puedeAtacar()) {
@@ -1693,7 +1704,7 @@ public class Npc extends BaseCharacter implements Constants {
         //#################################################################
         //Returns True if there is an user adjacent to the npc position.
         //#################################################################
-        return this.m_pos.distancia(this.m_pfinfo.m_targetPos) <= 1;
+        return this.m_pos.distance(this.m_pfinfo.m_targetPos) <= 1;
     }
   
     private boolean isPathEnd() {
@@ -1722,9 +1733,12 @@ public class Npc extends BaseCharacter implements Constants {
         this.current_step++;
         misc.astar.Node node = this.current_path.get(this.current_step);
         misc.astar.Location loc = node.location;
-        WorldPos pos = new WorldPos(this.m_pos.mapa, (short)loc.x, (short)loc.y);
-        short dir = this.m_pos.findDirection(pos);
-        System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + this.m_pos + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);
+        WorldPos pos = WorldPos.mxy(this.m_pos.map, (short)loc.x, (short)loc.y);
+        Direction dir = this.m_pos.findDirection(pos);
+        
+        if (DEBUG)
+        	System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + this.m_pos + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);
+        
         mover(dir);
     }
   
@@ -1748,18 +1762,18 @@ public class Npc extends BaseCharacter implements Constants {
     
     private void calculatePath() {
         //private void pathFindingAI() {
-        Map mapa = this.server.getMapa(this.m_pos.mapa);
+        Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = new WorldPos(this.m_pos.mapa, x, y);
+                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
                         if (cliente.estaVivo() && !cliente.estaInvisible()) {
-                        	this.m_pfinfo = new PFINFO(new WorldPos(this.m_pos.mapa, x, y), cliente);
+                        	this.m_pfinfo = new PFINFO(WorldPos.mxy(this.m_pos.map, x, y), cliente);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
                             return;
@@ -2152,7 +2166,9 @@ public class Npc extends BaseCharacter implements Constants {
     }
      
     private int encontrarCant(short objid) {
-        System.out.println("+++++DEBUG++++ encontrarCant() " + this.m_inv.isEmpty());
+    	if (DEBUG)
+    		System.out.println("+++++DEBUG++++ encontrarCant() " + this.m_inv.isEmpty());
+    	
         IniFile ini = getIniFile(this.m_numero, false);
         String section = "NPC" + this.m_numero;
         int cant = ini.getInt(section, "NROITEMS");

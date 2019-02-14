@@ -120,8 +120,8 @@ public class AojServer implements Constants {
     
     private long startTime = 0;
     
-    public static WorldPos WP_PRISION = new WorldPos((short) 66, (short) 75, (short) 47);
-    public static WorldPos WP_LIBERTAD = new WorldPos((short) 66, (short) 75, (short) 65);
+    public static WorldPos WP_PRISION = WorldPos.mxy(66, 75, 47);
+    public static WorldPos WP_LIBERTAD = WorldPos.mxy(66, 75, 65);
     
     private boolean m_showDebug = false;
     
@@ -501,10 +501,12 @@ public class AojServer implements Constants {
     }
 
     public static void showMemoryStatus(String msg) {
-    	System.out.println("total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
+    	if (DEBUG) {
+    		System.out.println("total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
     			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
     			//" KB max=" + (int) (Runtime.getRuntime().maxMemory() / 1024) +
 				" KB [" + msg + "]");
+    	}
     }
     
     /** Load maps / Cargar los m_mapas */
@@ -675,7 +677,7 @@ public class AojServer implements Constants {
                     } else {
                         // Usamos AI si hay algun user en el mapa
                         if (npc.getPos().isValid()) {
-                            Map mapa = getMapa(npc.getPos().mapa);
+                            Map mapa = getMapa(npc.getPos().map);
                             if (mapa != null && mapa.getCantUsuarios() > 0) {
                                 if (npc.m_movement != Npc.MOV_ESTATICO) {
                                     npc.doAI();
@@ -849,10 +851,10 @@ public class AojServer implements Constants {
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
             this.m_ciudades = new WorldPos[4];
-            this.m_ciudades[CIUDAD_NIX] = new WorldPos(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
-            this.m_ciudades[CIUDAD_ULLA] = new WorldPos(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
-            this.m_ciudades[CIUDAD_BANDER] = new WorldPos(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
-            this.m_ciudades[CIUDAD_LINDOS] = new WorldPos(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
+            this.m_ciudades[CIUDAD_NIX] = WorldPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
+            this.m_ciudades[CIUDAD_ULLA] = WorldPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
+            this.m_ciudades[CIUDAD_BANDER] = WorldPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
+            this.m_ciudades[CIUDAD_LINDOS] = WorldPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -976,7 +978,7 @@ public class AojServer implements Constants {
         this.segundos += 6;
         for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                Map mapa = getMapa(cli.getPos().mapa);
+                Map mapa = getMapa(cli.getPos().map);
                 if (mapa.getTrigger(cli.getPos().x, cli.getPos().y) == 5) {
                     cli.m_counters.PiqueteC++;
                     cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.INFO);
@@ -1006,7 +1008,7 @@ public class AojServer implements Constants {
                     cli.m_counters.Pena--;
                     if (cli.m_counters.Pena < 1) {
                         cli.m_counters.Pena = 0;
-                        cli.warpUser(WP_LIBERTAD.mapa, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
+                        cli.warpUser(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
                         cli.enviarMensaje("Has sido liberado!", FontType.INFO);
                     }
                 }
@@ -1195,7 +1197,7 @@ public class AojServer implements Constants {
         //Sub LimpiarMundo()
     	int cant = 0;
     	for (WorldPos pos: this.m_trashCollector) {
-            Map mapa = getMapa(pos.mapa);
+            Map mapa = getMapa(pos.map);
             mapa.quitarObjeto(pos.x, pos.y);
             cant++;
         }

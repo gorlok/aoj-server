@@ -79,7 +79,7 @@ public class Map implements Constants {
     boolean m_restringir = false;
     boolean m_backup = false;
     short   m_version = 0;
-    WorldPos m_startPos = new WorldPos();
+    WorldPos m_startPos = WorldPos.empty();
     
     AojServer server;
     
@@ -159,7 +159,7 @@ public class Map implements Constants {
     }
     
     public boolean testSpawnTriggerNpc(short mapa, short x, short y, boolean bajoTecho) {
-    	return testSpawnTriggerNpc(new WorldPos(mapa, x, y), bajoTecho);
+    	return testSpawnTriggerNpc(WorldPos.mxy(mapa, x, y), bajoTecho);
     }
     
     public boolean testSpawnTriggerNpc(WorldPos pos, boolean bajoTecho) {
@@ -296,12 +296,12 @@ public class Map implements Constants {
             String mapa = startPos.substring(0, startPos.indexOf('-'));
             String x = startPos.substring(startPos.indexOf('-')+1, startPos.lastIndexOf('-'));
             String y = startPos.substring(startPos.lastIndexOf('-')+1);
-            this.m_startPos.mapa = Short.parseShort(mapa);
+            this.m_startPos.map = Short.parseShort(mapa);
             this.m_startPos.x = Short.parseShort(x);
             this.m_startPos.y = Short.parseShort(y);
         }
-        if (this.m_startPos.mapa == 0) {
-			this.m_startPos.mapa = 45;
+        if (this.m_startPos.map == 0) {
+			this.m_startPos.map = 45;
 		}
         if (this.m_startPos.x == 0) {
 			this.m_startPos.x = 45;
@@ -447,7 +447,7 @@ public class Map implements Constants {
             	byflags = getter.readByte();
             	
             	if ((byflags & 1) == 1) {
-					this.m_cells[x][y].setTeleport(new WorldPos(Util.leShort(getter.readShort())
+					this.m_cells[x][y].setTeleport(WorldPos.mxy(Util.leShort(getter.readShort())
 							,Util.leShort(getter.readShort()), Util.leShort(getter.readShort())));
             	}
                 
@@ -458,10 +458,10 @@ public class Map implements Constants {
                         this.m_cells[x][y].setNpc(this.server.crearNPC(npcId, loadBackup));
                         npc = this.m_cells[x][y].getNpc();
                         this.m_npcs.add(npc);
-                        npc.getPos().mapa = this.nroMapa;
+                        npc.getPos().map = this.nroMapa;
                         npc.getPos().x = (short) (x+1);
                         npc.getPos().y = (short) (y+1);
-                        npc.getOrig().mapa = this.nroMapa;
+                        npc.getOrig().map = this.nroMapa;
                         if (npc.respawnOrigPos()) {
 	                        npc.getOrig().x = (short) (x+1);
 	                        npc.getOrig().y = (short) (y+1);
@@ -509,7 +509,7 @@ public class Map implements Constants {
         //enviarATodosExc(cliente.getId(), serverPacketID.CC, cliente.ccParams());
         //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.CC, cliente.ccParams());
         
-        cliente.m_pos = new WorldPos(this.nroMapa, x, y); // REVISAR
+        cliente.m_pos = WorldPos.mxy(this.nroMapa, x, y); // REVISAR
         return true;
     }
     
@@ -577,7 +577,7 @@ public class Map implements Constants {
         this.m_cells[x-1][y-1].setNpc(npc);
         this.m_npcs.add(npc);
         
-        npc.m_pos = new WorldPos(this.nroMapa, x, y);
+        npc.m_pos = WorldPos.mxy(this.nroMapa, x, y);
       
         this.areasData.loadNpc(npc);
         
@@ -596,7 +596,7 @@ public class Map implements Constants {
         } finally {
             this.m_cells[x-1][y-1].setNpc(null);
 	        this.m_npcs.remove(npc);
-	        npc.m_pos = new WorldPos(this.nroMapa, (short)0, (short)0);
+	        npc.m_pos = WorldPos.mxy(this.nroMapa, (short)0, (short)0);
         }
         return true;
     }
@@ -648,7 +648,8 @@ public class Map implements Constants {
         this.bloquesConObjetos.add(this.m_cells[x-1][y-1]);
         short grhIndex = this.server.getInfoObjeto(objid).GrhIndex;
         
-        System.out.println(grhIndex + "-" + x + "-" + y);
+        if (DEBUG)
+        	System.out.println(grhIndex + "-" + x + "-" + y);
         
         //Agush: Nuevo sistema de areas!!
         //this.areasData.setObjArea(x, y, objid);
@@ -864,7 +865,7 @@ public class Map implements Constants {
     public void mover(Client cliente, short x, short y) {
         this.m_cells[cliente.getPos().x-1][cliente.getPos().y-1].setClienteId((short) 0);
         this.m_cells[x-1][y-1].setClienteId(cliente.getId());
-        cliente.m_pos = new WorldPos(this.nroMapa, x, y);
+        cliente.m_pos = WorldPos.mxy(this.nroMapa, x, y);
         
 		//JAO: Nuevo sistema de areas !!
 		//this.areasData.updateUserArea(cliente);
@@ -881,7 +882,7 @@ public class Map implements Constants {
     
     public void crearTeleport(short x, short y, short dest_mapa, short dest_x, short dest_y) {
         if (dest_mapa > 0 && dest_x > 0 && dest_y > 0) {
-			this.m_cells[x-1][y-1].setTeleport(new WorldPos(dest_mapa, dest_x, dest_y));
+			this.m_cells[x-1][y-1].setTeleport(WorldPos.mxy(dest_mapa, dest_x, dest_y));
 		}
         //Objeto obj = agregarObjeto(OBJ_TELEPORT, 1, x, y);
         agregarObjeto(OBJ_TELEPORT, 1, x, y);
@@ -1293,7 +1294,7 @@ public class Map implements Constants {
      * y que sea lo más cercana a la posición original */
     public WorldPos tilelibre(short orig_x, short orig_y) {
         if (esPosLibreObjeto(orig_x, orig_y)) {
-			return new WorldPos(this.nroMapa, orig_x, orig_y);
+			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 15; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1304,22 +1305,22 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibreObjeto(x, y1)) {
-					return new WorldPos(this.nroMapa, x, y1);
+					return WorldPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibreObjeto(x, y2)) {
-					return new WorldPos(this.nroMapa, x, y2);
+					return WorldPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibreObjeto(x1, y)) {
-					return new WorldPos(this.nroMapa, x1, y);
+					return WorldPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibreObjeto(x2, y)) {
-					return new WorldPos(this.nroMapa, x2, y);
+					return WorldPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
@@ -1380,7 +1381,7 @@ public class Map implements Constants {
      * y que sea lo más cercana a la posición original */
     public WorldPos closestLegalPosPj(short orig_x, short orig_y, boolean navegando, boolean esAdmin) {
         if (esPosLibrePj(orig_x, orig_y, navegando, esAdmin)) {
-			return new WorldPos(this.nroMapa, orig_x, orig_y);
+			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1391,22 +1392,22 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibrePj(x, y1, navegando, esAdmin)) {
-					return new WorldPos(this.nroMapa, x, y1);
+					return WorldPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibrePj(x, y2, navegando, esAdmin)) {
-					return new WorldPos(this.nroMapa, x, y2);
+					return WorldPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibrePj(x1, y, navegando, esAdmin)) {
-					return new WorldPos(this.nroMapa, x1, y);
+					return WorldPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibrePj(x2, y, navegando, esAdmin)) {
-					return new WorldPos(this.nroMapa, x2, y);
+					return WorldPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
@@ -1432,7 +1433,7 @@ public class Map implements Constants {
      * y que sea lo más cercana a la posición original */
     public WorldPos closestLegalPosNpc(short orig_x, short orig_y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
         if (esPosLibreNpc(orig_x, orig_y, esAguaValida, esTierraInvalida, bajoTecho)) {
-			return new WorldPos(this.nroMapa, orig_x, orig_y);
+			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1443,22 +1444,22 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibreNpc(x, y1, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return new WorldPos(this.nroMapa, x, y1);
+					return WorldPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibreNpc(x, y2, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return new WorldPos(this.nroMapa, x, y2);
+					return WorldPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibreNpc(x1, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return new WorldPos(this.nroMapa, x1, y);
+					return WorldPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibreNpc(x2, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return new WorldPos(this.nroMapa, x2, y);
+					return WorldPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
@@ -1612,7 +1613,7 @@ public class Map implements Constants {
             String section = "Mapa" + this.nroMapa;
             ini.setValue(section, "Name", this.m_name);
             ini.setValue(section, "MusicNum", this.m_music);
-            ini.setValue(section, "StartPos", this.m_startPos.mapa + "-" + this.m_startPos.x + "-" + this.m_startPos.y);
+            ini.setValue(section, "StartPos", this.m_startPos.map + "-" + this.m_startPos.x + "-" + this.m_startPos.y);
             ini.setValue(section, "Terreno", TERRENOS[this.m_terreno]);
             ini.setValue(section, "Zona", ZONAS[this.m_zona]);
             ini.setValue(section, "Restringir", (this.m_restringir ? "Si" : "No"));
@@ -1680,7 +1681,7 @@ public class Map implements Constants {
                         // Es el destino a otro lugar (para teleports, etc.)
                         // Son cero (0) si no hay un Teleport en esta celda.
                         if (this.m_cells[x][y].hayTeleport()) {
-                            f.writeShort(Util.leShort(this.m_cells[x][y].getTeleport().mapa));
+                            f.writeShort(Util.leShort(this.m_cells[x][y].getTeleport().map));
                             f.writeShort(Util.leShort(this.m_cells[x][y].getTeleport().x));
                             f.writeShort(Util.leShort(this.m_cells[x][y].getTeleport().y));
                         } else {

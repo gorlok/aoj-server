@@ -61,13 +61,13 @@ public class PathFinding {
     
     public Vector<Node> seekPath(Npc npc) {
     	AojServer server = AojServer.instance();
-    	short m = npc.getPos().mapa;
+    	short m = npc.getPos().map;
     	Map mapa = server.getMapa(m);
     	WorldPos start = npc.getPos();
     	WorldPos end = npc.m_pfinfo.m_targetPos;
     	for (short x = 1; x <= 100; x++) {
 			for (short y = 1; y <= 100; y++) {
-    			if (mapa.isLegalPosNPC(new WorldPos(m, x, y), npc.esAguaValida())) {
+    			if (mapa.isLegalPosNPC(WorldPos.mxy(m, x, y), npc.esAguaValida())) {
 					this.grid[x-1][y-1] = Constants.EMPTY;
 				} else {
 					this.grid[x-1][y-1] = Constants.SOLID;
