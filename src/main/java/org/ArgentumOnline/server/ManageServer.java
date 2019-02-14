@@ -30,6 +30,8 @@ public class ManageServer extends Thread {
 		String line;
 
 		try (Scanner scanner = new Scanner(System.in)) {
+			System.out.println("\n======================================================");
+			printHelp();			
 			while (this.server.m_corriendo) {
 				try {
 					line = scanner.nextLine();

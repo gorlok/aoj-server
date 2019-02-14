@@ -28,9 +28,6 @@ package org.ArgentumOnline.server.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Pablo F. Lillia
@@ -39,30 +36,9 @@ public class Log {
     
     static SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmssSSS");
     
-    private static Logger serverLogger = Logger.getLogger("org.ArgentumOnline");
-    
     /** Creates a new instance of Log */
     private Log() {
     	//
-    }
-    
-    public static void start() 
-    throws java.io.IOException {
-        FileHandler fh;
-        // Configure server logger
-        fh = new FileHandler("log/server%g.log", 1000000, 10);
-        fh.setFormatter(new LineFormatter());
-        serverLogger.addHandler(fh);
-        serverLogger.setLevel(Level.INFO);
-        serverLogger.info("Server logger started");
-    }
-    
-    public static void stop() {
-        serverLogger.info("Server logger stoped");
-    }
-    
-    public static Logger serverLogger() {
-        return serverLogger;
     }
     
     public static String getTimestamp() {

@@ -25,13 +25,18 @@
  */
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.util.*;
-import org.ArgentumOnline.server.classes.*;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Set;
 
-import java.util.*;
+import org.ArgentumOnline.server.classes.CharClass;
+import org.ArgentumOnline.server.util.IniFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ObjectInfo implements Constants {
-    
+	private static Logger log = LogManager.getLogger();
+
     public short ObjIndex = 0;
     public String Nombre;
     public short ObjType; // Tipo enum que determina cuales son las caract del obj
@@ -201,11 +206,11 @@ public class ObjectInfo implements Constants {
         this.flags.set(FLAG_AGARRABLE, (ini.getInt(section, "Agarrable") != 1));
         
         if (this.GrhIndex == 0) {
-            Log.serverLogger().warning("<<<<< ADVERTENCIA EN this.DAT >>>>");
-            Log.serverLogger().warning("i=" + index + " seccion=" + section);
-            Log.serverLogger().warning("Obj nombre=" + this.Nombre);
-            Log.serverLogger().warning("Obj m_body=" + this.Texto);
-            Log.serverLogger().warning("Obj grhIndex=" + this.GrhIndex);
+            log.warn("<<<<< ADVERTENCIA EN this.DAT >>>>");
+            log.warn("i=" + index + " seccion=" + section);
+            log.warn("Obj nombre=" + this.Nombre);
+            log.warn("Obj m_body=" + this.Texto);
+            log.warn("Obj grhIndex=" + this.GrhIndex);
         }
         
         this.Ropaje       = ini.getShort(section, "NumRopaje");

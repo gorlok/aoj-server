@@ -48,7 +48,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.protocol.ClientProcessThread;
@@ -56,8 +55,9 @@ import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
-import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dosse.upnp.UPnP;
 
@@ -66,6 +66,7 @@ import com.dosse.upnp.UPnP;
  * @author gorlok
  */
 public class AojServer implements Constants {
+	private static Logger log = LogManager.getLogger();
 	
 	public ManageServer manager = new ManageServer(this);
 	
@@ -249,6 +250,7 @@ public class AojServer implements Constants {
     public void shutdown() {
         this.m_corriendo = false;
         this.getProcessThread().endThread();
+        System.out.println("=== Goodbye. Server closed. ===");
     }
     
     public List<String> getUsuarioConIP(String ip) {
@@ -282,19 +284,12 @@ public class AojServer implements Constants {
     
     public static void main(String[] args) {
         boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
-        try {
-            Log.start();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            return;
-        }
         if (loadBackup) {
-			Log.serverLogger().info("Arrancando usando el backup");
+			log.info("Arrancando usando el backup");
 		} else {
-			Log.serverLogger().info("Arrancando sin usar backup");
+			log.info("Arrancando sin usar backup");
 		}
         AojServer.instance().run(loadBackup);
-        Log.stop();
     }
     
     
@@ -303,24 +298,24 @@ public class AojServer implements Constants {
         this.server = ServerSocketChannel.open();
         this.server.configureBlocking(false);
         this.server.socket().bind(new InetSocketAddress(SERVER_PORT));
-        Log.serverLogger().info("Escuchando en el puerto " + SERVER_PORT);
+        log.info("Escuchando en el puerto " + SERVER_PORT);
         this.selector = Selector.open();
         this.server.register(this.selector, SelectionKey.OP_ACCEPT);
     }
     
     private void openUPnP() {
     	if (this.useUPnP) {
-	        System.out.println("Attempting UPnP port forwarding...");
+    		log.warn("Attempting UPnP port forwarding...");
 	        if (UPnP.isUPnPAvailable()) { //is UPnP available?
 	            if (UPnP.isMappedTCP(SERVER_PORT)) { //is the port already mapped?
-	                System.out.println("UPnP port forwarding not enabled: port is already mapped");
+	                log.warn("UPnP port forwarding not enabled: port is already mapped");
 	            } else if (UPnP.openPortTCP(SERVER_PORT)) { //try to map port
-	                System.out.println("UPnP port forwarding enabled");
+	            	log.warn("UPnP port forwarding enabled");
 	            } else {
-	                System.out.println("UPnP port forwarding failed");
+	            	log.warn("UPnP port forwarding failed");
 	            }
 	        } else {
-	            System.out.println("UPnP is not available");
+	        	log.warn("UPnP is not available");
 	        }
     	}
     }
@@ -336,12 +331,12 @@ public class AojServer implements Constants {
         Client cliente = new Client(clientSocket, this);
         this.m_clientSockets.put(clientSocket, cliente);
         this.m_clientes.put(cliente.getId(), cliente);
-        Log.serverLogger().fine("NUEVA CONEXION");
+        log.info("NUEVA CONEXION");
     }
     
     public void closeConnection(Client cliente) 
     throws java.io.IOException {
-        Log.serverLogger().fine("cerrando conexion");
+        log.info("cerrando conexion");
         
         this.m_clientSockets.remove(cliente.socketChannel);
         this.m_clientes_eliminar.add(cliente);
@@ -352,7 +347,7 @@ public class AojServer implements Constants {
     private void readConnection(SocketChannel clientSocket) 
     throws java.io.IOException {
         Client cliente = this.m_clientSockets.get(clientSocket);
-        Log.serverLogger().fine("Recibiendo del cliente: " + cliente);
+        log.info("Recibiendo del cliente: " + cliente);
         // Read bytes coming from the client.
         this.serverBuffer.clear();
         try {
@@ -419,13 +414,13 @@ public class AojServer implements Constants {
                 for (SelectionKey key: keys) {
                     // if isAcceptable, then a client required a connection.
                     if (key.isAcceptable()) {
-                        Log.serverLogger().fine("nueva conexion");
+                        log.info("nueva conexion");
                         acceptConnection();
                         continue;
                     }
                     // if isReadable, then the server is ready to read
                     if (key.isReadable()) {
-                        Log.serverLogger().fine("leer de conexion");
+                        log.info("leer de conexion");
                         readConnection((SocketChannel) key.channel());
                         continue;
                     }
@@ -479,15 +474,15 @@ public class AojServer implements Constants {
                 eliminarClientes();
             }
         } catch (UnknownHostException ex) {
-            Log.serverLogger().log(Level.SEVERE, "AOServer run loop", ex);
+            log.fatal("AOServer run loop", ex);
         } catch (java.net.BindException ex) {
-            Log.serverLogger().log(Level.SEVERE, "El puerto ya está en uso. ¿El servidor ya está corriendo?", ex);
+            log.fatal("El puerto ya está en uso. ¿El servidor ya está corriendo?", ex);
         } catch (IOException ex) {
-            Log.serverLogger().log(Level.SEVERE, "AOServer run loop", ex);
+            log.fatal("AOServer run loop", ex);
         } finally {
             doBackup();
             guardarUsuarios();
-            Log.serverLogger().info("Server apagado por doBackUp");
+            log.info("Server apagado por doBackUp");
         }
     }
     
@@ -755,7 +750,7 @@ public class AojServer implements Constants {
 			Factions.TunicaMagoCaos = ini.getShort("INIT", "TunicaMagoCaos");
 			Factions.TunicaMagoCaosEnanos = ini.getShort("INIT", "TunicaMagoCaosEnanos");
 			
-			System.out.println("Admins recargados");			
+			log.warn("Admins recargados");			
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -782,10 +777,10 @@ public class AojServer implements Constants {
                 f.close();
             }
         } catch (java.io.FileNotFoundException e) {
-            Log.serverLogger().warning("Error abriendo archivo de nombres inválidos");
+            log.warn("Error abriendo archivo de nombres inválidos");
             e.printStackTrace();
         } catch (java.io.IOException e) {
-            Log.serverLogger().warning("Error leyendo archivo de nombres inválidos");
+            log.warn("Error leyendo archivo de nombres inválidos");
             e.printStackTrace();
         }
     }
@@ -1067,7 +1062,7 @@ public class AojServer implements Constants {
         purgarPenas();
         //checkIdleUser();
         // <<<<<-------- Log the number of users online ------>>>
-        Log.serverLogger().info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
+        log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
         // <<<<<-------- Log the number of users online ------>>>
     }
 
@@ -1179,7 +1174,7 @@ public class AojServer implements Constants {
         estadisticasWeb.Informar(EVENTO_NUEVO_CLAN, 0)
          ******************/
         this.m_haciendoBackup = false;
-        Log.serverLogger().info("Backup completado con exito");
+        log.info("Backup completado con exito");
     }
     
     private void saveGuildsDB() {
@@ -1240,7 +1235,7 @@ public class AojServer implements Constants {
             // Guardar todo
             ini.store("worldBackup" + File.separator + "backNPCs.dat");
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, "worldSave(): ERROR EN BACKUP NPCS", e);
+            log.fatal("worldSave(): ERROR EN BACKUP NPCS", e);
         }
         //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.INFO);
     }
@@ -1345,7 +1340,7 @@ public class AojServer implements Constants {
             }
             ini.store(DATDIR + java.io.File.separator + "Motd.ini");
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, "ERROR EN guardarMOTD()", e);
+            log.fatal("ERROR EN guardarMOTD()", e);
         }
     }
 

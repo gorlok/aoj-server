@@ -32,11 +32,15 @@ import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Pablo F. Lillia
  */
 public class UserInventory extends Inventory implements Constants {
+	
+	private static Logger log = LogManager.getLogger();
     
     Client dueño;
     AojServer server;
@@ -305,19 +309,19 @@ public class UserInventory extends Inventory implements Constants {
 		}
         ObjectInfo infoObj = this.server.getInfoObjeto(this.objs[slot-1].objid);
         short objid = this.objs[slot-1].objid;
-        Log.serverLogger().fine("equipar slot " + slot);
+        log.debug("equipar slot " + slot);
         if (infoObj.esNewbie() && !this.dueño.esNewbie()) {
             this.dueño.enviarMensaje("Solo los newbies pueden usar este objeto.", FontType.INFO);
             return;
         }
         InventoryObject obj_inv = getObjeto(slot);
-        Log.serverLogger().fine("objeto: " + infoObj.Nombre + " objtype=" + infoObj.ObjType + " subtipo=" + infoObj.SubTipo);
-        Log.serverLogger().fine("WeaponAnim: " + infoObj.WeaponAnim);
-        Log.serverLogger().fine("CascoAnim: " + infoObj.CascoAnim);
-        Log.serverLogger().fine("ShieldAnim: " + infoObj.ShieldAnim);
+        log.debug("objeto: " + infoObj.Nombre + " objtype=" + infoObj.ObjType + " subtipo=" + infoObj.SubTipo);
+        log.debug("WeaponAnim: " + infoObj.WeaponAnim);
+        log.debug("CascoAnim: " + infoObj.CascoAnim);
+        log.debug("ShieldAnim: " + infoObj.ShieldAnim);
         switch (infoObj.ObjType) {
             case OBJTYPE_WEAPON:
-                Log.serverLogger().fine("es un arma");
+                log.debug("es un arma");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
@@ -342,7 +346,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
                 
             case OBJTYPE_HERRAMIENTAS:
-                Log.serverLogger().fine("es una herramienta");
+                log.debug("es una herramienta");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
@@ -363,7 +367,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
                 
             case OBJTYPE_FLECHAS:
-                Log.serverLogger().fine("son flechas");
+                log.debug("son flechas");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
@@ -384,7 +388,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
                 
             case OBJTYPE_ARMOUR:
-                Log.serverLogger().fine("es un armour");
+                log.debug("es un armour");
                 if (this.dueño.estaNavegando()) {
 					return;
 				}
@@ -420,7 +424,7 @@ public class UserInventory extends Inventory implements Constants {
                         break;
                         
                     case SUBTYPE_CASCO:
-                        Log.serverLogger().fine("es un casco");
+                        log.debug("es un casco");
                         if (infoObj.clasePuedeUsarItem(this.dueño.getClase())) {
                             // Si esta equipado lo quita
                             if (obj_inv.equipado) {
@@ -446,7 +450,7 @@ public class UserInventory extends Inventory implements Constants {
                         break;
                         
                     case SUBTYPE_ESCUDO:
-                        Log.serverLogger().fine("es un escudo");
+                        log.debug("es un escudo");
                         if (infoObj.clasePuedeUsarItem(this.dueño.getClase())) {
                             // Si esta equipado lo quita
                             if (obj_inv.equipado) {
@@ -474,7 +478,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
         }
         // Actualiza
-        Log.serverLogger().fine("actualizar inventario del cliente");
+        log.debug("actualizar inventario del cliente");
         this.dueño.enviarInventario();
     }
     
@@ -897,7 +901,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             default:
-                Log.serverLogger().fine("No se como usar este tipo de objeto: " + info.ObjType);
+                log.fatal("No se como usar este tipo de objeto: " + info.ObjType);
         }
         // Actualiza
         //this.dueño.enviarEstadsUsuario();

@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-14
+- Cambiado: nuevo logging usando log4j2
+
 ### 2019-02-13
 - Modificado: se mejoró la consola de gestión del servidor
 - Agregado: nuevo comando en la consola para mostrar threads

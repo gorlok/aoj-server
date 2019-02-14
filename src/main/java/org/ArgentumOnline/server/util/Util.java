@@ -26,17 +26,12 @@
  */
 package org.ArgentumOnline.server.util;
 
-import java.util.Properties;
-
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class Util {
 
-	/** Creates a new instance of Util */
-	private Util() {
-		//
-	}
+	private Util() {}
 
 	public static boolean asciiValidos(String str) {
 		// Function AsciiValidos(ByVal cad As String) As Boolean
@@ -113,22 +108,4 @@ public class Util {
 		return f.canRead();
 	}
 
-	public static Properties getProperties(Object obj, String fileName) {
-		java.util.Properties props = new java.util.Properties();
-		try {
-			// First try to load properties from the current path.
-			java.io.FileInputStream pin = new java.io.FileInputStream(new java.io.File(fileName));
-			props.load(pin);
-		} catch (Exception ex) {
-			try {
-				// Fallback: try load properties from jar-file.
-				java.net.URL url = obj.getClass().getResource(fileName);
-				java.io.FileInputStream pin = new java.io.FileInputStream(url.getFile());
-				props.load(pin);
-			} catch (Exception exx) {
-				Log.serverLogger().warning("ERROR: properties file not loaded: " + fileName);
-			}
-		}
-		return props;
-	}
 }

@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
@@ -51,11 +50,15 @@ import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author gorlok
  */
 public class Client extends BaseCharacter implements Constants {
+
+	private static Logger log = LogManager.getLogger();
 
 	public int areaID = 0;
 
@@ -166,7 +169,7 @@ public class Client extends BaseCharacter implements Constants {
 		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
 		if (addr != null) {
 			this.m_ip = addr.getAddress().getHostAddress();
-			Log.serverLogger().info(this.m_nick + " conectado desde " + this.m_ip);
+			log.info(this.m_nick + " conectado desde " + this.m_ip);
 		}
 	}
 
@@ -530,7 +533,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		try {
-			Log.serverLogger().fine(">>" + m_nick + ">> " + msg);
+			log.debug(">>" + m_nick + ">> " + msg);
 
 			this.clientBuffer.clear();
 
@@ -541,7 +544,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (socketChannel.write(clientBuffer) == 0) {
 				// FIXME: ESTO SIGNIFICA QUE NO PUDO ESCRIBIR, HAY QUE ENCOLAR
 				// SI NO ESCRIBIO TODO!!!
-				Log.serverLogger().severe("zero bytes writen!");
+				log.error("zero bytes writen!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1481,7 +1484,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doApagar() {
 		// Comando /APAGAR
-		Log.serverLogger().info("SERVIDOR APAGADO POR " + m_nick);
+		log.info("SERVIDOR APAGADO POR " + m_nick);
 		Log.logGM(getNick(), "APAGO EL SERVIDOR");
 		server.shutdown();
 	}
@@ -3971,7 +3974,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		m_saliendo = true;
-		Log.serverLogger().fine(this + " haciendo doSALIR()");
+		log.info(this + " haciendo doSALIR()");
 		boolean wasLogged = m_flags.UserLogged;
 		try {
 			Map mapa = server.getMapa(m_pos.map);
@@ -4000,8 +4003,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			m_flags.UserLogged = false;
 		} catch (Exception ex) {
-			Log.serverLogger().severe("ERROR EN doSALIR(): " + ex.getMessage());
-			ex.printStackTrace();
+			log.fatal("ERROR EN doSALIR(): ", ex);
 		} finally {
 			try {
 				server.closeConnection(this);
@@ -4012,12 +4014,11 @@ public class Client extends BaseCharacter implements Constants {
 				try {
 					saveUser();
 				} catch (Exception ex) {
-					Log.serverLogger().severe("ERROR EN doSALIR() - saveUser(): " + ex.getMessage());
-					ex.printStackTrace();
+					log.fatal("ERROR EN doSALIR() - saveUser(): ", ex);
 				}
 			}
 		}
-		Log.serverLogger().info(m_nick + ": Hasta la vista, baby!");
+		log.info(m_nick + ": Hasta la vista, baby!");
 	}
 
 	public void tirarDados() {
@@ -4529,7 +4530,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			if (m.estaCliente(this) && !m.salir(this)) {
 				// No pudo salir del mapa :)
-				Log.serverLogger().severe(this + "> No pudo salir del mapa actual");
+				log.fatal(this + "> No pudo salir del mapa actual");
 			}
 		}
 		Map m = server.getMapa(mapa);
@@ -4649,8 +4650,7 @@ public class Client extends BaseCharacter implements Constants {
 			Map newMap = server.getMapa(m);
 			WorldPos pos_libre = newMap.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 			if (pos_libre == null) {
-				Log.serverLogger()
-						.fine("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m + " x=" + x + " y=" + y);
+				log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m + " x=" + x + " y=" + y);
 				return false;
 			}
 			x = pos_libre.x;
@@ -5806,7 +5806,7 @@ public class Client extends BaseCharacter implements Constants {
 			refreshStatus(4);
 			m_flags.Trabajando = false;
 		} else {
-			Log.serverLogger().fine("NO PUEDE ATACAR");
+			log.info("NO PUEDE ATACAR");
 		}
 	}
 
@@ -5979,7 +5979,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		victima.userDie();
 		m_estads.incUsuariosMatados();
-		Log.serverLogger().info("ASESINATO: " + m_nick + " asesino a " + victima.m_nick);
+		log.info("ASESINATO: " + m_nick + " asesino a " + victima.m_nick);
 	}
 
 	public void contarMuerte(Client usuarioMuerto) {
@@ -6311,7 +6311,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void enviarError(String msg) {
-		Log.serverLogger().fine("ERROR: " + msg);
+		log.warn("ERROR: " + msg);
 		enviar(ServerPacketID.msgErr, msg);
 	}
 
@@ -6511,7 +6511,7 @@ public class Client extends BaseCharacter implements Constants {
 			// Guardar todo
 			ini.store(getPjFile(m_nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE, m_nick + ": ERROR EN SAVEUSER()", e);
+			log.fatal(m_nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
@@ -6637,7 +6637,7 @@ public class Client extends BaseCharacter implements Constants {
 			enviarLogged();
 
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE, "ERROR EN connectUser(), nick=" + m_nick, e);
+			log.fatal("ERROR EN connectUser(), nick=" + m_nick, e);
 			enviarError("Hubo un error iniciando el personaje.");
 		} finally {
 			if (!m_flags.UserLogged) {
@@ -6671,6 +6671,7 @@ public class Client extends BaseCharacter implements Constants {
 		enviarMensaje("Mensaje del dia:", FontType.INFO);
 		for (String line : motd) {
 			// enviar(MSG_MOTD, line);
+			// FIXME
 		}
 	}
 
@@ -7715,7 +7716,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("GUILD", "EsGuildLeader", esLider);
 			ini.store(getPjFile(nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE, nick + ": ERROR EN SAVEUSER()", e);
+			log.fatal(nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
@@ -7730,7 +7731,7 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("GUILD", "GuildPts", guildPoints + addedGuildPts);
 			ini.store(getPjFile(nick));
 		} catch (Exception e) {
-			Log.serverLogger().log(Level.SEVERE, nick + ": ERROR EN SAVEUSER()", e);
+			log.fatal(nick + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 

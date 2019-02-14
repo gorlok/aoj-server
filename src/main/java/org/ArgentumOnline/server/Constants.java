@@ -139,7 +139,7 @@ public interface Constants {
     final static short CIUDAD_BANDER = 2;
     final static short CIUDAD_LINDOS = 3;
     
-    final static int CANT_MAPAS  = 155;
+    final static int CANT_MAPAS  = 285;
     final static int XMinMapSize = 1;
     final static int YMinMapSize = 1;
     final static int XMaxMapSize = 100;

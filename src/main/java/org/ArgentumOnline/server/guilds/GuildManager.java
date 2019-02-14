@@ -40,7 +40,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
@@ -48,13 +47,14 @@ import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
-import org.ArgentumOnline.server.util.Log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Gorlok
- *
  */
 public class GuildManager {
+	private static Logger log = LogManager.getLogger();
 
 	private AojServer server;
 	
@@ -666,7 +666,7 @@ public class GuildManager {
             }
             ini.store(Constants.GUILDDIR + java.io.File.separator + "GuildsInfo.ini");
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, "ERROR EN guardarMOTD()", e);
+            log.fatal("ERROR EN guardarMOTD()", e);
         }
     }
     

@@ -41,21 +41,22 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
-import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author  pablo
  */
 public class Map implements Constants {
+	private static Logger log = LogManager.getLogger();
     
     /** Número de mapa. */
     private short nroMapa;
@@ -248,11 +249,11 @@ public class Map implements Constants {
             AojServer.showMemoryStatus("loadInfFile ready #" + this.nroMapa);
 
         } catch (java.io.FileNotFoundException e) {
-            Log.serverLogger().warning("Archivo de mapa " + this.nroMapa + " faltante.");
+            log.warn("Archivo de mapa " + this.nroMapa + " faltante.");
         } catch (java.io.IOException e) {
-            Log.serverLogger().warning("Error leyendo archivo de mapa " + this.nroMapa);
+            log.warn("Error leyendo archivo de mapa " + this.nroMapa);
         } catch (Exception e) {
-        	Log.serverLogger().warning("Error con mapa " + this.nroMapa);
+        	log.warn("Error con mapa " + this.nroMapa);
         }
     }
     
@@ -331,7 +332,7 @@ public class Map implements Constants {
 	    }
 	    
 	    if (bytes == null) {
-	    	System.out.println("Error, archivo de mapa inexistente: " + mapFileName);
+	    	log.error("Error, archivo de mapa inexistente: " + mapFileName);
 	    	return;            	
 	    }
 	    
@@ -380,7 +381,7 @@ public class Map implements Constants {
             }         
             
         } catch (Exception e) {
-        	System.out.println("ERROR LOADING " + mapFileName);
+        	log.error("ERROR LOADING " + mapFileName);
         }
     }
 
@@ -422,7 +423,7 @@ public class Map implements Constants {
         File map = new File("worldBackup" + File.separator + infFileName);
         
         if (!map.exists()) {
-        	System.out.println("Error, archivo de mapa inexistente: " + infFileName);
+        	log.error("Error, archivo de mapa inexistente: " + infFileName);
         	return;
         }
         
@@ -471,7 +472,7 @@ public class Map implements Constants {
                         }
                         npc.activar();
                         if (npc.getNPCtype() == 5) {
-							System.out.println(npc + " " + npc.getPos()); // FIXME
+                        	log.debug(npc + " " + npc.getPos()); // FIXME
 						}
                         // JAO: Sistema de areas!!
                       //  this.areasData.setNpcArea(npc);
@@ -492,10 +493,8 @@ public class Map implements Constants {
         }         
         
         
-        
-        
         } catch(Exception e) {
-        	System.out.println("Error: " + e.getMessage());
+        	log.error("Error: " + e.getMessage());
         }
 
     }
@@ -546,7 +545,7 @@ public class Map implements Constants {
     
     public void moverNpc(Npc npc, short x, short y) {
         if (this.m_cells[x-1][y-1].getNpc() != null) {
-			Log.serverLogger().severe("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
+			log.fatal("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
 		}
         this.m_cells[npc.getPos().x-1][npc.getPos().y-1].setNpc(null);
         this.m_cells[x-1][y-1].setNpc(npc);
@@ -641,7 +640,7 @@ public class Map implements Constants {
         //Objeto obj = new Objeto(objid, cant, x, y);
         //bloques[x-1][y-1].setObj(obj);
     	if (hayObjeto(x, y)) {
-            Log.serverLogger().warning("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.nroMapa + " x=" + x + " y=" + y);
+            log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.nroMapa + " x=" + x + " y=" + y);
     		return false;
     	}
     	this.m_cells[x-1][y-1].setObj(objid, cant);
@@ -649,7 +648,7 @@ public class Map implements Constants {
         short grhIndex = this.server.getInfoObjeto(objid).GrhIndex;
         
         if (DEBUG)
-        	System.out.println(grhIndex + "-" + x + "-" + y);
+        	log.debug(grhIndex + "-" + x + "-" + y);
         
         //Agush: Nuevo sistema de areas!!
         //this.areasData.setObjArea(x, y, objid);
@@ -1621,14 +1620,14 @@ public class Map implements Constants {
             ini.setValue(section, "PK", this.m_pk);
             ini.store(datFileName);
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, "ERROR GUARDANDO MAPA " + this.nroMapa, e);
+            log.fatal("ERROR GUARDANDO MAPA " + this.nroMapa, e);
         }
     }
     
     private void saveMapFile(String filename) {
         ////////// ARCHIVO .MAP
         // guardar cabecera del archivo .map
-        Log.serverLogger().info("Guardando mapa: " + filename);
+        log.info("Guardando mapa: " + filename);
         try {
             DataOutputStream f =
             new DataOutputStream(
@@ -1660,13 +1659,13 @@ public class Map implements Constants {
                 f.close();
             }
         } catch (java.io.IOException e) {
-            Log.serverLogger().log(Level.SEVERE, "ERROR EN saveMapFile " + this.nroMapa, e);
+            log.fatal("ERROR EN saveMapFile " + this.nroMapa, e);
         }
     }
     
     private void saveInfFile(String filename) {
         //////// ARCHIVO .INF
-        Log.serverLogger().info("Guardando mapa: " + filename);
+        log.info("Guardando mapa: " + filename);
         try {
             DataOutputStream f =
             new DataOutputStream(
@@ -1708,7 +1707,7 @@ public class Map implements Constants {
                 f.close();
             }
         } catch (java.io.IOException e) {
-            Log.serverLogger().log(Level.SEVERE, "ERROR EN saveInfFile " + this.nroMapa, e);
+            log.fatal("ERROR EN saveInfFile " + this.nroMapa, e);
         }
     }
     

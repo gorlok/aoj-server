@@ -25,15 +25,20 @@
  */
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.util.*;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.StringTokenizer;
+
+import org.ArgentumOnline.server.util.FontType;
+import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author  Pablo Fernando Lillia
  */
 public class Quest implements Constants {
+	private static Logger log = LogManager.getLogger();
     
     short nroQuest;
     
@@ -99,7 +104,7 @@ public class Quest implements Constants {
                 this.Coordenadas[j] = WorldPos.mxy(mapa, x, y);
                 this.Pista[j] = s;
             } catch (Exception e) {
-                Log.serverLogger().log(Level.SEVERE, "Error en cargarQuests(): quest=" + this.nroQuest + " npc=#" + (j+1), e);
+                log.fatal("Error en cargarQuests(): quest=" + this.nroQuest + " npc=#" + (j+1), e);
             }
         }                            
         this.CriaturaIndex = ini.getShort(seccion, "CriaturaIndex");
@@ -167,7 +172,7 @@ public class Quest implements Constants {
                     break;
             }
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, cliente.getNick() + " Error en HacerQuest!", e);
+            log.fatal(cliente.getNick() + " Error en HacerQuest!", e);
         }
     }
 
@@ -379,7 +384,7 @@ public class Quest implements Constants {
             }
             cliente.refreshStatus(5);
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, cliente.getNick() + " Error en RecibirRecompensaQuest!", e);
+            log.fatal(cliente.getNick() + " Error en RecibirRecompensaQuest!", e);
         }
     }
  
@@ -445,7 +450,7 @@ public class Quest implements Constants {
             cliente.getQuest().m_enQuest = false;
             cliente.hablar(COLOR_BLANCO, "Te has rendido por lo tanto no has conseguido la recompensa, pero puedes continuar con la siguiente quest.", npc.getId());
         } catch (Exception e) {
-            Log.serverLogger().log(Level.SEVERE, cliente.getNick() + " Error en UserSeRinde!", e);
+            log.fatal(cliente.getNick() + " Error en UserSeRinde!", e);
         }
     }
     

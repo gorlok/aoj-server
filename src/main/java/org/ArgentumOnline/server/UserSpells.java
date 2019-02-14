@@ -34,14 +34,17 @@ import org.ArgentumOnline.server.protocol.ServerPacketID;
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_SHS;
 
 import org.ArgentumOnline.server.util.FontType;
-import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Gorlok
  */
 public class UserSpells implements Constants {
 
+	private static Logger log = LogManager.getLogger();
+	
 	short m_hechizos[] = new short[MAX_HECHIZOS];
 	
 	private Client client;
@@ -128,7 +131,7 @@ public class UserSpells implements Constants {
 		System.out.println(" " + slot + "");
 		
 		client.getFlags().Hechizo = m_hechizos[slot - 1];
-		Log.serverLogger().fine("doLanzarHechizo =====> " + client.getFlags().Hechizo);
+		log.info("doLanzarHechizo =====> " + client.getFlags().Hechizo);
 	}
 
 	public boolean tieneHechizo(int numHechizo) {

@@ -26,11 +26,16 @@
  */
 package org.ArgentumOnline.server.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author gorlok
  */
 public class Feedback {
-    int total = 0;
+	private static Logger log = LogManager.getLogger();
+
+	int total = 0;
     int paso = 0;
     String msg = "";
     
@@ -41,7 +46,7 @@ public class Feedback {
     }
     
     public void step(String msg) {
-        Log.serverLogger().info(msg + " (" + (++this.paso) + "/" + this.total + ")");
+        log.info(msg + " (" + (++this.paso) + "/" + this.total + ")");
     }
     
     public void finish() {

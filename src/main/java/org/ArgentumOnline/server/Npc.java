@@ -33,16 +33,17 @@ import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
-import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import misc.astar.Node;
 
 /**
- *
- * @author  pablo
+ * @author gorlok
  */
 public class Npc extends BaseCharacter implements Constants {
+	private static Logger log = LogManager.getLogger();
     
 	public int areaID = 0;
 	
@@ -985,8 +986,8 @@ public class Npc extends BaseCharacter implements Constants {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
-                    Log.serverLogger().fine("m_flags.AguaValida=" + esAguaValida());
-                    Log.serverLogger().fine("OJO, ya hay otro NPC!!! " + this + " " + 
+                    log.debug("m_flags.AguaValida=" + esAguaValida());
+                    log.debug("OJO, ya hay otro NPC!!! " + this + " " + 
                     newPos.x + " " + newPos.y + " encontro=" + mapa.getNPC(newPos.x, newPos.y));
                     return;
                 }
@@ -1007,8 +1008,8 @@ public class Npc extends BaseCharacter implements Constants {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
-                    Log.serverLogger().fine("m_flags.AguaValida=" + esAguaValida());
-                    Log.serverLogger().fine("OJO, ya hay otro NPC!!! " + this + " " + 
+                    log.debug("m_flags.AguaValida=" + esAguaValida());
+                    log.debug("OJO, ya hay otro NPC!!! " + this + " " + 
                     newPos.x + " " + newPos.y + " encontro=" + mapa.getNPC(newPos.x, newPos.y));
                     return;
                 }
