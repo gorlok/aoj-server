@@ -5,4 +5,9 @@
 * server status/info, diagnostics, metrics
 * enhance manager console
 * rest api for managing, web app ?
+    * use spark web server (https rest-api?)
+    * web app patterfly... ng?
 * review networking
+    * use vertx?
+* competableFuture Async
+* implement full AO's network protocol

@@ -364,8 +364,7 @@ public class AojServer implements Constants {
     public void run(boolean loadBackup) {
         loadAllData(loadBackup);
         
-        this.processThread = new ClientProcessThread();
-        getProcessThread().start();
+        (this.processThread = new ClientProcessThread()).start();
         
         try {
             initServerSocket();
