@@ -52,8 +52,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- *
- * @author  pablo
+ * @author gorlok
  */
 public class Map implements Constants {
 	private static Logger log = LogManager.getLogger();
@@ -114,10 +113,6 @@ public class Map implements Constants {
         }
     }
     
-    /** Getter for property nro.
-     * @return Value of property nro.
-     *
-     */
     public int getNroMapa() {
         return this.nroMapa;
     }
@@ -951,160 +946,7 @@ public class Map implements Constants {
         }
         return null;
     }
-/*
-    Sub LookatTile(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
-        'Responde al click del usuario sobre el mapa
-        Dim FoundChar As Byte
-        Dim FoundSomething As Byte
-        Dim TempCharIndex As Integer
-        Dim Stat As String
-        '¿Posicion valida?
-        If InMapBounds(Map, X, Y) Then
-            UserList(UserIndex).flags.TargetMap = Map
-            UserList(UserIndex).flags.TargetX = X
-            UserList(UserIndex).flags.TargetY = Y
-            '¿Es un obj?
-            If MapData(Map, X, Y).OBJInfo.ObjIndex > 0 Then
-                'Informa el nombre
-                Call SendData(ToIndex, UserIndex, 0, "||" & ObjData(MapData(Map, X, Y).OBJInfo.ObjIndex).Name & FONTTYPE_INFO)
-                UserList(UserIndex).flags.TargetObj = MapData(Map, X, Y).OBJInfo.ObjIndex
-                UserList(UserIndex).flags.TargetObjMap = Map
-                UserList(UserIndex).flags.TargetObjX = X
-                UserList(UserIndex).flags.TargetObjY = Y
-                FoundSomething = 1
-            ElseIf MapData(Map, X + 1, Y).OBJInfo.ObjIndex > 0 Then
-                'Informa el nombre
-                If ObjData(MapData(Map, X + 1, Y).OBJInfo.ObjIndex).ObjType = OBJTYPE_PUERTAS Then
-                    Call SendData(ToIndex, UserIndex, 0, "||" & ObjData(MapData(Map, X + 1, Y).OBJInfo.ObjIndex).Name & FONTTYPE_INFO)
-                    UserList(UserIndex).flags.TargetObj = MapData(Map, X + 1, Y).OBJInfo.ObjIndex
-                    UserList(UserIndex).flags.TargetObjMap = Map
-                    UserList(UserIndex).flags.TargetObjX = X + 1
-                    UserList(UserIndex).flags.TargetObjY = Y
-                    FoundSomething = 1
-                End If
-            ElseIf MapData(Map, X + 1, Y + 1).OBJInfo.ObjIndex > 0 Then
-                If ObjData(MapData(Map, X + 1, Y + 1).OBJInfo.ObjIndex).ObjType = OBJTYPE_PUERTAS Then
-                    'Informa el nombre
-                    Call SendData(ToIndex, UserIndex, 0, "||" & ObjData(MapData(Map, X + 1, Y + 1).OBJInfo.ObjIndex).Name & FONTTYPE_INFO)
-                    UserList(UserIndex).flags.TargetObj = MapData(Map, X + 1, Y + 1).OBJInfo.ObjIndex
-                    UserList(UserIndex).flags.TargetObjMap = Map
-                    UserList(UserIndex).flags.TargetObjX = X + 1
-                    UserList(UserIndex).flags.TargetObjY = Y + 1
-                    FoundSomething = 1
-                End If
-            ElseIf MapData(Map, X, Y + 1).OBJInfo.ObjIndex > 0 Then
-                If ObjData(MapData(Map, X, Y + 1).OBJInfo.ObjIndex).ObjType = OBJTYPE_PUERTAS Then
-                    'Informa el nombre
-                    Call SendData(ToIndex, UserIndex, 0, "||" & ObjData(MapData(Map, X, Y + 1).OBJInfo.ObjIndex).Name & FONTTYPE_INFO)
-                    UserList(UserIndex).flags.TargetObj = MapData(Map, X, Y).OBJInfo.ObjIndex
-                    UserList(UserIndex).flags.TargetObjMap = Map
-                    UserList(UserIndex).flags.TargetObjX = X
-                    UserList(UserIndex).flags.TargetObjY = Y + 1
-                    FoundSomething = 1
-                End If
-            End If
-            '¿Es un personaje?
-            If Y + 1 <= YMaxMapSize Then
-                If MapData(Map, X, Y + 1).UserIndex > 0 Then
-                    TempCharIndex = MapData(Map, X, Y + 1).UserIndex
-                    FoundChar = 1
-                End If
-                If MapData(Map, X, Y + 1).NpcIndex > 0 Then
-                    TempCharIndex = MapData(Map, X, Y + 1).NpcIndex
-                    FoundChar = 2
-                End If
-            End If
-            '¿Es un personaje?
-            If FoundChar = 0 Then
-                If MapData(Map, X, Y).UserIndex > 0 Then
-                    TempCharIndex = MapData(Map, X, Y).UserIndex
-                    FoundChar = 1
-                End If
-                If MapData(Map, X, Y).NpcIndex > 0 Then
-                    TempCharIndex = MapData(Map, X, Y).NpcIndex
-                    FoundChar = 2
-                End If
-            End If
-            'Reaccion al personaje
-            If FoundChar = 1 Then '  ¿Encontro un Usuario?
-               If UserList(TempCharIndex).flags.AdminInvisible = 0 Then
-                    If EsNewbie(TempCharIndex) Then
-                        Stat = " <NEWBIE>"
-                    End If
-                    If UserList(TempCharIndex).Faccion.ArmadaReal = 1 Then
-                        Stat = Stat & " <Ejercito real> " & "<" & TituloReal(TempCharIndex) & ">"
-                    ElseIf UserList(TempCharIndex).Faccion.FuerzasCaos = 1 Then
-                        Stat = Stat & " <Fuerzas del caos> " & "<" & TituloCaos(TempCharIndex) & ">"
-                    End If
-                    If UserList(TempCharIndex).GuildInfo.GuildName <> "" Then
-                        Stat = Stat & " <" & UserList(TempCharIndex).GuildInfo.GuildName & ">"
-                    End If
-                    If Len(UserList(TempCharIndex).Desc) > 1 Then
-                        Stat = "||Ves a " & UserList(TempCharIndex).Name & Stat & " - " & UserList(TempCharIndex).Desc
-                    Else
-                        'Call SendData(ToIndex, UserIndex, 0, "||Ves a " & UserList(TempCharIndex).Name & Stat)
-                        Stat = "||Ves a " & UserList(TempCharIndex).Name & Stat
-                    End If
-                    If UserList(TempCharIndex).flags.Privilegios > 0 Then
-                        Stat = Stat & " <GAME MASTER> ~0~185~0~1~0"
-                    ElseIf Criminal(TempCharIndex) Then
-                        Stat = Stat & " <CRIMINAL> ~255~0~0~1~0"
-                    Else
-                        Stat = Stat & " <CIUDADANO> ~0~0~200~1~0"
-                    End If
-                    Call SendData(ToIndex, UserIndex, 0, Stat)
-                    FoundSomething = 1
-                    UserList(UserIndex).flags.TargetUser = TempCharIndex
-                    UserList(UserIndex).flags.TargetNpc = 0
-                    UserList(UserIndex).flags.TargetNpcTipo = 0
-               End If
-            End If
-            If FoundChar = 2 Then '¿Encontro un Npc?
-                    If Len(Npclist(TempCharIndex).Desc) > 1 Then
-                        Call SendData(ToIndex, UserIndex, 0, "||" & vbWhite & "°" & Npclist(TempCharIndex).Desc & "°" & Npclist(TempCharIndex).Char.CharIndex & FONTTYPE_INFO)
-                    Else
-                        If Npclist(TempCharIndex).MaestroUser > 0 Then
-                            Call SendData(ToIndex, UserIndex, 0, "|| " & Npclist(TempCharIndex).Name & " es mascota de " & UserList(Npclist(TempCharIndex).MaestroUser).Name & FONTTYPE_INFO)
-                        Else
-                            Call SendData(ToIndex, UserIndex, 0, "|| " & Npclist(TempCharIndex).Name & "." & FONTTYPE_INFO)
-                        End If
-                    End If
-                    FoundSomething = 1
-                    UserList(UserIndex).flags.TargetNpcTipo = Npclist(TempCharIndex).NPCtype
-                    UserList(UserIndex).flags.TargetNpc = TempCharIndex
-                    UserList(UserIndex).flags.TargetUser = 0
-                    UserList(UserIndex).flags.TargetObj = 0
-            End If
-            If FoundChar = 0 Then
-                UserList(UserIndex).flags.TargetNpc = 0
-                UserList(UserIndex).flags.TargetNpcTipo = 0
-                UserList(UserIndex).flags.TargetUser = 0
-            End If
-            '*** NO ENCOTRO NADA ***
-            If FoundSomething = 0 Then
-                UserList(UserIndex).flags.TargetNpc = 0
-                UserList(UserIndex).flags.TargetNpcTipo = 0
-                UserList(UserIndex).flags.TargetUser = 0
-                UserList(UserIndex).flags.TargetObj = 0
-                UserList(UserIndex).flags.TargetObjMap = 0
-                UserList(UserIndex).flags.TargetObjX = 0
-                UserList(UserIndex).flags.TargetObjY = 0
-                Call SendData(ToIndex, UserIndex, 0, "||No ves nada interesante." & FONTTYPE_INFO)
-            End If
-        Else
-            If FoundSomething = 0 Then
-                UserList(UserIndex).flags.TargetNpc = 0
-                UserList(UserIndex).flags.TargetNpcTipo = 0
-                UserList(UserIndex).flags.TargetUser = 0
-                UserList(UserIndex).flags.TargetObj = 0
-                UserList(UserIndex).flags.TargetObjMap = 0
-                UserList(UserIndex).flags.TargetObjX = 0
-                UserList(UserIndex).flags.TargetObjY = 0
-                Call SendData(ToIndex, UserIndex, 0, "||No ves nada interesante." & FONTTYPE_INFO)
-            End If
-        End If
-    End Sub
- */
+    
     public void consultar(Client cliente, short x, short y) {
         // Sub LookatTile(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
     	
@@ -1238,7 +1080,7 @@ public class Map implements Constants {
             return;
         }
         String foroId = obj.getInfo().ForoID;
-        this.server.enviarMensajesForo(foroId, cliente);
+        this.server.getForumManager().enviarMensajesForo(foroId, cliente);
     }
     
     public void accionParaPuerta(short x, short y, Client cliente) {
@@ -1264,13 +1106,14 @@ public class Map implements Constants {
 			return;
 		}
         if (obj.getInfo().Texto.length() > 0) {
+        	// FIXME
            // cliente.enviar(MSG_MCAR, obj.getInfo().Texto, obj.getInfo().GrhSecundario);
         }
     }
     
     public WorldPos tirarItemAlPiso(short x, short y, InventoryObject obj) {
         WorldPos nuevaPos = tilelibre(x, y);
-        //Log.debug("tirarItemAlPiso: x=" + nuevaPos.x + " y=" + nuevaPos.y);
+        log.debug("tirarItemAlPiso: x=" + nuevaPos.x + " y=" + nuevaPos.y);
         if (nuevaPos != null) {
             if (agregarObjeto(obj.objid, obj.cant, nuevaPos.x, nuevaPos.y)) {
                 return nuevaPos;
@@ -1289,8 +1132,9 @@ public class Map implements Constants {
 		!hayTeleport(x, y);
     }
     
-    /** Busca una posicion libre para depositar un objeto
-     * y que sea lo más cercana a la posición original */
+    /** 
+     * Busca una posicion libre para depositar un objeto y que sea lo más cercana a la posición original 
+     */
     public WorldPos tilelibre(short orig_x, short orig_y) {
         if (esPosLibreObjeto(orig_x, orig_y)) {
 			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
@@ -1327,8 +1171,6 @@ public class Map implements Constants {
     }
     
     public boolean isLegalPos(WorldPos pos, boolean puedeAgua) {
-        // Function LegalPos(ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer, Optional ByVal PuedeAgua = False) As Boolean
-        // ¿Es un mapa valido?
         if (!pos.isValid()) {
 			return false;
 		}
@@ -1345,7 +1187,6 @@ public class Map implements Constants {
     }
     
     public boolean isLegalPosNPC(WorldPos pos, boolean puedeAgua) {
-        // Function LegalPosNPC(ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer, ByVal AguaValida As Byte) As Boolean
         if (!pos.isValid()) {
 			return false;
 		}
@@ -1376,8 +1217,9 @@ public class Map implements Constants {
 		}
     }
     
-    /** Busca una posicion válida para un PJ,
-     * y que sea lo más cercana a la posición original */
+    /** 
+     * Busca una posicion válida para un PJ, y que sea lo más cercana a la posición original 
+     */
     public WorldPos closestLegalPosPj(short orig_x, short orig_y, boolean navegando, boolean esAdmin) {
         if (esPosLibrePj(orig_x, orig_y, navegando, esAdmin)) {
 			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
@@ -1428,8 +1270,9 @@ public class Map implements Constants {
         return false;
     }
     
-    /** Busca una posicion válida para un Npc,
-     * y que sea lo más cercana a la posición original */
+    /** 
+     * Busca una posicion válida para un Npc, y que sea lo más cercana a la posición original 
+     */
     public WorldPos closestLegalPosNpc(short orig_x, short orig_y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
         if (esPosLibreNpc(orig_x, orig_y, esAguaValida, esTierraInvalida, bajoTecho)) {
 			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
@@ -1598,6 +1441,7 @@ public class Map implements Constants {
     
     
     //Agus: ARREGLAR ESTO MOMENTANEAMENTE DESACTIVADO
+    // FIXME
     public void saveMapData() {
         // Public Sub SaveMapData(ByVal N As Integer)
        // saveInfFile("worldBackup" + File.separator + "Mapa" + this.nroMapa + ".inf");

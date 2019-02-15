@@ -10,6 +10,7 @@ public class ManageServer extends Thread {
 		help("help"),
 		shutdown("shutdown"),
 		reload("reload"),
+		status("status"),
 		threads("threads");
 		
 		private String name;
@@ -76,6 +77,10 @@ public class ManageServer extends Thread {
 			
 		case threads:
 			showThreads();
+			break;
+			
+		case status:
+			this.server.showStatus();
 			break;
 			
 		default:

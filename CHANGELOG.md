@@ -5,6 +5,8 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ### 2019-02-14
 - Cambiado: nuevo logging usando log4j2
+- Refactory de MOTD, Forum, UPnP
+- Agregado: comando de status básico en la Consola.
 
 ### 2019-02-13
 - Modificado: se mejoró la consola de gestión del servidor

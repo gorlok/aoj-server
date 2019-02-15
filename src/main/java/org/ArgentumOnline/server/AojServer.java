@@ -59,10 +59,8 @@ import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dosse.upnp.UPnP;
-
 /** 
- * AOJava main class.
+ * AOJava main class
  * @author gorlok
  */
 public class AojServer implements Constants {
@@ -82,7 +80,6 @@ public class AojServer implements Constants {
     private HashMap<SocketChannel, Client> m_clientSockets = new HashMap<SocketChannel, Client>();
     private HashMap<Short, Client> m_clientes = new HashMap<Short, Client>();
     private HashMap<Integer, Npc> 	m_npcs       = new HashMap<Integer, Npc>();
-    private HashMap<String, Forum> 	m_foros       = new HashMap<String, Forum>();
     
     private List<Client> m_clientes_eliminar = new LinkedList<Client>();
     private List<Short> m_npcs_muertos = new Vector<Short>();
@@ -98,7 +95,6 @@ public class AojServer implements Constants {
     private List<String> m_dioses = new Vector<String>();
     private List<String> m_semidioses = new Vector<String>();
     private List<String> m_consejeros = new Vector<String>();
-    private List<String> m_motd = new Vector<String>();
 
     private List<String> m_nombresInvalidos = new Vector<String>();
     
@@ -127,14 +123,16 @@ public class AojServer implements Constants {
     private boolean m_showDebug = false;
     
     private GuildManager m_guildMngr;
-    
+    private Motd motd;
+    private ForumManager forumManager;
     
     private AojServer() {
     	this.m_guildMngr = new GuildManager(this);
+    	this.motd = new Motd();
+    	this.forumManager = new ForumManager();
     }
 
     private static AojServer instance = null;
-    
     public static AojServer instance() {
         if (instance == null) {
 			instance = new AojServer();
@@ -142,9 +140,17 @@ public class AojServer implements Constants {
         return instance;
     }
     
+    public Motd getMotd() {
+    	return this.motd;
+    }
+    
     public GuildManager getGuildMngr() {
     	return this.m_guildMngr;
     }
+    
+    public ForumManager getForumManager() {
+		return forumManager;
+	}
     
     public Collection<Client> getClientes() {
     	return this.m_clientes.values();
@@ -157,6 +163,16 @@ public class AojServer implements Constants {
     public long runningTimeInSecs() {
         return (getMillis() - this.startTime) / 1000;
     }
+    
+    public String calculateUptime() {
+		long tsegs = runningTimeInSecs();
+		long segs = tsegs % 60;
+		long mins = tsegs / 60;
+		long horas = mins / 60;
+		long dias = horas / 24;
+		String msg = dias + " dias, " + horas + " horas, " + mins + " minutos, " + segs + " segundos.";
+		return msg;
+	}
     
     public short getNextId() {
         return ++this.id;
@@ -263,15 +279,6 @@ public class AojServer implements Constants {
         return usuarios;
     }
     
-    public List<String> getMOTD() {
-    	return this.m_motd;
-    }
-    
-    public void setMOTD(List<String> motd) {
-    	this.m_motd.clear();
-    	this.m_motd.addAll(motd);
-    }
-    
     public List<String> getGMsOnline() {
         Vector<String> usuarios = new Vector<String>();
         for (Client cli: getClientes()) {
@@ -282,17 +289,6 @@ public class AojServer implements Constants {
         return usuarios;
     }
     
-    public static void main(String[] args) {
-        boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
-        if (loadBackup) {
-			log.info("Arrancando usando el backup");
-		} else {
-			log.info("Arrancando sin usar backup");
-		}
-        AojServer.instance().run(loadBackup);
-    }
-    
-    
     private void initServerSocket() 
     throws java.io.IOException {
         this.server = ServerSocketChannel.open();
@@ -301,23 +297,6 @@ public class AojServer implements Constants {
         log.info("Escuchando en el puerto " + SERVER_PORT);
         this.selector = Selector.open();
         this.server.register(this.selector, SelectionKey.OP_ACCEPT);
-    }
-    
-    private void openUPnP() {
-    	if (this.useUPnP) {
-    		log.warn("Attempting UPnP port forwarding...");
-	        if (UPnP.isUPnPAvailable()) { //is UPnP available?
-	            if (UPnP.isMappedTCP(SERVER_PORT)) { //is the port already mapped?
-	                log.warn("UPnP port forwarding not enabled: port is already mapped");
-	            } else if (UPnP.openPortTCP(SERVER_PORT)) { //try to map port
-	            	log.warn("UPnP port forwarding enabled");
-	            } else {
-	            	log.warn("UPnP port forwarding failed");
-	            }
-	        } else {
-	        	log.warn("UPnP is not available");
-	        }
-    	}
     }
     
     private void acceptConnection() 
@@ -390,7 +369,9 @@ public class AojServer implements Constants {
         
         try {
             initServerSocket();
-            openUPnP();
+        	if (this.useUPnP) {
+        		NetworkUPnP.openUPnP();
+        	}
             // Main loop.
             this.startTime = getMillis();
             long lastNpcAI = this.startTime;
@@ -497,11 +478,14 @@ public class AojServer implements Constants {
 
     public static void showMemoryStatus(String msg) {
     	if (DEBUG) {
-    		System.out.println("total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
-    			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
-    			//" KB max=" + (int) (Runtime.getRuntime().maxMemory() / 1024) +
-				" KB [" + msg + "]");
+    		System.out.println(memoryStatus() + " [" + msg + "]");
     	}
+    }
+    
+    private static String memoryStatus() {
+    	return  "total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
+    			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
+				" KB"; 
     }
     
     /** Load maps / Cargar los m_mapas */
@@ -600,7 +584,7 @@ public class AojServer implements Constants {
     	showMemoryStatus("loadNombresInvalidos ready");
         cargarSpawnList();
     	showMemoryStatus("cargarSpawnList ready");
-        loadMOTD();
+        motd.loadMOTD();
     	showMemoryStatus("loadMOTD ready");
         //System.gc(); // Para decirle a la VM que es buen momento para liberar algo de memoria.
     	showMemoryStatus("loadAllData() ended");
@@ -967,9 +951,7 @@ public class AojServer implements Constants {
     }
     
     int segundos = 0;
-    //       Interval        =   6000
     public void piqueteTimer() {
-        // Private Sub tPiqueteC_Timer()
         this.segundos += 6;
         for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
@@ -1032,7 +1014,6 @@ public class AojServer implements Constants {
     DailyStats dayStats = new DailyStats();
     
     private void autoSaveTimer() {
-        //Private Sub AutoSave_Timer()
         // fired every minute
         this.minsRunning++;
         if (this.minsRunning == 60) {
@@ -1071,10 +1052,10 @@ public class AojServer implements Constants {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmas");
             this.m_armasHerrero = new short[cant];
-            //Log.debug("ArmasHerreria cantidad=" + cant);
+            log.debug("ArmasHerreria cantidad=" + cant);
             for (int i = 0; i < cant; i++) {
                 this.m_armasHerrero[i] = ini.getShort("Arma" + (i+1), "Index");
-                //Log.debug("ArmasHerrero[" + i + "]=" + m_armasHerrero[i]);
+                log.debug("ArmasHerrero[" + i + "]=" + m_armasHerrero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -1087,11 +1068,11 @@ public class AojServer implements Constants {
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmadurasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmaduras");
-            //Log.debug("ArmadurasHerrero cantidad=" + cant);
+            log.debug("ArmadurasHerrero cantidad=" + cant);
             this.m_armadurasHerrero = new short[cant];
             for (int i = 0; i < cant; i++) {
                 this.m_armadurasHerrero[i] = ini.getShort("Armadura" + (i+1), "Index");
-                //Log.debug("ArmadurasHerrero[" + i + "]=" + m_armadurasHerrero[i]);
+                log.debug("ArmadurasHerrero[" + i + "]=" + m_armadurasHerrero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -1104,11 +1085,11 @@ public class AojServer implements Constants {
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ObjCarpintero.dat");
             short cant = ini.getShort("INIT", "NumObjs");
-            //Log.debug("ObjCarpintero cantidad=" + cant);
+            log.debug("ObjCarpintero cantidad=" + cant);
             this.m_objCarpintero = new short[cant];
             for (int i = 0; i < cant; i++) {
                 this.m_objCarpintero[i] = ini.getShort("Obj" + (i+1), "Index");
-                //Log.debug("ObjCarpintero[" + i + "]=" + m_objCarpintero[i]);
+                log.debug("ObjCarpintero[" + i + "]=" + m_objCarpintero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -1117,8 +1098,7 @@ public class AojServer implements Constants {
         }
     }
     
-    public String[] getHelp() {
-        // Sub SendHelp(ByVal Index As Integer)
+    public String[] readHelp() {
         String[] lineas = null;
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Help.dat");
@@ -1203,7 +1183,6 @@ public class AojServer implements Constants {
     Feedback m_feedback = new Feedback();
     
     private synchronized void worldSave() {
-        // Sub WorldSave()
         //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.INFO);
         // Hacer un respawn de los guardias en las pos originales.
         reSpawnOrigPosNpcs();
@@ -1242,7 +1221,6 @@ public class AojServer implements Constants {
 
     
     private void reSpawnOrigPosNpcs() {
-        // Sub ReSpawnOrigPosNpcs()
         List<Npc> spawnNPCs = new Vector<Npc>();
         for (Npc npc: getNpcs()) {
             if (npc.estaActivo()) {
@@ -1260,7 +1238,6 @@ public class AojServer implements Constants {
     }    
 
     private void saveDayStats() {
-        // Public Sub SaveDayStats()
         SimpleDateFormat df_dia = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat df_xml = new SimpleDateFormat("yyyyMMdd");
         SimpleDateFormat df_hora = new SimpleDateFormat("HH:mm:ss");
@@ -1291,62 +1268,25 @@ public class AojServer implements Constants {
         }
     }
     
-    public void ponerMensajeForo(String foroId, String titulo, String texto) {
-        Forum forum = this.m_foros.get(foroId);
-        if (forum == null) {
-            this.m_foros.put(foroId, (forum = new Forum(foroId)));
-        }
-        forum.addMessage(titulo, texto);
-    }
-    
-    public void enviarMensajesForo(String foroId, Client cliente) {
-        Forum forum = this.m_foros.get(foroId);
-        if (forum == null) {
-            this.m_foros.put(foroId, (forum = new Forum(foroId)));
-        }
-        // Enviar mensajes dejados en el foro:
-        for (int i = 1; i <= forum.messageCount(); i++) {
-            ForumMessage msg = forum.getMessage(i);
-           // cliente.enviar(MSG_FMSG, msg.getTitle(), msg.getBody());
-        }
-        // Enviar fin de foro:
-       // cliente.enviar(MSG_MFOR);
-    }
-
-    private void loadMOTD() {
-        try {
-            String msg;
-            this.m_motd.clear();
-            IniFile ini = new IniFile(DATDIR + java.io.File.separator + "Motd.ini");
-            short cant = ini.getShort("INIT", "NumLines");
-            for (int i = 1; i <= cant; i++) {
-                msg = ini.getString("MOTD", "Line"+i, "");
-                this.m_motd.add(msg);
-            }
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void guardarMotd() {
-        try {
-            IniFile ini = new IniFile();
-            ini.setValue("INIT", "NumLines", this.m_motd.size());
-            int i = 0;
-            for (Object element : this.m_motd) {
-                ini.setValue("MOTD", "Line"+(++i), (String)element);
-            }
-            ini.store(DATDIR + java.io.File.separator + "Motd.ini");
-        } catch (Exception e) {
-            log.fatal("ERROR EN guardarMOTD()", e);
-        }
-    }
+	public void showStatus() {
+		System.out.println("Server uptime: " + calculateUptime());
+		System.out.println("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
+		System.out.println("Memoria: " + memoryStatus());
+	}
 
 	private ClientProcessThread getProcessThread() {
 		return processThread;
 	}
+
+    public static void main(String[] args) {
+        boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
+        if (loadBackup) {
+			log.info("Arrancando usando el backup");
+		} else {
+			log.info("Arrancando sin usar backup");
+		}
+        AojServer.instance().run(loadBackup);
+    }
 
 }
 

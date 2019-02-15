@@ -25,18 +25,18 @@
  */
 package org.ArgentumOnline.server;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
 public class Forum {
 
     final static int MAX_FORUM_MESSAGES = 35;
     
-    String foroId;
-    Vector<ForumMessage> m_messages = new Vector<ForumMessage>();
+    private String foroId;
+    private List<ForumMessage> m_messages = new ArrayList<ForumMessage>();
     
     /** Creates a new instance of Forum */
     public Forum(String foroId) {
@@ -49,7 +49,7 @@ public class Forum {
     
     public void addMessage(String titulo, String texto) {
         if (this.m_messages.size() >= MAX_FORUM_MESSAGES) {
-            this.m_messages.removeElementAt(0);
+            this.m_messages.remove(0);
         }
         this.m_messages.add(new ForumMessage(titulo, texto));
     }

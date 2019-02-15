@@ -31,7 +31,6 @@ import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
@@ -57,7 +56,6 @@ import org.apache.logging.log4j.Logger;
  * @author gorlok
  */
 public class Client extends BaseCharacter implements Constants {
-
 	private static Logger log = LogManager.getLogger();
 
 	public int areaID = 0;
@@ -722,45 +720,6 @@ public class Client extends BaseCharacter implements Constants {
 		Log.logGM(m_nick, "/MASSDEST ");
 	}
 
-	public void doMOTD() {
-		// Comando /MOTD
-		// Envia los mensajes del dia.
-		enviarMOTD();
-	}
-
-	public void doIniciarCambiarMOTD() {
-		// Iniciar el cambio de MOTD
-		// Comando /MOTDCAMBIA
-		if (!esDios()) {
-			return;
-		}
-		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(m_nick, "/MOTDCAMBIA");
-		StringBuffer sb = new StringBuffer();
-		List<String> motd = server.getMOTD();
-		if (!motd.isEmpty()) {
-			for (String line : motd) {
-				sb.append(line + CRLF);
-			}
-			sb.delete(sb.length() - 2, sb.length());
-		}
-		// enviar(MSG_ZMOTD, sb.toString());
-	}
-
-	public void doFinCambiarMOTD(String s) {
-		// Finalizar el cambio de MOTD
-		// Comando ZMOTD
-		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(m_nick, "ZMOTD " + s);
-		Vector<String> motd = new Vector<String>();
-		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
-			motd.add(st.nextToken());
-		}
-		server.setMOTD(motd);
-		server.guardarMotd();
-		enviarMensaje("MOTD actualizado.", FontType.INFO);
-	}
-
 	public void doEcharTodosPjs() {
 		// Comando /ECHARTODOSPJS
 		// Comando para echar a todos los pjs conectados no privilegiados.
@@ -1056,15 +1015,9 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doUptime() {
 		// Comando /UPTIME
-		long tsegs = server.runningTimeInSecs();
-		long segs = tsegs % 60;
-		long mins = tsegs / 60;
-		long horas = mins / 60;
-		long dias = horas / 24;
-		String msg = dias + " dias, " + horas + " horas, " + mins + " minutos, " + segs + " segundos.";
-		enviarMensaje("Uptime: " + msg, FontType.INFO);
+		enviarMensaje("Uptime: " + server.calculateUptime(), FontType.INFO);
 	}
-
+	
 	public void doPonerMensajeForo(String titulo, String texto) {
 		// Comando DEMSG
 		if (getFlags().TargetObj == 0) {
@@ -1072,7 +1025,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		ObjectInfo iobj = server.getInfoObjeto(getFlags().TargetObj);
 		if (iobj.esForo()) {
-			server.ponerMensajeForo(iobj.ForoID, titulo, texto);
+			server.getForumManager().ponerMensajeForo(iobj.ForoID, titulo, texto);
 		}
 	}
 
@@ -2166,7 +2119,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	public void doAyuda() {
 		// Comando /AYUDA
-		String[] ayuda = server.getHelp();
+		String[] ayuda = server.readHelp();
 		for (String element : ayuda) {
 			enviarMensaje(element, FontType.INFO);
 		}
@@ -6661,18 +6614,6 @@ public class Client extends BaseCharacter implements Constants {
 			}
 		}
 		return true;
-	}
-
-	private void enviarMOTD() {
-		List<String> motd = server.getMOTD();
-		if (motd.isEmpty()) {
-			return;
-		}
-		enviarMensaje("Mensaje del dia:", FontType.INFO);
-		for (String line : motd) {
-			// enviar(MSG_MOTD, line);
-			// FIXME
-		}
 	}
 
 	public void doServerVersion() {
