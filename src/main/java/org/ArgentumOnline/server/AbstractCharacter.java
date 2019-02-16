@@ -1,5 +1,5 @@
 /**
- * BaseCharacter.java
+ * AbstractCharacter.java
  *
  * Created on 14 de septiembre de 2003, 21:15
  * 
@@ -29,18 +29,24 @@ package org.ArgentumOnline.server;
  * Character base class. Superclass of the clients and the NPCs.
  * @author gorlok
  */
-public abstract class BaseCharacter implements Constants {
+public abstract class AbstractCharacter implements Constants {
     
+	/** Character universal id. */
+	private short id = 0;
+	
     protected CharInfo m_infoChar = new CharInfo();
     protected CharInfo m_origChar = new CharInfo();
+
+	public short getId() {
+		return id;
+	}
     
-    /** Creates a new instance of BaseCharacter */
-    protected BaseCharacter() {
-    	//
-    }
+	protected void setId(short id) {
+		this.id = id;
+	}
     
     public CharInfo getInfoChar() {
         return this.m_infoChar;
     }
-    
+
 }

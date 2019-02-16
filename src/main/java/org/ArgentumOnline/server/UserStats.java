@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author gorlok
  */
-public class UserStats extends CharStats {
+public class UserStats extends AbstractCharStats {
 	private static Logger log = LogManager.getLogger();
 
 	public UserStats() {

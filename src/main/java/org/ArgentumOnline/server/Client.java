@@ -64,7 +64,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author gorlok
  */
-public class Client extends BaseCharacter implements Constants {
+public class Client extends AbstractCharacter implements Constants {
 	private static Logger log = LogManager.getLogger();
 
 	public int areaID = 0;
@@ -79,9 +79,6 @@ public class Client extends BaseCharacter implements Constants {
 	public int minY = 0;
 
 	public List<Integer> lengthClient = new LinkedList<Integer>();
-
-	/** Character universal id. */
-	short m_id = 0;
 
 	String m_nick = "";
 
@@ -167,7 +164,7 @@ public class Client extends BaseCharacter implements Constants {
 		this.clientBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
 		this.server = aoserver;
-		this.m_id = server.getNextId();
+		this.setId(server.getNextId());
 		this.m_spells = new UserSpells(server, this);
 		this.m_quest = new UserQuest(this.server);
 		this.m_inv = new UserInventory(this.server, this, 20);
@@ -306,15 +303,6 @@ public class Client extends BaseCharacter implements Constants {
 	public int genCRC() {
 		// FIXME
 		return (m_prevCRC = m_prevCRC % CRCKEY);
-	}
-
-	/**
-	 * Gives the user id.
-	 * 
-	 * @return id
-	 */
-	public short getId() {
-		return m_id;
 	}
 
 	/**
@@ -2092,7 +2080,7 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 			return;
 		}
-		if (npc.getAmo() != this) {
+		if (npc.getPetUserOwner() != this) {
 			return;
 		}
 		npc.m_movement = Npc.MOV_ESTATICO;
@@ -2119,7 +2107,7 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 			return;
 		}
-		if (npc.getAmo() != this) {
+		if (npc.getPetUserOwner() != this) {
 			return;
 		}
 		npc.followAmo();
@@ -2137,7 +2125,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void doFinComerciarUsuario() {
 		// Comando FINCOMUSU
 		// Salir del modo comercio Usuario
-		if (m_comUsu.destUsu > 0 && m_comUsu.destUsu == m_id) {
+		if (m_comUsu.destUsu > 0 && m_comUsu.destUsu == getId()) {
 			Client destUsu = server.getCliente(m_comUsu.destUsu);
 			destUsu.enviarMensaje(m_nick + " ha dejado de comerciar con vos.", FontType.TALK);
 			if (destUsu != null) {
@@ -2179,7 +2167,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		Client destUsu = server.getCliente(m_comUsu.destUsu);
-		if (destUsu.m_comUsu.destUsu != m_id) {
+		if (destUsu.m_comUsu.destUsu != getId()) {
 			return;
 		}
 		m_comUsu.acepto = true;
@@ -2309,7 +2297,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		m_comUsu.objeto = slot;
 		m_comUsu.cant = cant;
-		if (destUsu.m_comUsu.destUsu != m_id) {
+		if (destUsu.m_comUsu.destUsu != getId()) {
 			finComerciarUsu();
 			return;
 		}
@@ -3150,11 +3138,11 @@ public class Client extends BaseCharacter implements Constants {
 
 	private void doDomar(Npc npc) {
 		if (m_cantMascotas < MAXMASCOTAS) {
-			if (npc.getAmo() == this) {
+			if (npc.getPetUserOwner() == this) {
 				enviarMensaje("La criatura ya te ha aceptado como su amo.", FontType.INFO);
 				return;
 			}
-			if (npc.getAmo() != null) {
+			if (npc.getPetUserOwner() != null) {
 				enviarMensaje("La criatura ya tiene amo.", FontType.INFO);
 				return;
 			}
@@ -3163,7 +3151,7 @@ public class Client extends BaseCharacter implements Constants {
 				m_cantMascotas++;
 				int slot = freeMascotaSlot();
 				m_mascotas[slot - 1] = npc;
-				npc.setAmo(this);
+				npc.setPetUserOwner(this);
 				npc.followAmo();
 				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
 				subirSkill(Skill.SKILL_Domar);
@@ -3523,7 +3511,7 @@ public class Client extends BaseCharacter implements Constants {
 					return;
 				}
 				mapa.consultar(this, x, y);
-				if (m_flags.TargetUser > 0 && m_flags.TargetUser != m_id) {
+				if (m_flags.TargetUser > 0 && m_flags.TargetUser != getId()) {
 					tu = server.getCliente(m_flags.TargetUser);
 					if (tu.estaVivo()) {
 						MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
@@ -4456,7 +4444,7 @@ public class Client extends BaseCharacter implements Constants {
 				Npc npc;
 
 				npc = m_mascotas[i];
-				m_mascotas[i].liberarDeAmo();
+				m_mascotas[i].releasePet();
 				m_mascotas[i] = null;
 				m_cantMascotas--;
 
@@ -4652,7 +4640,7 @@ public class Client extends BaseCharacter implements Constants {
 				oldMapa = server.getMapa(m_mascotas[i].getPos().map);
 				oldMapa.salir(m_mascotas[i]);
 				npc = m_mascotas[i];
-				m_mascotas[i].liberarDeAmo();
+				m_mascotas[i].releasePet();
 				m_mascotas[i] = null;
 				m_cantMascotas--;
 				invocadosMatados++;
@@ -4679,7 +4667,7 @@ public class Client extends BaseCharacter implements Constants {
 					} else {
 						// La mascota no puede seguirlo al nuevo mapa, asi que
 						// pierde su control.
-						m_mascotas[i].liberarDeAmo();
+						m_mascotas[i].releasePet();
 						m_mascotas[i] = null;
 						m_cantMascotas--;
 						invocadosMatados++;
@@ -4687,7 +4675,7 @@ public class Client extends BaseCharacter implements Constants {
 				} else {
 					// La mascota no puede seguirlo al nuevo mapa, asi que
 					// pierde su control.
-					m_mascotas[i].liberarDeAmo();
+					m_mascotas[i].releasePet();
 					m_mascotas[i] = null;
 					m_cantMascotas--;
 					invocadosMatados++;
@@ -4707,7 +4695,7 @@ public class Client extends BaseCharacter implements Constants {
 				mapa = server.getMapa(m_mascotas[i].getPos().map);
 				mapa.salir(m_mascotas[i]);
 				npc = m_mascotas[i];
-				m_mascotas[i].liberarDeAmo();
+				m_mascotas[i].releasePet();
 				m_mascotas[i] = null;
 				m_cantMascotas--;
 				npc.quitarNPC();
@@ -4798,7 +4786,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void decirPalabrasMagicas(String palabrasMagicas) {
-		hablar(COLOR_CYAN, palabrasMagicas, m_id);
+		hablar(COLOR_CYAN, palabrasMagicas, getId());
 	}
 
 	public void paralizar(Spell hechizo) {
@@ -4848,7 +4836,7 @@ public class Client extends BaseCharacter implements Constants {
 		m_cantMascotas++;
 		int slot = freeMascotaSlot();
 		m_mascotas[slot - 1] = npc;
-		npc.setAmo(this);
+		npc.setPetUserOwner(this);
 		npc.getContadores().TiempoExistencia = IntervaloInvocacion;
 		npc.setGiveGLD(0);
 		npc.followAmo();
@@ -4958,7 +4946,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		for (int i = 0; i < m_mascotas.length; i++) {
 			if (m_mascotas[i] == npc) {
-				m_mascotas[i].liberarDeAmo();
+				m_mascotas[i].releasePet();
 				m_mascotas[i] = null;
 				m_cantMascotas--;
 				if (m_cantMascotas < 0) {
@@ -5065,7 +5053,7 @@ public class Client extends BaseCharacter implements Constants {
 				if (element.getContadores().TiempoExistencia > 0) {
 					element.muereNpc(null);
 				} else {
-					element.setAmo((Client) null);
+					element.setPetUserOwner((Client) null);
 					element.oldMovement();
 				}
 			}
@@ -5615,8 +5603,8 @@ public class Client extends BaseCharacter implements Constants {
 				m_reputacion.decBandido(vlAsalto / 4);
 				m_reputacion.decLadron(vlCazador / 3);
 			}
-			if (npc.getAmo() != null) {
-				npc.getAmo().allFollowAmo();
+			if (npc.getPetUserOwner() != null) {
+				npc.getPetUserOwner().allFollowAmo();
 			} else {
 				// Al matarlo no lo sigue mas
 				if (npc.m_estads.Alineacion == 0) {
@@ -5666,12 +5654,12 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("Estás muy lejos para disparar.", FontType.FIGHT);
 			return;
 		}
-		if (m_faccion.ArmadaReal && npc.getAmo() != null && !npc.getAmo().esCriminal()) {
+		if (m_faccion.ArmadaReal && npc.getPetUserOwner() != null && !npc.getPetUserOwner().esCriminal()) {
 			enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
 					FontType.WARNING);
 			return;
 		}
-		if (npc.getAmo() != null && m_flags.Seguro && !npc.getAmo().esCriminal()) {
+		if (npc.getPetUserOwner() != null && m_flags.Seguro && !npc.getPetUserOwner().esCriminal()) {
 			enviarMensaje("Debes quitar el seguro para atacar a una mascota de un ciudadano.", FontType.WARNING);
 			return;
 		}
@@ -5752,7 +5740,7 @@ public class Client extends BaseCharacter implements Constants {
 			Npc npc = mapa.getNPC(attackPos.x, attackPos.y);
 			if (npc != null) {
 				if (npc.getAttackable()) {
-					if (npc.getAmo() != null && mapa.esZonaSegura()) {
+					if (npc.getPetUserOwner() != null && mapa.esZonaSegura()) {
 						enviarMensaje("No podés atacar mascotas en zonas seguras", FontType.FIGHT);
 						return;
 					}
@@ -6114,15 +6102,15 @@ public class Client extends BaseCharacter implements Constants {
 	public void npcAtacado(Npc npc) {
 		// Guardamos el usuario que ataco el npc
 		npc.setAttackedBy(m_nick);
-		if (npc.getAmo() != null) {
-			npc.getAmo().allMascotasAtacanUser(this);
+		if (npc.getPetUserOwner() != null) {
+			npc.getPetUserOwner().allMascotasAtacanUser(this);
 		}
 		if (esMascotaCiudadano(npc)) {
 			volverCriminal();
 			npc.defenderse();
 		} else {
 			// Reputacion
-			if (npc.getEstads().Alineacion == 0 && npc.getAmo() == null) {
+			if (npc.getEstads().Alineacion == 0 && npc.getPetUserOwner() == null) {
 				if (npc.getNPCtype() == Npc.NPCTYPE_GUARDIAS) {
 					volverCriminal();
 				} else {
@@ -6138,9 +6126,9 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public boolean esMascotaCiudadano(Npc npc) {
-		if (npc.getAmo() != null) {
-			if (!npc.getAmo().esCriminal()) {
-				npc.getAmo().enviarMensaje("¡¡" + m_nick + " esta atacando a tu mascota!!", FontType.FIGHT);
+		if (npc.getPetUserOwner() != null) {
+			if (!npc.getPetUserOwner().esCriminal()) {
+				npc.getPetUserOwner().enviarMensaje("¡¡" + m_nick + " esta atacando a tu mascota!!", FontType.FIGHT);
 				return true;
 			}
 		}

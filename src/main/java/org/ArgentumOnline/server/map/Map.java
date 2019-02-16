@@ -626,8 +626,8 @@ public class Map implements Constants {
                 if (npc != null) { 
                 	
                 	//agush: fix mascotas ;-)
-                	if (npc.getAmo() != null) {
-                		Client masterUser = (npc.getAmo());
+                	if (npc.getPetUserOwner() != null) {
+                		Client masterUser = (npc.getPetUserOwner());
                 		masterUser.quitarMascota(npc);
                 	}
                 	
@@ -993,8 +993,8 @@ public class Map implements Constants {
                 cliente.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
             } 
             String msg = "";
-            if (npc.getAmo() != null) {
-                msg = npc.m_name + " es mascota de " + npc.getAmo().getNick();
+            if (npc.getPetUserOwner() != null) {
+                msg = npc.m_name + " es mascota de " + npc.getPetUserOwner().getNick();
             } else {
                 msg = npc.m_name;
             }

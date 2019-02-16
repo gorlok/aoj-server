@@ -45,7 +45,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author gorlok
  */
-public class Npc extends BaseCharacter implements Constants {
+public class Npc extends AbstractCharacter implements Constants {
 	private static Logger log = LogManager.getLogger();
     
 	public int areaID = 0;
@@ -87,9 +87,6 @@ public class Npc extends BaseCharacter implements Constants {
     public final static short GUARDIAS_PERSIGUEN_CRIMINALES = 0;
 
     long m_lastMove = 0;
-    
-    /** Character universal id. */
-    short m_id = 0;
     
     public String m_name = "";
     public String m_desc = "";
@@ -178,8 +175,8 @@ public class Npc extends BaseCharacter implements Constants {
     
     // fixme - esto deberia ser el nombre del usuario, pero primero habria que
     // resolver "eficientemente" la recuperacion de un cliente por nombre.
-    Client m_maestroUser = null;
-    short m_maestroNpc  = 0;
+    Client petUserOwner = null;
+    short petNpcOwner  = 0;
     short m_mascotas    = 0;
     Npc m_mascota[] = new Npc[MAXMASCOTASENTRENADOR];
     
@@ -223,11 +220,11 @@ public class Npc extends BaseCharacter implements Constants {
     /** Creates a new instance of NPC */
     public Npc(int npc_numero, boolean loadBackup, AojServer server) {
     	this.server = server;
-        this.m_id = server.getNextId();
+        this.setId(server.getNextId());
+        this.m_numero = npc_numero;
         initCriaturasEntrenador();
         initExpresiones();
         initSpells();
-        this.m_numero = npc_numero;
         loadInfoNPC(this.m_numero, loadBackup);
     }
     
@@ -509,11 +506,7 @@ public class Npc extends BaseCharacter implements Constants {
     
     @Override
 	public String toString() {
-        return this.m_name + " (id=" + this.m_id + ")";
-    }
-    
-    public short getId() {
-        return this.m_id;
+        return this.m_name + " (id=" + this.getId() + ")";
     }
     
     public String getName() {
@@ -581,17 +574,17 @@ public class Npc extends BaseCharacter implements Constants {
         return this.m_numero;
     }
     
-    public Client getAmo() {
-        return this.m_maestroUser;
-    }
+    public Client getPetUserOwner() {
+		return petUserOwner;
+	}
     
-    public void setAmo(Client amo) {
-        this.m_maestroUser = amo;
-    }
+    public void setPetUserOwner(Client petUserOwner) {
+		this.petUserOwner = petUserOwner;
+	}
     
-    public void liberarDeAmo() {
-    	this.m_maestroUser = null;
-    	this.m_maestroNpc = 0;
+    public void releasePet() {
+    	this.petUserOwner = null;
+    	this.petNpcOwner = 0;
     }
     
     public boolean estaParalizado() {
@@ -654,8 +647,8 @@ public class Npc extends BaseCharacter implements Constants {
         return this.m_contadores;
     }
     
-    public void setAmo(Npc amo) {
-        this.m_maestroNpc = amo.getId();
+    public void setPetNpcOwner(Npc petOwner) {
+        this.petNpcOwner = petOwner.getId();
     }
     
     public short getCriaturaIndex(short slot) {
@@ -734,13 +727,13 @@ public class Npc extends BaseCharacter implements Constants {
         this.m_giveGLD = 0;
         this.m_inflacion = 0;
         this.m_level = 0;
-        if (this.m_maestroUser != null) {
-            this.m_maestroUser.quitarMascota(this);
-            this.m_maestroUser = null;
+        if (this.petUserOwner != null) {
+            this.petUserOwner.quitarMascota(this);
+            this.petUserOwner = null;
         }
-        if (this.m_maestroNpc > 0) {
-            this.server.getNPC(this.m_maestroNpc).quitarMascotaNpc(this);
-            this.m_maestroNpc = 0;
+        if (this.petNpcOwner > 0) {
+            this.server.getNPC(this.petNpcOwner).quitarMascotaNpc(this);
+            this.petNpcOwner = 0;
         }
         this.m_mascotas = 0;
         this.m_mascota = new Npc[MAXMASCOTASENTRENADOR];
@@ -794,7 +787,7 @@ public class Npc extends BaseCharacter implements Constants {
     	for (int i = 0; i < this.m_mascota.length; i++) {
     		if (this.m_mascota[i] == null) {
     			this.m_mascota[i] = mascota;
-                mascota.setAmo(this);
+                mascota.setPetNpcOwner(this);
                 this.m_mascotas++;
                 return;
     		}
@@ -890,7 +883,7 @@ public class Npc extends BaseCharacter implements Constants {
        
         	
         
-        if (this.m_maestroUser == null) {
+        if (this.petUserOwner == null) {
             // Tiramos el oro
             tirarOro();
             // Tiramos el inventario
@@ -933,17 +926,17 @@ public class Npc extends BaseCharacter implements Constants {
             mapa.salir(this);
         }
         
-        mapa.enviarAlArea(this.m_pos.x,this.m_pos.y,ServerPacketID.MSG_BP, this.m_id);
+        mapa.enviarAlArea(this.m_pos.x,this.m_pos.y,ServerPacketID.MSG_BP, this.getId());
         
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
         this.m_inv.clear();
-        if (this.m_maestroUser != null) {
-        	this.m_maestroUser.quitarMascota(this);
+        if (this.petUserOwner != null) {
+        	this.petUserOwner.quitarMascota(this);
         }
-        Npc amoNpc = this.server.getNPC(this.m_maestroNpc);
-        if (amoNpc != null) {
-        	amoNpc.quitarMascotaNpc(this);
+        Npc masterNpc = this.server.getNPC(this.petNpcOwner);
+        if (masterNpc != null) {
+        	masterNpc.quitarMascotaNpc(this);
         }
         this.server.eliminarNPC(this);
     }
@@ -979,7 +972,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         
         // Es mascota ????
-        if (this.m_maestroUser != null) {
+        if (this.petUserOwner != null) {
             // es una posicion legal ???
             if (mapa.isLegalPos(newPos, false)) {
                 if (!esAguaValida() && mapa.hayAgua(newPos.x, newPos.y)) {
@@ -1102,7 +1095,7 @@ public class Npc extends BaseCharacter implements Constants {
     
     public void expresar() {
         // Public Sub Expresar(ByVal NpcIndex As Integer, ByVal UserIndex As Integer)
-        if (this.m_maestroUser == null) {
+        if (this.petUserOwner == null) {
 			return;
 		}
         //WorldPos pos = m_maestroUser.getPos();
@@ -1119,7 +1112,7 @@ public class Npc extends BaseCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.dialog, color, texto, this.m_id);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.dialog, color, texto, this.getId());
         }
     }
     
@@ -1136,7 +1129,7 @@ public class Npc extends BaseCharacter implements Constants {
 
             //mapa.enviarATodos(serverPacketID.MSG_CP, this.m_id, getInfoChar().getCuerpo(), getInfoChar().getCabeza(), getInfoChar().getDir(), getInfoChar().getArma(), getInfoChar().getEscudo(), getInfoChar().getCasco(), getInfoChar().m_fx, getInfoChar().m_loops);
             
-            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_CP, this.m_id, getInfoChar().getCuerpo(), getInfoChar().getCabeza(), getInfoChar().getDir(), getInfoChar().getArma(), getInfoChar().getEscudo(), getInfoChar().getCasco(), getInfoChar().m_fx, getInfoChar().m_loops);
+            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_CP, this.getId(), getInfoChar().getCuerpo(), getInfoChar().getCabeza(), getInfoChar().getDir(), getInfoChar().getArma(), getInfoChar().getEscudo(), getInfoChar().getCasco(), getInfoChar().m_fx, getInfoChar().m_loops);
             
         }
     }
@@ -1305,9 +1298,10 @@ public class Npc extends BaseCharacter implements Constants {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
                         if (!cliente.esGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
-                            if (getAmo() != null) {
-		                        if (!getAmo().esCriminal() && !cliente.esCriminal() && (getAmo().tieneSeguro() || getAmo().getFaccion().ArmadaReal)) {
-		                            getAmo().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.INFO);
+                            if (getPetUserOwner() != null) {
+		                        if (	!getPetUserOwner().esCriminal() && !cliente.esCriminal() && 
+		                        		(getPetUserOwner().tieneSeguro() || getPetUserOwner().getFaccion().ArmadaReal)) {
+		                            getPetUserOwner().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.INFO);
 		                            this.m_attackedBy = "";
 		                            followAmo();
 		                            return;
@@ -1330,7 +1324,7 @@ public class Npc extends BaseCharacter implements Constants {
     }
     
     public void restoreOldMovement() {
-        if (this.m_maestroUser == null) {
+        if (this.petUserOwner == null) {
             oldMovement();
         }
     }
@@ -1414,8 +1408,8 @@ public class Npc extends BaseCharacter implements Constants {
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
-                        if (cliente.estaVivo() && !cliente.estaInvisible() && getAmo() == cliente &&
-                        		getAmo().getPos().distance(this.m_pos) > 3) {
+                        if (cliente.estaVivo() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
+                        		getPetUserOwner().getPos().distance(this.m_pos) > 3) {
                             Direction dir = this.m_pos.findDirection(cliente.getPos());
                             mover(dir);
                             return;
@@ -1451,7 +1445,7 @@ public class Npc extends BaseCharacter implements Constants {
             }
         }
         // No se encontró al NPC objetivo.
-        if (this.m_maestroUser != null) {
+        if (this.petUserOwner != null) {
             followAmo();
         } else {
             this.m_movement  = this.m_oldMovement;
@@ -1466,7 +1460,7 @@ public class Npc extends BaseCharacter implements Constants {
     public void doAI() {
         // NPCAI
         // <<<<<<<<<<< Ataques >>>>>>>>>>>>>>>>
-        if (this.m_maestroUser == null) {
+        if (this.petUserOwner == null) {
             // Busca a alguien para atacar
             // ¿Es un guardia?
             if (this.m_NPCtype == NPCTYPE_GUARDIAS || this.m_NPCtype == NPCTYPE_GUARDIAS_CAOS) {
@@ -1588,9 +1582,9 @@ public class Npc extends BaseCharacter implements Constants {
             if (cliente.getEstads().MinHP < 1) {
                 cliente.getEstads().MinHP = 0;
                 cliente.userDie();
-                if (getAmo() != null) {
-                    getAmo().contarMuerte(cliente);
-                    getAmo().actStats(cliente);
+                if (getPetUserOwner() != null) {
+                    getPetUserOwner().contarMuerte(cliente);
+                    getPetUserOwner().actStats(cliente);
                 }
             }
         }
@@ -1658,7 +1652,7 @@ public class Npc extends BaseCharacter implements Constants {
                 this.m_flags.set(FLAG_HOSTIL, this.m_flags.get(FLAG_OLD_HOSTILE));
             }
             followAmo();
-            victima.muereNpc(this.m_maestroUser);
+            victima.muereNpc(this.petUserOwner);
         }
     }
     
@@ -1685,7 +1679,7 @@ public class Npc extends BaseCharacter implements Constants {
 			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SND_IMPACTO2);
 				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y);
 			}
-            if (this.m_maestroUser != null) {
+            if (this.petUserOwner != null) {
 			//	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SND_IMPACTO);
             	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO, this.m_pos.x, this.m_pos.y);
 			} else {
@@ -1694,7 +1688,7 @@ public class Npc extends BaseCharacter implements Constants {
 			}
             npcDañoNpc(victima);
         } else {
-            if (this.m_maestroUser != null) {
+            if (this.petUserOwner != null) {
 				//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SOUND_SWING);
             	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) SOUND_SWING, this.m_pos.x, this.m_pos.y);
 			} else {

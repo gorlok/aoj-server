@@ -26,9 +26,9 @@
 package org.ArgentumOnline.server;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
-public class NpcStats extends CharStats {
+public class NpcStats extends AbstractCharStats {
     
     public NpcStats() {
         super();

@@ -11,3 +11,4 @@
     * use vertx?
 * competableFuture Async
 * implement full AO's network protocol
+* object pool

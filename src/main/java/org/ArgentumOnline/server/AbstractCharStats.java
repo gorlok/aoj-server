@@ -1,5 +1,5 @@
 /**
- * CharStats.java
+ * AbstractCharStats.java
  *
  * Created on 13 de octubre de 2003, 11:05
  * 
@@ -29,11 +29,7 @@ package org.ArgentumOnline.server;
  * Estadisticas básicas, de salud, golpe y usuarios matados.
  * @author gorlok
  */
-public class CharStats implements Constants {
-    
-    protected CharStats() {
-    	// Clase base - abstracta!
-    }
+public abstract class AbstractCharStats implements Constants {
     
     int usuariosMatados = 0;
     

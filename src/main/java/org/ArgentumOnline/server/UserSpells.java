@@ -428,9 +428,9 @@ public class UserSpells implements Constants {
 				client.enviarMensaje("No puedes atacar a ese npc.", FontType.INFO);
 				return false;
 			}
-			if (npc.getAmo() != null
+			if (npc.getPetUserOwner() != null
 					&& (client.getFlags().Seguro || client.getFaccion().ArmadaReal)) {
-				if (!npc.getAmo().esCriminal()) {
+				if (!npc.getPetUserOwner().esCriminal()) {
 					if (client.getFaccion().ArmadaReal) {
 						client.enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
 							FontType.WARNING);
