@@ -2,81 +2,139 @@ package org.ArgentumOnline.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.junit.jupiter.api.Test;
 
 public class MapPosTest {
 	
 	@Test
-	void mapPosCreate() {
-		MapPos mp1 = MapPos.xy(1, 1);
-		MapPos mp2 = MapPos.xy(50, 50);
-		MapPos mp3 = MapPos.xy(100, 100);
+	void mapPosCreateEmpty() {
+		MapPos mp = MapPos.empty();
 		
-		assertEquals(1, mp1.x);
-		assertEquals(1, mp1.y);
-		
-		assertEquals(50, mp2.x);
-		assertEquals(50, mp2.y);
-
-		assertEquals(100, mp3.x);
-		assertEquals(100, mp3.y);
+		assertEquals(mp.map, 0);
+		assertEquals(mp.x, 0);
+		assertEquals(mp.y, 0);
 	}
 
+	@SuppressWarnings("unlikely-arg-type")
 	@Test
-	void mapPosValidPos() {
-		MapPos mp1 = MapPos.xy(1, 1);
-		MapPos mp2 = MapPos.xy(50, 50);
-		MapPos mp3 = MapPos.xy(100, 100);
+	void mapPosEqualsBasic() {
+		MapPos mp1 = MapPos.mxy(10, 20, 30);
 		
-		MapPos mp4 = MapPos.xy(0, 50);
-		MapPos mp5 = MapPos.xy(50, 0);
-		MapPos mp6 = MapPos.xy(101, 50);
-		MapPos mp7 = MapPos.xy(50, 101);
-		
-		assertTrue(mp1.isValid());
-		assertTrue(mp2.isValid());
-		assertTrue(mp3.isValid());
+		assertTrue(mp1.equals(mp1));
+		assertFalse(mp1.equals(null));
+		assertFalse(mp1.equals("x"));
+	}	
 
-		assertFalse(mp4.isValid());
-		assertFalse(mp5.isValid());
-		assertFalse(mp6.isValid());
-		assertFalse(mp7.isValid());
+	@Test
+	void mapPosEqualsTwoMapPos() {
+		MapPos mp1 = MapPos.mxy(22, 33, 44);
+		MapPos mp2 = MapPos.mxy(22, 33, 44);
+		MapPos mp3 = MapPos.mxy(22, 33, 100);
+		
+		assertEquals(mp1, mp2);
+		assertNotEquals(mp1, mp3);
 	}
 	
 	@Test
-	void mapPosValidXY() {
-		assertTrue(MapPos.isValid(1, 1));
-		assertTrue(MapPos.isValid(50, 50));
-		assertTrue(MapPos.isValid(100, 100));
+	void mapPosCopy() {
+		MapPos mp = MapPos.mxy(50, 10, 20);
+		MapPos copy = mp.copy();
 		
-		assertFalse(MapPos.isValid(0, 50));
-		assertFalse(MapPos.isValid(50, 0));
-		assertFalse(MapPos.isValid(101, 50));
-		assertFalse(MapPos.isValid(50, 101));
+		MapPos modCopy = mp.copy();
+		modCopy.set(33, 33, 33);
+
+		assertEquals(mp, copy);
+		assertNotEquals(mp, modCopy);
+	}
+
+	@Test
+	void mapPosDistanceSameMap() {
+		MapPos mp1 = MapPos.mxy(10, 20, 30);
+		MapPos mp2 = MapPos.mxy(10, 30, 40);
+		
+		assertEquals(20, mp1.distance(mp2));
+		assertEquals(20, mp2.distance(mp1));
+		assertEquals(0, mp1.distance(mp1));
+	}	
+
+	@Test
+	void mapPosDistanceOtherMap() {
+		MapPos mp1 = MapPos.mxy(10, 10, 10);
+		MapPos mp2 = MapPos.mxy(20, 10, 10);
+		MapPos mp3 = MapPos.mxy(50, 50, 50);
+		
+		assertEquals(1000, mp1.distance(mp2));
+		assertEquals(1000, mp2.distance(mp1));
+		assertEquals(40*100+40+40, mp3.distance(mp1));
+	}	
+	
+	@Test
+	void mapPosMirarDir() {
+		MapPos origin = MapPos.mxy(10, 10, 10);
+		
+		MapPos mp_north = origin.copy().moveToDir(Direction.NORTH);
+		MapPos mp_south = origin.copy().moveToDir(Direction.SOUTH);
+		MapPos mp_west = origin.copy().moveToDir(Direction.WEST);
+		MapPos mp_east = origin.copy().moveToDir(Direction.EAST);
+		
+		MapPos same = origin.copy().moveToDir(Direction.NONE);
+		
+		assertEquals(MapPos.mxy(10, 10, 9), mp_north);
+		assertEquals(MapPos.mxy(10, 10, 11), mp_south);
+		assertEquals(MapPos.mxy(10, 9, 10), mp_west);
+		assertEquals(MapPos.mxy(10, 11, 10), mp_east);
+		
+		assertEquals(origin, same);
 	}
 	
 	@Test
-	void mapPosRangoVisionPos() {
-		MapPos mp = MapPos.xy(50, 50);
-
-		MapPos mp2 = MapPos.xy(55, 55);
-		MapPos mp3 = MapPos.xy(100, 100);
+	void mapPosFindDirTest() {
+		MapPos origin = 	MapPos.mxy(1, 50, 50);
 		
-		assertTrue(mp.inRangoVision(58, 50));
-		assertTrue(mp.inRangoVision(50, 56));
-		assertTrue(mp.inRangoVision(42, 50));
-		assertTrue(mp.inRangoVision(50, 44));
+		MapPos north = 	MapPos.mxy(1, 	50, 	1);
+		MapPos south = 	MapPos.mxy(1, 	50, 	100);
+		MapPos west = 	MapPos.mxy(1, 	1, 		50);
+		MapPos east = 	MapPos.mxy(1, 	100, 	50);
 		
-		assertTrue(mp.inRangoVision(mp2));
+		MapPos north_east = 	MapPos.mxy(1, 100, 1);
+		MapPos north_west = 	MapPos.mxy(1, 1, 1);
 		
-		assertFalse(mp.inRangoVision(59, 50));
-		assertFalse(mp.inRangoVision(50, 57));
-		assertFalse(mp.inRangoVision(41, 50));
-		assertFalse(mp.inRangoVision(50, 43));
+		MapPos south_east = 	MapPos.mxy(1, 100, 100);
+		MapPos south_west = 	MapPos.mxy(1, 1, 100);
 		
-		assertFalse(mp.inRangoVision(mp3));
+		MapPos same = 	MapPos.mxy(1, 50, 50);
+		
+		assertEquals(Direction.NORTH, origin.findDirection(north));
+		assertEquals(Direction.SOUTH, origin.findDirection(south));
+		assertEquals(Direction.WEST, origin.findDirection(west));
+		assertEquals(Direction.EAST, origin.findDirection(east));
+		
+		assertEquals(Direction.NORTH, origin.findDirection(north_east));
+		assertEquals(Direction.WEST, origin.findDirection(north_west));
+		assertEquals(Direction.SOUTH, origin.findDirection(south_east));
+		assertEquals(Direction.WEST, origin.findDirection(south_west));
+		
+		assertEquals(Direction.NONE, origin.findDirection(same));
 	}
-
+	
+	@Test
+	void directionValue() {
+		assertEquals(Direction.NORTH, Direction.value(1));
+		assertEquals(Direction.WEST, Direction.value(4));
+	}
+	
+	@Test
+	void mapPosToString() {
+		String str = MapPos.mxy(1, 2, 3).toString();
+		
+		assertEquals("(map=1,x=2,y=3)", str);
+	}
+	
 }
+
+

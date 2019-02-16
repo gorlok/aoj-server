@@ -27,13 +27,15 @@ package org.ArgentumOnline.server;
 
 import java.util.Vector;
 
-import misc.astar.AStar;
-import misc.astar.Constants;
-import misc.astar.Location;
-import misc.astar.Node;
+import org.ArgentumOnline.server.aStar.AStar;
+import org.ArgentumOnline.server.aStar.Constants;
+import org.ArgentumOnline.server.aStar.Location;
+import org.ArgentumOnline.server.aStar.Node;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class PathFinding {
     
@@ -63,11 +65,11 @@ public class PathFinding {
     	AojServer server = AojServer.instance();
     	short m = npc.getPos().map;
     	Map mapa = server.getMapa(m);
-    	WorldPos start = npc.getPos();
-    	WorldPos end = npc.m_pfinfo.m_targetPos;
+    	MapPos start = npc.getPos();
+    	MapPos end = npc.m_pfinfo.m_targetPos;
     	for (short x = 1; x <= 100; x++) {
 			for (short y = 1; y <= 100; y++) {
-    			if (mapa.isLegalPosNPC(WorldPos.mxy(m, x, y), npc.esAguaValida())) {
+    			if (mapa.isLegalPosNPC(MapPos.mxy(m, x, y), npc.esAguaValida())) {
 					this.grid[x-1][y-1] = Constants.EMPTY;
 				} else {
 					this.grid[x-1][y-1] = Constants.SOLID;

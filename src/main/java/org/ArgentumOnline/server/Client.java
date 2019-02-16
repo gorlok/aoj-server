@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
 import org.ArgentumOnline.server.classes.AssassinClass;
@@ -47,6 +46,11 @@ import org.ArgentumOnline.server.guilds.GuildInfo;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapCell;
+import org.ArgentumOnline.server.map.MapObject;
+import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.ArgentumOnline.server.protocol.BufferWriter;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.UserQuest;
@@ -141,7 +145,7 @@ public class Client extends BaseCharacter implements Constants {
 
 	Factions m_faccion;
 
-	WorldPos m_pos = WorldPos.empty();
+	MapPos m_pos = MapPos.empty();
 
 	Inventory m_bancoInv = new Inventory(MAX_BANCOINVENTORY_SLOTS);
 
@@ -327,7 +331,7 @@ public class Client extends BaseCharacter implements Constants {
 	 * 
 	 * @return position
 	 */
-	public WorldPos getPos() {
+	public MapPos getPos() {
 		return m_pos;
 	}
 
@@ -1239,7 +1243,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		Map mapaDest = server.getMapa(dest_mapa);
-		if (mapaDest == null || !MapPos.isValid(dest_x, dest_y)) {
+		if (mapaDest == null || !Pos.isValid(dest_x, dest_y)) {
 			enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.WARNING);
 			return;
 		}
@@ -2017,7 +2021,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			usuario = server.getUsuario(nombre);
 		}
-		if (!MapPos.isValid(x, y)) {
+		if (!Pos.isValid(x, y)) {
 			return;
 		}
 		if (usuario == null) {
@@ -3056,7 +3060,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void tratarDeHacerFogata() {
-		WorldPos pos = WorldPos.mxy(m_flags.TargetObjMap, m_flags.TargetObjX, m_flags.TargetObjY);
+		MapPos pos = MapPos.mxy(m_flags.TargetObjMap, m_flags.TargetObjX, m_flags.TargetObjY);
 		Map mapa = server.getMapa(pos.map);
 		if (!mapa.isLegalPos(pos, false)) {
 			return;
@@ -3164,7 +3168,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
 				subirSkill(Skill.SKILL_Domar);
 				// hacemos respawn del npc para reponerlo.
-				Npc.spawnNpc(npc.getNPCtype(), WorldPos.mxy(npc.getPos().map, (short) 0, (short) 0), false, true);
+				Npc.spawnNpc(npc.getNPCtype(), MapPos.mxy(npc.getPos().map, (short) 0, (short) 0), false, true);
 			} else {
 				if (m_flags.UltimoMensaje != 5) {
 					enviarMensaje("No has logrado domar la criatura.", FontType.INFO);
@@ -3397,7 +3401,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Log.serverLogger().fine("y=" + y);
 		// Log.serverLogger().fine("tLong=" + tLong);
 
-		MapPos pos = new MapPos(x, y);
+		Pos pos = new Pos(x, y);
 		if (!estaVivo() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
 		}
@@ -3502,7 +3506,7 @@ public class Client extends BaseCharacter implements Constants {
 					doPescarCaña();
 					break;
 				case OBJTYPE_RED_PESCA:
-					if (m_pos.distance(WorldPos.mxy(m_pos.map, x, y)) > 2) {
+					if (m_pos.distance(MapPos.mxy(m_pos.map, x, y)) > 2) {
 						enviarMensaje("Estás demasiado lejos para pescar.", FontType.INFO);
 						return;
 					}
@@ -3522,7 +3526,7 @@ public class Client extends BaseCharacter implements Constants {
 				if (m_flags.TargetUser > 0 && m_flags.TargetUser != m_id) {
 					tu = server.getCliente(m_flags.TargetUser);
 					if (tu.estaVivo()) {
-						WorldPos wpaux = WorldPos.mxy(m_pos.map, x, y);
+						MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 						if (wpaux.distance(m_pos) > 2) {
 							enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 							return;
@@ -3555,7 +3559,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			obj = mapa.getObjeto(x, y);
 			if (obj != null) {
-				WorldPos wpaux = WorldPos.mxy(m_pos.map, x, y);
+				MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 				if (wpaux.distance(m_pos) > 2) {
 					enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 					return;
@@ -3583,7 +3587,7 @@ public class Client extends BaseCharacter implements Constants {
 			mapa.consultar(this, x, y);
 			obj = mapa.getObjeto(x, y);
 			if (obj != null) {
-				WorldPos wpaux = WorldPos.mxy(m_pos.map, x, y);
+				MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 				if (wpaux.distance(m_pos) > 2) {
 					enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 					return;
@@ -3607,7 +3611,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_flags.TargetNpc > 0) {
 				npc = server.getNPC(m_flags.TargetNpc);
 				if (npc.domable() > 0) {
-					WorldPos wpaux = WorldPos.mxy(m_pos.map, x, y);
+					MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 					if (wpaux.distance(m_pos) > 2) {
 						enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 						return;
@@ -4023,7 +4027,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 
 		// ¿Posicion valida?
-		if (MapPos.isValid(x, y)) {
+		if (Pos.isValid(x, y)) {
 			// ¿Hay un objeto en el tile?
 			if (mapa.hayObjeto(x, y)) {
 				MapObject obj = mapa.getObjeto(x, y);
@@ -4233,7 +4237,7 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	private void moverUsuario(Direction dir) {
-		WorldPos new_pos = m_pos.copy();
+		MapPos new_pos = m_pos.copy();
 		new_pos.moveToDir(dir);
 
 		Map mapa = server.getMapa(m_pos.map);
@@ -4244,7 +4248,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (new_pos.isValid() && mapa.isFree(new_pos.x, new_pos.y) && !mapa.estaBloqueado(new_pos.x, new_pos.y)) {
 			mapa.mover(this, new_pos.x, new_pos.y);
 			if (mapa.hayTeleport(new_pos.x, new_pos.y)) {
-				WorldPos pos = mapa.getTeleport(new_pos.x, new_pos.y);
+				MapPos pos = mapa.getTeleport(new_pos.x, new_pos.y);
 				boolean conFX = (mapa.hayObjeto(new_pos.x, new_pos.y)
 						&& mapa.getObjeto(new_pos.x, new_pos.y).getInfo().ObjType == OBJTYPE_TELEPORT);
 				boolean enviarData = m_pos.map != pos.map;
@@ -4501,9 +4505,9 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 
-		WorldPos pos_libre = m.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
+		MapPos pos_libre = m.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 		if (m.entrar(this, pos_libre.x, pos_libre.y)) {
-			m_pos = WorldPos.mxy(mapa, pos_libre.x, pos_libre.y);
+			m_pos = MapPos.mxy(mapa, pos_libre.x, pos_libre.y);
 
 			Map old = server.getMapa(oldMap);
 
@@ -4605,7 +4609,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_pos.map != m || m_pos.x != x || m_pos.y != y) {
 			short oldMap = m_pos.map;
 			Map newMap = server.getMapa(m);
-			WorldPos pos_libre = newMap.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
+			MapPos pos_libre = newMap.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 			if (pos_libre == null) {
 				log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m + " x=" + x + " y=" + y);
 				return false;
@@ -4641,7 +4645,7 @@ public class Client extends BaseCharacter implements Constants {
 		int invocadosMatados = 0;
 		Map oldMapa, newMapa;
 		Npc npc;
-		WorldPos lugarLibre;
+		MapPos lugarLibre;
 		for (int i = 0; i < m_mascotas.length; i++) {
 			if (m_mascotas[i] != null && m_mascotas[i].m_contadores.TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa.
@@ -4832,7 +4836,7 @@ public class Client extends BaseCharacter implements Constants {
 		return 0;
 	}
 
-	public Npc crearMascotaInvocacion(int npcId, WorldPos targetPos) {
+	public Npc crearMascotaInvocacion(int npcId, MapPos targetPos) {
 		if (m_cantMascotas >= MAXMASCOTAS) {
 			return null;
 		}
@@ -5296,7 +5300,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Si el usuario dejó de ser Newbie, y estaba en el Dungeon Newbie
 		// es transportado a su hogar de origen.
 		if (m_pos.map == 37) {
-			WorldPos ciudad = server.getCiudadPos(m_hogar);
+			MapPos ciudad = server.getCiudadPos(m_hogar);
 			warpUser(ciudad.map, ciudad.x, ciudad.y, true);
 		}
 	}
@@ -5728,7 +5732,7 @@ public class Client extends BaseCharacter implements Constants {
 				enviarMensaje("Estas muy cansado para luchar.", FontType.INFO);
 				return;
 			}
-			WorldPos attackPos = m_pos.copy();
+			MapPos attackPos = m_pos.copy();
 			attackPos.moveToDir(Direction.value(m_infoChar.getDir()));
 			// Exit if not legal
 			if (!attackPos.isValid()) {

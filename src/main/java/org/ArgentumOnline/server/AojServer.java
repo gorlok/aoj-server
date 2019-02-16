@@ -53,6 +53,9 @@ import org.ArgentumOnline.server.forum.ForumManager;
 import org.ArgentumOnline.server.gm.GmRequest;
 import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.protocol.ClientProcessThread;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.Quest;
@@ -64,7 +67,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** 
- * AOJava main class
+ * AOJ Server main class
  * @author gorlok
  */
 public class AojServer implements Constants {
@@ -102,7 +105,7 @@ public class AojServer implements Constants {
 
     private List<String> m_nombresInvalidos = new Vector<String>();
     
-    private List<WorldPos> m_trashCollector = new Vector<WorldPos>();
+    private List<MapPos> m_trashCollector = new Vector<MapPos>();
     
     private short [] m_armasHerrero;
     private short [] m_armadurasHerrero;
@@ -117,12 +120,12 @@ public class AojServer implements Constants {
     
     boolean m_lloviendo = false;
     
-    private WorldPos[] m_ciudades;
+    private MapPos[] m_ciudades;
     
     private long startTime = 0;
     
-    public static WorldPos WP_PRISION = WorldPos.mxy(66, 75, 47);
-    public static WorldPos WP_LIBERTAD = WorldPos.mxy(66, 75, 65);
+    public static MapPos WP_PRISION = MapPos.mxy(66, 75, 47);
+    public static MapPos WP_LIBERTAD = MapPos.mxy(66, 75, 65);
     
     private boolean m_showDebug = false;
     
@@ -194,7 +197,7 @@ public class AojServer implements Constants {
         return this.m_haciendoBackup;
     }
     
-    public List<WorldPos> getTrashCollector() {
+    public List<MapPos> getTrashCollector() {
         return this.m_trashCollector;
     }
     
@@ -677,7 +680,6 @@ public class AojServer implements Constants {
     }
 
     private void cargarSpawnList() {
-        // Public Sub CargarSpawnList()
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Invokar.dat");
             short cant = ini.getShort("INIT", "NumNPCs");
@@ -832,11 +834,11 @@ public class AojServer implements Constants {
     private void loadCiudades() {
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
-            this.m_ciudades = new WorldPos[4];
-            this.m_ciudades[CIUDAD_NIX] = WorldPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
-            this.m_ciudades[CIUDAD_ULLA] = WorldPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
-            this.m_ciudades[CIUDAD_BANDER] = WorldPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
-            this.m_ciudades[CIUDAD_LINDOS] = WorldPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
+            this.m_ciudades = new MapPos[4];
+            this.m_ciudades[CIUDAD_NIX] = MapPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
+            this.m_ciudades[CIUDAD_ULLA] = MapPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
+            this.m_ciudades[CIUDAD_BANDER] = MapPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
+            this.m_ciudades[CIUDAD_LINDOS] = MapPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -844,7 +846,7 @@ public class AojServer implements Constants {
         }
     }
     
-    public WorldPos getCiudadPos(short ciudad) {
+    public MapPos getCiudadPos(short ciudad) {
         return this.m_ciudades[ciudad];
     }
     
@@ -1174,7 +1176,7 @@ public class AojServer implements Constants {
     private int limpiarMundo() {
         //Sub LimpiarMundo()
     	int cant = 0;
-    	for (WorldPos pos: this.m_trashCollector) {
+    	for (MapPos pos: this.m_trashCollector) {
             Map mapa = getMapa(pos.map);
             mapa.quitarObjeto(pos.x, pos.y);
             cant++;

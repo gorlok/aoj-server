@@ -23,7 +23,7 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.map;
 
 import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_CCNPC;
 import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_HO;
@@ -42,6 +42,12 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Vector;
 
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Npc;
+import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
@@ -60,7 +66,7 @@ public class Map implements Constants {
     
     /** Número de mapa. */
     private short nroMapa;
-    AreasAO areasData = new AreasAO();
+    public AreasAO areasData = new AreasAO();
     
     // Cabecera archivo .map
     private short version   = 0;
@@ -76,11 +82,11 @@ public class Map implements Constants {
     int     m_mapVersion = 0;
     short   m_terreno = TERRENO_BOSQUE;
     short   m_zona = ZONA_CAMPO;
-    boolean m_pk = false;
+    public boolean m_pk = false;
     boolean m_restringir = false;
-    boolean m_backup = false;
+    public boolean m_backup = false;
     short   m_version = 0;
-    WorldPos m_startPos = WorldPos.empty();
+    MapPos m_startPos = MapPos.empty();
     
     AojServer server;
     
@@ -156,10 +162,10 @@ public class Map implements Constants {
     }
     
     public boolean testSpawnTriggerNpc(short mapa, short x, short y, boolean bajoTecho) {
-    	return testSpawnTriggerNpc(WorldPos.mxy(mapa, x, y), bajoTecho);
+    	return testSpawnTriggerNpc(MapPos.mxy(mapa, x, y), bajoTecho);
     }
     
-    public boolean testSpawnTriggerNpc(WorldPos pos, boolean bajoTecho) {
+    public boolean testSpawnTriggerNpc(MapPos pos, boolean bajoTecho) {
         int trigger = this.getTrigger(pos.x, pos.y);
         if (bajoTecho) {
 			return trigger != MapCell.TRIGGER_POS_INVALIDA && 
@@ -444,7 +450,7 @@ public class Map implements Constants {
             	byflags = getter.readByte();
             	
             	if ((byflags & 1) == 1) {
-					this.m_cells[x][y].setTeleport(WorldPos.mxy(Util.leShort(getter.readShort())
+					this.m_cells[x][y].setTeleport(MapPos.mxy(Util.leShort(getter.readShort())
 							,Util.leShort(getter.readShort()), Util.leShort(getter.readShort())));
             	}
                 
@@ -504,7 +510,7 @@ public class Map implements Constants {
         //enviarATodosExc(cliente.getId(), serverPacketID.CC, cliente.ccParams());
         //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.CC, cliente.ccParams());
         
-        cliente.m_pos = WorldPos.mxy(this.nroMapa, x, y); // REVISAR
+        cliente.getPos().set(this.nroMapa, x, y); // REVISAR
         return true;
     }
     
@@ -529,7 +535,7 @@ public class Map implements Constants {
 	            //return true;
 	        //}
         } finally {
-	        if (this.m_cells[x-1][y-1].getClienteId() != cliente.m_id) {
+	        if (this.m_cells[x-1][y-1].getClienteId() != cliente.getId()) {
 	            // Hay una inconsistencia: no se encuentra donde deberia :-S
 	            return false;
 	        	//System.exit(1); // ERROR MUY FEO - FIXME
@@ -572,7 +578,7 @@ public class Map implements Constants {
         this.m_cells[x-1][y-1].setNpc(npc);
         this.m_npcs.add(npc);
         
-        npc.m_pos = WorldPos.mxy(this.nroMapa, x, y);
+        npc.getPos().set(this.nroMapa, x, y);
       
         this.areasData.loadNpc(npc);
         
@@ -591,7 +597,7 @@ public class Map implements Constants {
         } finally {
             this.m_cells[x-1][y-1].setNpc(null);
 	        this.m_npcs.remove(npc);
-	        npc.m_pos = WorldPos.mxy(this.nroMapa, (short)0, (short)0);
+	        npc.getPos().set(this.nroMapa, (short)0, (short)0);
         }
         return true;
     }
@@ -860,7 +866,7 @@ public class Map implements Constants {
     public void mover(Client cliente, short x, short y) {
         this.m_cells[cliente.getPos().x-1][cliente.getPos().y-1].setClienteId((short) 0);
         this.m_cells[x-1][y-1].setClienteId(cliente.getId());
-        cliente.m_pos = WorldPos.mxy(this.nroMapa, x, y);
+        cliente.getPos().set(this.nroMapa, x, y);
         
 		//JAO: Nuevo sistema de areas !!
 		//this.areasData.updateUserArea(cliente);
@@ -877,7 +883,7 @@ public class Map implements Constants {
     
     public void crearTeleport(short x, short y, short dest_mapa, short dest_x, short dest_y) {
         if (dest_mapa > 0 && dest_x > 0 && dest_y > 0) {
-			this.m_cells[x-1][y-1].setTeleport(WorldPos.mxy(dest_mapa, dest_x, dest_y));
+			this.m_cells[x-1][y-1].setTeleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
 		}
         //Objeto obj = agregarObjeto(OBJ_TELEPORT, 1, x, y);
         agregarObjeto(OBJ_TELEPORT, 1, x, y);
@@ -972,7 +978,8 @@ public class Map implements Constants {
         if ((npc = buscarNpc(x, y)) != null) {
             hayAlgo = true;
             if (cliente.esGM() && this.server.isShowDebug()) { 
-            	// Info para DEBUG
+            	// Info para DEBUG by Gorlok
+            	/*
                 cliente.enviarMensaje(npc.m_name + " id=" + npc.getId() + 
                 " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
                 " mov=" + npc.m_movement, FontType.DEBUG);
@@ -980,6 +987,7 @@ public class Map implements Constants {
                 " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
                 " mov=" + npc.m_movement + " atby=" + npc.m_attackedBy +
 				" oldmov=" + npc.m_oldMovement + " hostil=" + npc.esHostil(), FontType.DEBUG);
+				*/
             }
             if (npc.m_desc.length() > 0) {
                 cliente.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
@@ -1036,7 +1044,7 @@ public class Map implements Constants {
         
     }
     
-    public WorldPos getTeleport(short x, short y) {
+    public MapPos getTeleport(short x, short y) {
         return this.m_cells[x-1][y-1].getTeleport();
     }
     
@@ -1112,8 +1120,8 @@ public class Map implements Constants {
         }
     }
     
-    public WorldPos tirarItemAlPiso(short x, short y, InventoryObject obj) {
-        WorldPos nuevaPos = tilelibre(x, y);
+    public MapPos tirarItemAlPiso(short x, short y, InventoryObject obj) {
+        MapPos nuevaPos = tilelibre(x, y);
         log.debug("tirarItemAlPiso: x=" + nuevaPos.x + " y=" + nuevaPos.y);
         if (nuevaPos != null) {
             if (agregarObjeto(obj.objid, obj.cant, nuevaPos.x, nuevaPos.y)) {
@@ -1136,9 +1144,9 @@ public class Map implements Constants {
     /** 
      * Busca una posicion libre para depositar un objeto y que sea lo más cercana a la posición original 
      */
-    public WorldPos tilelibre(short orig_x, short orig_y) {
+    public MapPos tilelibre(short orig_x, short orig_y) {
         if (esPosLibreObjeto(orig_x, orig_y)) {
-			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
+			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 15; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1149,29 +1157,29 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibreObjeto(x, y1)) {
-					return WorldPos.mxy(this.nroMapa, x, y1);
+					return MapPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibreObjeto(x, y2)) {
-					return WorldPos.mxy(this.nroMapa, x, y2);
+					return MapPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibreObjeto(x1, y)) {
-					return WorldPos.mxy(this.nroMapa, x1, y);
+					return MapPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibreObjeto(x2, y)) {
-					return WorldPos.mxy(this.nroMapa, x2, y);
+					return MapPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
         return null;
     }
     
-    public boolean isLegalPos(WorldPos pos, boolean puedeAgua) {
+    public boolean isLegalPos(MapPos pos, boolean puedeAgua) {
         if (!pos.isValid()) {
 			return false;
 		}
@@ -1187,7 +1195,7 @@ public class Map implements Constants {
         hayAgua(pos.x, pos.y);
     }
     
-    public boolean isLegalPosNPC(WorldPos pos, boolean puedeAgua) {
+    public boolean isLegalPosNPC(MapPos pos, boolean puedeAgua) {
         if (!pos.isValid()) {
 			return false;
 		}
@@ -1204,7 +1212,7 @@ public class Map implements Constants {
         this.m_cells[pos.x-1][pos.y-1].getTrigger() != POSINVALIDA;
     }
     
-    public boolean existIndex(WorldPos pos) {
+    public boolean existIndex(MapPos pos) {
         return this.m_cells[pos.x][pos.y].getClienteId() == 0;
     }
     
@@ -1221,9 +1229,9 @@ public class Map implements Constants {
     /** 
      * Busca una posicion válida para un PJ, y que sea lo más cercana a la posición original 
      */
-    public WorldPos closestLegalPosPj(short orig_x, short orig_y, boolean navegando, boolean esAdmin) {
+    public MapPos closestLegalPosPj(short orig_x, short orig_y, boolean navegando, boolean esAdmin) {
         if (esPosLibrePj(orig_x, orig_y, navegando, esAdmin)) {
-			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
+			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1234,22 +1242,22 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibrePj(x, y1, navegando, esAdmin)) {
-					return WorldPos.mxy(this.nroMapa, x, y1);
+					return MapPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibrePj(x, y2, navegando, esAdmin)) {
-					return WorldPos.mxy(this.nroMapa, x, y2);
+					return MapPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibrePj(x1, y, navegando, esAdmin)) {
-					return WorldPos.mxy(this.nroMapa, x1, y);
+					return MapPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibrePj(x2, y, navegando, esAdmin)) {
-					return WorldPos.mxy(this.nroMapa, x2, y);
+					return MapPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
@@ -1274,9 +1282,9 @@ public class Map implements Constants {
     /** 
      * Busca una posicion válida para un Npc, y que sea lo más cercana a la posición original 
      */
-    public WorldPos closestLegalPosNpc(short orig_x, short orig_y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
+    public MapPos closestLegalPosNpc(short orig_x, short orig_y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
         if (esPosLibreNpc(orig_x, orig_y, esAguaValida, esTierraInvalida, bajoTecho)) {
-			return WorldPos.mxy(this.nroMapa, orig_x, orig_y);
+			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             short x1 = (short) (orig_x - radio);
@@ -1287,22 +1295,22 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibreNpc(x, y1, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return WorldPos.mxy(this.nroMapa, x, y1);
+					return MapPos.mxy(this.nroMapa, x, y1);
 				}
                 // lado inferior
                 if (esPosLibreNpc(x, y2, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return WorldPos.mxy(this.nroMapa, x, y2);
+					return MapPos.mxy(this.nroMapa, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (short y = (short) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibreNpc(x1, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return WorldPos.mxy(this.nroMapa, x1, y);
+					return MapPos.mxy(this.nroMapa, x1, y);
 				}
                 // lado derecho
                 if (esPosLibreNpc(x2, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return WorldPos.mxy(this.nroMapa, x2, y);
+					return MapPos.mxy(this.nroMapa, x2, y);
 				}
             }
         }
@@ -1535,7 +1543,7 @@ public class Map implements Constants {
                         }
                         // Indice del Npc que esta en este bloque.
                         // Es cero (0) si no hay Npc.
-                        f.writeShort((this.m_cells[x][y].getNpc() != null) ? Util.leShort((short)this.m_cells[x][y].getNpc().m_numero) : 0);
+                        f.writeShort((this.m_cells[x][y].getNpc() != null) ? Util.leShort((short)this.m_cells[x][y].getNpc().getNumero()) : 0);
                         // Indice del Objeto que esta en este bloque.
                         // Es cero (0) si no hay objeto.
                         if (this.m_cells[x][y].hayObjeto()) {

@@ -4,9 +4,9 @@ import java.util.BitSet;
 
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
-import org.ArgentumOnline.server.Map;
-import org.ArgentumOnline.server.MapObject;
 import org.ArgentumOnline.server.Npc;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.Constants;
 

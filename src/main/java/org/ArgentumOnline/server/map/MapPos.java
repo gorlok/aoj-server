@@ -1,5 +1,5 @@
 /**
- * WorldPos.java
+ * MapPos.java
  *
  * Created on 14 de septiembre de 2003, 21:18
  * 
@@ -23,13 +23,15 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.map;
+
+import org.ArgentumOnline.server.Pos;
 
 /**
- *
+ * World location at a map
  * @author gorlok
  */
-public class WorldPos extends MapPos {
+public class MapPos extends Pos {
 	
 	public enum Direction {
 	    NONE,
@@ -45,16 +47,16 @@ public class WorldPos extends MapPos {
 
 	public short map = 0;
 	
-	public static WorldPos empty() {
+	public static MapPos empty() {
 		return mxy(0, 0, 0);
 	}
 	
-	public static WorldPos mxy(int map, int x, int y) {
-		return new WorldPos((short) map, (short) x, (short) y);
+	public static MapPos mxy(int map, int x, int y) {
+		return new MapPos((short) map, (short) x, (short) y);
 	}
 	
-	public WorldPos copy() {
-		return WorldPos.mxy(this.map, this.x, this.y);
+	public MapPos copy() {
+		return MapPos.mxy(this.map, this.x, this.y);
 	}
 	
 	public void set(int map, int x, int y) {
@@ -63,7 +65,7 @@ public class WorldPos extends MapPos {
 		this.y = (short) y;
 	}
 
-	private WorldPos(short mapa, short x, short y) {
+	private MapPos(short mapa, short x, short y) {
 		super(x, y);
 		this.map = mapa;
 	}
@@ -79,7 +81,7 @@ public class WorldPos extends MapPos {
 	 * @param dir dirección del movimiento
 	 * @return the same instance (fluent api)
 	 */
-	public WorldPos moveToDir(Direction dir) {
+	public MapPos moveToDir(Direction dir) {
 		switch (dir) {
 		case NONE:
 			// don't move
@@ -106,7 +108,7 @@ public class WorldPos extends MapPos {
 	 * @param target es la posición del objetivo
 	 * @return dirección del objetivo
 	 */
-	public Direction findDirection(WorldPos target) {
+	public Direction findDirection(MapPos target) {
 		int dx = this.x - target.x;
 		int dy = this.y - target.y;
 
@@ -163,7 +165,7 @@ public class WorldPos extends MapPos {
 	 * @param wp otra WorldPos
 	 * @return distancia en unidades
 	 */
-	public int distance(WorldPos wp) {
+	public int distance(MapPos wp) {
 		return Math.abs(this.x - wp.x) + Math.abs(this.y - wp.y) + (Math.abs(this.map - wp.map) * 100);
 	}
 	
@@ -173,9 +175,9 @@ public class WorldPos extends MapPos {
 	        return true;
 	    if (o == null)
 	        return false;
-	    if ( !(o instanceof WorldPos) )
+	    if ( !(o instanceof MapPos) )
 	        return false;
-	    WorldPos wp = (WorldPos)o;
+	    MapPos wp = (MapPos)o;
 	    return this.x == wp.x &&
 	    		this.y == wp.y &&
 	    		this.map == wp.map;

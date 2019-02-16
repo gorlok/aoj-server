@@ -25,6 +25,8 @@
  */
 package org.ArgentumOnline.server;
 
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_CEGU;
@@ -733,7 +735,7 @@ public class UserSpells implements Constants {
 				FontType.INFO);
 			return false;
 		}
-		WorldPos targetPos = WorldPos.mxy(client.getFlags().TargetMap,
+		MapPos targetPos = MapPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
 		if (client.getPos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
 			client.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
@@ -772,7 +774,7 @@ public class UserSpells implements Constants {
 		}
 		
 		boolean exito = false;
-		WorldPos targetPos = WorldPos.mxy(client.getFlags().TargetMap,
+		MapPos targetPos = MapPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		for (int i = 0; i < hechizo.Cant; i++) {

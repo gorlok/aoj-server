@@ -1,9 +1,8 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.net.upnp;
 
+import org.ArgentumOnline.server.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.dosse.upnp.UPnP;
 
 public class NetworkUPnP {
 	private static Logger log = LogManager.getLogger();

@@ -31,11 +31,11 @@ import java.util.List;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Map;
-import org.ArgentumOnline.server.MapPos;
+import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.WorldPos;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
@@ -857,7 +857,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
                     return;
                 }
-                MapPos lugar = new MapPos(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY);
+                Pos lugar = new Pos(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY);
                 if (!lugar.isValid() || !mapa.hayAgua(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY)) {
                     this.dueño.enviarMensaje("No hay agua allí.", FontType.INFO);
                     return;
@@ -946,10 +946,10 @@ public class UserInventory extends Inventory implements Constants {
                 short m = this.dueño.getPos().map;
                 short x = this.dueño.getPos().x;
                 short y = this.dueño.getPos().y;
-                if (((mapa.isLegalPos(WorldPos.mxy(m, (short) (x - 1), y), true) || 
-                mapa.isLegalPos(WorldPos.mxy(m, x, (short) (y - 1)), true) || 
-                mapa.isLegalPos(WorldPos.mxy(m, (short) (x + 1), y), true) || 
-                mapa.isLegalPos(WorldPos.mxy(m, x, (short) (y + 1)), true)) &&
+                if (((mapa.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true) || 
+                mapa.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) || 
+                mapa.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) || 
+                mapa.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true)) &&
                 !this.dueño.getFlags().Navegando) || this.dueño.getFlags().Navegando) {
                     this.barcoSlot = slot;
                     this.dueño.doNavega();

@@ -1,5 +1,5 @@
 /**
- * MapPos.java
+ * Pos.java
  *
  * Created on 14 de septiembre de 2003, 20:42
  * 
@@ -26,18 +26,19 @@
 package org.ArgentumOnline.server;
 
 /**
+ * Position in a 2D map
  * @author gorlok
  */
-public class MapPos implements Constants {
+public class Pos implements Constants {
 
 	public short x;
 	public short y;
 	
-	public static MapPos xy(int x, int y) {
-		return new MapPos((short)x, (short)y);
+	public static Pos xy(int x, int y) {
+		return new Pos((short)x, (short)y);
 	}
 
-	public MapPos(short x, short y) {
+	public Pos(short x, short y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -50,13 +51,18 @@ public class MapPos implements Constants {
 		return (x > 0) && (y > 0) && (x <= MAPA_ANCHO) && (y <= MAPA_ALTO);
 	}
 
-	public boolean inRangoVision(MapPos pos) {
+	public boolean inRangoVision(Pos pos) {
 		return inRangoVision(pos.x, pos.y);
 	}
 
 	public boolean inRangoVision(int xx, int yy) {
 		return Math.abs(this.x - xx) < MinXBorder &&
 				Math.abs(this.y - yy) < MinYBorder;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("(x=%d,y=%d)", this.x, this.y);
 	}
 
 }

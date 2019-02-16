@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.WorldPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.ArgentumOnline.server.util.*;
 
 /**

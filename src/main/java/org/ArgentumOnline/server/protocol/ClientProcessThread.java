@@ -4,9 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.Client;
-import org.ArgentumOnline.server.WorldPos.Direction;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
+import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.NotEnoughDataException;
 

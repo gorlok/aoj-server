@@ -30,10 +30,10 @@ import java.util.StringTokenizer;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Map;
 import org.ArgentumOnline.server.Npc;
-import org.ArgentumOnline.server.WorldPos;
 import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
@@ -60,7 +60,7 @@ public class Quest implements Constants {
     short CriaturaIndex = 0;
 
     final static int CANT_NPCS = 5;
-    WorldPos Coordenadas[] = new WorldPos[CANT_NPCS];
+    MapPos Coordenadas[] = new MapPos[CANT_NPCS];
     String Pista[] = new String[CANT_NPCS];
     
     short Objetivo = 0;
@@ -108,7 +108,7 @@ public class Quest implements Constants {
                 short mapa = Short.parseShort(st.nextToken());
                 short x = Short.parseShort(st.nextToken());
                 short y = Short.parseShort(st.nextToken());
-                this.Coordenadas[j] = WorldPos.mxy(mapa, x, y);
+                this.Coordenadas[j] = MapPos.mxy(mapa, x, y);
                 this.Pista[j] = s;
             } catch (Exception e) {
                 log.fatal("Error en cargarQuests(): quest=" + this.nroQuest + " npc=#" + (j+1), e);

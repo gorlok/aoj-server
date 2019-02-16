@@ -29,17 +29,18 @@ import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.WorldPos.Direction;
+import org.ArgentumOnline.server.aStar.Node;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import misc.astar.Node;
 
 /**
  * @author gorlok
@@ -183,10 +184,10 @@ public class Npc extends BaseCharacter implements Constants {
     Npc m_mascota[] = new Npc[MAXMASCOTASENTRENADOR];
     
     public class PFINFO {
-    	WorldPos m_targetPos;
+    	MapPos m_targetPos;
     	Client m_targetUser;
     	
-    	PFINFO(WorldPos pos, Client user) {
+    	PFINFO(MapPos pos, Client user) {
     		this.m_targetPos = pos;
     		this.m_targetUser = user;
     	}
@@ -198,16 +199,16 @@ public class Npc extends BaseCharacter implements Constants {
     
     Inventory m_inv = new Inventory(20);
     
-    WorldPos m_pos  = WorldPos.empty();
-    WorldPos m_orig  = WorldPos.empty();
+    MapPos m_pos  = MapPos.empty();
+    MapPos m_orig  = MapPos.empty();
     
     AojServer server;
     
-    public static Npc crearNPC(int nroNPC, WorldPos orig, boolean bajoTecho, AojServer server) {
+    public static Npc crearNPC(int nroNPC, MapPos orig, boolean bajoTecho, AojServer server) {
         // Crea un NPC del tipo NRONPC
         Npc npc = server.crearNPC(nroNPC, false);
         Map mapa = server.getMapa(orig.map);
-        WorldPos tmp;
+        MapPos tmp;
         tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), bajoTecho);
         
         if (tmp != null) {    
@@ -230,7 +231,7 @@ public class Npc extends BaseCharacter implements Constants {
         loadInfoNPC(this.m_numero, loadBackup);
     }
     
-    public static Npc spawnNpc(int indiceNPC, WorldPos orig, boolean conFX, boolean conRespawn) {
+    public static Npc spawnNpc(int indiceNPC, MapPos orig, boolean conFX, boolean conRespawn) {
         // Crea un NPC del tipo indiceNPC
     	AojServer server = AojServer.instance();
         Npc npc = server.crearNPC(indiceNPC, false);
@@ -239,7 +240,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         Map mapa = server.getMapa(orig.map);
         boolean hayPosValida = false;
-        WorldPos tmp;
+        MapPos tmp;
         int i = 0;
         while (!hayPosValida && i < MAXSPAWNATTEMPS) {
             if (!orig.isValid()) {
@@ -281,7 +282,7 @@ public class Npc extends BaseCharacter implements Constants {
         	if (respawnOrigPos()) {
         		spawnNpc(this.m_numero, this.m_orig, false, true); // TODO: PROBAR !!! 
         	} else {
-        		spawnNpc(this.m_numero, WorldPos.mxy(this.m_pos.map, (short)0, (short)0), false, true); // TODO: PROBAR !!!
+        		spawnNpc(this.m_numero, MapPos.mxy(this.m_pos.map, (short)0, (short)0), false, true); // TODO: PROBAR !!!
         	}
         } else {
         	System.out.println("{{{{{{{ DEBUG }}}}}}} NO PUEDE RESPAWN !!!");
@@ -523,11 +524,11 @@ public class Npc extends BaseCharacter implements Constants {
         return this.m_inv;
     }
     
-    public WorldPos getPos() {
+    public MapPos getPos() {
         return this.m_pos;
     }
     
-    public WorldPos getOrig() {
+    public MapPos getOrig() {
         return this.m_orig;
     }
     
@@ -749,7 +750,7 @@ public class Npc extends BaseCharacter implements Constants {
         this.m_numero = 0;
         this.m_poderAtaque = 0;
         this.m_poderEvasion = 0;
-        this.m_pos = WorldPos.empty();
+        this.m_pos = MapPos.empty();
         this.m_skillDomar = 0;
         this.m_target = 0;
         this.m_targetNpc = null;
@@ -842,7 +843,7 @@ public class Npc extends BaseCharacter implements Constants {
         if (cliente != null) {
         	boolean eraCrimi = cliente.esCriminal();
         	
-            WorldPos pos = cliente.getPos();
+            MapPos pos = cliente.getPos();
             Map m = this.server.getMapa(pos.map);
             
             if (this.m_snd3 > 0) {
@@ -970,7 +971,7 @@ public class Npc extends BaseCharacter implements Constants {
 			return;
 		}
         this.m_lastMove = now;
-        WorldPos newPos = this.m_pos.copy();
+        MapPos newPos = this.m_pos.copy();
         newPos.moveToDir(dir);
         Map mapa = this.server.getMapa(newPos.map);
         if (mapa == null) {
@@ -1161,7 +1162,7 @@ public class Npc extends BaseCharacter implements Constants {
         	if (dir == Direction.NONE)
         		continue;
         	
-            WorldPos pos = this.m_pos.copy();
+            MapPos pos = this.m_pos.copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
@@ -1216,7 +1217,7 @@ public class Npc extends BaseCharacter implements Constants {
         for (Direction dir : Direction.values()) {
         	if (dir == Direction.NONE)
         		continue;
-            WorldPos pos = this.m_pos.copy();
+            MapPos pos = this.m_pos.copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
@@ -1243,7 +1244,7 @@ public class Npc extends BaseCharacter implements Constants {
         for (Direction dir : Direction.values()) {
         	if (dir == Direction.NONE)
         		continue;
-            WorldPos pos = this.m_pos.copy();
+            MapPos pos = this.m_pos.copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
@@ -1269,7 +1270,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1299,7 +1300,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1347,7 +1348,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1376,7 +1377,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1409,7 +1410,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
@@ -1435,7 +1436,7 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     Npc npc = mapa.getNPC(x, y);
                     if (npc != null) {
@@ -1734,9 +1735,9 @@ public class Npc extends BaseCharacter implements Constants {
         //Moves the npc.
         //#################################################################
         this.current_step++;
-        misc.astar.Node node = this.current_path.get(this.current_step);
-        misc.astar.Location loc = node.location;
-        WorldPos pos = WorldPos.mxy(this.m_pos.map, (short)loc.x, (short)loc.y);
+        org.ArgentumOnline.server.aStar.Node node = this.current_path.get(this.current_step);
+        org.ArgentumOnline.server.aStar.Location loc = node.location;
+        MapPos pos = MapPos.mxy(this.m_pos.map, (short)loc.x, (short)loc.y);
         Direction dir = this.m_pos.findDirection(pos);
         
         if (DEBUG)
@@ -1771,12 +1772,12 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
             for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
-                WorldPos pos = WorldPos.mxy(this.m_pos.map, x, y);
+                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
                         if (cliente.estaVivo() && !cliente.estaInvisible()) {
-                        	this.m_pfinfo = new PFINFO(WorldPos.mxy(this.m_pos.map, x, y), cliente);
+                        	this.m_pfinfo = new PFINFO(MapPos.mxy(this.m_pos.map, x, y), cliente);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
                             return;

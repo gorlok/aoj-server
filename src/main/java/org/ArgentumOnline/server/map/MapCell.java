@@ -23,9 +23,12 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.map;
 
 import java.util.BitSet;
+
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.Npc;
 
 /**
  * @author gorlok
@@ -39,26 +42,28 @@ public class MapCell {
     final static int FLAGS_NUMBER = 3;
 
     // TRIGGERS
-    final static int TRIGGER_NADA = 0;
-    final static int TRIGGER_BAJO_TECHO = 1;
+    public final static int TRIGGER_NADA = 0;
+    public final static int TRIGGER_BAJO_TECHO = 1;
     // Los NPCs no pueden hacer respawn y,
     // el layer cuatro desaparece cuando un jugador pisa el tile:
-    final static int TRIGGER_NO_RESPAWN = 2; 
+    public final static int TRIGGER_NO_RESPAWN = 2; 
     // Los npcs no pueden pisar tiles con este trigger:
-    final static int TRIGGER_POS_INVALIDA = 3;
+    public final static int TRIGGER_POS_INVALIDA = 3;
     // No se puede robar o pelear desde este trigger:
-    final static int TRIGGER_ZONA_SEGURA = 4;
+    public final static int TRIGGER_ZONA_SEGURA = 4;
     // Te encarcelan si estas mucho tiempo sobre este trigger:
-    final static int TRIGGER_ANTI_PIQUETE = 5;
+    public final static int TRIGGER_ANTI_PIQUETE = 5;
     // Arena para duelos (??? - revisar)
     // Al pelear en este trigger no se caen las cosas y no cambia el estado de ciuda o crimi
-    final static int TRIGGER_ARENA_DUELOS = 6; // ???
+    public final static int TRIGGER_ARENA_DUELOS = 6; // ???
     // Para torneos con espectadores:
-    final static int TRIGGER_ARENA_TORNEO = 7;
+    public final static int TRIGGER_ARENA_TORNEO = 7;
 
-    final static int TRIGGER6_PERMITE = 1;
-    final static int TRIGGER6_PROHIBE = 2;
-    final static int TRIGGER6_AUSENTE = 3;
+    public final static int TRIGGER6_PERMITE = 1;
+    public final static int TRIGGER6_PROHIBE = 2;
+    public final static int TRIGGER6_AUSENTE = 3;
+    
+    
     
     private BitSet m_flags = new BitSet(FLAGS_NUMBER);
     
@@ -181,12 +186,12 @@ public class MapCell {
     	return (this.m_dest_mapa != 0 && this.m_dest_x != 0 && this.m_dest_y != 0);
     }
     
-    public WorldPos getTeleport() {
+    public MapPos getTeleport() {
         //return m_dest;
-    	return WorldPos.mxy(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
+    	return MapPos.mxy(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
     }
     
-    public void setTeleport(WorldPos dest) {
+    public void setTeleport(MapPos dest) {
     	if (dest != null) {
     		this.m_dest_mapa = dest.map;
     		this.m_dest_x = dest.x;
