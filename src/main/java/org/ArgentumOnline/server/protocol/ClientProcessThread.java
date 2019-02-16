@@ -138,7 +138,7 @@ public class ClientProcessThread extends Thread {
 					break;
 
 				case commerceEnd:
-					cliente.doFinComerciarUsuario();
+					cliente.m_comUsu.doFinComerciarUsuario(cliente);
 					break;
 
 				case commerceBuy:
