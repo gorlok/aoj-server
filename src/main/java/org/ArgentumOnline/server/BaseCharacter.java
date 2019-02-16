@@ -25,10 +25,11 @@
  */
 package org.ArgentumOnline.server;
 
-/** Character base class. Superclass of the clients and the NPCs.
+/** 
+ * Character base class. Superclass of the clients and the NPCs.
  * @author gorlok
  */
-public class BaseCharacter implements Constants {
+public abstract class BaseCharacter implements Constants {
     
     protected CharInfo m_infoChar = new CharInfo();
     protected CharInfo m_origChar = new CharInfo();

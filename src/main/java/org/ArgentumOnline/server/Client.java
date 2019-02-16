@@ -41,10 +41,15 @@ import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.classes.FishermanClass;
 import org.ArgentumOnline.server.classes.HunterClass;
 import org.ArgentumOnline.server.classes.ThiefClass;
+import org.ArgentumOnline.server.gm.GmRequest;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildInfo;
+import org.ArgentumOnline.server.inventory.Inventory;
+import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.inventory.UserInventory;
 import org.ArgentumOnline.server.protocol.BufferWriter;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
+import org.ArgentumOnline.server.quest.UserQuest;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -600,7 +605,7 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		if (accion.equalsIgnoreCase("ORO")) {
 			if (valor < 95001) {
-				usuario.m_estads.oro = valor;
+				usuario.m_estads.setGold(valor);
 				usuario.refreshStatus(1);
 			} else {
 				enviarMensaje(
@@ -987,19 +992,19 @@ public class Client extends BaseCharacter implements Constants {
 			hablar(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", npc.getId());
 			return;
 		}
-		if (m_estads.oro < cant) {
+		if (m_estads.getGold() < cant) {
 			hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
 			return;
 		}
-		if (Util.Azar(1, 100) <= 47) {
-			m_estads.agregarOro(cant);
+		if (Util.Azar(1, 100) <= 45) {
+			m_estads.addGold( cant );
 			hablar(COLOR_BLANCO, "Felicidades! Has ganado " + cant + " monedas de oro!", npc.getId());
 			/*
 			 * fixme Apuestas.Perdidas += cant; Call WriteVar(DatPath & "apuestas.dat",
 			 * "Main", "Perdidas", CStr(Apuestas.Perdidas))
 			 */
 		} else {
-			m_estads.quitarOro(cant);
+			m_estads.addGold( -cant );
 			hablar(COLOR_BLANCO, "Lo siento, has perdido " + cant + " monedas de oro.", npc.getId());
 			/*
 			 * fixme Apuestas.Ganancias = Apuestas.Ganancias + N Call WriteVar(DatPath &
@@ -1798,8 +1803,8 @@ public class Client extends BaseCharacter implements Constants {
 		enviarMensaje("Nivel: " + usuario.m_estads.ELV + "  EXP: " + usuario.m_estads.Exp + "/" + usuario.m_estads.ELU,
 				FontType.INFO);
 		enviarMensaje("Salud: " + usuario.m_estads.MinHP + "/" + usuario.m_estads.MaxHP + "  Mana: "
-				+ usuario.m_estads.MinMAN + "/" + usuario.m_estads.MaxMAN + "  Energia: " + usuario.m_estads.MinSta
-				+ "/" + usuario.m_estads.MaxSta, FontType.INFO);
+				+ usuario.m_estads.mana + "/" + usuario.m_estads.maxMana + "  Energia: " + usuario.m_estads.stamina
+				+ "/" + usuario.m_estads.maxStamina, FontType.INFO);
 		if (usuario.m_inv.tieneArmaEquipada()) {
 			enviarMensaje("Menor Golpe/Mayor Golpe: " + usuario.m_estads.MinHIT + "/" + usuario.m_estads.MaxHIT + " ("
 					+ m_inv.getArma().MinHIT + "/" + m_inv.getArma().MaxHIT + ")", FontType.INFO);
@@ -1832,7 +1837,7 @@ public class Client extends BaseCharacter implements Constants {
 			}
 			enviarMensaje("User GuildPoints: " + usuario.m_guildInfo.m_guildPoints, FontType.INFO);
 		}
-		enviarMensaje("Oro: " + usuario.m_estads.oro + "  Posicion: " + usuario.m_pos.x + "," + usuario.m_pos.y
+		enviarMensaje("Oro: " + usuario.m_estads.getGold() + "  Posicion: " + usuario.m_pos.x + "," + usuario.m_pos.y
 				+ " en mapa " + usuario.m_pos.map, FontType.INFO);
 	}
 
@@ -2183,7 +2188,7 @@ public class Client extends BaseCharacter implements Constants {
 		int obj1_cant = 0;
 		if (m_comUsu.objeto == FLAGORO) {
 			obj1_objid = OBJ_ORO;
-			if (m_comUsu.cant > m_estads.oro) {
+			if (m_comUsu.cant > m_estads.getGold()) {
 				enviarMensaje("No tienes esa cantidad.", FontType.TALK);
 				terminarAhora = true;
 			}
@@ -2200,7 +2205,7 @@ public class Client extends BaseCharacter implements Constants {
 		int obj2_cant = 0;
 		if (m_comUsu.objeto == FLAGORO) {
 			obj2_objid = OBJ_ORO;
-			if (destUsu.m_comUsu.cant > destUsu.m_estads.oro) {
+			if (destUsu.m_comUsu.cant > destUsu.m_estads.getGold()) {
 				destUsu.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
 				terminarAhora = true;
 			}
@@ -2221,10 +2226,10 @@ public class Client extends BaseCharacter implements Constants {
 		// pone el oro directamente en la billetera
 		if (destUsu.m_comUsu.objeto == FLAGORO) {
 			// quito la cantidad de oro ofrecida
-			destUsu.m_estads.oro -= destUsu.m_comUsu.cant;
+			destUsu.m_estads.addGold( -destUsu.m_comUsu.cant );
 			destUsu.refreshStatus(1);
 			// y se la doy al otro
-			m_estads.oro += destUsu.m_comUsu.cant;
+			m_estads.addGold( destUsu.m_comUsu.cant );
 			refreshStatus(1);
 		} else {
 			// Quita el objeto y se lo da al otro
@@ -2239,10 +2244,10 @@ public class Client extends BaseCharacter implements Constants {
 		// pone el oro directamente en la billetera
 		if (m_comUsu.objeto == FLAGORO) {
 			// quito la cantidad de oro ofrecida
-			m_estads.oro -= m_comUsu.cant;
+			m_estads.addGold(-m_comUsu.cant); // restar
 			refreshStatus(1);
 			// y se la doy al otro
-			destUsu.m_estads.oro += m_comUsu.cant;
+			destUsu.m_estads.addGold(m_comUsu.cant); // sumar
 			destUsu.refreshStatus(1);
 		} else {
 			// Quita el objeto y se lo da al otro
@@ -2283,7 +2288,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Tiene la cantidad que se ofrece ??
 		if (slot == FLAGORO) {
 			// oro de la billetera
-			if (cant > m_estads.oro) {
+			if (cant > m_estads.getGold()) {
 				enviarMensaje("No tienes esa cantidad.", FontType.TALK);
 				return;
 			}
@@ -2362,10 +2367,11 @@ public class Client extends BaseCharacter implements Constants {
 			enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
 			return;
 		}
-		if (cant > 0 && cant <= m_estads.oro) {
-			m_estads.banco += cant;
-			m_estads.oro -= cant;
-			hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
+		// ¿Se tiene dicha cantidad realmente?
+		if (cant > 0 && cant <= m_estads.getGold()) {
+			m_estads.addBankGold( cant );
+			m_estads.addGold( -cant );
+			hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
 		} else {
 			hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
 		}
@@ -2398,10 +2404,10 @@ public class Client extends BaseCharacter implements Constants {
 				doSALIR();
 				return;
 			}
-			if (cant > 0 && cant <= m_estads.banco) {
-				m_estads.banco -= cant;
-				m_estads.oro += cant;
-				hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
+			if (cant > 0 && cant <= m_estads.getBankGold()) {
+				m_estads.addBankGold( -cant );
+				m_estads.addGold( cant );
+				hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
 			} else {
 				hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
 			}
@@ -2757,6 +2763,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		// User compra el item del slot rdata
+		
 		npc.venderItem(this, slot, cant);
 	}
 
@@ -2826,15 +2833,12 @@ public class Client extends BaseCharacter implements Constants {
 				dto = 1; // evitamos dividir por 0!
 			}
 			double unidad = ((info.Valor + infla) / dto);
-			double monto = unidad * cant;
-			m_estads.oro -= monto;
+			int monto = (int) (unidad * cant);
+			m_estads.addGold( -monto );
 			// tal vez suba el skill comerciar ;-)
 			subirSkill(Skill.SKILL_Comerciar);
 			if (info.ObjType == OBJTYPE_LLAVES) {
 				Log.logVentaCasa(m_nick + " compro " + info.Nombre);
-			}
-			if (m_estads.oro < 0) {
-				m_estads.oro = 0;
 			}
 			npc.quitarNpcInvItem(slot, cant);
 		} else {
@@ -3306,11 +3310,11 @@ public class Client extends BaseCharacter implements Constants {
 						enviarMensaje(victima.m_nick + " no tiene objetos.", FontType.INFO);
 					}
 				} else { // Roba oro
-					if (victima.m_estads.oro > 0) {
-						int n = Util.Azar(1, 100);
-						victima.m_estads.quitarOro(n);
-						m_estads.agregarOro(n);
-						enviarMensaje("Le has robado " + n + " monedas de oro a " + victima.m_nick, FontType.INFO);
+					if (victima.m_estads.getGold() > 0) {
+						int cantidadRobada = Util.Azar(1, 100);
+						victima.m_estads.addGold( -cantidadRobada );
+						m_estads.addGold( cantidadRobada );
+						enviarMensaje("Le has robado " + cantidadRobada + " monedas de oro a " + victima.m_nick, FontType.INFO);
 					} else {
 						enviarMensaje(m_nick + " no tiene oro.", FontType.INFO);
 					}
@@ -3419,7 +3423,7 @@ public class Client extends BaseCharacter implements Constants {
 				return;
 			}
 			// Quitamos stamina
-			if (m_estads.MinSta >= 10) {
+			if (m_estads.stamina >= 10) {
 				m_estads.quitarStamina(Util.Azar(1, 10));
 			} else {
 				enviarMensaje("Estas muy cansado para luchar.", FontType.INFO);
@@ -3711,7 +3715,7 @@ public class Client extends BaseCharacter implements Constants {
 			doSALIR();
 			return;
 		}
-		hablar(COLOR_BLANCO, "Tienes " + m_estads.banco + " monedas de oro en tu cuenta.", npc.getId());
+		hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
 	}
 
 	public void doLanzarHechizo(short slot) {
@@ -4405,7 +4409,7 @@ public class Client extends BaseCharacter implements Constants {
 		switch (value) {
 
 		case 1: // GOLD
-			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.oro);
+			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.getGold());
 			break;
 
 		case 2: // user hp
@@ -4413,11 +4417,11 @@ public class Client extends BaseCharacter implements Constants {
 			break;
 
 		case 3: // user mana
-			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinMAN, (short) m_estads.MaxMAN);
+			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.mana, (short) m_estads.maxMana);
 			break;
 
 		case 4: // user stamina
-			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinSta, (short) m_estads.MaxSta);
+			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.stamina, (short) m_estads.maxStamina);
 			break;
 
 		case 5: // user level, exp & elu
@@ -4574,11 +4578,11 @@ public class Client extends BaseCharacter implements Constants {
 		}
 		m_flags.Muerto = false;
 		m_estads.MinHP = m_estads.MaxHP;// 10;
-		if (m_estads.MinAGU <= 0) {
-			m_estads.MinAGU = 10;
+		if (m_estads.drinked <= 0) {
+			m_estads.drinked = 10;
 		}
-		if (m_estads.MinHam <= 0) {
-			m_estads.MinHam = 10;
+		if (m_estads.eaten <= 0) {
+			m_estads.eaten = 10;
 		}
 		m_infoChar.m_cabeza = m_origChar.m_cabeza;
 		cuerpoDesnudo();
@@ -4727,7 +4731,7 @@ public class Client extends BaseCharacter implements Constants {
 		if (m_flags.UserLogged) {
 			Map mapa = server.getMapa(m_pos.map);
 			if (server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y) && mapa.getZona() != ZONA_DUNGEON) {
-				int modifi = Util.porcentaje(m_estads.MaxSta, 3);
+				int modifi = Util.porcentaje(m_estads.maxStamina, 3);
 				m_estads.quitarStamina(modifi);
 				enviarMensaje("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.INFO);
 				refreshStatus(4);
@@ -4980,7 +4984,7 @@ public class Client extends BaseCharacter implements Constants {
 		// Quitar el dialogo del usuario muerto
 		// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_QDL, m_id);
 		m_estads.MinHP = 0;
-		m_estads.MinSta = 0;
+		m_estads.stamina = 0;
 		m_flags.AtacadoPorNpc = 0;
 		m_flags.AtacadoPorUser = 0;
 		m_flags.Envenenado = false;
@@ -5073,7 +5077,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		tirarTodosLosItems();
-		tirarOro(m_estads.oro);
+		tirarOro(m_estads.getGold());
 	}
 
 	private void tirarTodosLosItems() {
@@ -5111,21 +5115,21 @@ public class Client extends BaseCharacter implements Constants {
 	}
 
 	public void tirarOro(int cantidad) {
-		if (cantidad > 100000) {
+		if (cantidad > MAX_INVENTORY_OBJS) {
 			return;
 		}
 		Map m = server.getMapa(m_pos.map);
 		// SI EL Npc TIENE ORO LO TIRAMOS
-		if ((cantidad > 0) && (cantidad <= m_estads.oro)) {
-			while ((cantidad > 0) && (m_estads.oro > 0)) {
+		if ((cantidad > 0) && (cantidad <= m_estads.getGold())) {
+			while ((cantidad > 0) && (m_estads.getGold() > 0)) {
 				InventoryObject oi = new InventoryObject(OBJ_ORO, cantidad);
-				if ((cantidad > MAX_INVENTORY_OBJS) && (m_estads.oro > MAX_INVENTORY_OBJS)) {
+				if ((cantidad > MAX_INVENTORY_OBJS) && (m_estads.getGold() > MAX_INVENTORY_OBJS)) {
 					oi.cant = MAX_INVENTORY_OBJS;
-					m_estads.oro -= MAX_INVENTORY_OBJS;
+					m_estads.addGold( -MAX_INVENTORY_OBJS);
 					cantidad -= oi.cant;
 				} else {
 					oi.cant = cantidad;
-					m_estads.oro -= cantidad;
+					m_estads.addGold( -cantidad );
 					cantidad -= oi.cant;
 				}
 				if (esGM()) {
@@ -5718,7 +5722,7 @@ public class Client extends BaseCharacter implements Constants {
 	public void usuarioAtaca() {
 		if (intervaloPermiteAtacar()) {
 			// Pierde stamina
-			if (m_estads.MinSta >= 10) {
+			if (m_estads.stamina >= 10) {
 				// m_estads.quitarStamina(Util.Azar(1, 10));
 			} else {
 				enviarMensaje("Estas muy cansado para luchar.", FontType.INFO);
@@ -6354,28 +6358,28 @@ public class Client extends BaseCharacter implements Constants {
 			ini.setValue("INIT", "LastIP", m_ip);
 			ini.setValue("INIT", "Position", m_pos.map + "-" + m_pos.x + "-" + m_pos.y);
 
-			ini.setValue("STATS", "GLD", m_estads.oro);
-			ini.setValue("STATS", "BANCO", m_estads.banco);
+			ini.setValue("STATS", "GLD", m_estads.getGold());
+			ini.setValue("STATS", "BANCO", m_estads.getBankGold());
 
 			// ini.setValue("STATS", "MET", m_estads.MET);
 			ini.setValue("STATS", "MaxHP", m_estads.MaxHP);
 			ini.setValue("STATS", "MinHP", m_estads.MinHP);
 
 			// ini.setValue("STATS", "FIT", m_estads.FIT);
-			ini.setValue("STATS", "MaxSTA", m_estads.MaxSta);
-			ini.setValue("STATS", "MinSTA", m_estads.MinSta);
+			ini.setValue("STATS", "MaxSTA", m_estads.maxStamina);
+			ini.setValue("STATS", "MinSTA", m_estads.stamina);
 
-			ini.setValue("STATS", "MaxMAN", m_estads.MaxMAN);
-			ini.setValue("STATS", "MinMAN", m_estads.MinMAN);
+			ini.setValue("STATS", "MaxMAN", m_estads.maxMana);
+			ini.setValue("STATS", "MinMAN", m_estads.mana);
 
 			ini.setValue("STATS", "MaxHIT", m_estads.MaxHIT);
 			ini.setValue("STATS", "MinHIT", m_estads.MinHIT);
 
-			ini.setValue("STATS", "MaxAGU", m_estads.MaxAGU);
-			ini.setValue("STATS", "MinAGU", m_estads.MinAGU);
+			ini.setValue("STATS", "MaxAGU", m_estads.maxDrinked);
+			ini.setValue("STATS", "MinAGU", m_estads.drinked);
 
-			ini.setValue("STATS", "MaxHAM", m_estads.MaxHam);
-			ini.setValue("STATS", "MinHAM", m_estads.MinHam);
+			ini.setValue("STATS", "MaxHAM", m_estads.maxEaten);
+			ini.setValue("STATS", "MinHAM", m_estads.eaten);
 
 			ini.setValue("STATS", "SkillPtsLibres", m_estads.SkillPts);
 
@@ -6521,13 +6525,13 @@ public class Client extends BaseCharacter implements Constants {
 				// Usuario no privilegiado.
 				m_flags.Privilegios = 0;
 			}
-			if (m_inv.escudoSlot == 0) {
+			if (m_inv.getEscudoSlot() == 0) {
 				m_infoChar.m_escudo = NingunEscudo;
 			}
-			if (m_inv.cascoSlot == 0) {
+			if (m_inv.getCascoSlot() == 0) {
 				m_infoChar.m_casco = NingunCasco;
 			}
-			if (m_inv.armaSlot == 0) {
+			if (m_inv.getArmaSlot() == 0) {
 				m_infoChar.m_arma = NingunArma;
 			}
 
@@ -6725,35 +6729,14 @@ public class Client extends BaseCharacter implements Constants {
 			m_inv.setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
 					Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken()) == 1));
 		}
-		m_inv.armaSlot = ini.getShort("Inventory", "WeaponEqpSlot");
-		if (m_inv.armaSlot > 0) {
-			m_inv.armaEquipada = true;
-		}
-		m_inv.armaduraSlot = ini.getShort("Inventory", "ArmourEqpSlot");
-		if (m_inv.armaduraSlot > 0) {
-			m_inv.armaduraEquipada = true;
-		}
-		m_flags.Desnudo = (m_inv.armaduraSlot == 0);
-		m_inv.escudoSlot = ini.getShort("Inventory", "EscudoEqpSlot");
-		if (m_inv.escudoSlot > 0) {
-			m_inv.escudoEquipado = true;
-		}
-		m_inv.cascoSlot = ini.getShort("Inventory", "CascoEqpSlot");
-		if (m_inv.cascoSlot > 0) {
-			m_inv.cascoEquipado = true;
-		}
-		m_inv.barcoSlot = ini.getShort("Inventory", "BarcoSlot");
-		if (m_inv.barcoSlot > 0) {
-			m_inv.barcoEquipado = true;
-		}
-		m_inv.municionSlot = ini.getShort("Inventory", "MunicionSlot");
-		if (m_inv.municionSlot > 0) {
-			m_inv.municionEquipada = true;
-		}
-		m_inv.herramientaSlot = ini.getShort("Inventory", "HerramientaSlot");
-		if (m_inv.herramientaSlot > 0) {
-			m_inv.herramientaEquipada = true;
-		}
+		m_inv.setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
+		m_inv.setArmaduraSlot(ini.getShort("Inventory", "ArmourEqpSlot"));
+		m_flags.Desnudo = (m_inv.getArmaduraSlot() == 0);
+		m_inv.setEscudoSlot(ini.getShort("Inventory", "EscudoEqpSlot"));
+		m_inv.setCascoSlot(ini.getShort("Inventory", "CascoEqpSlot"));
+		m_inv.setBarcoSlot(ini.getShort("Inventory", "BarcoSlot"));
+		m_inv.setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
+		m_inv.setHerramientaSlot(ini.getShort("Inventory", "HerramientaSlot"));
 
 		m_cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
@@ -6793,26 +6776,26 @@ public class Client extends BaseCharacter implements Constants {
 			m_spells.setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
 		}
 
-		m_estads.oro = ini.getInt("STATS", "GLD");
-		m_estads.banco = ini.getInt("STATS", "BANCO");
+		m_estads.setGold(ini.getInt("STATS", "GLD"));
+		m_estads.setBankGold(ini.getInt("STATS", "BANCO"));
 
 		m_estads.MaxHP = ini.getInt("STATS", "MaxHP");
 		m_estads.MinHP = ini.getInt("STATS", "MinHP");
 
-		m_estads.MinSta = ini.getInt("STATS", "MinSTA");
-		m_estads.MaxSta = ini.getInt("STATS", "MaxSTA");
+		m_estads.stamina = ini.getInt("STATS", "MinSTA");
+		m_estads.maxStamina = ini.getInt("STATS", "MaxSTA");
 
-		m_estads.MaxMAN = ini.getInt("STATS", "MaxMAN");
-		m_estads.MinMAN = ini.getInt("STATS", "MinMAN");
+		m_estads.maxMana = ini.getInt("STATS", "MaxMAN");
+		m_estads.mana = ini.getInt("STATS", "MinMAN");
 
 		m_estads.MaxHIT = ini.getInt("STATS", "MaxHIT");
 		m_estads.MinHIT = ini.getInt("STATS", "MinHIT");
 
-		m_estads.MaxAGU = ini.getInt("STATS", "MaxAGU");
-		m_estads.MinAGU = ini.getInt("STATS", "MinAGU");
+		m_estads.maxDrinked = ini.getInt("STATS", "MaxAGU");
+		m_estads.drinked = ini.getInt("STATS", "MinAGU");
 
-		m_estads.MaxHam = ini.getInt("STATS", "MaxHAM");
-		m_estads.MinHam = ini.getInt("STATS", "MinHAM");
+		m_estads.maxEaten = ini.getInt("STATS", "MaxHAM");
+		m_estads.eaten = ini.getInt("STATS", "MinHAM");
 
 		m_estads.SkillPts = ini.getInt("STATS", "SkillPtsLibres");
 
@@ -6866,9 +6849,8 @@ public class Client extends BaseCharacter implements Constants {
 					userDie();
 				}
 			} else {
-				if (m_estads.MinSta > 0) { // Vericación agregada por
-					// PFL...
-					int modifi = Util.porcentaje(m_estads.MaxSta, 5);
+				if (m_estads.stamina > 0) { // Vericación agregada por gorlok
+					int modifi = Util.porcentaje(m_estads.maxStamina, 5);
 					m_estads.quitarStamina(modifi);
 					enviarMensaje("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.INFO);
 				}
@@ -6889,7 +6871,7 @@ public class Client extends BaseCharacter implements Constants {
 			if (m_counters.HPCounter < intervalo) {
 				m_counters.HPCounter++;
 			} else {
-				int mashit = Util.Azar(2, Util.porcentaje(m_estads.MaxSta, 5));
+				int mashit = Util.Azar(2, Util.porcentaje(m_estads.maxStamina, 5));
 				m_counters.HPCounter = 0;
 				m_estads.MinHP += mashit;
 				refreshStatus(2);
@@ -6915,11 +6897,11 @@ public class Client extends BaseCharacter implements Constants {
 		if (tActual - m_counters.tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
 			return;
 		}
-		if (m_estads.MinSta < m_estads.MaxSta) {
+		if (m_estads.stamina < m_estads.maxStamina) {
 			return;
 		}
 		m_counters.IdleCount = 0;
-		if (m_estads.MinMAN >= m_estads.MaxMAN) {
+		if (m_estads.mana >= m_estads.maxMana) {
 			enviarMensaje("Has terminado de meditar.", FontType.INFO);
 			enviar(ServerPacketID.medOk);
 			m_flags.Meditando = false;
@@ -6929,7 +6911,7 @@ public class Client extends BaseCharacter implements Constants {
 			return;
 		}
 		if (suerteMeditar()) {
-			int cant = Util.porcentaje(m_estads.MaxMAN, 3);
+			int cant = Util.porcentaje(m_estads.maxMana, 3);
 			m_estads.aumentarMana(cant);
 			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!", FontType.INFO);
 			refreshStatus(3);
@@ -6978,31 +6960,31 @@ public class Client extends BaseCharacter implements Constants {
 				m_estads.userAtributos[3], m_estads.userAtributos[4]);
 	}
 
-	public boolean hambreYSed() {
+	public boolean aplicarHambreYSed() {
 		// Sed
 		boolean enviarEstads = false;
-		if (m_estads.MinAGU > 0) {
-			if (m_counters.AGUACounter < IntervaloSed) {
-				m_counters.AGUACounter++;
+		if (m_estads.drinked > 0) {
+			if (m_counters.drinkCounter < IntervaloSed) {
+				m_counters.drinkCounter++;
 			} else {
-				m_counters.AGUACounter = 0;
+				m_counters.drinkCounter = 0;
 				m_estads.quitarSed(10);
-				if (m_estads.MinAGU <= 0) {
-					m_estads.MinAGU = 0;
+				if (m_estads.drinked <= 0) {
+					m_estads.drinked = 0;
 					m_flags.Sed = true;
 				}
 				enviarEstads = true;
 			}
 		}
 		// hambre
-		if (m_estads.MinHam > 0) {
-			if (m_counters.COMCounter < IntervaloHambre) {
-				m_counters.COMCounter++;
+		if (m_estads.eaten > 0) {
+			if (m_counters.foodCounter < IntervaloHambre) {
+				m_counters.foodCounter++;
 			} else {
-				m_counters.COMCounter = 0;
+				m_counters.foodCounter = 0;
 				m_estads.quitarHambre(10);
-				if (m_estads.MinHam <= 0) {
-					m_estads.MinHam = 0;
+				if (m_estads.eaten <= 0) {
+					m_estads.eaten = 0;
 					m_flags.Hambre = true;
 				}
 				enviarEstads = true;
@@ -7017,12 +6999,12 @@ public class Client extends BaseCharacter implements Constants {
 		if (trigger == 2 || trigger == 3 || trigger == 4) {
 			return false;
 		}
-		if (m_estads.MinSta < m_estads.MaxSta) {
+		if (m_estads.stamina < m_estads.maxStamina) {
 			if (m_counters.STACounter < intervalo) {
 				m_counters.STACounter++;
 			} else {
 				m_counters.STACounter = 0;
-				int massta = Util.Azar(1, Util.porcentaje(m_estads.MaxSta, 5));
+				int massta = Util.Azar(1, Util.porcentaje(m_estads.maxStamina, 5));
 				m_estads.aumentarStamina(massta);
 				refreshStatus(4);
 				// enviarMensaje("Te sientes menos cansado.", FontType.INFO);
@@ -7076,7 +7058,7 @@ public class Client extends BaseCharacter implements Constants {
 					efectoInvisibilidad();
 				}
 				duracionPociones();
-				bEnviarAyS = hambreYSed();
+				bEnviarAyS = aplicarHambreYSed();
 				Map mapa = server.getMapa(m_pos.map);
 				if (!(server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y))) {
 					if (!m_flags.Descansar && !m_flags.Hambre && !m_flags.Sed) {
@@ -7100,7 +7082,7 @@ public class Client extends BaseCharacter implements Constants {
 						// bEnviarStats = sanar(SanaIntervaloDescansar);
 						// bEnviarStats = recStamina(StaminaIntervaloDescansar);
 						// termina de descansar automaticamente
-						if (m_estads.MaxHP == m_estads.MinHP && m_estads.MaxSta == m_estads.MinSta) {
+						if (m_estads.MaxHP == m_estads.MinHP && m_estads.maxStamina == m_estads.stamina) {
 							// enviar(MSG_DOK);
 							enviarMensaje("Has terminado de descansar.", FontType.INFO);
 							m_flags.Descansar = false;
@@ -7108,15 +7090,15 @@ public class Client extends BaseCharacter implements Constants {
 					}
 				}
 				// Verificar muerte por hambre
-				if (m_estads.MinHam <= 0 && !esGM()) {
+				if (m_estads.eaten <= 0 && !esGM()) {
 					enviarMensaje("¡¡Has muerto de hambre!!.", FontType.INFO);
-					m_estads.MinHam = 0;
+					m_estads.eaten = 0;
 					userDie();
 				}
 				// Verificar muerte de sed
-				if (m_estads.MinAGU <= 0 && !esGM()) {
+				if (m_estads.drinked <= 0 && !esGM()) {
 					enviarMensaje("¡¡Has muerto de sed!!.", FontType.INFO);
-					m_estads.MinAGU = 0;
+					m_estads.drinked = 0;
 					userDie();
 				}
 				// if (bEnviarStats) {
@@ -7676,4 +7658,24 @@ public class Client extends BaseCharacter implements Constants {
 		}
 	}
 
+	/**
+	 * Devuelve el skill de Herraria efectivo, aplicando su modificador de clase.
+	 * @return valor del skill efectivo
+	 */
+	public double skillHerreriaEfectivo() {
+		return this.m_estads.userSkills[Skill.SKILL_Herreria] / this.m_clase.modHerreria();
+	}
+	
+	/**
+	 * Devuelve el skill de Carpinteria efectivo, aplicando su modificador de clase.
+	 * @return valor del skill efectivo
+	 */
+	public double skillCarpinteriaEfectivo() {
+		return this.m_estads.userSkills[Skill.SKILL_Carpinteria] / this.m_clase.modCarpinteria();
+	}
+	
+	public void agregarHechizo(int slot) {
+		this.m_spells.agregarHechizo(slot);
+	}
+	
 }

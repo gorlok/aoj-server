@@ -23,11 +23,19 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.inventory;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Map;
+import org.ArgentumOnline.server.MapPos;
+import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Skill;
+import org.ArgentumOnline.server.WorldPos;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
@@ -36,7 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class UserInventory extends Inventory implements Constants {
 	
@@ -68,6 +76,55 @@ public class UserInventory extends Inventory implements Constants {
         this.server = server;
         this.dueño = dueño;
     }
+    
+    public void setHerramientaSlot(int herramientaSlot) {
+		this.herramientaSlot = herramientaSlot;
+		if (this.herramientaSlot > 0) {
+			this.herramientaEquipada = true;
+		}
+	}
+    
+    public void setMunicionSlot(int municionSlot) {
+		this.municionSlot = municionSlot;
+		if (this.municionSlot > 0) {
+			this.municionEquipada = true;
+		}
+	}
+    
+    public void setBarcoSlot(int barcoSlot) {
+		this.barcoSlot = barcoSlot;
+		if (this.barcoSlot > 0) {
+			this.barcoEquipado = true;
+		}
+	}
+    
+    public void setCascoSlot(int cascoSlot) {
+		this.cascoSlot = cascoSlot;
+		if (this.cascoSlot > 0) {
+			this.cascoEquipado = true;
+		}
+	}
+    
+    public void setEscudoSlot(int escudoSlot) {
+		this.escudoSlot = escudoSlot;
+		if (this.escudoSlot > 0) {
+			this.escudoEquipado = true;
+		}
+	}
+    
+    public void setArmaSlot(int armaSlot) {
+		this.armaSlot = armaSlot;
+		if (this.armaSlot > 0) {
+			this.armaEquipada = true;
+		}
+	}
+    
+    public void setArmaduraSlot(int armaduraSlot) {
+		this.armaduraSlot = armaduraSlot;
+		if (this.armaduraSlot > 0) {
+			this.armaduraEquipada = true;
+		}
+	}
     
     public boolean tieneArmaEquipada() {
         return this.armaEquipada;
@@ -587,7 +644,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getArmasHerrero()[i]);
-            if (info.SkHerreria <= this.dueño.m_estads.userSkills[Skill.SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
+            if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
                 if (info.ObjType == OBJTYPE_WEAPON) {
                 	params.add(info.Nombre + " (" + info.MinHIT + "/" + info.MaxHIT + ")");
                 	params.add(this.server.getArmasHerrero()[i]);
@@ -604,7 +661,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getObjCarpintero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getObjCarpintero()[i]);
-            if (info.SkCarpinteria <= this.dueño.m_estads.userSkills[Skill.SKILL_Carpinteria] / this.dueño.m_clase.modCarpinteria()) {
+            if (info.SkCarpinteria <= this.dueño.skillCarpinteriaEfectivo()) {
             	params.add(info.Nombre + " (" + info.Madera + ")");
             	params.add(this.server.getObjCarpintero()[i]);
             }
@@ -616,7 +673,7 @@ public class UserInventory extends Inventory implements Constants {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmadurasHerrero().length; i++) {
             ObjectInfo info = this.server.getInfoObjeto(this.server.getArmadurasHerrero()[i]);
-            if (info.SkHerreria <= this.dueño.m_estads.userSkills[Skill.SKILL_Herreria] / this.dueño.m_clase.modHerreria()) {
+            if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
             	params.add(info.Nombre + " (" + info.MinDef + "/" + info.MaxDef + ")");
             	params.add(this.server.getArmadurasHerrero()[i]);
             }
@@ -625,12 +682,12 @@ public class UserInventory extends Inventory implements Constants {
     }
 
     public void tirarTodosLosItemsNoNewbies() {
-        Map mapa = this.server.getMapa(this.dueño.m_pos.map);
+        Map mapa = this.server.getMapa(this.dueño.getPos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo obj = this.server.getInfoObjeto(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
-                    mapa.tirarItemAlPiso(this.dueño.m_pos.x, this.dueño.m_pos.y, element);
+                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, element);
                 }
             }
         }
@@ -676,7 +733,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
                     return;
                 }
-                this.dueño.getEstads().oro += obj.cant;
+                this.dueño.getEstads().addGold(obj.cant);
                 this.dueño.refreshStatus(1);
                 quitarUserInvItem(slot, obj.cant);
                 break;
@@ -729,7 +786,7 @@ public class UserInventory extends Inventory implements Constants {
                         break;
                     case 4: // Pocion azul, restaura MANA
                         // Usa el item
-                        this.dueño.getEstads().aumentarMana(Util.porcentaje(this.dueño.getEstads().MaxMAN, 5));
+                        this.dueño.getEstads().aumentarMana(Util.porcentaje(this.dueño.getEstads().maxMana, 5));
                         this.dueño.refreshStatus(3);
                         break;
                     case 5: // Pocion violeta
@@ -807,7 +864,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(info.IndexAbierta, 1) == 0) {
-                    mapa.tirarItemAlPiso(this.dueño.m_pos.x, this.dueño.m_pos.y, new InventoryObject(info.IndexAbierta, 1));
+                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, new InventoryObject(info.IndexAbierta, 1));
                 }
                 break;
             case OBJTYPE_BOTELLALLENA:
@@ -820,7 +877,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarEstadsHambreSed();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(info.IndexCerrada, 1) == 0) {
-                    mapa.tirarItemAlPiso(this.dueño.m_pos.x, this.dueño.m_pos.y, new InventoryObject(info.IndexCerrada, 1));
+                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, new InventoryObject(info.IndexCerrada, 1));
                 }
                 break;
             case OBJTYPE_HERRAMIENTAS:
@@ -828,7 +885,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
                     return;
                 }
-                if (this.dueño.getEstads().MinSta <= 0) {
+                if (this.dueño.getEstads().stamina <= 0) {
                     this.dueño.enviarMensaje("Estas muy cansado", FontType.INFO);
                     return;
                 }
@@ -865,7 +922,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 if (!this.dueño.getFlags().Hambre && !this.dueño.getFlags().Sed) {
-                    this.dueño.m_spells.agregarHechizo(slot);
+                    this.dueño.agregarHechizo(slot);
                     this.dueño.enviarInventario();
                 } else {
                     this.dueño.enviarMensaje("Estas demasiado hambriento y sediento.", FontType.INFO);

@@ -1,9 +1,11 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.gm;
 
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -18,7 +20,7 @@ public class Motd {
     public Motd() {
 	}
 
-    void loadMOTD() {
+    public void loadMOTD() {
         try {
             String msg;
             this.m_motd.clear();

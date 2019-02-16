@@ -30,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.WorldPos.Direction;
+import org.ArgentumOnline.server.inventory.Inventory;
+import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -141,7 +143,7 @@ public class Npc extends BaseCharacter implements Constants {
     
     int m_poderAtaque  = 0;
     int m_poderEvasion = 0;
-    int m_inflacion    = 0;
+    int m_inflacion    = 0; // TODO REVISAR
     int m_giveEXP      = 0;
     int m_giveGLD      = 0;
     
@@ -2020,24 +2022,25 @@ public class Npc extends BaseCharacter implements Constants {
 		}
         double infla = (this.m_inflacion * info.Valor) / 100;
         double val = (info.Valor + infla) / dto;
-        if (cliente.getEstads().oro >= (val * cant)) {
-            if (this.m_inv.getObjeto(slot).cant > 0) {
-                if (cant > this.m_inv.getObjeto(slot).cant) {
-                    cant = this.m_inv.getObjeto(slot).cant;
-                }
-                // Agregamos el obj que compro al inventario
-                cliente.userCompraObj(this, slot, cant);
-                // Actualizamos el inventario del usuario
-                cliente.enviarInventario();
-                // Actualizamos el oro
-                cliente.refreshStatus(1);
-                // Actualizamos la ventana de comercio
-                enviarNpcInv(cliente);
-                cliente.updateVentanaComercio(slot, (short) 0);
-            }
-        } else {
-            cliente.enviarMensaje("No tienes suficiente dinero.", FontType.INFO);
+        
+        if (cliente.getEstads().getGold() < (val * cant)) {
+            cliente.enviarMensaje("No tienes suficiente oro.", FontType.INFO);
             return;
+        }
+        
+        if (this.m_inv.getObjeto(slot).cant > 0) {
+            if (cant > this.m_inv.getObjeto(slot).cant) {
+                cant = this.m_inv.getObjeto(slot).cant;
+            }
+            // Agregamos el obj que compro al inventario
+            cliente.userCompraObj(this, slot, cant);
+            // Actualizamos el inventario del usuario
+            cliente.enviarInventario();
+            // Actualizamos el oro
+            cliente.refreshStatus(1);
+            // Actualizamos la ventana de comercio
+            enviarNpcInv(cliente);
+            cliente.updateVentanaComercio(slot, (short) 0);
         }
     }
 
@@ -2102,7 +2105,7 @@ public class Npc extends BaseCharacter implements Constants {
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);
-                cliente.getEstads().agregarOro((int) monto);
+                cliente.getEstads().addGold((int) monto);
                 // tal vez suba el skill comerciar ;-)
                 cliente.subirSkill(Skill.SKILL_Comerciar);
             } else {
@@ -2113,7 +2116,7 @@ public class Npc extends BaseCharacter implements Constants {
             // Le sumamos al user el valor en oro del obj vendido
             //double monto = ((info.Valor / 3 + infla) * cant);
             double monto = ((info.Valor / 3) * cant);
-            cliente.getEstads().agregarOro((int) monto);
+            cliente.getEstads().addGold((int) monto);
         }
     }
 

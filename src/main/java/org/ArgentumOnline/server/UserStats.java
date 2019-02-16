@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Estadísticas de usuarios: Stamina, Mana, Hambre y Sed, Oro, etc.
@@ -37,25 +39,26 @@ import org.ArgentumOnline.server.util.Util;
  * @author gorlok
  */
 public class UserStats extends CharStats {
+	private static Logger log = LogManager.getLogger();
 
 	public UserStats() {
 		super();
 	}
 
-	int oro = 0;
-	int banco = 0;
+	private int gold = 0;
+	private int bankGold = 0;
 
-	int MaxSta = 0; // Stamina
-	int MinSta = 0; // Stamina
+	public int stamina = 0; // aguante actual
+	int maxStamina = 0; // máximo de aguante
 
-	int MaxMAN = 0; // Mana
-	int MinMAN = 0; // Mana
+	int mana = 0; // maná actual
+	public int maxMana = 0; // máximo de maná
 
-	int MaxHam = 0; // Hambre
-	int MinHam = 0; // Hambre
+	int eaten = 0; // comido, cuando llega a cero, muere de hambre
+	int maxEaten = 0; // máximo de comida, lleno y sin hambre.
 
-	int MaxAGU = 0; // Sed
-	int MinAGU = 0; // Sed
+	int drinked = 0; // bebida (cuando llega a cero, muere)
+	int maxDrinked = 0; // máximo de bebida, totalmente hidratado y sin sed
 
 	int Exp = 0; // Experiencia
 	int ELV = 0; // Nivel
@@ -137,18 +140,50 @@ public class UserStats extends CharStats {
 			}
 		}
 	}
-
-	public void agregarOro(int cant) {
-		this.oro += cant;
-		if (this.oro > MAXORO) {
-			this.oro = MAXORO;
+	
+	public int getBankGold() {
+		return this.bankGold;
+	}
+	
+	public void setBankGold(int bankGold) {
+		this.bankGold = bankGold;
+	}
+	
+	/**
+	 * Incrementa o decrementa la cantidad de oro guardado en el banco.
+	 * La cantidad a sumar puede ser positiva o negativa.
+	 * Si el banco queda en negativo, queda en cero.
+	 * @param amount
+	 */
+	public void addBankGold(int amount) {
+		this.bankGold += amount;
+		if (this.bankGold < 0) {
+			this.bankGold = 0;
 		}
 	}
-
-	public void quitarOro(int cant) {
-		this.oro -= cant;
-		if (this.oro < 0) {
-			this.oro = 0;
+	
+	public int getGold() {
+		return this.gold;
+	}
+	
+	public void setGold(int gold) {
+		this.gold = gold;
+	}
+	
+	/**
+	 * Incrementa o decrementa la cantidad de oro. La cantidad a sumar puede ser positiva o negativa.
+	 * Si se supera el máximo posible de oro, se descartar el resto. Si se vuelve negativo, queda en cero.
+	 * @param cantidad de oro a sumar o restar 
+	 */
+	public void addGold(int amount) {
+		this.gold += amount;
+		if (this.gold > MAX_GOLD) {
+			log.warn("Se superó el máximo de oro " + this.gold);
+			this.gold = MAX_GOLD;
+		}
+		if (this.gold < 0) {
+			log.warn("Se superó el mínimo de oro " + this.gold);
+			this.gold = 0;
 		}
 	}
 
@@ -161,17 +196,17 @@ public class UserStats extends CharStats {
 
 	// ¿?¿?¿?¿?¿?¿?¿ Stamina ¿?¿?¿?¿?¿?¿?¿
 	public void addMaxSTA(int cant) {
-		this.MaxSta += cant;
-		if (this.MaxSta > STAT_MAXSTA) {
-			this.MaxSta = STAT_MAXSTA;
+		this.maxStamina += cant;
+		if (this.maxStamina > STAT_MAXSTA) {
+			this.maxStamina = STAT_MAXSTA;
 		}
 	}
 
 	// Mana
 	public void addMaxMANA(int cant) {
-		this.MaxMAN += cant;
-		if (this.MaxMAN > STAT_MAXMAN) {
-			this.MaxMAN = STAT_MAXMAN;
+		this.maxMana += cant;
+		if (this.maxMana > STAT_MAXMAN) {
+			this.maxMana = STAT_MAXMAN;
 		}
 	}
 
@@ -180,58 +215,58 @@ public class UserStats extends CharStats {
 	}
 
 	public void aumentarStamina(int cant) {
-		this.MinSta += cant;
-		if (this.MinSta > this.MaxSta) {
-			this.MinSta = this.MaxSta;
+		this.stamina += cant;
+		if (this.stamina > this.maxStamina) {
+			this.stamina = this.maxStamina;
 		}
 	}
 
 	public void quitarStamina(int cant) {
-		this.MinSta -= cant;
-		if (this.MinSta < 0) {
-			this.MinSta = 0;
+		this.stamina -= cant;
+		if (this.stamina < 0) {
+			this.stamina = 0;
 		}
 	}
 
 	public void quitarMana(int cant) {
-		this.MinMAN -= cant;
-		if (this.MinMAN < 0) {
-			this.MinMAN = 0;
+		this.mana -= cant;
+		if (this.mana < 0) {
+			this.mana = 0;
 		}
 	}
 
 	public void aumentarMana(int cant) {
-		this.MinMAN += cant;
-		if (this.MinMAN > this.MaxMAN) {
-			this.MinMAN = this.MaxMAN;
+		this.mana += cant;
+		if (this.mana > this.maxMana) {
+			this.mana = this.maxMana;
 		}
 	}
 
 	public void aumentarHambre(int cant) {
-		this.MinHam += cant;
-		if (this.MinHam > this.MaxHam) {
-			this.MinHam = this.MaxHam;
+		this.eaten += cant;
+		if (this.eaten > this.maxEaten) {
+			this.eaten = this.maxEaten;
 		}
 	}
 
 	public void quitarHambre(int cant) {
-		this.MinHam -= cant;
-		if (this.MinHam < 0) {
-			this.MinHam = 0;
+		this.eaten -= cant;
+		if (this.eaten < 0) {
+			this.eaten = 0;
 		}
 	}
 
 	public void aumentarSed(int cant) {
-		this.MinAGU += cant;
-		if (this.MinAGU > this.MaxAGU) {
-			this.MinAGU = this.MaxAGU;
+		this.drinked += cant;
+		if (this.drinked > this.maxDrinked) {
+			this.drinked = this.maxDrinked;
 		}
 	}
 
 	public void quitarSed(int cant) {
-		this.MinAGU -= cant;
-		if (this.MinAGU < 0) {
-			this.MinAGU = 0;
+		this.drinked -= cant;
+		if (this.drinked < 0) {
+			this.drinked = 0;
 		}
 	}
 
@@ -268,22 +303,22 @@ public class UserStats extends CharStats {
 		if (agil < 2) {
 			agil = 2;
 		}
-		this.MaxSta = 20 * agil;
-		this.MinSta = this.MaxSta;
+		this.maxStamina = 20 * agil;
+		this.stamina = this.maxStamina;
 		// Agua/Sed: si llega a cero produce la muerte.
-		this.MaxAGU = 100;
-		this.MinAGU = this.MaxAGU;
+		this.maxDrinked = 100;
+		this.drinked = this.maxDrinked;
 		// Hambre: si llega a cero produce la muerte.
-		this.MaxHam = 100;
-		this.MinHam = this.MaxHam;
+		this.maxEaten = 100;
+		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.MaxMAN = clase.getManaInicial(this.userAtributos[ATRIB_INTELIGENCIA]);
-		this.MinMAN = this.MaxMAN;
+		this.maxMana = clase.getManaInicial(this.userAtributos[ATRIB_INTELIGENCIA]);
+		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;
 		this.MinHIT = 1;
 		// Varios
-		this.oro = 0; // Oro en la billetera.
+		this.gold = 0; // Oro en la billetera.
 		this.Exp = 0; // Puntos de experiencia ganados.
 		this.ELU = 300; // Puntos necesarios para subir de nivel.
 		this.ELV = 1; // Nivel inicial.

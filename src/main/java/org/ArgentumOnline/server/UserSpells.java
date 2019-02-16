@@ -509,8 +509,8 @@ public class UserSpells implements Constants {
 						+ " puntos de hambre.", FontType.FIGHT);
 			}
 			targetUser.enviarEstadsHambreSed();
-			if (targetUser.m_estads.MinHam < 1) {
-				targetUser.m_estads.MinHam = 0;
+			if (targetUser.m_estads.eaten < 1) {
+				targetUser.m_estads.eaten = 0;
 				targetUser.m_flags.Hambre = true;
 			}
 			return true;
@@ -552,8 +552,8 @@ public class UserSpells implements Constants {
 					"Te has quitado " + daño + " puntos de sed.",
 					FontType.FIGHT);
 			}
-			if (targetUser.m_estads.MinAGU < 1) {
-				targetUser.m_estads.MinAGU = 0;
+			if (targetUser.m_estads.drinked < 1) {
+				targetUser.m_estads.drinked = 0;
 				targetUser.m_flags.Sed = true;
 			}
 			return true;
@@ -739,7 +739,7 @@ public class UserSpells implements Constants {
 			client.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
 			return false;
 		}
-		if (client.getEstads().MinMAN < hechizo.ManaRequerido) {
+		if (client.getEstads().mana < hechizo.ManaRequerido) {
 			client.enviarMensaje("No tienes suficiente mana.", FontType.INFO);
 			return false;
 		}
@@ -749,8 +749,8 @@ public class UserSpells implements Constants {
 					FontType.INFO);
 			return false;
 		}
-		if (client.getEstads().MinSta == 0
-				|| client.getEstads().MinSta < hechizo.StaRequerida) {
+		if (client.getEstads().stamina == 0
+				|| client.getEstads().stamina < hechizo.StaRequerida) {
 			client.enviarMensaje("Estas muy cansado para lanzar este hechizo.",
 				FontType.INFO);
 			return false;

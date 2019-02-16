@@ -27,7 +27,7 @@ package org.ArgentumOnline.server;
 
 /**
  * Estadisticas básicas, de salud, golpe y usuarios matados.
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class CharStats implements Constants {
     

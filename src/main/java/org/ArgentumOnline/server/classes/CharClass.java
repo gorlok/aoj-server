@@ -36,7 +36,7 @@ import org.ArgentumOnline.server.util.Util;
 /**
  * Abstract class base of all character clases. 
  *
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public abstract class CharClass implements Constants {
     
@@ -90,7 +90,7 @@ public abstract class CharClass implements Constants {
     }
     
     public double modNavegacion() {
-        return 2.0; // Era 2.3
+        return 2.0;
     }
     
     public double modFundicion() {

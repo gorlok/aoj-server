@@ -261,7 +261,7 @@ public interface Constants {
     final static int MAX_BANCOINVENTORY_SLOTS = 40;
     
     final static int MAXREP = 6000000;
-    final static int MAXORO = 90000000;
+    final static int MAX_GOLD = 90000000;
     final static int MAXEXP = 99999999;
     
     final static int MAXATRIBUTOS = 35;

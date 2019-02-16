@@ -1,7 +1,8 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.forum;
 
 import java.util.HashMap;
 
+import org.ArgentumOnline.server.Client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

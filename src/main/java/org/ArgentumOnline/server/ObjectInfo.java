@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.ArgentumOnline.server.classes.CharClass;
+import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

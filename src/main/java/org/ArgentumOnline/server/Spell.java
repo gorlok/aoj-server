@@ -28,7 +28,7 @@ package org.ArgentumOnline.server;
 import org.ArgentumOnline.server.util.*;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class Spell implements Constants {
     

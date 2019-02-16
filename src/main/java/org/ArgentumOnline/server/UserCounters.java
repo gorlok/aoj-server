@@ -34,8 +34,8 @@ public class UserCounters {
     int HPCounter = 0;
     int STACounter = 0;
     int Frio = 0;
-    int COMCounter = 0;
-    int AGUACounter = 0;
+    int foodCounter = 0; // contador del intervalo de comida
+    int drinkCounter = 0; // contador del inveralo de bebida
     int Veneno = 0;
     int Paralisis = 0;
     int Ceguera = 0;

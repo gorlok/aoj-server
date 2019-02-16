@@ -25,6 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
+import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.util.*;
 
 /**

@@ -26,16 +26,14 @@
 package org.ArgentumOnline.server;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class MapObject {
-	short obj_ind;
-
-	int obj_cant;
-
-	short x;
-
-	short y;
+	
+	public short obj_ind;
+	public int obj_cant;
+	public short x;
+	public short y;
 
 	/** Creates a new instance of Objeto */
 	public MapObject(short objid, int cant, short x, short y) {

@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.ArgentumOnline.server.areas.AreasAO;
+import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;

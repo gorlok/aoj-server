@@ -37,7 +37,7 @@ public class MapPos implements Constants {
 		return new MapPos((short)x, (short)y);
 	}
 
-	protected MapPos(short x, short y) {
+	public MapPos(short x, short y) {
 		this.x = x;
 		this.y = y;
 	}

@@ -23,10 +23,14 @@
  along with Foobar; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.inventory;
+
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.ObjectInfo;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class InventoryObject {
 

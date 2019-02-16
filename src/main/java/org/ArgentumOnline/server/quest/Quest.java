@@ -23,10 +23,17 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.quest;
 
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Map;
+import org.ArgentumOnline.server.Npc;
+import org.ArgentumOnline.server.WorldPos;
+import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
@@ -35,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  *
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
 public class Quest implements Constants {
 	private static Logger log = LogManager.getLogger();
@@ -206,7 +213,7 @@ public class Quest implements Constants {
                             cliente.getQuest().m_enQuest = false;
                         }
                         if (quest.DaOro) {
-                            cliente.getEstads().agregarOro(quest.Oro);
+                            cliente.getEstads().addGold(quest.Oro);
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                             cliente.getQuest().m_realizoQuest = false;
                             cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;
@@ -238,7 +245,7 @@ public class Quest implements Constants {
                                 cliente.getQuest().m_enQuest = false;
                             }
                             if (quest.DaOro) {
-                                cliente.getEstads().agregarOro(quest.Oro);
+                                cliente.getEstads().addGold(quest.Oro);
                                 cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                                 cliente.getQuest().m_realizoQuest = false;
                                 cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;
@@ -268,7 +275,7 @@ public class Quest implements Constants {
                                     cliente.getQuest().m_enQuest = false;
                                 }
                                 if (quest.DaOro) {
-                                    cliente.getEstads().agregarOro(quest.Oro);
+                                    cliente.getEstads().addGold(quest.Oro);
                                     cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                                     cliente.getQuest().m_realizoQuest = false;
                                     cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;
@@ -298,7 +305,7 @@ public class Quest implements Constants {
                                     cliente.getQuest().m_enQuest = false;
                                 }
                                 if (quest.DaOro) {
-                                    cliente.getEstads().agregarOro(quest.Oro);
+                                    cliente.getEstads().addGold(quest.Oro);
                                     cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                                     cliente.getQuest().m_realizoQuest = false;
                                     cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;
@@ -330,7 +337,7 @@ public class Quest implements Constants {
                             cliente.getQuest().m_enQuest = false;
                         }
                         if (quest.DaOro) {
-                            cliente.getEstads().agregarOro(quest.Oro);
+                            cliente.getEstads().addGold(quest.Oro);
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                             cliente.getQuest().m_realizoQuest = false;
                             cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;
@@ -361,7 +368,7 @@ public class Quest implements Constants {
                             cliente.getQuest().m_enQuest = false;
                         }
                         if (quest.DaOro) {
-                            cliente.getEstads().agregarOro(quest.Oro);
+                            cliente.getEstads().addGold(quest.Oro);
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
                             cliente.getQuest().m_realizoQuest = false;
                             cliente.getQuest().m_recompensa = cliente.getQuest().m_nroQuest;

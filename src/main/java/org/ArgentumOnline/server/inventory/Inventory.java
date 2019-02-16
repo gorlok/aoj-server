@@ -23,11 +23,11 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.inventory;
 
 /**
  *
- * @author  pablo
+ * @author gorlok
  */
 public class Inventory {
     

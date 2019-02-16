@@ -1,4 +1,6 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.areas;
+
+import org.ArgentumOnline.server.Constants;
 
 public class Areas implements Constants {
 	
