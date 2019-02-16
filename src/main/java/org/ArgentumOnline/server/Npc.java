@@ -26,7 +26,6 @@
 package org.ArgentumOnline.server;
 
 import java.util.BitSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.aStar.Node;
@@ -169,10 +168,6 @@ public class Npc extends AbstractCharacter implements Constants {
     byte  m_nroSpells = 0;
     short m_spells[] = new short[MAX_NUM_SPELLS];  // le da vida ;)
     
-    // <<<<Entrenadores>>>>>
-    byte m_criaturas_entrenador_cant = 0;
-    TrainerMascot m_criaturas_entrenador[] = new TrainerMascot[MAX_CRIATURAS_ENTRENADOR];
-    
     // fixme - esto deberia ser el nombre del usuario, pero primero habria que
     // resolver "eficientemente" la recuperacion de un cliente por nombre.
     Client petUserOwner = null;
@@ -222,7 +217,6 @@ public class Npc extends AbstractCharacter implements Constants {
     	this.server = server;
         this.setId(server.getNextId());
         this.m_numero = npc_numero;
-        initCriaturasEntrenador();
         initExpresiones();
         initSpells();
         loadInfoNPC(this.m_numero, loadBackup);
@@ -595,7 +589,7 @@ public class Npc extends AbstractCharacter implements Constants {
         return this.m_flags.get(FLAG_COMERCIA);
     }
     
-    public boolean esBanquero() {
+    public boolean isBankCashier() {
     	return getNPCtype() == Npc.NPCTYPE_BANQUERO;
     }
     
@@ -627,10 +621,6 @@ public class Npc extends AbstractCharacter implements Constants {
         return this.m_target;
     }
     
-    public short getCantCriaturas() {
-        return this.m_criaturas_entrenador_cant;
-    }
-
     public void setTarget(int target) {
         this.m_target = target;
     }
@@ -649,13 +639,6 @@ public class Npc extends AbstractCharacter implements Constants {
     
     public void setPetNpcOwner(Npc petOwner) {
         this.petNpcOwner = petOwner.getId();
-    }
-    
-    public short getCriaturaIndex(short slot) {
-        if (slot > 0 && slot <= MAX_CRIATURAS_ENTRENADOR) {
-			return this.m_criaturas_entrenador[slot-1].npc_index;
-		} 
-		return 0;
     }
     
     public short domable() {
@@ -750,7 +733,6 @@ public class Npc extends AbstractCharacter implements Constants {
         this.m_tipoItems = 0;
         this.m_desc = "";
         initSpells();
-        initCriaturasEntrenador();
         initExpresiones();
         this.m_infoChar.reset();
     }
@@ -1058,16 +1040,6 @@ public class Npc extends AbstractCharacter implements Constants {
         }
     }
     
-	/** Envia la lista de criaturas del entrenador. */
-    public void enviarListaCriaturas(Client cliente) {
-    	List<Object> criaturas = new LinkedList<Object>();
-        criaturas.add(this.m_criaturas_entrenador_cant);
-        for (int i = 0; i < this.m_criaturas_entrenador_cant; i++) {
-            criaturas.add(this.m_criaturas_entrenador[i].npc_name);
-        }
-      //  cliente.enviar(MSG_LSTCRI, criaturas);
-    }
-    
     /** Seguir a un usuario / Follow user */
     public void seguirUsuario(String nombreUsuario) {
         // doFollow
@@ -1160,7 +1132,7 @@ public class Npc extends AbstractCharacter implements Constants {
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.estaVivo() && !cliente.esGM()) {
+                    if (cliente.isAlive() && !cliente.esGM()) {
                         // ¿ES CRIMINAL?
                     	if (getNPCtype() != NPCTYPE_GUARDIAS_CAOS) {
                     		if (cliente.esCriminal()) {
@@ -1215,7 +1187,7 @@ public class Npc extends AbstractCharacter implements Constants {
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.estaVivo() && !cliente.esGM()) {
+                    if (cliente.isAlive() && !cliente.esGM()) {
                         if (lanzaSpells()) {
                             npcLanzaUnSpell(cliente);
                         }
@@ -1242,7 +1214,7 @@ public class Npc extends AbstractCharacter implements Constants {
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Client cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.estaVivo() && !cliente.esGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
+                    if (cliente.isAlive() && !cliente.esGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
                         if (lanzaSpells()) {
                             npcLanzaUnSpell(cliente);
                         }
@@ -1270,7 +1242,7 @@ public class Npc extends AbstractCharacter implements Constants {
                         
                         if (cliente != null) {
                         
-                            if (cliente.estaVivo() && !cliente.estaInvisible() && !cliente.esGM()) {
+                            if (cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
                                 if (lanzaSpells()) {
                                    npcLanzaUnSpell(cliente);
                                 }
@@ -1307,7 +1279,7 @@ public class Npc extends AbstractCharacter implements Constants {
 		                            return;
 		                        }
                             }
-                            if (cliente.estaVivo() && !cliente.estaInvisible()) {
+                            if (cliente.isAlive() && !cliente.estaInvisible()) {
                                 if (lanzaSpells()) {
                                     npcLanzaUnSpell(cliente);
                                 }
@@ -1349,7 +1321,7 @@ public class Npc extends AbstractCharacter implements Constants {
                         
                         if (cliente == null) break;
                         
-                        if (cliente.esCriminal() && cliente.estaVivo() && !cliente.estaInvisible() && !cliente.esGM()) {
+                        if (cliente.esCriminal() && cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
@@ -1375,7 +1347,7 @@ public class Npc extends AbstractCharacter implements Constants {
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
-                        if (!cliente.esCriminal() && cliente.estaVivo() && !cliente.estaInvisible() && !cliente.esGM()) {
+                        if (!cliente.esCriminal() && cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
@@ -1408,7 +1380,7 @@ public class Npc extends AbstractCharacter implements Constants {
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
-                        if (cliente.estaVivo() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
+                        if (cliente.isAlive() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
                         		getPetUserOwner().getPos().distance(this.m_pos) > 3) {
                             Direction dir = this.m_pos.findDirection(cliente.getPos());
                             mover(dir);
@@ -1770,7 +1742,7 @@ public class Npc extends AbstractCharacter implements Constants {
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
-                        if (cliente.estaVivo() && !cliente.estaInvisible()) {
+                        if (cliente.isAlive() && !cliente.estaInvisible()) {
                         	this.m_pfinfo = new PFINFO(MapPos.mxy(this.m_pos.map, x, y), cliente);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
@@ -1780,13 +1752,6 @@ public class Npc extends AbstractCharacter implements Constants {
                 }
             }
         }
-    }
-    
-    public void initCriaturasEntrenador() {
-        this.m_criaturas_entrenador_cant = 0;
-        for (int i = 0; i < MAX_CRIATURAS_ENTRENADOR; i++) {
-			this.m_criaturas_entrenador[i] = new TrainerMascot();
-		}
     }
     
     public void initExpresiones() {
@@ -1842,7 +1807,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }    
     
     /** Cargar un NPC desde un ini. */
-    private void leerNpc(IniFile ini, int npc_ind) {
+    protected void leerNpc(IniFile ini, int npc_ind) {
         String section = "NPC" + npc_ind;
         
         this.m_name = ini.getString(section, "Name");
@@ -1917,15 +1882,6 @@ public class Npc extends AbstractCharacter implements Constants {
             }
         }
         
-        //Entrenador
-        this.m_criaturas_entrenador_cant = (byte) ini.getShort(section, "NroCriaturas");
-        if (this.m_criaturas_entrenador_cant > 0) {
-            for (int c = 0; c < this.m_criaturas_entrenador_cant; c++) {
-                this.m_criaturas_entrenador[c].npc_index = ini.getShort(section, "CI" + (c+1));
-                this.m_criaturas_entrenador[c].npc_name = ini.getString(section, "CN" + (c+1));
-            }
-        }
-        
         // <<<<<<<<<<<<<< Expresiones >>>>>>>>>>>>>>>>
         short m_nroExpresiones = ini.getShort(section, "NROEXP");
         if (m_nroExpresiones > 0) {
@@ -1936,6 +1892,7 @@ public class Npc extends AbstractCharacter implements Constants {
         }
         // Tipo de items con los que comercia
         this.m_tipoItems = ini.getShort(section, "TipoItems");
+        
     }
     
     public short getHeading() {
@@ -2257,4 +2214,9 @@ public class Npc extends AbstractCharacter implements Constants {
         	return estadoVidaExacta();
         }    	
     }
+    
+    public boolean isTrainer() {
+    	return getNPCtype() == Npc.NPCTYPE_ENTRENADOR;    	
+    }
+    
 }

@@ -194,7 +194,7 @@ public class UserTrade {
 			return;
 		}
 		// esta vivo ?
-		if (!targetClient.estaVivo()) {
+		if (!targetClient.isAlive()) {
 			finComerciarUsu(client);
 			return;
 		}

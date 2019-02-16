@@ -31,6 +31,15 @@ package org.ArgentumOnline.server;
 public interface Constants {
 	
 	public final boolean DEBUG = false;
+	
+	final static int DISTANCE_CASHIER = 4;
+	final static int DISTANCE_QUEST = 4;
+	final static int DISTANCE_PET = 10;
+	final static int DISTANCE_MERCHANT = 3;
+	final static int DISTANCE_TRAINER = 10;
+	final static int DISTANCE_INFORMATION = 4;
+	final static int DISTANCE_PRIEST = 10;
+	final static int DISTANCE_FACTION = 10;
     
     /*
     Public Type tAPuestas
@@ -409,3 +418,4 @@ public interface Constants {
     final static int SUBTYPE_MATADRAGONES = 1;
 
 }
+

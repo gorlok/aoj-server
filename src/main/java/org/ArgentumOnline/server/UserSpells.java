@@ -308,7 +308,7 @@ public class UserSpells implements Constants {
 			}
 		}
 		if (hechizo.Revivir == 1) {
-			if (!targetUser.estaVivo()) {
+			if (!targetUser.isAlive()) {
 				if (!targetUser.esCriminal()) {
 					if (client != targetUser) {
 						client.m_reputacion.incNoble(500);
@@ -730,9 +730,7 @@ public class UserSpells implements Constants {
 	}
 
 	public boolean puedeLanzar(Spell hechizo) {
-		if (!client.estaVivo()) {
-			client.enviarMensaje("No puedes lanzar hechizos porque estas muerto.",
-				FontType.INFO);
+		if (!client.checkAlive("No puedes lanzar hechizos porque estas muerto.")) {
 			return false;
 		}
 		MapPos targetPos = MapPos.mxy(client.getFlags().TargetMap,

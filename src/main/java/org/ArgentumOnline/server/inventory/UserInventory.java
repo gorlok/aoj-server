@@ -715,8 +715,7 @@ public class UserInventory extends Inventory implements Constants {
         Map mapa = this.server.getMapa(this.dueño.getPos().map);
         switch (info.ObjType) {
             case OBJTYPE_USEONCE:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 // Usa el item
@@ -729,8 +728,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, 1);
                 break;
             case OBJTYPE_GUITA:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 this.dueño.getEstads().addGold(obj.cant);
@@ -738,8 +736,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, obj.cant);
                 break;
             case OBJTYPE_WEAPON:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 if (info.esProyectil()) {
@@ -758,8 +755,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_POCIONES:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 if (!this.dueño.intervaloPermiteAtacar()) {
@@ -802,8 +798,7 @@ public class UserInventory extends Inventory implements Constants {
                 //this.dueño.enviarEstadsUsuario();
                 break;
             case OBJTYPE_BEBIDA:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 this.dueño.getEstads().aumentarSed(info.MinSed);
@@ -814,8 +809,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarSonido(SND_BEBER);
                 break;
             case OBJTYPE_LLAVES:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 if (this.dueño.getFlags().TargetObj == 0) {
@@ -853,8 +847,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_BOTELLAVACIA:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 Pos lugar = new Pos(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY);
@@ -868,7 +861,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_BOTELLALLENA:
-                if (!this.dueño.estaVivo()) {
+                if (!this.dueño.isAlive()) {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
                     return;
                 }
@@ -881,8 +874,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_HERRAMIENTAS:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 if (this.dueño.getEstads().stamina <= 0) {
@@ -917,8 +909,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_PERGAMINOS:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 if (!this.dueño.getFlags().Hambre && !this.dueño.getFlags().Sed) {
@@ -929,15 +920,13 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             case OBJTYPE_MINERALES:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                //this.dueño.enviar(MSG_T01, SKILL_FundirMetal);
                break;
             case OBJTYPE_INSTRUMENTOS:
-                if (!this.dueño.estaVivo()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 this.dueño.enviarSonido(info.Snd1);

@@ -62,4 +62,89 @@ public class UserQuest {
         }
     }
 
+	public void doIniciarAventura(Client client) {
+		// Comando /AVENTURA
+		// Se asegura que el target es un npc
+		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		if (npc == null) {
+			return;
+		}
+		if (!client.checkAlive()) {
+			return;
+		}
+		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			return;
+		}
+		getQuest().hacerQuest(client, npc);
+	}
+
+	public void doRecompensaAventura(Client client) {
+		// Comando /REWARD
+		// Se asegura que el target es un npc
+		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		if (npc == null) {
+			return;
+		}
+		if (!client.checkAlive()) {
+			return;
+		}
+		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			return;
+		}
+		getQuest().recibirRecompensaQuest(client);
+	}
+
+	public void doInfoAventura(Client client) {
+		// Comando /INFOQ
+		// Se asegura que el target es un npc
+		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		if (npc == null) {
+			return;
+		}
+		if (!client.checkAlive()) {
+			return;
+		}
+		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			return;
+		}
+		getQuest().sendInfoQuest(client);
+	}
+
+	public void doRendirseAventura(Client client) {
+		// Comando /MERINDO
+		// Se asegura que el target es un npc
+		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		if (npc == null) {
+			return;
+		}
+		if (!client.checkAlive()) {
+			return;
+		}
+		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			return;
+		}
+		getQuest().userSeRinde(client);
+	}
+
+	public void doAdivinarAventura(Client client) {
+		// Comando /ADIVINA
+		// Se asegura que el target es un npc
+		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		if (npc == null) {
+			return;
+		}
+		if (!client.checkAlive()) {
+			return;
+		}
+		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			return;
+		}
+		getQuest().checkNpcAmigo(client);
+	}
+
 }

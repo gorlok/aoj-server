@@ -152,7 +152,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
 
-	UserQuest m_quest;
+	public UserQuest m_quest;
 
 	UserInventory m_inv;
 
@@ -364,7 +364,7 @@ public class Client extends AbstractCharacter implements Constants {
 	 * 
 	 * @return true if character is alive (not a ghost).
 	 */
-	public boolean estaVivo() {
+	public boolean isAlive() {
 		return !m_flags.Muerto;
 	}
 
@@ -552,7 +552,7 @@ public class Client extends AbstractCharacter implements Constants {
 	 * 
 	 * @return the user's status.
 	 */
-	public String getEstado() {
+	public String getStatusTag() {
 		return esCriminal() ? "<CRIMINAL>" : "<CIUDADANO>";
 	}
 
@@ -955,17 +955,11 @@ public class Client extends AbstractCharacter implements Constants {
 		// Comando /APOSTAR
 		// Comando /APOSTAR basado en la idea de DarkLight,
 		// pero con distinta probabilidad de exito.
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estás muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		Npc npc;
-		if (m_flags.TargetNpc == 0 || (npc = server.getNPC(m_flags.TargetNpc)) == null) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, has clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 10) {
-			hablar(COLOR_BLANCO, "Estás demasiado lejos. No te escucho.", npc.getId());
+		Npc npc = getNearNpcSelected(DISTANCE_PET);
+		if (npc == null) {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_TIMBERO) {
@@ -1151,18 +1145,16 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doEnlistar() {
 		// Comando /ENLISTAR
-		Npc npc;
-		if (getFlags().TargetNpc == 0 || (npc = server.getNPC(getFlags().TargetNpc)) == null) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y haz clic izquierdo sobre él.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Busca un sacerdote y no me hagas perder el tiempo.")) {
+			return;
+		}
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc == null) {
 			return;
 		}
 		if (!npc.esNoble()) {
 			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
 					npc.getId());
-			return;
-		}
-		if (!estaVivo()) {
-			hablar(COLOR_BLANCO, "¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!", npc.getId());
 			return;
 		}
 		if (getPos().distance(npc.getPos()) > 4) {
@@ -1178,9 +1170,8 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doRecompensa() {
 		// Comando /RECOMPENSA
-		Npc npc;
-		if (getFlags().TargetNpc == 0 || (npc = server.getNPC(getFlags().TargetNpc)) == null) {
-			enviarMensaje("Debes seleccionar un personaje. Haz clic izquierdo sobre él.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc == null) {
 			return;
 		}
 		if (!npc.esNoble()) {
@@ -1188,12 +1179,7 @@ public class Client extends AbstractCharacter implements Constants {
 					npc.getId());
 			return;
 		}
-		if (!estaVivo()) {
-			hablar(COLOR_BLANCO, "¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!", npc.getId());
-			return;
-		}
-		if (getPos().distance(npc.getPos()) > 4) {
-			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
+		if (!checkAlive("¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!")) {
 			return;
 		}
 		if (!npc.esFaccion()) {
@@ -1303,111 +1289,6 @@ public class Client extends AbstractCharacter implements Constants {
 		enviarSkills();
 		doEnviarFama();
 
-	}
-
-	public void doIniciarAventura() {
-		// Comando /AVENTURA
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estás demasiado lejos.", FontType.INFO);
-			return;
-		}
-		m_quest.getQuest().hacerQuest(this, npc);
-	}
-
-	public void doRecompensaAventura() {
-		// Comando /REWARD
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estás demasiado lejos.", FontType.INFO);
-			return;
-		}
-		m_quest.getQuest().recibirRecompensaQuest(this);
-	}
-
-	public void doInfoAventura() {
-		// Comando /INFOQ
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estás demasiado lejos.", FontType.INFO);
-			return;
-		}
-		m_quest.getQuest().sendInfoQuest(this);
-	}
-
-	public void doRendirseAventura() {
-		// Comando /MERINDO
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estás demasiado lejos.", FontType.INFO);
-			return;
-		}
-		m_quest.getQuest().userSeRinde(this);
-	}
-
-	public void doAdivinarAventura() {
-		// Comando /ADIVINA
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getNPCtype() != Npc.NPCTYPE_QUEST || !estaVivo()) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, y hacer clic izquierdo sobre él.",
-					FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estás demasiado lejos.", FontType.INFO);
-			return;
-		}
-		m_quest.getQuest().checkNpcAmigo(this);
 	}
 
 	public boolean isLogged() {
@@ -1749,7 +1630,7 @@ public class Client extends AbstractCharacter implements Constants {
 		} else {
 			usuario = this;
 		}
-		if (usuario.estaVivo()) {
+		if (usuario.isAlive()) {
 			enviarMensaje(usuario.m_nick + " no esta muerto!", FontType.INFO);
 		} else {
 			usuario.revivirUsuario();
@@ -2066,52 +1947,33 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doQuieto() {
 		// Comando /QUIETO
 		// Comando a mascotas
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
+		Npc npc = getNearNpcSelected(DISTANCE_PET);
+		if (npc != null) {
+			if (npc.getPetUserOwner() != this) {
+				return;
+			}
+			npc.m_movement = Npc.MOV_ESTATICO;
+			npc.expresar();
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (npc.getPetUserOwner() != this) {
-			return;
-		}
-		npc.m_movement = Npc.MOV_ESTATICO;
-		npc.expresar();
 	}
 
 	public void doAcompañar() {
 		// Comando /ACOMPAÑAR
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
+		Npc npc = getNearNpcSelected(DISTANCE_PET);
+		if (npc != null) {
+			// es mi mascota?
+			if (npc.getPetUserOwner() != this) {
+				return;
+			}
+			npc.followAmo();
+			npc.expresar();
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null) {
-			return;
-		}
-		if (npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (npc.getPetUserOwner() != this) {
-			return;
-		}
-		npc.followAmo();
-		npc.expresar();
 	}
 
 	public void doAyuda() {
@@ -2122,40 +1984,19 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 	}
 
-	public void doDepositarOro(int cant) {
+	public void doDepositarOroBanco(int cant) {
 		// Comando /DEPOSITAR
 		// DEPOSITAR ORO EN EL BANCO
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null) {
+			if (npc.isBankCashier()) {
+				((NpcCashier)npc).depositarOroBanco(this, cant);
+			}
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc == null || npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (!npc.esBanquero()) {
-			return;
-		}
-		if (npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		// ¿Se tiene dicha cantidad realmente?
-		if (cant > 0 && cant <= m_estads.getGold()) {
-			m_estads.addBankGold( cant );
-			m_estads.addGold( -cant );
-			hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
-		} else {
-			hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
-		}
-		refreshStatus(1);
 	}
 
 	public void doRetirar(int cant) {
@@ -2164,36 +2005,22 @@ public class Client extends AbstractCharacter implements Constants {
 		// a) Retirar oro del banco.
 		// b) Salir de la facción Armada/Caos
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		Npc npc;
-		if (m_flags.TargetNpc == 0 || (npc = server.getNPC(m_flags.TargetNpc)) == null) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		if (npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (npc.esBanquero()) {
-			if (!existePersonaje()) {
-				enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.WARNING);
-				doSALIR();
-				return;
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null) {
+			if (npc.isBankCashier()) {
+				((NpcCashier)npc).retirarOroBanco(this, cant);
+			} else if (npc.esNoble()) {
+				retirarUsuarioFaccion(npc);
 			}
-			if (cant > 0 && cant <= m_estads.getBankGold()) {
-				m_estads.addBankGold( -cant );
-				m_estads.addGold( cant );
-				hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
-			} else {
-				hablar(COLOR_BLANCO, "No tienes esa cantidad.", npc.getId());
-			}
-			refreshStatus(1);
-		} else if (npc.esNoble()) {
-			// Se quiere retirar de la armada
+		}
+	}
+
+	private void retirarUsuarioFaccion(Npc npc) {
+		// Se quiere retirar de la armada
+		if (checkNpcNear(npc, DISTANCE_FACTION)) {
 			if (m_faccion.ArmadaReal) {
 				if (!npc.esFaccion()) {
 					m_faccion.expulsarFaccionReal();
@@ -2218,24 +2045,51 @@ public class Client extends AbstractCharacter implements Constants {
 		// Comando /BOVEDA
 		// Abrir bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null) {
+			if (npc.isBankCashier()) {
+				iniciarDeposito();
+			} else {
+				enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+			}
+		}
+	}
+
+	
+	public Npc getNearNpcSelected(int distance) {
 		// Se asegura que el target es un npc
 		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc.getPos().distance(m_pos) > 3) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (npc.esBanquero()) {
-			iniciarDeposito();
+			enviarMensaje("Debes seleccionar un personaje cercano para poder interactuar.", FontType.INFO);
 		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+			Npc npc = server.getNPC(m_flags.TargetNpc);
+			if (checkNpcNear(npc, distance)) {
+				return npc;
+			}
+		}
+		return null;
+	}
+	
+	private boolean checkNpcNear(Npc npc, int distance) {
+		if (npc.getPos().distance(m_pos) > distance) {
+			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean checkAlive() {
+		return checkAlive("¡¡Estás muerto!!");
+	}
+	
+	public boolean checkAlive(String message) {
+		if (isAlive()) {
+			return true;
+		} else {
+			enviarMensaje(message, FontType.INFO);
+			return false;
 		}
 	}
 
@@ -2243,22 +2097,18 @@ public class Client extends AbstractCharacter implements Constants {
 		// Comando DEPO
 		// Depositar un item en la bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		// ¿El Npc puede comerciar?
-		if (npc.esBanquero()) {
-			// User deposita el item del slot rdata
-			userDepositaItem(slot, cant);
-		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null) {
+			// ¿El Npc puede comerciar?
+			if (npc.isBankCashier()) {
+				// User deposita el item del slot rdata
+				userDepositaItem(slot, cant);
+			} else {
+				enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+			}
 		}
 	}
 
@@ -2266,22 +2116,18 @@ public class Client extends AbstractCharacter implements Constants {
 		// Comando RETI
 		// Retirar un item de la bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		// ¿El Npc puede comerciar?
-		if (npc.esBanquero()) {
-			// User retira el item del slot rdata
-			userRetiraItem(slot, cant);
-		} else {
-			enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null) {
+			// ¿El Npc puede comerciar?
+			if (npc.isBankCashier()) {
+				// User retira el item del slot rdata
+				userRetiraItem(slot, cant);
+			} else {
+				enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.INFO);
+			}
 		}
 	}
 
@@ -2297,7 +2143,7 @@ public class Client extends AbstractCharacter implements Constants {
 			// Actualizamos el inventario del usuario
 			enviarInventario();
 			// Actualizamos el inventario del banco
-			updateBanUserInv();
+			updateBankUserInv();
 			// Actualizamos la ventana del banco
 			updateVentanaBanco(slot, 1);
 		}
@@ -2344,7 +2190,7 @@ public class Client extends AbstractCharacter implements Constants {
 			// Actualizamos el inventario del usuario
 			enviarInventario();
 			// Actualizamos el banco
-			updateBanUserInv();
+			updateBankUserInv();
 			// ventana update
 			updateVentanaBanco(slot, 0);
 		}
@@ -2397,7 +2243,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	private void iniciarDeposito() {
 		// Hacemos un Update del inventario del usuario
-		updateBanUserInv();
+		updateBankUserInv();
 		// Actualizamos el dinero
 		refreshStatus(1);
 
@@ -2406,7 +2252,7 @@ public class Client extends AbstractCharacter implements Constants {
 		m_flags.Comerciando = true;
 	}
 
-	private void updateBanUserInv(short slot) {
+	private void updateBankUserInv(short slot) {
 		// Actualiza un solo slot
 		// Actualiza el inventario
 		if (m_bancoInv.getObjeto(slot).objid > 0) {
@@ -2416,11 +2262,11 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 	}
 
-	private void updateBanUserInv() {
+	private void updateBankUserInv() {
 		// Actualiza todos los slots
 		for (short i = 1; i <= MAX_BANCOINVENTORY_SLOTS; i++) {
 			// Actualiza el inventario
-			updateBanUserInv(i);
+			updateBankUserInv(i);
 		}
 	}
 
@@ -2479,8 +2325,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doEntrenarMascota(String s) {
 		// Comando ENTR
 		// Entrenar con una mascota.
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
 		if (m_flags.TargetNpc == 0) {
@@ -2494,27 +2339,23 @@ public class Client extends AbstractCharacter implements Constants {
 		if (mapa == null) {
 			return;
 		}
-		if (npc.getNPCtype() != Npc.NPCTYPE_ENTRENADOR) {
+		if (!npc.isTrainer()) {
 			return;
 		}
-		short slot = Short.parseShort(s);
-		if (npc.getCantMascotas() < MAXMASCOTASENTRENADOR) {
-			if (slot > 0 && slot <= npc.getCantCriaturas()) {
-				Npc criatura = Npc.spawnNpc(npc.getCriaturaIndex(slot), npc.getPos(), true, false);
-				if (criatura != null) {
-					npc.agregarMascota(criatura);
-				}
-			}
+
+		NpcTrainer npcTrainer = (NpcTrainer) npc;
+		if (npcTrainer.isTrainerIsFull()) {
+			hablar(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());			
 		} else {
-			hablar(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());
+			short slot = Short.parseShort(s);			
+			npcTrainer.spawnTrainerPet(slot, npc);
 		}
 	}
 
 	public void doComprar(byte slot, short cant) {
 		// Comando COMP
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
 		// ¿El target es un Npc valido?
@@ -2550,8 +2391,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doVender(byte slot, short cant) {
 		// Comando VEND
 		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
 		// ¿El target es un Npc valido?
@@ -2658,42 +2498,30 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doComerciar() {
 		// Comando /COMERCIAR
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
 		if (esConsejero()) {
 			return;
 		}
-		// ¿El target es un Npc valido?
-		if (m_flags.TargetNpc > 0) {
-			Map mapa = server.getMapa(m_pos.map);
-			if (mapa == null) {
-				return;
-			}
-			Npc npc = server.getNPC(m_flags.TargetNpc);
-			if (npc == null) {
-				return;
-			}
-			// ¿El Npc puede comerciar?
-			if (!npc.comercia()) {
-				if (npc.getDesc().length() > 0) {
-					// npc.hablarAlArea(COLOR_BLANCO, "No tengo ningun interes
-					// en comerciar.");
-					hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
-				}
-				return;
-			}
-			if (npc.getPos().distance(m_pos) > 3) {
-				enviarMensaje("Estas demasiado lejos del vendedor.", FontType.INFO);
-				return;
-			}
-			// Iniciamos el comercio con el Npc
-			iniciarComercioNPC(npc);
-			// ///// FIXME - TODO
-		} else {
-			enviarMensaje("Primero haz clic izquierdo sobre el personaje.", FontType.INFO);
+		Map mapa = server.getMapa(m_pos.map);
+		if (mapa == null) {
+			return;
 		}
+		Npc npc = getNearNpcSelected(DISTANCE_MERCHANT);
+		if (npc == null) {
+			return;
+		}
+		// ¿El Npc puede comerciar?
+		if (!npc.comercia()) {
+			if (npc.getDesc().length() > 0) {
+				hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+			}
+			return;
+		}
+		// Iniciamos el comercio con el Npc
+		iniciarComercioNPC(npc);
+		// ///// FIXME - TODO
 	}
 
 	public void iniciarComercioNPC(Npc npc) {
@@ -2710,33 +2538,21 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doEntrenar() {
 		// Comando /ENTRENAR
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = getNearNpcSelected(DISTANCE_TRAINER);
 		if (npc == null) {
 			return;
+		}		
+		if (npc.isTrainer()) {
+			((NpcTrainer)npc).enviarListaCriaturas(this);
 		}
-		if (npc.getPos().distance(m_pos) > 10) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
-		if (npc.getNPCtype() != Npc.NPCTYPE_ENTRENADOR) {
-			return;
-		}
-		npc.enviarListaCriaturas(this);
 	}
 
 	public void doDescansar() {
 		// Comando /DESCANSAR
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
 			return;
 		}
 		Map mapa = server.getMapa(m_pos.map);
@@ -2796,7 +2612,7 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 		if (!m_flags.Navegando) {
 			m_infoChar.m_cabeza = 0;
-			if (estaVivo()) {
+			if (isAlive()) {
 				m_infoChar.m_cuerpo = barco.Ropaje;
 			} else {
 				m_infoChar.m_cuerpo = iFragataFantasmal;
@@ -2807,7 +2623,7 @@ public class Client extends AbstractCharacter implements Constants {
 			m_flags.Navegando = true;
 		} else {
 			m_flags.Navegando = false;
-			if (estaVivo()) {
+			if (isAlive()) {
 				m_infoChar.m_cabeza = m_origChar.m_cabeza;
 				if (m_inv.tieneArmaduraEquipada()) {
 					m_infoChar.m_cuerpo = m_inv.getArmadura().Ropaje;
@@ -3178,7 +2994,7 @@ public class Client extends AbstractCharacter implements Constants {
 		// Log.serverLogger().fine("tLong=" + tLong);
 
 		Pos pos = new Pos(x, y);
-		if (!estaVivo() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
+		if (!isAlive() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
 		}
 		if (!m_pos.inRangoVision(pos)) {
@@ -3301,7 +3117,7 @@ public class Client extends AbstractCharacter implements Constants {
 				mapa.consultar(this, x, y);
 				if (m_flags.TargetUser > 0 && m_flags.TargetUser != getId()) {
 					tu = server.getCliente(m_flags.TargetUser);
-					if (tu.estaVivo()) {
+					if (tu.isAlive()) {
 						MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 						if (wpaux.distance(m_pos) > 2) {
 							enviarMensaje("Estas demasiado lejos.", FontType.INFO);
@@ -3435,8 +3251,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doUK(short val) {
 		// Comando UK
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!.", FontType.INFO);
+		if (!checkAlive()) {
 			return;
 		}
 
@@ -3470,59 +3285,21 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 	}
 
-	public void doBalance() {
-		// Comando /BALANCE
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
-			return;
-		}
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.INFO);
-			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (npc.getPos().distance(m_pos) > 3) {
-			enviarMensaje("Estas demasiado lejos del vendedor.", FontType.INFO);
-			return;
-		}
-		if (!npc.esBanquero() || !estaVivo()) {
-			return;
-		}
-		if (!existePersonaje()) {
-			enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.INFO);
-			doSALIR();
-			return;
-		}
-		hablar(COLOR_BLANCO, "Tienes " + m_estads.getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
-	}
-
 	public void doLanzarHechizo(short slot) {
 		// Comando LH
 		// Fixed by agush
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!!.", FontType.INFO);
-			return;
+		if (checkAlive()) {
+			m_spells.castSpell(slot);
 		}
-		m_spells.castSpell(slot);
 	}
 
 	public void doInformacion() {
 		// Comando /INFORMACION
 		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero tienes que seleccionar un personaje, haz clic izquierdo sobre él.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_INFORMATION);
+		if (npc == null) {
 			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
-		if (!npc.esNoble() || !estaVivo()) {
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 4) {
-			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
-			return;
-		}
+		}		
 		if (!npc.esFaccion()) {
 			if (!m_faccion.ArmadaReal) {
 				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
@@ -3544,8 +3321,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doMeditar() {
 		// Comando /MEDITAR
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Solo los vivos pueden meditar.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Solo los vivos pueden meditar.")) {
 			return;
 		}
 		enviar(ServerPacketID.medOk);
@@ -3579,22 +3355,15 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void doResucitar() {
 		// Comando /RESUCITAR
-		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Primero selecciona un sacerdote, haciendo clic izquierdo sobre el.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_PRIEST);
+		if (npc == null) {
 			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		}		
 		if (!npc.esSacerdote()) {
 			enviarMensaje("No poseo el poder de revivir a otros, mejor encuentra un sacerdote.", FontType.INFO);
 			return;
 		}
-		if (estaVivo()) {
-			enviarMensaje("¡JA! Debes estar muerto para resucitarte.", FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 10) {
-			enviarMensaje("El sacerdote no puede resucitarte debido a que estas demasiado lejos.", FontType.INFO);
+		if (!checkAlive("¡JA! Debes estar muerto para resucitarte.")) {
 			return;
 		}
 		if (!existePersonaje()) {
@@ -3609,21 +3378,15 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doCurar() {
 		// Comando /CURAR
 		// Se asegura que el target es un npc
-		if (m_flags.TargetNpc == 0) {
-			enviarMensaje("Antes debes seleccionar un sacerdote, haciendo clic izquierdo sobre el.", FontType.INFO);
+		Npc npc = getNearNpcSelected(DISTANCE_PRIEST);
+		if (npc == null) {
 			return;
-		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		}		
 		if (!npc.esSacerdote()) {
 			enviarMensaje("No poseo el poder para curar a otros, mejor encuentra un sacerdote.", FontType.INFO);
 			return;
 		}
-		if (!estaVivo()) {
-			enviarMensaje("¡Solo puedo curar a los vivos! ¡Resucítate primero!", FontType.INFO);
-			return;
-		}
-		if (m_pos.distance(npc.getPos()) > 10) {
-			enviarMensaje("El sacerdote no puede curarte porque estas demasiado lejos.", FontType.INFO);
+		if (!checkAlive("¡Solo puedo curar a los vivos! ¡Resucítate primero!")) {
 			return;
 		}
 		m_estads.MinHP = m_estads.MaxHP;
@@ -3838,33 +3601,27 @@ public class Client extends AbstractCharacter implements Constants {
 				} else if ((npc = mapa.getNPC(x, y)) != null) {
 					if (npc.comercia()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
-						if (!estaVivo()) {
-							enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+						if (!checkAlive()) {
 							return;
 						}
-						if (npc.getPos().distance(getPos()) > 3) {
-							enviarMensaje("Estás demasiado lejos del vendedor.", FontType.INFO);
-							return;
+						if (checkNpcNear(npc, DISTANCE_MERCHANT)) {
+							// Iniciamos el comercio con el Npc
+							iniciarComercioNPC(npc);
 						}
-						// Iniciamos el comercio con el Npc
-						iniciarComercioNPC(npc);
-					} else if (npc.esBanquero()) {
-						if (!estaVivo()) {
-							enviarMensaje("¡¡Estas muerto!!", FontType.INFO);
+					} else if (npc.isBankCashier()) {
+						if (!checkAlive()) {
 							return;
 						}
 						// Extensión de AOJ - 16/08/2004
 						// Doble clic sobre el banquero hace /BOVEDA
-						if (npc.getPos().distance(getPos()) > 3) {
-							enviarMensaje("Estás demasiado lejos del banquero.", FontType.INFO);
-							return;
+						if (checkNpcNear(npc, DISTANCE_CASHIER)) {
+							iniciarDeposito();
 						}
-						iniciarDeposito();
 					} else if (npc.esSacerdote()) {
 						// Extensión de AOJ - 01/02/2007
 						// Doble clic sobre el sacerdote hace /RESUCITAR o
 						// /CURAR
-						if (estaVivo()) {
+						if (isAlive()) {
 							doCurar();
 						} else {
 							doResucitar();
@@ -3883,81 +3640,75 @@ public class Client extends AbstractCharacter implements Constants {
 
 	/** Comando para hablar (;) */
 	public void doHablar(String s) {
-		if (estaVivo()) {
-			if (s.length() > MAX_MENSAJE) {
-				s = s.substring(0, MAX_MENSAJE);
-			}
-			Map mapa = server.getMapa(m_pos.map);
-			if (mapa != null) {
-				mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.dialog, COLOR_BLANCO, s, getId());
-			}
-			if (esConsejero()) {
-				Log.logGM(m_nick, "El consejero dijo: " + s);
-			}
-		} else {
-			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-					FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
+			return;
+		}
+		if (s.length() > MAX_MENSAJE) {
+			s = s.substring(0, MAX_MENSAJE);
+		}
+		Map mapa = server.getMapa(m_pos.map);
+		if (mapa != null) {
+			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.dialog, COLOR_BLANCO, s, getId());
+		}
+		if (esConsejero()) {
+			Log.logGM(m_nick, "El consejero dijo: " + s);
 		}
 	}
 
 	/** Comando para gritar (-) */
 	public void doGritar(String s) {
-		if (estaVivo()) {
-			if (s.length() > MAX_MENSAJE) {
-				s = s.substring(0, MAX_MENSAJE);
-			}
-			Map mapa = server.getMapa(m_pos.map);
-			if (mapa != null) {
-				// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
-				// COLOR_ROJO, s, getId());
-			}
-			if (esConsejero()) {
-				Log.logGM(m_nick, "El consejero gritó: " + s);
-			}
-		} else {
-			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-					FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
+			return;
+		}
+		if (s.length() > MAX_MENSAJE) {
+			s = s.substring(0, MAX_MENSAJE);
+		}
+		Map mapa = server.getMapa(m_pos.map);
+		if (mapa != null) {
+			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
+			// COLOR_ROJO, s, getId());
+		}
+		if (esConsejero()) {
+			Log.logGM(m_nick, "El consejero gritó: " + s);
 		}
 	}
 
 	/** Comando para susurrarle al oido a un usuario (\) */
 	public void doSusurrar(String s) {
-		if (estaVivo()) {
-			if (s.length() > MAX_MENSAJE) {
-				s = s.substring(0, MAX_MENSAJE);
+		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
+			return;
+		}
+		if (s.length() > MAX_MENSAJE) {
+			s = s.substring(0, MAX_MENSAJE);
+		}
+		int sep;
+		if ((sep = s.indexOf(' ')) > -1 && (s.length() > sep + 1)) {
+			String nombre = s.substring(0, sep);
+			s = s.substring(sep + 1);
+			Map mapa = server.getMapa(m_pos.map);
+			if (mapa == null) {
+				return;
 			}
-			int sep;
-			if ((sep = s.indexOf(' ')) > -1 && (s.length() > sep + 1)) {
-				String nombre = s.substring(0, sep);
-				s = s.substring(sep + 1);
-				Map mapa = server.getMapa(m_pos.map);
-				if (mapa == null) {
-					return;
-				}
-				Client usuario = server.getUsuario(nombre);
-				if (usuario != null) {
-					if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario.getId()) == null) {
-						enviarMensaje("Estas muy lejos de " + nombre, FontType.INFO);
-					} else {
-						if (esConsejero()) {
-							Log.logGM(m_nick, "El consejero le susurró a " + nombre + ": " + s);
-						}
-						// usuario.enviarHabla(COLOR_AZUL, s, getId());
-						// enviarHabla(COLOR_AZUL, s, getId());
-						// if (!esGM() || esConsejero()) {
-						// mapa.enviarAlAreaAdminsNoConsejeros(m_pos.x,
-						// m_pos.y, MSG_TALK, COLOR_AMARILLO, "a "
-						// + usuario.getNick() + "> " + s, this
-						// .getId());
-						// }
-					}
+			Client usuario = server.getUsuario(nombre);
+			if (usuario != null) {
+				if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario.getId()) == null) {
+					enviarMensaje("Estas muy lejos de " + nombre, FontType.INFO);
 				} else {
-					enviarMensaje("Usuario inexistente.", FontType.INFO);
+					if (esConsejero()) {
+						Log.logGM(m_nick, "El consejero le susurró a " + nombre + ": " + s);
+					}
+					// usuario.enviarHabla(COLOR_AZUL, s, getId());
+					// enviarHabla(COLOR_AZUL, s, getId());
+					// if (!esGM() || esConsejero()) {
+					// mapa.enviarAlAreaAdminsNoConsejeros(m_pos.x,
+					// m_pos.y, MSG_TALK, COLOR_AMARILLO, "a "
+					// + usuario.getNick() + "> " + s, this
+					// .getId());
+					// }
 				}
+			} else {
+				enviarMensaje("Usuario inexistente.", FontType.INFO);
 			}
-		} else {
-			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ",
-					FontType.INFO);
 		}
 	}
 
@@ -4036,8 +3787,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void doAtacar() {
-		if (!estaVivo()) {
-			enviarMensaje("¡¡No puedes atacar a nadie por estar muerto!!", FontType.INFO);
+		if (!checkAlive("¡¡No puedes atacar a nadie por estar muerto!!")) {
 			return;
 		}
 		if (esConsejero()) {
@@ -4063,8 +3813,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void agarrarObjeto() {
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden recoger objetos.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden recoger objetos.")) {
 			return;
 		}
 		if (esConsejero()) {
@@ -4075,9 +3824,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void tirarObjeto(short slot, int cant) {
-		// Tirar item
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Los muertos no pueden tirar objetos.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden tirar objetos.")) {
 			return;
 		}
 		if (estaNavegando()) {
@@ -4129,8 +3876,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void equiparObjeto(short slot) {
 		// Comando EQUI
-		if (!estaVivo()) {
-			enviarMensaje("¡¡Estas muerto!! Solo puedes usar items cuando estas vivo.", FontType.INFO);
+		if (!checkAlive("¡¡Estas muerto!! Solo puedes usar items cuando estas vivo.")) {
 			return;
 		}
 		// StringTokenizer st = new StringTokenizer(s, ",");
@@ -4241,13 +3987,9 @@ public class Client extends AbstractCharacter implements Constants {
 				// Evitamos crear una variable al dope
 				if (i < 1)
 					enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
-
 			}
-
 			i++;
-
 		}
-
 	}
 
 	private void cambiarMapa(short mapa, short x, short y) {
@@ -4596,10 +4338,8 @@ public class Client extends AbstractCharacter implements Constants {
 
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-
 			mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.dialog, color, texto, (short) quienId);
 			// mapa.enviarATodos(serverPacketID.dialog, color, texto, (short) quienId);
-
 		}
 	}
 
@@ -5794,7 +5534,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public boolean puedeAtacar(Client victima) {
 		Map mapa = server.getMapa(victima.getPos().map);
 
-		if (!victima.estaVivo()) {
+		if (!victima.isAlive()) {
 			enviarMensaje("No puedes atacar a un espíritu", FontType.INFO);
 			return false;
 		}
@@ -5821,17 +5561,16 @@ public class Client extends AbstractCharacter implements Constants {
 					FontType.WARNING);
 			return false;
 		}
+		if (!checkAlive("No puedes atacar porque estas muerto.")) {
+			return false;
+		}
 		// Se asegura que la victima no es un GM
 		if (victima.esGM()) {
 			enviarMensaje("¡¡No puedes atacar a los administradores del juego!!", FontType.WARNING);
 			return false;
 		}
-		if (!victima.estaVivo()) {
+		if (!victima.isAlive()) {
 			enviarMensaje("No puedes atacar a un espíritu.", FontType.WARNING);
-			return false;
-		}
-		if (!estaVivo()) {
-			enviarMensaje("No puedes atacar porque estas muerto.", FontType.INFO);
 			return false;
 		}
 		if (m_flags.Seguro) {
@@ -6007,6 +5746,7 @@ public class Client extends AbstractCharacter implements Constants {
 		return "pjs" + java.io.File.separator + nick.toLowerCase() + ".chr";
 	}
 
+	// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
 	public boolean existePersonaje() {
 		return Util.existeArchivo(getPjFile(m_nick));
 	}
@@ -6241,7 +5981,7 @@ public class Client extends AbstractCharacter implements Constants {
 			ini.setValue("MASCOTAS", "NroMascotas", cant);
 
 			// Devuelve el head de muerto
-			if (!estaVivo()) {
+			if (!isAlive()) {
 				m_infoChar.m_cabeza = iCabezaMuerto;
 			}
 
@@ -6316,7 +6056,7 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 
 			if (m_flags.Navegando) {
-				m_infoChar.m_cuerpo = !estaVivo() ? iFragataFantasmal : m_inv.getBarco().Ropaje;
+				m_infoChar.m_cuerpo = !isAlive() ? iFragataFantasmal : m_inv.getBarco().Ropaje;
 				m_infoChar.m_cabeza = 0;
 				m_infoChar.m_arma = NingunArma;
 				m_infoChar.m_escudo = NingunEscudo;
@@ -6469,7 +6209,7 @@ public class Client extends AbstractCharacter implements Constants {
 		m_banned_by = ini.getString("BAN", "BannedBy");
 		m_banned_reason = ini.getString("BAN", "Reason");
 
-		if (estaVivo()) {
+		if (isAlive()) {
 			m_infoChar.m_cabeza = m_origChar.m_cabeza;
 			m_infoChar.m_cuerpo = m_origChar.m_cuerpo;
 			m_infoChar.m_arma = m_origChar.m_arma;
@@ -6824,7 +6564,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (m_flags.Ceguera || m_flags.Estupidez) {
 				efectoCegueEstu();
 			}
-			if (estaVivo()) {
+			if (isAlive()) {
 				if (m_flags.Desnudo && m_flags.Privilegios == 0) {
 					efectoFrio();
 				}
