@@ -47,7 +47,6 @@ import org.apache.logging.log4j.Logger;
  * @author gorlok
  */
 public class UserInventory extends Inventory implements Constants {
-	
 	private static Logger log = LogManager.getLogger();
     
     Client dueño;

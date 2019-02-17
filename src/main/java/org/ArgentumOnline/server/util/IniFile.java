@@ -307,7 +307,7 @@ public class IniFile {
             value = this.data.get(section).get(key.toUpperCase());
         }
         if (value != null && !value.equals("")) {
-			return Long.parseLong(value);
+			return Long.parseLong(value.split("'")[0].trim());
 		}
         return defaultValue;
     }
@@ -335,7 +335,7 @@ public class IniFile {
             value = this.data.get(section).get(key.toUpperCase());
         }
         if (value != null && !value.equals("")) {
-			return Integer.parseInt(value);
+			return Integer.parseInt(value.split("'")[0].trim());
 		}
         return defaultValue;
     }
@@ -363,7 +363,7 @@ public class IniFile {
             value = this.data.get(section).get(key.toUpperCase());
         }
         if (value != null && !value.equals("")) {
-			return Short.parseShort(value);
+			return Short.parseShort(value.split("'")[0].trim());
 		}
         return defaultValue;
     }

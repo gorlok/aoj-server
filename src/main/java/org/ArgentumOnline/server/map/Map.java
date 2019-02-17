@@ -45,11 +45,11 @@ import java.util.Vector;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Npc;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
@@ -458,7 +458,7 @@ public class Map implements Constants {
                     short npcId = Util.leShort(getter.readShort());
                     if (npcId > 0) {
                         // Crear un nuevo Npc.
-                        this.m_cells[x][y].setNpc(this.server.crearNPC(npcId, loadBackup));
+                        this.m_cells[x][y].setNpc(this.server.createNpc(npcId));
                         npc = this.m_cells[x][y].getNpc();
                         this.m_npcs.add(npc);
                         npc.getPos().map = this.nroMapa;
@@ -495,8 +495,8 @@ public class Map implements Constants {
         }         
         
         
-        } catch(Exception e) {
-        	log.error("Error: " + e.getMessage());
+        } catch (Exception e) {
+        	log.error("Error, cargando " + infFileName, e);
         }
 
     }
@@ -789,7 +789,7 @@ public class Map implements Constants {
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
                 if (this.m_cells[x-1][y-1].getClienteId() > 0) {
-                    cliente = this.server.getCliente(this.m_cells[x-1][y-1].getClienteId());
+                    cliente = this.server.getClientById(this.m_cells[x-1][y-1].getClienteId());
                     if (cliente != null && (cliente.esDios() || cliente.esSemiDios())) {
 						cliente.enviar(msg, params);
 					}
@@ -818,7 +818,7 @@ public class Map implements Constants {
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
                 if (this.m_cells[x-1][y-1].getClienteId() == cli_id) {
-					return this.server.getCliente(this.m_cells[x-1][y-1].getClienteId());
+					return this.server.getClientById(this.m_cells[x-1][y-1].getClienteId());
 				}
             }
         }
@@ -910,7 +910,7 @@ public class Map implements Constants {
     }
     
     public Client getCliente(short x, short y) {
-        return this.server.getCliente(this.m_cells[x-1][y-1].getClienteId());
+        return this.server.getClientById(this.m_cells[x-1][y-1].getClienteId());
     }
     
     public Npc getNpc(short x, short y) {
@@ -1352,7 +1352,7 @@ public class Map implements Constants {
         for (Object element : this.m_npcs) {
             Npc npc = (Npc) element;
             // ¿esta vivo?
-            if (npc.estaActivo() && npc.esHostil() && npc.m_estads.Alineacion == 2) {
+            if (npc.isNpcActive() && npc.esHostil() && npc.m_estads.Alineacion == 2) {
                 cant++;
             }
         }

@@ -56,6 +56,8 @@ import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
+import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.npc.NpcLoader;
 import org.ArgentumOnline.server.protocol.ClientProcessThread;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.Quest;
@@ -132,11 +134,13 @@ public class AojServer implements Constants {
     private GuildManager m_guildMngr;
     private Motd motd;
     private ForumManager forumManager;
+    private NpcLoader npcLoader;
     
     private AojServer() {
     	this.m_guildMngr = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
+    	this.npcLoader = new NpcLoader(this);
     }
 
     private static AojServer instance = null;
@@ -159,6 +163,10 @@ public class AojServer implements Constants {
 		return forumManager;
 	}
     
+    public NpcLoader getNpcLoader() {
+		return npcLoader;
+	}
+    
     public Collection<Client> getClientes() {
     	return this.m_clientes.values();
     }
@@ -177,8 +185,7 @@ public class AojServer implements Constants {
 		long mins = tsegs / 60;
 		long horas = mins / 60;
 		long dias = horas / 24;
-		String msg = dias + " dias, " + horas + " horas, " + mins + " minutos, " + segs + " segundos.";
-		return msg;
+		return String.format("%d dias, %d horas, %d mins, %d segs.", dias, horas, mins, segs);
 	}
     
     public short getNextId() {
@@ -272,7 +279,7 @@ public class AojServer implements Constants {
     
     public void shutdown() {
         this.m_corriendo = false;
-        this.getProcessThread().endThread();
+        this.processThread.endThread();
         System.out.println("=== Goodbye. Server closed. ===");
     }
     
@@ -346,7 +353,7 @@ public class AojServer implements Constants {
             	cliente.lengthClient.add(this.serverBuffer.limit());
             	cliente.colaClient.put(this.serverBuffer.array());
                 
-                getProcessThread().addClientQueue(cliente);
+                this.processThread.addClientQueue(cliente);
             }else {
             	cliente.doSALIR();
             }
@@ -367,8 +374,14 @@ public class AojServer implements Constants {
         return System.nanoTime() / 1000000;
     }
     
+    boolean loadBackup;
+    public boolean isLoadBackup() {
+		return loadBackup;
+	}
+    
     /** Main loop of the game. */
     public void run(boolean loadBackup) {
+    	this.loadBackup = loadBackup;
         loadAllData(loadBackup);
         
         (this.processThread = new ClientProcessThread()).start();
@@ -596,21 +609,21 @@ public class AojServer implements Constants {
     	showMemoryStatus("loadAllData() ended");
     }
     
-    public Npc crearNPC(int npc_ind, boolean loadBackup) {
-        Npc npc = new Npc(npc_ind, loadBackup, this);
+    public Npc createNpc(int npcNumber) {
+        Npc npc = getNpcLoader().createNpc(npcNumber);
         this.m_npcs.put(Integer.valueOf(npc.getId()), npc);
         return npc;
     }
     
-    public void eliminarNPC(Npc npc) {
+    public void deleteNpc(Npc npc) {
         this.m_npcs_muertos.add(npc.getId());
     }
     
-    public Npc getNPC(int npcId) {
+    public Npc getNpcById(int npcId) {
         return this.m_npcs.get(Integer.valueOf(npcId));
     }
     
-    public Client getCliente(short id) {
+    public Client getClientById(short id) {
         return this.m_clientes.get(id);
     }
     
@@ -656,7 +669,7 @@ public class AojServer implements Constants {
             // Update NPCs
             Vector<Npc> npcs = new Vector<Npc>(getNpcs());
             for (Npc npc: npcs) {
-                if (npc.estaActivo()) { // Nos aseguramos que sea INTELIGENTE!
+                if (npc.isNpcActive()) { // Nos aseguramos que sea INTELIGENTE!
                     if (npc.estaParalizado()) {
                         npc.efectoParalisisNpc();
                     } else {
@@ -664,7 +677,7 @@ public class AojServer implements Constants {
                         if (npc.getPos().isValid()) {
                             Map mapa = getMapa(npc.getPos().map);
                             if (mapa != null && mapa.getCantUsuarios() > 0) {
-                                if (npc.m_movement != Npc.MOV_ESTATICO) {
+                                if (!npc.isStatic()) {
                                     npc.doAI();
                                 }
                             }
@@ -1228,7 +1241,7 @@ public class AojServer implements Constants {
     private void reSpawnOrigPosNpcs() {
         List<Npc> spawnNPCs = new Vector<Npc>();
         for (Npc npc: getNpcs()) {
-            if (npc.estaActivo()) {
+            if (npc.isNpcActive()) {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
                     npc.quitarNPC(); // fixme, lo elimina del server??? revisar.
                     spawnNPCs.add(npc);
@@ -1279,10 +1292,6 @@ public class AojServer implements Constants {
 		System.out.println("Memoria: " + memoryStatus());
 	}
 
-	private ClientProcessThread getProcessThread() {
-		return processThread;
-	}
-
     public static void main(String[] args) {
         boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
         if (loadBackup) {
@@ -1294,4 +1303,3 @@ public class AojServer implements Constants {
     }
 
 }
-

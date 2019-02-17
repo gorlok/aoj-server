@@ -31,12 +31,14 @@ package org.ArgentumOnline.server;
 public class TrainerMascot {
 	
     public short  npc_index = 0;
-    
     public String npc_name = "";
     
-    public void init() {
-        this.npc_index = 0;
-        this.npc_name = "";
-    }
+	public TrainerMascot(short npc_index, String npc_name) {
+		super();
+		this.npc_index = npc_index;
+		this.npc_name = npc_name;
+	}
+    
+    
 }
 

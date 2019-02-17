@@ -27,6 +27,7 @@ package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_CEGU;
@@ -240,7 +241,7 @@ public class UserSpells implements Constants {
 
 	public boolean hechizoEstadoUsuario() {
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
-		Client targetUser = server.getCliente(client.getFlags().TargetUser);
+		Client targetUser = server.getClientById(client.getFlags().TargetUser);
 		if (hechizo.Invisibilidad == 1) {
 			targetUser.m_flags.Invisible = true;
 			//mapa.enviarATodos(MSG_NOVER, targetUser.m_id, 1);
@@ -284,7 +285,7 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			return true;
 		}
-		if (hechizo.Paraliza == 1) {
+		if (hechizo.isParaliza()) {
 			if (!targetUser.m_flags.Paralizado) {
 				if (!client.puedeAtacar(targetUser)) {
 					return false;
@@ -391,7 +392,7 @@ public class UserSpells implements Constants {
 			npc.volverBendito();
 			return true;
 		}
-		if (hechizo.Paraliza == 1) {
+		if (hechizo.isParaliza()) {
 			if (!npc.afectaParalisis()) {
 				infoHechizo();
 				npc.paralizar();
@@ -443,7 +444,7 @@ public class UserSpells implements Constants {
 			}
 			
 			//FIX by AGUSH: we check if user can attack to guardians
-			if (npc.m_NPCtype == Npc.NPCTYPE_GUARDIAS && client.tieneSeguro()) {
+			if (npc.isNpcGuard() && client.tieneSeguro()) {
 				client.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
 						FontType.INFO);
 				return false;
@@ -470,7 +471,7 @@ public class UserSpells implements Constants {
 
 	public boolean hechizoPropUsuario() {
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
-		Client targetUser = server.getCliente(client.getFlags().TargetUser);
+		Client targetUser = server.getClientById(client.getFlags().TargetUser);
 		// Hambre
 		if (hechizo.SubeHam == 1) {
 			// Aumentar hambre
@@ -759,7 +760,7 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoInvocacion() {
-		if (client.m_cantMascotas >= MAXMASCOTAS) {
+		if (client.m_cantMascotas >= MAX_MASCOTAS_USER) {
 			client.enviarMensaje("No puedes invocar más mascotas!", FontType.INFO);
 			return false;
 		}
@@ -801,7 +802,7 @@ public class UserSpells implements Constants {
 
 	private void handleHechizoUsuario(Spell hechizo) {
 		boolean exito = false;
-		Client target = server.getCliente(client.getFlags().TargetUser);
+		Client target = server.getClientById(client.getFlags().TargetUser);
 		if (target == null || target.esGM()) {
 			return;
 		}
@@ -826,7 +827,7 @@ public class UserSpells implements Constants {
 
 	private void handleHechizoNPC(Spell hechizo) {
 		boolean exito = false;
-		Npc targetNPC = server.getNPC(client.getFlags().TargetNpc);
+		Npc targetNPC = server.getNpcById(client.getFlags().TargetNpc);
 		switch (hechizo.Tipo) {
 		case uEstado: // Afectan estados (por ejem : Envenenamiento)
 			exito = hechizoEstadoNPC(targetNPC, hechizo);
@@ -859,7 +860,7 @@ public class UserSpells implements Constants {
 		}
 		if (client.getFlags().TargetUser > 0) {
 			if (client.getId() != client.getFlags().TargetUser) {
-				Client target = server.getCliente(client.getFlags().TargetUser);
+				Client target = server.getClientById(client.getFlags().TargetUser);
 				client.enviarMensaje(hechizo.HechiceroMsg + " " + target.m_nick,
 					FontType.FIGHT);
 				target.enviarMensaje(client.getNick() + " " + hechizo.TargetMsg,

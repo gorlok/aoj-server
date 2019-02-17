@@ -52,7 +52,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getCliente(this.destUsu);
+		Client targetClient = client.server.getClientById(this.destUsu);
 		if (this.destUsu != client.getId()) {
 			return;
 		}
@@ -149,7 +149,7 @@ public class UserTrade {
 		// Comando FINCOMUSU
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == client.getId()) {
-			Client targetClient = client.server.getCliente(this.destUsu);
+			Client targetClient = client.server.getClientById(this.destUsu);
 			targetClient.enviarMensaje(client.m_nick + " ha dejado de comerciar con vos.", FontType.TALK);
 			if (targetClient != null) {
 				targetClient.m_comUsu.finComerciarUsu(targetClient);
@@ -171,7 +171,7 @@ public class UserTrade {
 		// Comando COMUSUNO
 		// Rechazar el cambio
 		if (this.destUsu > 0) {
-			Client targetClient = client.server.getCliente(this.destUsu);
+			Client targetClient = client.server.getClientById(this.destUsu);
 			targetClient.enviarMensaje(client.m_nick + " ha rechazado tu oferta.", FontType.TALK);
 			finComerciarUsu(targetClient);
 		}
@@ -187,7 +187,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getCliente(this.destUsu);
+		Client targetClient = client.server.getClientById(this.destUsu);
 		// sigue conectado el usuario ?
 		if (!targetClient.m_flags.UserLogged) {
 			finComerciarUsu(client);
@@ -235,7 +235,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getCliente(this.destUsu);
+		Client targetClient = client.server.getClientById(this.destUsu);
 
 		short objid = 0;
 		if (this.objeto == Constants.FLAGORO) {

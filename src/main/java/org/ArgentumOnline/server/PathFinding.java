@@ -33,6 +33,7 @@ import org.ArgentumOnline.server.aStar.Location;
 import org.ArgentumOnline.server.aStar.Node;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.npc.Npc;
 
 /**
  * @author gorlok
@@ -54,7 +55,6 @@ public class PathFinding {
 	    costs[Constants.START] = 1;
 	    costs[Constants.FINISH] = 1;
 	}
-
 
     /** Creates a new instance of PathFinding */
     public PathFinding() {

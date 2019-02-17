@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Npc;
+import org.ArgentumOnline.server.npc.Npc;
 
 /**
  *

@@ -1,0 +1,84 @@
+[INIT]
+NumArmaduras=26
+
+[Armadura1] ' Cota mallas
+Index=359
+
+[Armadura2] ' Armadura placas 
+Index=195
+
+[Armadura3] ' Armadura placas + 1
+Index=390
+
+[Armadura4] ' Armadura placas + 2
+Index=391
+
+[Armadura5] ' Armadura placas enanos
+Index=243
+
+[Armadura6] ' Armadura placas enanos + 1
+Index=392
+
+[Armadura7] ' Armadura placas enanos + 2
+Index=393
+
+[Armadura8] ' Escudo hierro
+Index=128
+
+[Armadura9] ' Escudo imperial
+Index=133
+
+[Armadura10] ' Escudo de tortuga
+Index=404
+
+[Armadura11] ' Casco de plata
+Index=405
+
+[Armadura12] ' Armadura dragon
+Index=481
+
+[Armadura13] ' Armadura dragon mujer
+Index=482
+
+[Armadura14] ' Armadura dragon raza enana
+Index=483
+
+[Armadura15] ' Armadura Herrero
+Index=484
+
+[Armadura16] ' Armadura legendaria
+Index=485
+
+[Armadura17] ' Dama de las tinieblas
+Index=487
+
+[Armadura18] ' Placas azúl
+Index=489
+
+[Armadura19] ' Infernal
+Index=494
+
+[Armadura20] ' Placas roja
+Index=493
+
+[Armadura21] ' Escarlata
+Index=495
+
+[Armadura22] ' Cienaga
+Index=496
+
+[Armadura23] ' Placas gala
+Index=497
+
+[Armadura24] ' Malefica
+Index=498
+
+[Armadura25] ' Cota mallas
+Index=499
+
+[Armadura26] ' Bruñida
+Index=500
+
+
+
+

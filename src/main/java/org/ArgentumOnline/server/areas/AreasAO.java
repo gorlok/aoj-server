@@ -4,9 +4,9 @@ import java.util.BitSet;
 
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
-import org.ArgentumOnline.server.Npc;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.Constants;
 
@@ -160,7 +160,7 @@ public class AreasAO implements Constants {
     			
     			
     			if (user.getId() != tempInt && tempInt > 0) {
-    				Client jao = this.server.getCliente(tempInt);
+    				Client jao = this.server.getClientById(tempInt);
     				
     				user.enviar(ServerPacketID.CC, jao.ccParams());
     				jao.enviar(ServerPacketID.CC, user.ccParams());

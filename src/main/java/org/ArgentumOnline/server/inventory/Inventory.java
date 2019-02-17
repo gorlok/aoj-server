@@ -31,12 +31,16 @@ package org.ArgentumOnline.server.inventory;
  */
 public class Inventory {
     
-    InventoryObject objs[] = null;
+    protected InventoryObject objs[] = null;
     
     /** Creates a new instance of Inventory */
     public Inventory(int size) {
         this.objs = new InventoryObject[size];
         reset();
+    }
+    
+    public boolean isSlotValid(int slot) {
+    	return slot >= 1 && slot <= size();
     }
     
     private void reset() {
@@ -45,15 +49,17 @@ public class Inventory {
 		}    	
     }
     
-    public int getSize() {
+    public int size() {
         return this.objs.length;
     }
     
+    /**
+     * Devuelve un objeto del inventario, según slot (posición) dado
+     * @param slot debe ser entre 1 y size()
+     * @return objeto del inventario, o null si no existe
+     */
     public InventoryObject getObjeto(int slot) {
-    	if (slot < 1) {
-			return null;
-		}
-        return this.objs[slot-1];
+        return (isSlotValid(slot)) ? this.objs[slot-1] : null;
     }
     
     public void setObjeto(int slot, InventoryObject objInv) {

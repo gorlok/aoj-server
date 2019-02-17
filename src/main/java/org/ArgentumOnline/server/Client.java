@@ -51,6 +51,10 @@ import org.ArgentumOnline.server.map.MapCell;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.npc.NpcCashier;
+import org.ArgentumOnline.server.npc.NpcMerchant;
+import org.ArgentumOnline.server.npc.NpcTrainer;
 import org.ArgentumOnline.server.protocol.BufferWriter;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.UserQuest;
@@ -104,7 +108,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	int m_cantMascotas = 0;
 
-	Npc m_mascotas[] = new Npc[MAXMASCOTAS];
+	Npc m_mascotas[] = new Npc[MAX_MASCOTAS_USER];
 
 	int m_cantHechizos = 0;
 
@@ -175,6 +179,10 @@ public class Client extends AbstractCharacter implements Constants {
 			this.m_ip = addr.getAddress().getHostAddress();
 			log.info(this.m_nick + " conectado desde " + this.m_ip);
 		}
+	}
+	
+	public boolean hasPets() {
+		return this.m_cantMascotas > 0;		
 	}
 
 	/**
@@ -1252,7 +1260,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doMataNpc() {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = server.getNpcById(m_flags.TargetNpc);
 		if (npc == null) {
 			enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.INFO);
 			return;
@@ -1264,7 +1272,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doCrearCriatura(short indiceNpc) {
 		// Crear criatura, toma directamente el indice
 		// Comando /ACC indiceNpc
-		if (server.getNPC(indiceNpc) != null) {
+		if (server.getNpcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, m_pos, true, false);
 		} else {
 			enviarMensaje("Indice de Npc invalido.", FontType.INFO);
@@ -1274,7 +1282,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doCrearCriaturaRespawn(short indiceNpc) {
 		// Crear criatura con respawn, toma directamente el indice
 		// Comando /RACC indiceNpc
-		if (server.getNPC(indiceNpc) != null) {
+		if (server.getNpcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, m_pos, true, true);
 		} else {
 			enviarMensaje("Indice de Npc invalido.", FontType.INFO);
@@ -1419,7 +1427,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_flags.TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = server.getNpcById(m_flags.TargetNpc);
 		npc.getInv().clear();
 		enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.INFO);
 		Log.logGM(m_nick, "/RESETINV " + npc.toString());
@@ -1464,7 +1472,7 @@ public class Client extends AbstractCharacter implements Constants {
 	public void doSeguir() {
 		// Comando /SEGUIR
 		if (m_flags.TargetNpc > 0) {
-			Npc npc = server.getNPC(m_flags.TargetNpc);
+			Npc npc = server.getNpcById(m_flags.TargetNpc);
 			npc.seguirUsuario(m_nick);
 		}
 	}
@@ -1729,7 +1737,7 @@ public class Client extends AbstractCharacter implements Constants {
 	private void sendUserInvTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
 		enviarMensaje(" Tiene " + usuario.m_inv.getCantObjs() + " objetos.", FontType.INFO);
-		for (int i = 1; i <= usuario.m_inv.getSize(); i++) {
+		for (int i = 1; i <= usuario.m_inv.size(); i++) {
 			if (usuario.m_inv.getObjeto(i).objid > 0) {
 				ObjectInfo info = server.getInfoObjeto(usuario.m_inv.getObjeto(i).objid);
 				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_inv.getObjeto(i).cant,
@@ -1753,7 +1761,7 @@ public class Client extends AbstractCharacter implements Constants {
 	private void sendUserBovTxt(Client usuario) {
 		enviarMensaje(usuario.m_nick, FontType.INFO);
 		enviarMensaje(" Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
-		for (int i = 1; i <= usuario.m_bancoInv.getSize(); i++) {
+		for (int i = 1; i <= usuario.m_bancoInv.size(); i++) {
 			if (usuario.m_bancoInv.getObjeto(i).objid > 0) {
 				ObjectInfo info = server.getInfoObjeto(usuario.m_bancoInv.getObjeto(i).objid);
 				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_bancoInv.getObjeto(i).cant,
@@ -1955,7 +1963,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (npc.getPetUserOwner() != this) {
 				return;
 			}
-			npc.m_movement = Npc.MOV_ESTATICO;
+			npc.makeStatic();
 			npc.expresar();
 		}
 	}
@@ -1971,7 +1979,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (npc.getPetUserOwner() != this) {
 				return;
 			}
-			npc.followAmo();
+			npc.followMaster();
 			npc.expresar();
 		}
 	}
@@ -2064,7 +2072,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_flags.TargetNpc == 0) {
 			enviarMensaje("Debes seleccionar un personaje cercano para poder interactuar.", FontType.INFO);
 		} else {
-			Npc npc = server.getNPC(m_flags.TargetNpc);
+			Npc npc = server.getNpcById(m_flags.TargetNpc);
 			if (checkNpcNear(npc, distance)) {
 				return npc;
 			}
@@ -2156,7 +2164,7 @@ public class Client extends AbstractCharacter implements Constants {
 		short objid = m_inv.getObjeto(slot).objid;
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
-		for (int i = 1; i <= m_bancoInv.getSize(); i++) {
+		for (int i = 1; i <= m_bancoInv.size(); i++) {
 			if (m_bancoInv.getObjeto(i).objid == objid && m_bancoInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
@@ -2204,7 +2212,7 @@ public class Client extends AbstractCharacter implements Constants {
 		short objid = m_bancoInv.getObjeto(slot).objid;
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
-		for (short i = 1; i <= m_inv.getSize(); i++) {
+		for (short i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid == objid && m_inv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
@@ -2322,7 +2330,7 @@ public class Client extends AbstractCharacter implements Constants {
 		carpinteroConstruirItem(objid);
 	}
 
-	public void doEntrenarMascota(String s) {
+	public void userEntrenaConMascota(String s) {
 		// Comando ENTR
 		// Entrenar con una mascota.
 		if (!checkAlive()) {
@@ -2331,7 +2339,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_flags.TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = server.getNpcById(m_flags.TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -2348,7 +2356,7 @@ public class Client extends AbstractCharacter implements Constants {
 			hablar(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());			
 		} else {
 			short slot = Short.parseShort(s);			
-			npcTrainer.spawnTrainerPet(slot, npc);
+			npcTrainer.spawnTrainerPet(slot);
 		}
 	}
 
@@ -2362,7 +2370,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_flags.TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = server.getNpcById(m_flags.TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -2372,20 +2380,12 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 		// ¿El Npc puede comerciar?
 		if (!npc.comercia()) {
-			// npc.hablarAlArea(COLOR_BLANCO, "No tengo ningun interes en
-			// comerciar.");
 			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
-		// StringTokenizer st = new StringTokenizer(s, ",");
-		// short slot = Short.parseShort(st.nextToken());
-		// int cant = Short.parseShort(st.nextToken());
-		if (slot < 1 || slot > npc.getInv().getSize()) {
-			return;
+		if (npc.getInv().isSlotValid(slot)) {
+			((NpcMerchant)npc).venderItem(this, slot, cant);
 		}
-		// User compra el item del slot rdata
-		
-		npc.venderItem(this, slot, cant);
 	}
 
 	public void doVender(byte slot, short cant) {
@@ -2398,7 +2398,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_flags.TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNPC(m_flags.TargetNpc);
+		Npc npc = server.getNpcById(m_flags.TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -2412,11 +2412,9 @@ public class Client extends AbstractCharacter implements Constants {
 			return;
 		}
 
-		if (slot < 1 || slot > npc.getInv().getSize()) {
-			return;
+		if (npc.getInv().isSlotValid(slot)) {
+			((NpcMerchant)npc).comprarItem(this, slot, cant);
 		}
-		// User vende el item del slot rdata
-		npc.comprarItem(this, slot, cant);
 	}
 
 	public void userCompraObj(Npc npc, short slot, int cant) {
@@ -2426,7 +2424,7 @@ public class Client extends AbstractCharacter implements Constants {
 		short objid = npc.getInv().getObjeto(slot).objid;
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
-		for (short i = 1; i <= m_inv.getSize(); i++) {
+		for (short i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid == objid && (m_inv.getObjeto(i).cant + cant) <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
@@ -2447,7 +2445,7 @@ public class Client extends AbstractCharacter implements Constants {
 			m_inv.getObjeto(slot_inv).cant += cant;
 			ObjectInfo info = server.getInfoObjeto(objid);
 			// Le sustraemos el valor en oro del obj comprado
-			double infla = (npc.m_inflacion * info.Valor) / 100.0;
+			double infla = (npc.getInflacion() * info.Valor) / 100.0;
 			double dto = m_flags.Descuento;
 			if (dto == 0) {
 				dto = 1; // evitamos dividir por 0!
@@ -2460,7 +2458,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (info.ObjType == OBJTYPE_LLAVES) {
 				Log.logVentaCasa(m_nick + " compro " + info.Nombre);
 			}
-			npc.quitarNpcInvItem(slot, cant);
+			((NpcMerchant)npc).quitarNpcInvItem(slot, cant);
 		} else {
 			enviarMensaje("No podés tener mas objetos.", FontType.INFO);
 		}
@@ -2469,7 +2467,6 @@ public class Client extends AbstractCharacter implements Constants {
 	public void updateVentanaComercio(short slot, short npcInv) {
 		// enviar(MSG_TRANSOK, slot, npcInv);
 		enviar(ServerPacketID.tradeOk);
-
 	}
 
 	public void doFinComerciar() {
@@ -2520,13 +2517,13 @@ public class Client extends AbstractCharacter implements Constants {
 			return;
 		}
 		// Iniciamos el comercio con el Npc
-		iniciarComercioNPC(npc);
+		userIniciarComercioNPC(npc);
 		// ///// FIXME - TODO
 	}
 
-	public void iniciarComercioNPC(Npc npc) {
+	public void userIniciarComercioNPC(Npc npc) {
 		// Mandamos el Inventario
-		npc.enviarNpcInv(this);
+		((NpcMerchant)npc).enviarNpcInv(this);
 		// Hacemos un Update del inventario del usuario
 		enviarInventario();
 		// Atcualizamos el dinero
@@ -2741,7 +2738,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	private void doDomar(Npc npc) {
-		if (m_cantMascotas < MAXMASCOTAS) {
+		if (m_cantMascotas < MAX_MASCOTAS_USER) {
 			if (npc.getPetUserOwner() == this) {
 				enviarMensaje("La criatura ya te ha aceptado como su amo.", FontType.INFO);
 				return;
@@ -2756,7 +2753,7 @@ public class Client extends AbstractCharacter implements Constants {
 				int slot = freeMascotaSlot();
 				m_mascotas[slot - 1] = npc;
 				npc.setPetUserOwner(this);
-				npc.followAmo();
+				npc.followMaster();
 				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
 				subirSkill(Skill.SKILL_Domar);
 				// hacemos respawn del npc para reponerlo.
@@ -3027,8 +3024,8 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 
 			mapa.consultar(this, x, y);
-			tu = server.getCliente(m_flags.TargetUser);
-			Npc npc = server.getNPC(m_flags.TargetNpc);
+			tu = server.getClientById(m_flags.TargetUser);
+			Npc npc = server.getNpcById(m_flags.TargetNpc);
 			if (npc != null) {
 				if (!npc.getAttackable()) {
 					return;
@@ -3116,7 +3113,7 @@ public class Client extends AbstractCharacter implements Constants {
 				}
 				mapa.consultar(this, x, y);
 				if (m_flags.TargetUser > 0 && m_flags.TargetUser != getId()) {
-					tu = server.getCliente(m_flags.TargetUser);
+					tu = server.getClientById(m_flags.TargetUser);
 					if (tu.isAlive()) {
 						MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 						if (wpaux.distance(m_pos) > 2) {
@@ -3201,7 +3198,7 @@ public class Client extends AbstractCharacter implements Constants {
 			// criaturas hostiles.
 			mapa.consultar(this, x, y);
 			if (m_flags.TargetNpc > 0) {
-				npc = server.getNPC(m_flags.TargetNpc);
+				npc = server.getNpcById(m_flags.TargetNpc);
 				if (npc.domable() > 0) {
 					MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
 					if (wpaux.distance(m_pos) > 2) {
@@ -3606,7 +3603,7 @@ public class Client extends AbstractCharacter implements Constants {
 						}
 						if (checkNpcNear(npc, DISTANCE_MERCHANT)) {
 							// Iniciamos el comercio con el Npc
-							iniciarComercioNPC(npc);
+							userIniciarComercioNPC(npc);
 						}
 					} else if (npc.isBankCashier()) {
 						if (!checkAlive()) {
@@ -3890,7 +3887,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void enviarInventario() {
 		// updateUserInv
-		for (int i = 1; i <= m_inv.getSize(); i++) {
+		for (int i = 1; i <= m_inv.size(); i++) {
 			enviarObjetoInventario(i);
 		}
 	}
@@ -4165,7 +4162,7 @@ public class Client extends AbstractCharacter implements Constants {
 		Npc npc;
 		MapPos lugarLibre;
 		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] != null && m_mascotas[i].m_contadores.TiempoExistencia > 0) {
+			if (m_mascotas[i] != null && m_mascotas[i].getContadores().TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa.
 				oldMapa = server.getMapa(m_mascotas[i].getPos().map);
 				oldMapa.salir(m_mascotas[i]);
@@ -4352,11 +4349,17 @@ public class Client extends AbstractCharacter implements Constants {
 		return 0;
 	}
 
+	/**
+	 * Crea mascotas temporales invocadas por hechizos del usuario
+	 * @param npcId
+	 * @param targetPos
+	 * @return
+	 */
 	public Npc crearMascotaInvocacion(int npcId, MapPos targetPos) {
-		if (m_cantMascotas >= MAXMASCOTAS) {
+		if (m_cantMascotas >= MAX_MASCOTAS_USER) {
 			return null;
 		}
-		Npc npc = Npc.crearNPC(npcId, targetPos, true, server);
+		Npc npc = Npc.spawnPetNpc(npcId, targetPos, true, server);
 		if (npc == null) {
 			return null;
 		}
@@ -4365,9 +4368,10 @@ public class Client extends AbstractCharacter implements Constants {
 		int slot = freeMascotaSlot();
 		m_mascotas[slot - 1] = npc;
 		npc.setPetUserOwner(this);
-		npc.getContadores().TiempoExistencia = IntervaloInvocacion;
+		npc.getContadores().TiempoExistencia = IntervaloInvocacion; // Duración que tendrá la invocación
+		npc.setSpellSpawnedPet(true);
 		npc.setGiveGLD(0);
-		npc.followAmo();
+		npc.followMaster();
 		npc.enviarSonido(SND_WARP);
 		npc.enviarCFX(FXWARP, 0);
 		npc.activar();
@@ -4469,7 +4473,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void quitarMascota(Npc npc) {
-		if (m_cantMascotas < 1) {
+		if (!hasPets()) {
 			return;
 		}
 		for (int i = 0; i < m_mascotas.length; i++) {
@@ -4510,7 +4514,7 @@ public class Client extends AbstractCharacter implements Constants {
 		m_flags.Envenenado = false;
 		m_flags.Muerto = true;
 		if (m_flags.AtacadoPorNpc > 0) {
-			Npc npc = server.getNPC(m_flags.AtacadoPorNpc);
+			Npc npc = server.getNpcById(m_flags.AtacadoPorNpc);
 			if (npc != null) {
 				npc.oldMovement();
 			} else {
@@ -4602,7 +4606,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	private void tirarTodosLosItems() {
 		Map m = server.getMapa(m_pos.map);
-		for (int i = 1; i <= m_inv.getSize(); i++) {
+		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i) != null && m_inv.getObjeto(i).objid > 0) {
 				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
 				if (info_obj.itemSeCae()) {
@@ -4619,7 +4623,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public void tirarTodosLosItemsNoNewbies() {
 		Map m = server.getMapa(m_pos.map);
-		for (int i = 1; i <= m_inv.getSize(); i++) {
+		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid > 0) {
 				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
 				if (!info_obj.esNewbie() && info_obj.itemSeCae()) {
@@ -5045,7 +5049,7 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 			for (Npc element : m_mascotas) {
 				if (element != null) {
-					element.followAmo();
+					element.followMaster();
 				}
 			}
 
@@ -5066,7 +5070,7 @@ public class Client extends AbstractCharacter implements Constants {
 			return;
 		}
 		int cant_quitar;
-		for (int i = 1; i <= m_inv.getSize(); i++) {
+		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid == objIdx) {
 				cant_quitar = m_inv.getObjeto(i).cant < cant ? m_inv.getObjeto(i).cant : cant;
 				cant -= cant_quitar;
@@ -5126,13 +5130,13 @@ public class Client extends AbstractCharacter implements Constants {
 		if (m_estads.MinHP <= 0) {
 			// enviar(MSG_6); // Le informamos que ha muerto ;)
 			// Si lo mato un guardia
-			if (esCriminal() && npc.m_NPCtype == Npc.NPCTYPE_GUARDIAS) {
+			if (esCriminal() && npc.isNpcGuard()) {
 				m_reputacion.decAsesino(vlAsesino / 4);
 				m_reputacion.decBandido(vlAsalto / 4);
 				m_reputacion.decLadron(vlCazador / 3);
 			}
 			if (npc.getPetUserOwner() != null) {
-				npc.getPetUserOwner().allFollowAmo();
+				npc.getPetUserOwner().allFollowMaster();
 			} else {
 				// Al matarlo no lo sigue mas
 				if (npc.m_estads.Alineacion == 0) {
@@ -5144,23 +5148,18 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	/** Ordenar a las mascotas del usuario atacar a un Npc */
-	public void checkPets(Npc npc) {
-		for (Npc element : m_mascotas) {
-			if (element != null) {
-				if (element != npc) {
-					if (element.m_targetNpc == null) {
-						element.m_targetNpc = npc;
-					}
-					element.m_movement = Npc.MOV_NPC_ATACA_NPC;
-				}
+	public void checkPets(Npc targetNpc) {
+		for (Npc pet : m_mascotas) {
+			if (pet != null && pet != targetNpc) {
+				pet.setPetTargetNpc(targetNpc);
 			}
 		}
 	}
 
-	private void allFollowAmo() {
-		for (Npc element : m_mascotas) {
-			if (element != null) {
-				element.followAmo();
+	private void allFollowMaster() {
+		for (Npc pet : m_mascotas) {
+			if (pet != null) {
+				pet.followMaster();
 			}
 		}
 	}
@@ -5169,10 +5168,10 @@ public class Client extends AbstractCharacter implements Constants {
 	 * Las mascotas que tienen como objetivo al Npc target, deben volver a seguir al
 	 * amo
 	 */
-	public void mascotasFollowAmo(Npc target) {
-		for (Npc element : m_mascotas) {
-			if ((element != null) && (element.m_targetNpc == target)) {
-				element.followAmo();
+	public void petsFollowMaster(Npc targetNpc) {
+		for (Npc pet : m_mascotas) {
+			if ((pet != null) && (pet.getTargetNpc() == targetNpc)) {
+				pet.followMaster();
 			}
 		}
 	}
@@ -5428,7 +5427,7 @@ public class Client extends AbstractCharacter implements Constants {
 					if (element.getTarget() == victima.getId()) {
 						element.setTarget(0);
 					}
-					element.followAmo();
+					element.followMaster();
 				}
 			}
 			actStats(victima);
@@ -5912,8 +5911,8 @@ public class Client extends AbstractCharacter implements Constants {
 			// m_estads.criminalesMatados);
 			ini.setValue("MUERTES", "NpcsMuertes", m_estads.NPCsMuertos);
 
-			int cant = m_bancoInv.getSize();
-			for (int i = 0; i < m_bancoInv.getSize(); i++) {
+			int cant = m_bancoInv.size();
+			for (int i = 0; i < m_bancoInv.size(); i++) {
 				if (m_bancoInv.getObjeto(i + 1) == null) {
 					ini.setValue("BancoInventory", "Obj" + (i + 1), "0-0");
 					cant--;
@@ -5924,8 +5923,8 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 			ini.setValue("BancoInventory", "CantidadItems", cant);
 
-			cant = m_inv.getSize();
-			for (int i = 0; i < m_inv.getSize(); i++) {
+			cant = m_inv.size();
+			for (int i = 0; i < m_inv.size(); i++) {
 				if (m_inv.getObjeto(i + 1) == null) {
 					ini.setValue("Inventory", "Obj" + (i + 1), "0-0-0");
 					cant--;
@@ -5964,7 +5963,9 @@ public class Client extends AbstractCharacter implements Constants {
 				// Mascota valida?
 				if (m_mascotas[i] != null) {
 					// Nos aseguramos que la criatura no fue invocada
-					if (m_mascotas[i].m_contadores.TiempoExistencia == 0) {
+					//if (m_mascotas[i].m_contadores.TiempoExistencia == 0) {
+					if ( !m_mascotas[i].isSpellSpawnedPet() ) {
+						// gorlok: uso un flag, que es mejor que el contador, porque no alcanza: podría quedar en cero y confundirse.
 						cad = m_mascotas[i].getNPCtype();
 					} else { // Si fue invocada no la guardamos
 						cad = 0;
@@ -6234,7 +6235,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 		// int banco_cant = ini.getInt("BancoInventory", "CantidadItems");
 		// Lista de objetos en el banco.
-		for (int i = 0; i < m_bancoInv.getSize(); i++) {
+		for (int i = 0; i < m_bancoInv.size(); i++) {
 			String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
 			m_bancoInv.setObjeto(i + 1,
@@ -6243,7 +6244,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 		// int cant = ini.getInt("Inventory", "CantidadItems");
 		// Lista de objetos del inventario del usuario.
-		for (int i = 0; i < m_inv.getSize(); i++) {
+		for (int i = 0; i < m_inv.size(); i++) {
 			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
 			m_inv.setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
@@ -6261,7 +6262,7 @@ public class Client extends AbstractCharacter implements Constants {
 		m_cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
 		for (int i = 0; i < m_cantMascotas; i++) {
-			m_mascotas[i] = server.getNPC(ini.getShort("Mascotas", "Mas" + (i + 1)));
+			m_mascotas[i] = server.getNpcById(ini.getShort("Mascotas", "Mas" + (i + 1)));
 		}
 
 		m_guildInfo.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
@@ -6627,7 +6628,7 @@ public class Client extends AbstractCharacter implements Constants {
 				if (bEnviarAyS) {
 					enviarEstadsHambreSed();
 				}
-				if (m_cantMascotas > 0) {
+				if (hasPets()) {
 					tiempoInvocacion();
 				}
 			}
@@ -6719,7 +6720,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	private boolean tieneObjetos(short objid, int cant) {
 		int total = 0;
-		for (int i = 1; i <= m_inv.getSize(); i++) {
+		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid == objid) {
 				total += m_inv.getObjeto(i).cant;
 			}
@@ -6930,7 +6931,7 @@ public class Client extends AbstractCharacter implements Constants {
 		enviarMensaje("Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
 		InventoryObject obj;
 		ObjectInfo iobj;
-		for (int i = 1; i <= usuario.m_bancoInv.getSize(); i++) {
+		for (int i = 1; i <= usuario.m_bancoInv.size(); i++) {
 			if ((obj = usuario.m_bancoInv.getObjeto(i)) != null) {
 				iobj = server.getInfoObjeto(obj.objid);
 				enviarMensaje(" Objeto " + i + ": " + iobj.Nombre + " Cantidad:" + obj.cant, FontType.INFO);

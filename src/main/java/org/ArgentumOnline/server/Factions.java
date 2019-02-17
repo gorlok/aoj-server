@@ -27,6 +27,7 @@ package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.*;
 
 /**

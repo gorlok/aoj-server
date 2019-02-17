@@ -1,75 +1,83 @@
 [INIT]
-NumArmas=23
+NumArmas=27
 
-[Arma1]
+[Arma1] ' Daga
 Index=15
 
-[Arma2]
+[Arma2] ' Daga Envenenada
+Index=619
+
+[Arma3] ' Daga +1
 Index=165
 
-[Arma3]
+[Arma4] ' Daga +2
 Index=365
 
-[Arma4]
+[Arma5] ' Daga +3
 Index=366
 
-[Arma5]
+[Arma6] ' Daga +4
 Index=367
 
-[Arma6]
-Index=187
-
-[Arma7]
-Index=198
-
-[Arma8]
+[Arma7] ' Espada Corta
 Index=164
 
-[Arma9]
+[Arma8] ' Espada Larga
 Index=2
 
-[Arma10]
-Index=125
-
-[Arma11]
+[Arma9] ' Espada Dos Manos
 Index=19
 
-[Arma12]
-Index=123
+[Arma10] ' Horquilla
+Index=9
 
-[Arma13]
-Index=124
-
-[Arma14]
-Index=127
-
-[Arma15]
+[Arma11] ' Hacha
 Index=3
 
-[Arma16]
-Index=159
+[Arma12] ' Sable
+Index=125
 
-[Arma17]
-Index=126
-
-[Arma18]
-Index=129
-
-[Arma19]
-Index=399
-
-[Arma20]
+[Arma13] ' Martillo de Guerra
 Index=401
 
-[Arma21]
-Index=402
+[Arma14] ' Cimitarra
+Index=399
 
-[Arma22]
+[Arma15] ' Espada Vikinga
+Index=123
+
+[Arma16] ' Hacha de Bárbaro
+Index=159
+
+[Arma17] ' Katana
+Index=124
+
+[Arma18] ' Hacha de Guerra Dos Filos
+Index=129
+
+[Arma19] ' Espada de Plata
 Index=403
 
-[Arma23]
+[Arma20] ' Hacha Larga de Guerra
+Index=126
+
+[Arma21] ' Báculo Engarzado
+Index=660
+
+[Arma22] ' Vara de Mago
 Index=400
 
+[Arma23] ' Espada Mata Dragones
+Index=402
 
+[Arma24] ' Piquete de Minero
+Index=187
 
+[Arma25] ' Serrucho
+Index=198
 
+[Arma26] ' Hacha de Leñador
+Index=127
+
+[Arma27] ' Martillo de Herrero
+Index=389

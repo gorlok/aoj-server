@@ -1,0 +1,8 @@
+[INIT]
+NumLines=4
+
+[Help]
+Line1=(Caminar = Flechas) 
+Line2=(Hablar = Tipear y luego ENTER) (Gritar = -Mensaje) 
+Line3=(Mensaje privado = \nombre_usuario mensaje) 
+Line4=(Atacar = CONTROL) (Llamar a un GM /GM AYUDA)

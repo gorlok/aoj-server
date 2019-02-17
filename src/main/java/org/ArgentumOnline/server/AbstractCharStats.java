@@ -31,19 +31,19 @@ package org.ArgentumOnline.server;
  */
 public abstract class AbstractCharStats implements Constants {
     
-    int usuariosMatados = 0;
+    public int usuariosMatados = 0;
     
     /** Health Points (SALUD): Maximo de salud */
-    int MaxHP = 0;
+    public int MaxHP = 0;
     
     /** Health Points (SALUD): Salud actual */
-    int MinHP = 0;
+    public int MinHP = 0;
     
     /** Hit Points (GOLPE): Máximo de golpe */
-    int MaxHIT = 0;
+    public int MaxHIT = 0;
 
     /** Hit Points (GOLPE): Golpe actual */
-    int MinHIT = 0;
+    public int MinHIT = 0;
 
     /** Aumentar máximo de SALUD. */
     public void addMaxHP(int cant) {

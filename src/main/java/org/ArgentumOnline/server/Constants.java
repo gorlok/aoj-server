@@ -32,14 +32,14 @@ public interface Constants {
 	
 	public final boolean DEBUG = false;
 	
-	final static int DISTANCE_CASHIER = 4;
+	final static int DISTANCE_CASHIER = 4; // CAJERO DE BANCO
 	final static int DISTANCE_QUEST = 4;
-	final static int DISTANCE_PET = 10;
-	final static int DISTANCE_MERCHANT = 3;
-	final static int DISTANCE_TRAINER = 10;
+	final static int DISTANCE_PET = 10; // MASCOTA
+	final static int DISTANCE_MERCHANT = 3; // COMERCIANTE
+	final static int DISTANCE_TRAINER = 10; // ENTRENADOR
 	final static int DISTANCE_INFORMATION = 4;
-	final static int DISTANCE_PRIEST = 10;
-	final static int DISTANCE_FACTION = 10;
+	final static int DISTANCE_PRIEST = 10; // SACERDOTE
+	final static int DISTANCE_FACTION = 10; // FACCIONARIO
     
     /*
     Public Type tAPuestas
@@ -263,9 +263,9 @@ public interface Constants {
     final static int MAX_NPC_DESC       = 300;
     final static int MAX_CRIATURAS_ENTRENADOR = 20;
 
-    final static int MAXMASCOTASENTRENADOR = 7;
+    final static int MAX_MASCOTAS_ENTRENADOR = 7;
     
-    final static int MAXMASCOTAS = 3;
+    final static int MAX_MASCOTAS_USER = 3;
     
     final static int MAX_BANCOINVENTORY_SLOTS = 40;
     

@@ -27,7 +27,7 @@ package org.ArgentumOnline.server.quest;
 
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
-import org.ArgentumOnline.server.Npc;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.*;
 
 /**

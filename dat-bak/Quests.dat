@@ -1,0 +1,125 @@
+'Tipos de Objetivo
+'1 Matar Npcs
+'2 Matar Usuarios (Si sos de la armada crimis, si sos del caos ciudas y sino cualkiera de los dos)
+'3 Encontrar un Npc
+'4 Matar un Npc especifico
+
+'Npc para quest (Tipos)
+'Questero = 8
+'Amigo = 9
+
+'[QuestX]
+'DaOro=1 (SI esta en 1 entonces te da oro )
+'Oro=100 (La cantidad de oro que da)
+'DaExp=1 (Si esta en 1 entonces te da exp)
+'Exp= (Cantidad de experiencia que te da)
+'DaObj=1 (Si esta en 1 te da un objeto)
+'Obj=1 (Es el número del objeto que te va a dar)
+'Objetivo=Del 1 al 4 (Tipo de quest que se va a realizar, arriba se detallan)
+
+'Npcs=20 (SI el objetivo es 1 entonces, aca se marca la cantidad a matar)
+
+'[Siempre que sea 2 el objetivo estos 3 vanb seguros]
+'Usuarios=10 (Si el objetivo es 2 aca se marca la cantidad de users a matar si no sos de ninguna armada)
+'Criminales=10 (Si el objetivo es 2 aca marca la cantidad de crimis a matar si es real)
+'Ciudadanos=10 (Si el objetivo es 2 aca marca la cantidad de ciudas a matar si es caos)
+'[-*-*-]
+
+'[Si el objetivo es 3 va todo esto]
+'Coordenadas1=1-25-25
+'Coordenadas2=1-25-25
+'Coordenadas3=1-25-25
+'Coordenadas4=1-25-25
+'Coordenadas5=1-25-25
+'Las coodenadas son el lugar en donde se va a sumonear e npc a buscar sale 1 de las 5 con un numero random)
+'AmigoNpc=102 Numero del npc a sumonear (No es hostil :P)
+'[-*-*-*]
+
+'[Si el objetivo es 4 va todo esto]
+'Coordenadas1=1-25-25
+'Coordenadas2=1-25-25
+'Coordenadas3=1-25-25
+'Coordenadas4=1-25-25
+'Coordenadas5=1-25-25
+'Las coodenadas son el lugar en donde se va a sumonear e npc a buscar sale 1 de las 5 con un numero random)
+'CriaturaIndex=102 Numero del npc a sumonear (Hostil :P)
+'[-*-*-*]
+
+[INIT]
+NumQuests=10
+
+[Quest1]
+DaOro=1
+Oro=1000
+Objetivo=1
+Npcs=20
+
+[Quest2]
+DaOro=1
+Oro=2500
+Objetivo=1
+Npcs=80
+
+[Quest3]
+DaExp=1
+Exp=3000
+Objetivo=3
+Coordenadas1=157-26-27
+Coordenadas2=34-50-50
+Coordenadas3=59-50-50
+Coordenadas4=36-50-50
+Coordenadas5=112-25-50
+AmigoNpc=102
+
+[Quest4]
+DaOro=1
+Oro=5000
+Objetivo=1
+Npcs=500
+
+[Quest5]
+DaObj=1
+Obj=691
+Objetivo=2
+Usuarios=10
+Criminales=10
+Ciudadanos=10
+
+[Quest6]
+DaOro=1
+Oro=7000
+Objetivo=4
+Coordenadas1=35-50-50
+Coordenadas2=2-50-50
+Coordenadas3=17-50-50
+Coordenadas4=58-50-50
+Coordenadas5=12-50-50
+CriaturaIndex=103
+
+[Quest7]
+DaObj=1
+Obj=721
+Objetivo=2
+Usuarios=30
+Criminales=30
+Ciudadanos=30
+
+[Quest8]
+DaExp=1
+DaExp=15000
+Objetivo=1
+Npcs=1200
+
+[Quest9]
+DaExp=1
+DaExp=25000
+Objetivo=1
+Npcs=2000
+
+[Quest10]
+DaObj=1
+Obj=361
+Objetivo=2
+Usuarios=50
+Criminales=50
+Ciudadanos=50

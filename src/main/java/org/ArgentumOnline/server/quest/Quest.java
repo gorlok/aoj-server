@@ -30,10 +30,10 @@ import java.util.StringTokenizer;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Npc;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
@@ -185,7 +185,7 @@ public class Quest implements Constants {
 
     public void recibirRecompensaQuest(Client cliente) {
         try {
-            Npc npc = this.server.getNPC(cliente.getFlags().TargetNpc);
+            Npc npc = this.server.getNpcById(cliente.getFlags().TargetNpc);
             if (cliente.esNewbie()) {
                 cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
                 return;
@@ -397,7 +397,7 @@ public class Quest implements Constants {
  
     public void checkNpcAmigo(Client cliente) {
         if (cliente.getQuest().m_enQuest) {
-            Npc npc = this.server.getNPC(cliente.getFlags().TargetNpc);
+            Npc npc = this.server.getNpcById(cliente.getFlags().TargetNpc);
             if (npc.getNPCtype() == Npc.NPCTYPE_AMIGOQUEST) {
                 Quest quest = cliente.getQuest().getQuest();
                 if (quest.Objetivo == 3) {
@@ -416,7 +416,7 @@ public class Quest implements Constants {
 
  
     public void sendInfoQuest(Client cliente) {
-        Npc npc = this.server.getNPC(cliente.getFlags().TargetNpc);
+        Npc npc = this.server.getNpcById(cliente.getFlags().TargetNpc);
         if (cliente.esNewbie()) {
             cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
             return;
@@ -446,7 +446,7 @@ public class Quest implements Constants {
 
  
     public void userSeRinde(Client cliente) {
-        Npc npc = this.server.getNPC(cliente.getFlags().TargetNpc);
+        Npc npc = this.server.getNpcById(cliente.getFlags().TargetNpc);
         try {
             if (cliente.esNewbie()) {
                 cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());

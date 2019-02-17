@@ -44,13 +44,13 @@ public class Spell implements Constants {
     char  Resis = 0;
     
     public char  Tipo  = 0;
-    short WAV   = 0;
-    short FXgrh = 0;
-    char  loops = 0;
+    public short WAV   = 0;
+    public short FXgrh = 0;
+    public char  loops = 0;
     
-    char  SubeHP = 0;
-    short MinHP  = 0;
-    short MaxHP  = 0;
+    public char  SubeHP = 0;
+    public short MinHP  = 0;
+    public short MaxHP  = 0;
     
     char  SubeMana = 0;
     short MinMana   = 0;
@@ -81,7 +81,7 @@ public class Spell implements Constants {
     short MaxCarisma  = 0;
     
     public char Invisibilidad  = 0;
-    char Paraliza       = 0;
+    boolean paraliza       = false;
     char RemoverParalisis = 0;
     char CuraVeneno     = 0;
     char Envenena       = 0;
@@ -115,6 +115,10 @@ public class Spell implements Constants {
     public String getName() {
     	return this.Nombre;
     }
+    
+    public boolean isParaliza() {
+		return paraliza;
+	}
     
     public void load(IniFile ini) {
         String section = "HECHIZO" + this.Numero;
@@ -165,7 +169,7 @@ public class Spell implements Constants {
         this.MaxCarisma  = ini.getShort(section, "MaxCarisma");
         
         this.Invisibilidad   = (char) ini.getShort(section, "Invisibilidad");
-        this.Paraliza        = (char) ini.getShort(section, "Paraliza");
+        this.paraliza        = ini.getShort(section, "Paraliza") == 1;
         this.RemoverParalisis = (char) ini.getShort(section, "RemoverParalisis");
         this.CuraVeneno      = (char) ini.getShort(section, "CuraVeneno");
         this.Envenena        = (char) ini.getShort(section, "Envenena");

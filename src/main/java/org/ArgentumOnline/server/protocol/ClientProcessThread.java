@@ -24,6 +24,7 @@ public class ClientProcessThread extends Thread {
 	List<byte[]> colaProcesos = new LinkedList<byte[]>();
 
 	public ClientProcessThread() {
+		setName("ClientProcessThread");
 		r = new BytesReader();
 		r.setLittleEndian(true);
 	}
