@@ -72,7 +72,7 @@ public class ManageServer extends Thread {
 			break;
 	
 		case reload:
-			this.server.loadAdmins();
+			this.server.getAdmins().loadAdmins();
 			break;
 			
 		case threads:

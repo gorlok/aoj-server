@@ -156,7 +156,8 @@ public class UserSpells implements Constants {
 	}
 
 	public void agregarHechizo(int slot) {
-		ObjectInfo objHechizo = server.getInfoObjeto(client.getInv().getObjeto(slot).objid);
+		int oid = client.getInv().getObjeto(slot).objid;
+		ObjectInfo objHechizo = server.getObjectInfoStorage().getInfoObjeto(oid);
 		short numHechizo = objHechizo.HechizoIndex;
 		if (!tieneHechizo(numHechizo)) {
 			// Buscamos un slot vacio

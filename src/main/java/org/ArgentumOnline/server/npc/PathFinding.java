@@ -23,17 +23,17 @@
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
  */
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.npc;
 
 import java.util.Vector;
 
+import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.aStar.AStar;
 import org.ArgentumOnline.server.aStar.Constants;
 import org.ArgentumOnline.server.aStar.Location;
 import org.ArgentumOnline.server.aStar.Node;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.npc.Npc;
 
 /**
  * @author gorlok

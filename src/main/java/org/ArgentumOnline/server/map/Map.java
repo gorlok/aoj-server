@@ -143,6 +143,10 @@ public class Map implements Constants {
 		return null;
     }
     
+	private ObjectInfo findObj(int oid) {
+		return server.getObjectInfoStorage().getInfoObjeto(oid);		
+	}
+	
     public Npc getNPC(short x, short y) {
         return this.m_cells[x-1][y-1].getNpc();
     }
@@ -225,10 +229,12 @@ public class Map implements Constants {
         return usuarios;
     }
     
+    // FIXME
     public Client spUser(int value) {
     	return this.m_clients.get(value);
     }
     
+    // FIXME
     public Npc spNpc(int value) {
     	return this.m_npcs.get(value);
     }
@@ -601,7 +607,7 @@ public class Map implements Constants {
     	}
     	this.m_cells[x-1][y-1].setObj(objid, cant);
         this.bloquesConObjetos.add(this.m_cells[x-1][y-1]);
-        short grhIndex = this.server.getInfoObjeto(objid).GrhIndex;
+        short grhIndex = findObj(objid).GrhIndex;
         
         if (DEBUG)
         	log.debug(grhIndex + "-" + x + "-" + y);
@@ -659,13 +665,13 @@ public class Map implements Constants {
             if (obj.getInfo().estaCerrada()) {
                 // Abrir puerta.
                 quitarObjeto(obj.x, obj.y);
-                ObjectInfo info = this.server.getInfoObjeto(obj.getInfo().IndexAbierta);
+                ObjectInfo info = findObj(obj.getInfo().IndexAbierta);
                 //obj = agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             } else {
                 // Cerrar puerta
                 quitarObjeto(obj.x, obj.y);
-                ObjectInfo info = this.server.getInfoObjeto(obj.getInfo().IndexCerrada);
+                ObjectInfo info = findObj(obj.getInfo().IndexCerrada);
                 //obj = agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             }

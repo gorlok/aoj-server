@@ -47,7 +47,7 @@ public class MapObject {
 	}
 
 	public ObjectInfo getInfo() {
-		return AojServer.instance().getInfoObjeto(this.obj_ind);
+		return AojServer.instance().getObjectInfoStorage().getInfoObjeto(this.obj_ind); // FIXME
 	}
 
 	@Override

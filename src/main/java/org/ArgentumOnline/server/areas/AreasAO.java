@@ -45,7 +45,6 @@ public class AreasAO implements Constants {
 		return (int) Math.pow(2, loopc);
 	}
 	
-	
 	/**
 	 * Devuelve un número que es igual a dos elevado a loopc - 1 cuando loopc es distinto que cero, siendo loopc un integer que va de 0 a 11
 	 * Esta función reemplaza el iif de VB6
@@ -81,7 +80,6 @@ public class AreasAO implements Constants {
 				areasInfo[x][y] = (x / 9 + 1) * (y / 9 + 1);
 			}
 		}
-		
 	}
 	
 	/**
@@ -89,39 +87,43 @@ public class AreasAO implements Constants {
 	 */
 	public void checkUpdateNeededUser(Client user, short dir) {
 		
-		if (user.getArea() == areasInfo[user.getPos().x][user.getPos().y]) return;
+		var userArea = user.getUserArea();
+		
+		if (userArea.getArea() == areasInfo[user.getPos().x][user.getPos().y]) {
+			return;
+		}
 		
 		int minX = 0; int maxX = 0; int minY = 0; int maxY = 0;
 		short tempInt = 0;
 			
-		minX = user.minX;
-		minY = user.minY;
+		minX = userArea.minX;
+		minY = userArea.minY;
 		
 		switch (dir) {
 		case heading_n:
 			maxY = minY - 1;
 			minY = minY - 9;
 			maxX = minX + 26;
-			user.minX = minX;
-			user.minY = minY;
+			userArea.minX = minX;
+			userArea.minY = minY;
 		case heading_s:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
-			user.minX = minX;
-			user.minY = minY - 18;
+			userArea.minX = minX;
+			userArea.minY = minY - 18;
 		case heading_w:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
-			user.minX = minX;
-			user.minY = minY;
+			userArea.minX = minX;
+			userArea.minY = minY;
 		case heading_e:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
-			user.minX = minX - 18;
-			user.minY = minY;
+			userArea.minX = minX - 18;
+			userArea.minY = minY;
 		default: //user nuevo
 			minY = ((user.getPos().y / 9) - 1) * 9;
 			maxY = minY + 26;
@@ -129,9 +131,8 @@ public class AreasAO implements Constants {
 			minX = ((user.getPos().x / 9) - 1) * 9;
 			maxX = minX + 26;
 			
-			user.minX = minX;
-			user.minY = minY;
-			
+			userArea.minX = minX;
+			userArea.minY = minY;
 		}
 		
     	if (maxY > YMaxMapSize - 1) {
@@ -185,21 +186,19 @@ public class AreasAO implements Constants {
     					short px = (short) (x - 1);
     					user.enviarBQ(x - 1, y, map.estaBloqueado(px, y));
     				}
-    				
     			}
-    			
     		}
     	}
     	
     	tempInt = (short) (user.getPos().x / 9);
-    	user.setAreaRecibeX(areasRecibe[tempInt]);
-    	user.setAreaPerteneceX((int) Math.pow(2, tempInt));
+    	userArea.setAreaRecibeX(areasRecibe[tempInt]);
+    	userArea.setAreaPerteneceX((int) Math.pow(2, tempInt));
     	
     	tempInt = (short) (user.getPos().y / 9);
-    	user.setAreaRecibeY(areasRecibe[tempInt]);
-    	user.setAreaPerteneceY( (int) Math.pow(2, tempInt));
+    	userArea.setAreaRecibeY(areasRecibe[tempInt]);
+    	userArea.setAreaPerteneceY( (int) Math.pow(2, tempInt));
     	
-    	user.setArea(areasInfo[user.getPos().x][user.getPos().y]);
+    	userArea.setArea(areasInfo[user.getPos().x][user.getPos().y]);
 	}
 	
 	/**
@@ -302,12 +301,13 @@ public class AreasAO implements Constants {
 		npc.setAreaRecibeY(0);
 	}
 	
-	public void resetUser(Client npc) {
-		npc.setArea(0);
-		npc.setAreaPerteneceX(0);
-		npc.setAreaPerteneceY(0);
-		npc.setAreaRecibeX(0);
-		npc.setAreaRecibeY(0);
+	public void resetUser(Client user) {
+		var userArea = user.getUserArea();
+		userArea.setArea(0);
+		userArea.setAreaPerteneceX(0);
+		userArea.setAreaPerteneceY(0);
+		userArea.setAreaRecibeX(0);
+		userArea.setAreaRecibeY(0);
 	}
 	
 	public void loadNpc(Npc npc) {
@@ -316,16 +316,12 @@ public class AreasAO implements Constants {
 		npc.setAreaPerteneceY(0);
 		npc.setAreaRecibeX(0);
 		npc.setAreaRecibeY(0);
-		this.checkUpdateNeededNpc(npc, USER_NUEVO);
+		checkUpdateNeededNpc(npc, USER_NUEVO);
 	}
 	
-	public void loadUser(Client npc) {
-		npc.setArea(0);
-		npc.setAreaPerteneceX(0);
-		npc.setAreaPerteneceY(0);
-		npc.setAreaRecibeX(0);
-		npc.setAreaRecibeY(0);
-		this.checkUpdateNeededUser(npc, USER_NUEVO);
+	public void loadUser(Client user) {
+		resetUser(user);
+		checkUpdateNeededUser(user, USER_NUEVO);
 	}
 	
 	/**
@@ -337,27 +333,23 @@ public class AreasAO implements Constants {
 		areaY = (int) Math.pow(2, areaY / 9);
 
 		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Client tempIndex = map.spUser(loopc);
+			Client user = map.spUser(loopc);
 			
-			int tempInt = (tempIndex.areaRecibeX & areaX);
+			int tempInt = (user.getUserArea().areaRecibeX & areaX);
 			
 			BitSet gral = new BitSet();
-			
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.areaRecibeY & areaY);
+				tempInt = (user.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					tempIndex.enviar(msg, params);
+					user.enviar(msg, params);
 				}
-				
 			}
-			
 		}
-		
 	}
 	
 	/**
@@ -368,9 +360,9 @@ public class AreasAO implements Constants {
 		areaY = (int) Math.pow(2, areaY / 9);
 
 		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Client tempIndex = map.spUser(loopc);
+			Client user = map.spUser(loopc);
 			
-			int tempInt = (tempIndex.areaRecibeX & areaX);
+			int tempInt = (user.getUserArea().areaRecibeX & areaX);
 			
 			BitSet gral = new BitSet();
 			
@@ -378,15 +370,13 @@ public class AreasAO implements Constants {
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.areaRecibeY & areaY);
+				tempInt = (user.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (tempIndex.getId() != id) tempIndex.enviar(msg, params);
+					if (user.getId() != id) user.enviar(msg, params);
 				}
-				
 			}
-			
 		}
 	}
 	
@@ -394,27 +384,27 @@ public class AreasAO implements Constants {
 	 * Envío de datos al área del user, y adyacentes
 	 */
 	public void sendToUserArea(Client user, ServerPacketID msg, Object... params) {
-		int areaX = user.areaPerteneceX;
-		int areaY = user.areaPerteneceY;
+		var userArea = user.getUserArea();
+		
+		int areaX = userArea.areaPerteneceX;
+		int areaY = userArea.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
 			Client tempIndex = map.spUser(i);
 			
-			int tempInt = (tempIndex.areaRecibeX & areaX);
+			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.areaRecibeY & areaY);
+				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
 					tempIndex.enviar(msg, params);
 				}
-				
 			}
-			
 		}
 	}
 	
@@ -422,27 +412,27 @@ public class AreasAO implements Constants {
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
 	public void sendToUserAreaButIndex(Client user, ServerPacketID msg, Object... params) {
-		int areaX = user.areaPerteneceX;
-		int areaY = user.areaPerteneceY;
+		var userArea = user.getUserArea();
+
+		int areaX = userArea.areaPerteneceX;
+		int areaY = userArea.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
 			Client tempIndex = map.spUser(i);
 			
-			int tempInt = (tempIndex.areaRecibeX & areaX);
+			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.areaRecibeY & areaY);
+				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
 					if (tempIndex.getId() != user.getId()) tempIndex.enviar(msg, params);
 				}
-				
 			}
-			
 		}
 	}
 	
@@ -450,27 +440,26 @@ public class AreasAO implements Constants {
 	 * Envío de datos al área del NPC, y adyacentes
 	 */
 	public void sendToNPCArea(Npc npc, ServerPacketID msg, Object... params) {
+
 		int areaX = npc.areaPerteneceX;
 		int areaY = npc.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
 			Client tempIndex = map.spUser(i);
 			
-			int tempInt = (tempIndex.areaRecibeX & areaX);
+			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.areaRecibeY & areaY);
+				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
 					
 					tempIndex.enviar(msg, params);
 				}
-				
 			}
-			
 		}
 	}
 

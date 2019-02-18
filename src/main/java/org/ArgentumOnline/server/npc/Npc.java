@@ -32,7 +32,7 @@ import org.ArgentumOnline.server.AbstractCharacter;
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.PathFinding;
+import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.Spell;
 import org.ArgentumOnline.server.aStar.Node;
@@ -185,7 +185,7 @@ public class Npc extends AbstractCharacter implements Constants {
      * - en los comerciantes, son los items en venta
      * - en los hostiles, son lo items dropeados
      */
-    protected Inventory m_inv = new Inventory(20);
+    protected Inventory m_inv;
 
     public Inventory getInv() {
         return this.m_inv;
@@ -219,6 +219,7 @@ public class Npc extends AbstractCharacter implements Constants {
     	this.server = server;
     	
         this.m_numero = npc_numero;
+        this.m_inv = new Inventory(server, 20);
         this.setId(server.getNextId());
         loadInfoNPC(this.m_numero, server.isLoadBackup());
     }
@@ -1876,4 +1877,8 @@ public class Npc extends AbstractCharacter implements Constants {
 		this.m_movement = Npc.MOV_NPC_ATACA_NPC;
     }
     
+	
+	protected ObjectInfo findObj(int oid) {
+		return server.getObjectInfoStorage().getInfoObjeto(oid);		
+	}
 }

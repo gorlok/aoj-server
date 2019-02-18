@@ -247,7 +247,7 @@ public class UserTrade {
 			return;
 		}
 		if (objid > 0 && this.cant > 0) {
-			ObjectInfo info = client.server.getInfoObjeto(objid);
+			ObjectInfo info = client.server.getObjectInfoStorage().getInfoObjeto(objid);
 			// destUsu.enviar(MSG_COMUSUINV, 1, objid, info.Nombre, cant, 0,
 			// info.GrhIndex, info.ObjType, info.MaxHIT, info.MinHIT,
 			// info.MaxDef, info.Valor / 3);

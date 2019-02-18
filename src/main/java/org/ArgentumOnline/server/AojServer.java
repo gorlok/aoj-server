@@ -26,13 +26,10 @@
  */
 package org.ArgentumOnline.server;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -93,20 +90,13 @@ public class AojServer implements Constants {
     private List<Client> m_clientes_eliminar = new LinkedList<Client>();
     private List<Short> m_npcs_muertos = new Vector<Short>();
     
-    private List<ObjectInfo> m_objetos  = new Vector<ObjectInfo>();
     private List<Spell> 	m_hechizos = new Vector<Spell>();
     private List<Map> 		m_mapas = new Vector<Map>();    
     private List<Quest> 	m_quests = new Vector<Quest>();
     
     private List<GmRequest> m_pedidosAyudaGM = new Vector<GmRequest>();
     private List<String> m_bannedIPs = new Vector<String>();
-    
-    private List<String> m_dioses = new Vector<String>();
-    private List<String> m_semidioses = new Vector<String>();
-    private List<String> m_consejeros = new Vector<String>();
 
-    private List<String> m_nombresInvalidos = new Vector<String>();
-    
     private List<MapPos> m_trashCollector = new Vector<MapPos>();
     
     private short [] m_armasHerrero;
@@ -135,12 +125,16 @@ public class AojServer implements Constants {
     private Motd motd;
     private ForumManager forumManager;
     private NpcLoader npcLoader;
+    private Admins admins;
+    private ObjectInfoStorage objectInfoStorage;
     
     private AojServer() {
     	this.m_guildMngr = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
     	this.npcLoader = new NpcLoader(this);
+    	this.admins = new Admins();
+    	this.objectInfoStorage = new ObjectInfoStorage();
     }
 
     private static AojServer instance = null;
@@ -150,6 +144,14 @@ public class AojServer implements Constants {
 		}
         return instance;
     }
+
+    public ObjectInfoStorage getObjectInfoStorage() {
+		return objectInfoStorage;
+	}
+    
+    public Admins getAdmins() {
+		return admins;
+	}
     
     public Motd getMotd() {
     	return this.motd;
@@ -513,27 +515,6 @@ public class AojServer implements Constants {
         }
     }
     
-    /** Load objects / Cargar los m_objetos */
-    private void loadObjects() {
-    	log.trace("loading objects");
-        this.m_objetos = new Vector<ObjectInfo>();
-        IniFile ini = new IniFile();
-        try {
-            ini.load(DATDIR + java.io.File.separator + "Obj.dat");
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-        int cant = ini.getInt("INIT", "NumOBJs");
-        
-        for (short i = 1; i <= cant; i++) {
-            ObjectInfo obj = new ObjectInfo();
-            obj.load(ini, i);
-            this.m_objetos.add(obj);
-        }
-    }
-    
     /** Load spells / Cargar los hechizos */
     private void loadSpells() {
     	log.trace("loading spells");
@@ -577,7 +558,7 @@ public class AojServer implements Constants {
     /** Load all initial data / Cargar todos los datos iniciales */
     private void loadAllData(boolean loadBackup) {
     	log.trace("loadAllData started");
-        loadObjects();
+        objectInfoStorage.loadObjectsFromStorage();
         loadSpells();
         loadMaps(loadBackup);
         loadQuests();
@@ -585,9 +566,9 @@ public class AojServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
-        loadAdmins();
-        loadInvalidNamesList();
         loadAdminsSpawnableCreatures();
+        admins.loadInvalidNamesList();
+        admins.loadAdmins();
         motd.loadMotd();
         log.trace("loadAllData ended");
     }
@@ -608,10 +589,6 @@ public class AojServer implements Constants {
     
     public Client getClientById(short id) {
         return this.m_clientes.get(id);
-    }
-    
-    public ObjectInfo getInfoObjeto(int objid) {
-        return this.m_objetos.get(objid - 1);
     }
     
     public Spell getHechizo(int spell) {
@@ -693,102 +670,6 @@ public class AojServer implements Constants {
         }
     }
     
-    public void loadAdmins() {
-    	log.trace("loading admins");
-        try {
-            // Limpiar las listas de admins.
-            this.m_dioses.clear();
-            this.m_semidioses.clear();
-            this.m_consejeros.clear();
-            // Cargar dioses:
-            IniFile ini = new IniFile(DATDIR + java.io.File.separator + "Server.ini");
-            short cant = ini.getShort("DIOSES", "Cant");
-            for (int i = 1; i <= cant; i++) {
-                String nombre = ini.getString("DIOSES", "Dios"+i, "").toUpperCase();
-                if (!"".equals(nombre)) {
-					this.m_dioses.add(nombre);
-				}
-            }
-            // Cargar semidioses:
-            cant = ini.getShort("SEMIDIOSES", "Cant");
-            for (int i = 1; i <= cant; i++) {
-                String nombre = ini.getString("SEMIDIOSES", "Semidios"+i, "").toUpperCase();
-                if (!"".equals(nombre)) {
-					this.m_semidioses.add(nombre);
-				}
-            }
-            // Cargar consejeros:
-            cant = ini.getShort("CONSEJEROS", "Cant");
-            for (int i = 1; i <= cant; i++) {
-                String nombre = ini.getString("CONSEJEROS", "Consejero"+i, "").toUpperCase();
-                if (!"".equals(nombre)) {
-					this.m_consejeros.add(nombre);
-				}
-            }
-            // Armaduras Faccionarias:
-            Factions.ArmaduraImperial1 = ini.getShort("INIT", "ArmaduraImperial1");
-			Factions.ArmaduraImperial2 = ini.getShort("INIT", "ArmaduraImperial2");
-			Factions.ArmaduraImperial3 = ini.getShort("INIT", "ArmaduraImperial3");
-			Factions.TunicaMagoImperial = ini.getShort("INIT", "TunicaMagoImperial");
-			Factions.TunicaMagoImperialEnanos = ini.getShort("INIT", "TunicaMagoImperialEnanos");
-			Factions.ArmaduraCaos1 = ini.getShort("INIT", "ArmaduraCaos1");
-			Factions.ArmaduraCaos2 = ini.getShort("INIT", "ArmaduraCaos2");
-			Factions.ArmaduraCaos3 = ini.getShort("INIT", "ArmaduraCaos3");
-			Factions.TunicaMagoCaos = ini.getShort("INIT", "TunicaMagoCaos");
-			Factions.TunicaMagoCaosEnanos = ini.getShort("INIT", "TunicaMagoCaosEnanos");
-			
-			log.warn("Admins recargados");			
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private void loadInvalidNamesList() {
-    	log.trace("loading invalid names list");
-        this.m_nombresInvalidos.clear();
-        try {
-            BufferedReader f = new BufferedReader(
-                new InputStreamReader(
-                    new FileInputStream(DATDIR + File.separator + "NombresInvalidos.txt")));
-            try {
-                String str = f.readLine();
-                if (str == null) {
-					return;
-				}
-                str = str.trim().toUpperCase();
-                if (!"".equals(str)) {
-					this.m_nombresInvalidos.add(str);
-				}
-            } finally {
-                f.close();
-            }
-        } catch (java.io.FileNotFoundException e) {
-            log.warn("Error abriendo archivo de nombres inválidos");
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            log.warn("Error leyendo archivo de nombres inválidos");
-            e.printStackTrace();
-        }
-    }
-    
-    public boolean esDios(String name) {
-        return this.m_dioses.contains(name.toUpperCase());
-    }
-    
-    public boolean esSemiDios(String name) {
-        return this.m_semidioses.contains(name.toUpperCase());
-    }
-    
-    public boolean esConsejero(String name) {
-        return this.m_consejeros.contains(name.toUpperCase());
-    }
-    
-    public boolean nombrePermitido(String nombre) {
-        return (!this.m_nombresInvalidos.contains(nombre.toUpperCase()));
-    }
-    
     private void pasarSegundo() {
         Vector<Client> paraSalir = new Vector<Client>();
         for (Client cli: getClientes()) {
@@ -820,7 +701,7 @@ public class AojServer implements Constants {
             //enviarATodos(MSG_TALK, "Servidor> Grabando Personajes" + FontType.SERVER);
             for (Client cli: getClientes()) {
                 if (cli.isLogged()) {
-                    cli.saveUser();
+                    cli.userStorage.saveUserToStorage();
                 }
             }
            // enviarATodos(MSG_TALK, "Servidor> Personajes Grabados" + FontType.SERVER);

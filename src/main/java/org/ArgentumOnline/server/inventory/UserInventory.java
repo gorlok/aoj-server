@@ -50,7 +50,6 @@ public class UserInventory extends Inventory implements Constants {
 	private static Logger log = LogManager.getLogger();
     
     Client dueño;
-    AojServer server;
     
     boolean armaEquipada = false;
     boolean municionEquipada = false;
@@ -71,8 +70,7 @@ public class UserInventory extends Inventory implements Constants {
     
     /** Creates a new instance of UserInventory */
     public UserInventory(AojServer server, Client dueño, int slots) {
-        super(slots);
-        this.server = server;
+        super(server, slots);
         this.dueño = dueño;
     }
     
@@ -195,44 +193,44 @@ public class UserInventory extends Inventory implements Constants {
     //FIX BY AGUSH ;-)
     
     public ObjectInfo getArma() {
-    	if (this.armaSlot > 0) return this.server.getInfoObjeto(this.objs[this.armaSlot-1].objid);
+    	if (this.armaSlot > 0) return findObj(this.objs[this.armaSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getEscudo() {
-    	if (this.escudoSlot > 0) return this.server.getInfoObjeto(this.objs[this.escudoSlot-1].objid);
+    	if (this.escudoSlot > 0) return findObj(this.objs[this.escudoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getMunicion() {
-    	if (this.municionSlot > 0) return this.server.getInfoObjeto(this.objs[this.municionSlot-1].objid);
+    	if (this.municionSlot > 0) return findObj(this.objs[this.municionSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getBarco() {
-    	if (this.barcoSlot > 0) return this.server.getInfoObjeto(this.objs[this.barcoSlot-1].objid);
+    	if (this.barcoSlot > 0) return findObj(this.objs[this.barcoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getCasco() {
-    	if (this.cascoSlot > 0) return this.server.getInfoObjeto(this.objs[this.cascoSlot-1].objid);
+    	if (this.cascoSlot > 0) return findObj(this.objs[this.cascoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getArmadura() {
-    	if (this.armaduraSlot > 0) return this.server.getInfoObjeto(this.objs[this.armaduraSlot-1].objid);
+    	if (this.armaduraSlot > 0) return findObj(this.objs[this.armaduraSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getHerramienta() {
-    	if (this.herramientaSlot > 0) return this.server.getInfoObjeto(this.objs[this.herramientaSlot-1].objid);
+    	if (this.herramientaSlot > 0) return findObj(this.objs[this.herramientaSlot-1].objid);
     	return null;
     }
     
     public void quitarObjsNewbie() {
         for (int j = 0; j < this.objs.length; j++) {
             if (this.objs[j].objid > 0) {
-                ObjectInfo infoObj = this.server.getInfoObjeto(this.objs[j].objid);
+                ObjectInfo infoObj = findObj(this.objs[j].objid);
                 if (infoObj.esNewbie()) {
                     quitarUserInvItem(j+1, this.objs[j].cant);
                     // Actualiza un solo slot del inventario del usuario
@@ -283,7 +281,7 @@ public class UserInventory extends Inventory implements Constants {
                 mapa.agregarObjeto(objid, cant, x, y);
                 quitarUserInvItem(slot, cant);
                 this.dueño.enviarObjetoInventario(slot);
-                ObjectInfo iobj = this.server.getInfoObjeto(objid);
+                ObjectInfo iobj = findObj(objid);
                 if (this.dueño.esGM()) {
 					Log.logGM(this.dueño.getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
@@ -302,7 +300,7 @@ public class UserInventory extends Inventory implements Constants {
 			return;
 		}
         
-        ObjectInfo infoObj = this.server.getInfoObjeto(this.objs[slot-1].objid);
+        ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
         switch (infoObj.ObjType) {
             case OBJTYPE_WEAPON:
                 this.objs[slot-1].equipado = false;
@@ -363,7 +361,7 @@ public class UserInventory extends Inventory implements Constants {
         if (this.objs[slot-1].objid == 0) {
 			return;
 		}
-        ObjectInfo infoObj = this.server.getInfoObjeto(this.objs[slot-1].objid);
+        ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
         short objid = this.objs[slot-1].objid;
         log.debug("equipar slot " + slot);
         if (infoObj.esNewbie() && !this.dueño.esNewbie()) {
@@ -630,7 +628,7 @@ public class UserInventory extends Inventory implements Constants {
     public boolean tieneObjetosRobables() {
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
-                ObjectInfo infoObj = this.server.getInfoObjeto(element.objid);
+                ObjectInfo infoObj = findObj(element.objid);
                 if (infoObj.ObjType != OBJTYPE_LLAVES && infoObj.ObjType != OBJTYPE_BARCOS) {
                     return true;
                 }
@@ -642,7 +640,7 @@ public class UserInventory extends Inventory implements Constants {
     public void enviarArmasConstruibles() {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
-            ObjectInfo info = this.server.getInfoObjeto(this.server.getArmasHerrero()[i]);
+            ObjectInfo info = findObj(this.server.getArmasHerrero()[i]);
             if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
                 if (info.ObjType == OBJTYPE_WEAPON) {
                 	params.add(info.Nombre + " (" + info.MinHIT + "/" + info.MaxHIT + ")");
@@ -659,7 +657,7 @@ public class UserInventory extends Inventory implements Constants {
     public void enviarObjConstruibles() {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getObjCarpintero().length; i++) {
-            ObjectInfo info = this.server.getInfoObjeto(this.server.getObjCarpintero()[i]);
+            ObjectInfo info = findObj(this.server.getObjCarpintero()[i]);
             if (info.SkCarpinteria <= this.dueño.skillCarpinteriaEfectivo()) {
             	params.add(info.Nombre + " (" + info.Madera + ")");
             	params.add(this.server.getObjCarpintero()[i]);
@@ -671,7 +669,7 @@ public class UserInventory extends Inventory implements Constants {
     public void enviarArmadurasConstruibles() {
         List<Object> params = new LinkedList<Object>();
         for (int i = 0; i < this.server.getArmadurasHerrero().length; i++) {
-            ObjectInfo info = this.server.getInfoObjeto(this.server.getArmadurasHerrero()[i]);
+            ObjectInfo info = findObj(this.server.getArmadurasHerrero()[i]);
             if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
             	params.add(info.Nombre + " (" + info.MinDef + "/" + info.MaxDef + ")");
             	params.add(this.server.getArmadurasHerrero()[i]);
@@ -684,7 +682,7 @@ public class UserInventory extends Inventory implements Constants {
         Map mapa = this.server.getMapa(this.dueño.getPos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
-                ObjectInfo obj = this.server.getInfoObjeto(element.objid);
+                ObjectInfo obj = findObj(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
                     mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, element);
                 }
@@ -701,7 +699,7 @@ public class UserInventory extends Inventory implements Constants {
         if (obj.objid == 0) {
 			return;
 		}
-        ObjectInfo info = this.server.getInfoObjeto(obj.objid);
+        ObjectInfo info = findObj(obj.objid);
         if (info.esNewbie() && !this.dueño.esNewbie()) {
             this.dueño.enviarMensaje("Solo los newbies pueden usar estos objetos.", FontType.INFO);
             return;
@@ -744,7 +742,7 @@ public class UserInventory extends Inventory implements Constants {
                     if (this.dueño.getFlags().TargetObj == 0) {
 						return;
 					}
-                    ObjectInfo targeInfo = this.server.getInfoObjeto(this.dueño.getFlags().TargetObj);
+                    ObjectInfo targeInfo = findObj(this.dueño.getFlags().TargetObj);
                     // ¿El target-objeto es leña?
                     if (targeInfo.ObjType == OBJTYPE_LEÑA) {
                         if (info.ObjIndex == DAGA) {
@@ -814,7 +812,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (this.dueño.getFlags().TargetObj == 0) {
 					return;
 				}
-                ObjectInfo targetInfo = this.server.getInfoObjeto(this.dueño.getFlags().TargetObj);
+                ObjectInfo targetInfo = findObj(this.dueño.getFlags().TargetObj);
                 // ¿El objeto clickeado es una puerta?
                 if (targetInfo.ObjType == OBJTYPE_PUERTAS) {
                     // ¿Esta cerrada?

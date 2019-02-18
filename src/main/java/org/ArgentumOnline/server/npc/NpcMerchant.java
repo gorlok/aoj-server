@@ -66,7 +66,7 @@ public class NpcMerchant extends Npc {
             if (this.m_inv.getObjeto(i).objid > 0) {
             	
                 // Calculamos el porc de inflacion del npc
-                ObjectInfo info = this.server.getInfoObjeto(this.m_inv.getObjeto(i).objid);
+                ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
                 cliente.enviar(ServerPacketID.MSG_NPC_INV, (byte) i, info.Nombre, (short) this.m_inv.getObjeto(i).cant, ((int) val),
@@ -91,7 +91,7 @@ public class NpcMerchant extends Npc {
 			return;
 		}
         // Calculamos el porc de inflacion del npc
-        ObjectInfo info = this.server.getInfoObjeto(this.m_inv.getObjeto(slot).objid);
+        ObjectInfo info = findObj(this.m_inv.getObjeto(slot).objid);
         double dto = cliente.descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
@@ -146,7 +146,7 @@ public class NpcMerchant extends Npc {
 			return;
 		}
         short objid = cliente.getInv().getObjeto(slot).objid;
-        ObjectInfo info = this.server.getInfoObjeto(objid);
+        ObjectInfo info = findObj(objid);
         if (info.esNewbie()) {
             cliente.enviarMensaje("No comercio objetos para newbies.", FontType.INFO);
             return;
@@ -200,7 +200,7 @@ public class NpcMerchant extends Npc {
         // Sub QuitarNpcInvItem(ByVal NpcIndex As Integer, ByVal Slot As Byte, ByVal Cantidad As Integer)
         short objid = this.m_inv.getObjeto(slot).objid;
         // Quita un Obj
-        ObjectInfo info = this.server.getInfoObjeto(objid);
+        ObjectInfo info = findObj(objid);
         if (!info.esCrucial()) {
             this.m_inv.getObjeto(slot).cant -= cant;
             if (this.m_inv.getObjeto(slot).cant <= 0) {

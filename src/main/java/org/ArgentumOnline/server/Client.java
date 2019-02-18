@@ -36,7 +36,6 @@ import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
 import org.ArgentumOnline.server.classes.AssassinClass;
 import org.ArgentumOnline.server.classes.CharClass;
-import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.classes.FishermanClass;
 import org.ArgentumOnline.server.classes.HunterClass;
 import org.ArgentumOnline.server.classes.ThiefClass;
@@ -68,24 +67,12 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author gorlok
  */
-public class Client extends AbstractCharacter implements Constants {
+public class Client extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
-
-	public int areaID = 0;
-
-	public int areaPerteneceX = 0;
-	public int areaPerteneceY = 0;
-
-	public int areaRecibeX = 0;
-	public int areaRecibeY = 0;
-
-	public int minX = 0;
-	public int minY = 0;
 
 	public List<Integer> lengthClient = new LinkedList<Integer>();
 
 	String m_nick = "";
-
 	String m_password = "";
 
 	public SocketChannel socketChannel = null;
@@ -99,43 +86,31 @@ public class Client extends AbstractCharacter implements Constants {
 	CharClass m_clase = HunterClass.getInstance();
 
 	short m_raza = RAZA_HUMANO;
-
 	short m_genero = GENERO_HOMBRE;
-
 	String m_email = "";
-
 	short m_hogar = CIUDAD_ULLA;
 
 	int m_cantMascotas = 0;
-
 	Npc m_mascotas[] = new Npc[MAX_MASCOTAS_USER];
 
 	int m_cantHechizos = 0;
-
 	UserSpells m_spells;
 
 	long NumeroPaquetesPorMiliSec = 0;
-
 	long BytesTransmitidosUser = 0;
-
 	long BytesTransmitidosSvr = 0;
 
 	GuildInfo m_guildInfo = new GuildInfo(this);
-
 	Guild m_guild = null;
 
 	int m_prevCRC = 0;
-
 	long PacketNumber = 0;
-
 	long RandKey = 0;
 
 	boolean m_saliendo = false;
 
 	String m_ip = "";
-
 	String m_banned_by = "";
-
 	String m_banned_reason = "";
 
 	UserFlags m_flags = new UserFlags();
@@ -148,22 +123,27 @@ public class Client extends AbstractCharacter implements Constants {
 
 	MapPos m_pos = MapPos.empty();
 
-	Inventory m_bancoInv = new Inventory(MAX_BANCOINVENTORY_SLOTS);
-
-	UserCounters m_counters = new UserCounters();
+		UserCounters m_counters = new UserCounters();
 
 	public UserTrade m_comUsu = new UserTrade();
+	
+	UserArea userArea = new UserArea();
+	
+	UserStorage userStorage;
 
 	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
 
 	public UserQuest m_quest;
 
 	UserInventory m_inv;
+	Inventory m_bancoInv; 
 
 	AojServer server;
 
 	/** Creates a new instance of Client */
 	public Client(SocketChannel socketChannel, AojServer aoserver) {
+		this.userStorage = new UserStorage(server, this);
+
 		this.clientBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 		this.clientBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -171,7 +151,8 @@ public class Client extends AbstractCharacter implements Constants {
 		this.setId(server.getNextId());
 		this.m_spells = new UserSpells(server, this);
 		this.m_quest = new UserQuest(this.server);
-		this.m_inv = new UserInventory(this.server, this, 20);
+		this.m_inv = new UserInventory(this.server, this, MAX_USER_INVENTORY_SLOTS);
+		this.m_bancoInv = new Inventory(this.server, MAX_BANCOINVENTORY_SLOTS);
 		this.m_faccion = new Factions(this.server, this);
 		this.socketChannel = socketChannel;
 		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
@@ -181,120 +162,20 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 	}
 	
+	private ObjectInfo findObj(int oid) {
+		return server.getObjectInfoStorage().getInfoObjeto(oid);		
+	}
+	
+	public Inventory getBankInventory() {
+		return m_bancoInv;
+	}
+	
+	public UserArea getUserArea() {
+		return userArea;
+	}
+	
 	public boolean hasPets() {
 		return this.m_cantMascotas > 0;		
-	}
-
-	/**
-	 * JAO: with this, we set the user area ID
-	 */
-	public void setArea(int id) {
-		if (DEBUG)
-			System.out.println("AREAID:" + id);
-		this.areaID = id;
-	}
-
-	/**
-	 * JAO: setter in X area
-	 */
-	public void setAreaPerteneceX(int value) {
-		this.areaPerteneceX = value;
-	}
-
-	/**
-	 * JAO: setter in Y area
-	 */
-
-	public void setAreaPerteneceY(int value) {
-		this.areaPerteneceY = value;
-	}
-
-	/**
-	 * JAO: adyacent X user area
-	 */
-
-	public void setAreaRecibeX(int value) {
-		this.areaRecibeX = value;
-	}
-
-	/**
-	 * JAO: adyacent Y user area
-	 */
-
-	public void setAreaRecibeY(int value) {
-		this.areaRecibeY = value;
-	}
-
-	/**
-	 * JAO: min x pos area
-	 */
-
-	public void setMinX(int value) {
-		this.minX = value;
-	}
-
-	/**
-	 * JAO: min y pos area
-	 */
-
-	public void setMinY(int value) {
-		this.minY = value;
-	}
-
-	/**
-	 * JAO: return the area id
-	 */
-
-	public int getArea() {
-		return this.areaID;
-	}
-
-	/**
-	 * JAO: give the area in X
-	 */
-
-	public int getAreaPerteneceX() {
-		return this.areaPerteneceX;
-	}
-
-	/**
-	 * JAO: give the area in Y
-	 */
-
-	public int getAreaPerteneceY() {
-		return this.areaPerteneceY;
-	}
-
-	/**
-	 * JAO: give the adyacent area X
-	 */
-
-	public int getAreaRecibeX() {
-		return this.areaRecibeX;
-	}
-
-	/**
-	 * JAO: give the adyacent area Y
-	 */
-
-	public int getAreaRecibeY() {
-		return this.areaRecibeY;
-	}
-
-	/**
-	 * JAO: return the lowest value in X
-	 */
-
-	public int getMinX() {
-		return this.minX;
-	}
-
-	/**
-	 * JAO: return the lowest value in Y
-	 */
-
-	public int getMinY() {
-		return this.minY;
 	}
 
 	/**
@@ -651,7 +532,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (mapa.hayTeleport(m_pos.x, m_pos.y)) {
 				return;
 			}
-			if (server.getInfoObjeto(objid) == null) {
+			if (findObj(objid) == null) {
 				return;
 			}
 			mapa.agregarObjeto(objid, 1, m_pos.x, m_pos.y);
@@ -1022,7 +903,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (getFlags().TargetObj == 0) {
 			return;
 		}
-		ObjectInfo iobj = server.getInfoObjeto(getFlags().TargetObj);
+		ObjectInfo iobj = findObj(getFlags().TargetObj);
 		if (iobj.esForo()) {
 			server.getForumManager().ponerMensajeForo(iobj.ForoID, titulo, texto);
 		}
@@ -1739,7 +1620,7 @@ public class Client extends AbstractCharacter implements Constants {
 		enviarMensaje(" Tiene " + usuario.m_inv.getCantObjs() + " objetos.", FontType.INFO);
 		for (int i = 1; i <= usuario.m_inv.size(); i++) {
 			if (usuario.m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info = server.getInfoObjeto(usuario.m_inv.getObjeto(i).objid);
+				ObjectInfo info = findObj(usuario.m_inv.getObjeto(i).objid);
 				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_inv.getObjeto(i).cant,
 						FontType.INFO);
 			}
@@ -1763,7 +1644,7 @@ public class Client extends AbstractCharacter implements Constants {
 		enviarMensaje(" Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
 		for (int i = 1; i <= usuario.m_bancoInv.size(); i++) {
 			if (usuario.m_bancoInv.getObjeto(i).objid > 0) {
-				ObjectInfo info = server.getInfoObjeto(usuario.m_bancoInv.getObjeto(i).objid);
+				ObjectInfo info = findObj(usuario.m_bancoInv.getObjeto(i).objid);
 				enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_bancoInv.getObjeto(i).cant,
 						FontType.INFO);
 			}
@@ -2280,7 +2161,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	private void sendBanObj(short slot, InventoryObject obj_inv) {
 		if (obj_inv != null) {
-			ObjectInfo info = server.getInfoObjeto(obj_inv.objid);
+			ObjectInfo info = findObj(obj_inv.objid);
 			enviar(ServerPacketID.oBank, (byte) slot, info.ObjIndex, info.Nombre, obj_inv.cant, info.GrhIndex,
 					(byte) info.ObjType, info.MaxHIT, info.MinHIT, info.MaxDef);
 		} else {
@@ -2312,7 +2193,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (objid < 1) {
 			return;
 		}
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.SkHerreria == 0) {
 			return;
 		}
@@ -2323,7 +2204,7 @@ public class Client extends AbstractCharacter implements Constants {
 		if (objid < 1) {
 			return;
 		}
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.SkCarpinteria == 0) {
 			return;
 		}
@@ -2443,7 +2324,7 @@ public class Client extends AbstractCharacter implements Constants {
 			// Menor que MAX_INV_OBJS
 			m_inv.getObjeto(slot_inv).objid = objid;
 			m_inv.getObjeto(slot_inv).cant += cant;
-			ObjectInfo info = server.getInfoObjeto(objid);
+			ObjectInfo info = findObj(objid);
 			// Le sustraemos el valor en oro del obj comprado
 			double infla = (npc.getInflacion() * info.Valor) / 100.0;
 			double dto = m_flags.Descuento;
@@ -2693,7 +2574,7 @@ public class Client extends AbstractCharacter implements Constants {
 			enviarMensaje("No tienes suficientes minerales para hacer un lingote.", FontType.INFO);
 			return;
 		}
-		ObjectInfo info = server.getInfoObjeto(m_flags.TargetObjInvIndex);
+		ObjectInfo info = findObj(m_flags.TargetObjInvIndex);
 		if (info.ObjType != OBJTYPE_MINERALES) {
 			enviarMensaje("Debes utilizar minerales para hacer un lingote.", FontType.INFO);
 			return;
@@ -2719,7 +2600,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	private void fundirMineral() {
 		if (m_flags.TargetObjInvIndex > 0) {
-			ObjectInfo info = server.getInfoObjeto(m_flags.TargetObjInvIndex);
+			ObjectInfo info = findObj(m_flags.TargetObjInvIndex);
 			if (info.ObjType == OBJTYPE_MINERALES
 					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria] / m_clase.modFundicion()) {
 				doLingotes();
@@ -2781,7 +2662,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (m_flags.TargetObj == 0) {
 				return;
 			}
-			short objid = server.getInfoObjeto(m_flags.TargetObj).MineralIndex;
+			short objid = findObj(m_flags.TargetObj).MineralIndex;
 			int cant = m_clase.getCantMinerales();
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
@@ -2875,7 +2756,7 @@ public class Client extends AbstractCharacter implements Constants {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarObjetoInventario(slot);
-			ObjectInfo info = server.getInfoObjeto(objid);
+			ObjectInfo info = findObj(objid);
 			enviarMensaje("Has robado " + cant + " " + info.Nombre, FontType.INFO);
 		} else {
 			enviarMensaje("No has logrado robar un objetos.", FontType.INFO);
@@ -3220,7 +3101,7 @@ public class Client extends AbstractCharacter implements Constants {
 		case Skill.SKILL_FundirMetal:
 			mapa.consultar(this, x, y);
 			if (m_flags.TargetObj > 0) {
-				if (server.getInfoObjeto(m_flags.TargetObj).ObjType == OBJTYPE_FRAGUA) {
+				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_FRAGUA) {
 					fundirMineral();
 				} else {
 					enviarMensaje("Ahi no hay ninguna fragua.", FontType.INFO);
@@ -3232,7 +3113,7 @@ public class Client extends AbstractCharacter implements Constants {
 		case Skill.SKILL_Herreria:
 			mapa.consultar(this, x, y);
 			if (m_flags.TargetObj > 0) {
-				if (server.getInfoObjeto(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
+				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
 					m_inv.enviarArmasConstruibles();
 					m_inv.enviarArmadurasConstruibles();
 					// enviar(MSG_SFH);
@@ -3509,7 +3390,7 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 			if (wasLogged) {
 				try {
-					saveUser();
+					userStorage.saveUserToStorage();
 				} catch (Exception ex) {
 					log.fatal("ERROR EN doSALIR() - saveUser(): ", ex);
 				}
@@ -3900,7 +3781,7 @@ public class Client extends AbstractCharacter implements Constants {
 		InventoryObject objInv = m_inv.getObjeto(slot);
 
 		if (objInv != null && objInv.objid != 0) {
-			ObjectInfo io = server.getInfoObjeto(objInv.objid);
+			ObjectInfo io = findObj(objInv.objid);
 
 			enviar(ServerPacketID.MSG_CSI, (byte) slot, objInv.objid, io.Nombre, (short) objInv.cant,
 					(byte) (objInv.equipado ? 1 : 0), io.GrhIndex, (byte) io.ObjType, io.MaxHIT, io.MinHIT, io.MaxDef,
@@ -4454,7 +4335,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void enviarObjeto(int objId, int x, int y) {
-		short grhIndex = server.getInfoObjeto(objId).GrhIndex;
+		short grhIndex = findObj(objId).GrhIndex;
 
 		enviar(ServerPacketID.MSG_HO, grhIndex, (short) x, (short) y);
 	}
@@ -4608,7 +4489,7 @@ public class Client extends AbstractCharacter implements Constants {
 		Map m = server.getMapa(m_pos.map);
 		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i) != null && m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
+				ObjectInfo info_obj = findObj(m_inv.getObjeto(i).objid);
 				if (info_obj.itemSeCae()) {
 					InventoryObject obj_inv = new InventoryObject(m_inv.getObjeto(i).objid, m_inv.getObjeto(i).cant);
 					m_inv.quitarUserInvItem(i, obj_inv.cant);
@@ -4625,7 +4506,7 @@ public class Client extends AbstractCharacter implements Constants {
 		Map m = server.getMapa(m_pos.map);
 		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = server.getInfoObjeto(m_inv.getObjeto(i).objid);
+				ObjectInfo info_obj = findObj(m_inv.getObjeto(i).objid);
 				if (!info_obj.esNewbie() && info_obj.itemSeCae()) {
 					InventoryObject obj_inv = new InventoryObject(m_inv.getObjeto(i).objid, m_inv.getObjeto(i).cant);
 					m_inv.quitarUserInvItem(i, obj_inv.cant);
@@ -4658,7 +4539,7 @@ public class Client extends AbstractCharacter implements Constants {
 				}
 				if (esGM()) {
 					Log.logGM(m_nick,
-							"Tiró " + oi.cant + " unidades del objeto " + server.getInfoObjeto(oi.objid).Nombre);
+							"Tiró " + oi.cant + " unidades del objeto " + findObj(oi.objid).Nombre);
 				}
 				m.tirarItemAlPiso(m_pos.x, m_pos.y, oi);
 			}
@@ -5665,7 +5546,7 @@ public class Client extends AbstractCharacter implements Constants {
 			short hogar) {
 		// Validar los datos recibidos :-)
 		m_nick = nick;
-		if (!server.nombrePermitido(m_nick)) {
+		if (!server.getAdmins().nombrePermitido(m_nick)) {
 			enviarError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
 			return;
 		}
@@ -5737,11 +5618,12 @@ public class Client extends AbstractCharacter implements Constants {
 			break;
 		}
 
-		saveUser();
+		userStorage.saveUserToStorage();
 		connectUser(nick, clave);
 	}
 
-	private static String getPjFile(String nick) {
+	// FIXME
+	static String getPjFile(String nick) {
 		return "pjs" + java.io.File.separator + nick.toLowerCase() + ".chr";
 	}
 
@@ -5791,208 +5673,6 @@ public class Client extends AbstractCharacter implements Constants {
 		enviar(ServerPacketID.msgErr, msg);
 	}
 
-	public void saveUser() {
-		// / guardar en archivo .chr
-		try {
-			IniFile ini = new IniFile();
-			ini.setValue("FLAGS", "Muerto", m_flags.Muerto);
-			ini.setValue("FLAGS", "Escondido", m_flags.Escondido);
-			ini.setValue("FLAGS", "Hambre", m_flags.Hambre);
-			ini.setValue("FLAGS", "Sed", m_flags.Sed);
-			ini.setValue("FLAGS", "Desnudo", m_flags.Desnudo);
-			ini.setValue("FLAGS", "Ban", m_flags.Ban);
-			ini.setValue("FLAGS", "Navegando", m_flags.Navegando);
-			ini.setValue("FLAGS", "Envenenado", m_flags.Envenenado);
-			ini.setValue("FLAGS", "Paralizado", m_flags.Paralizado);
-
-			ini.setValue("COUNTERS", "Pena", m_counters.Pena);
-
-			ini.setValue("FACCIONES", "EjercitoReal", m_faccion.ArmadaReal);
-			ini.setValue("FACCIONES", "EjercitoCaos", m_faccion.FuerzasCaos);
-			ini.setValue("FACCIONES", "CiudMatados", m_faccion.CiudadanosMatados);
-			ini.setValue("FACCIONES", "CrimMatados", m_faccion.CriminalesMatados);
-			ini.setValue("FACCIONES", "rArCaos", m_faccion.RecibioArmaduraCaos);
-			ini.setValue("FACCIONES", "rArReal", m_faccion.RecibioArmaduraReal);
-			ini.setValue("FACCIONES", "rExCaos", m_faccion.RecibioExpInicialCaos);
-			ini.setValue("FACCIONES", "rExReal", m_faccion.RecibioExpInicialReal);
-			ini.setValue("FACCIONES", "recCaos", m_faccion.RecompensasCaos);
-			ini.setValue("FACCIONES", "recReal", m_faccion.RecompensasReal);
-
-			ini.setValue("GUILD", "EsGuildLeader", m_guildInfo.m_esGuildLeader);
-			ini.setValue("GUILD", "Echadas", m_guildInfo.m_echadas);
-			ini.setValue("GUILD", "Solicitudes", m_guildInfo.m_solicitudes);
-			ini.setValue("GUILD", "SolicitudesRechazadas", m_guildInfo.m_solicitudesRechazadas);
-			ini.setValue("GUILD", "VecesFueGuildLeader", m_guildInfo.m_vecesFueGuildLeader);
-			ini.setValue("GUILD", "YaVoto", m_guildInfo.m_yaVoto);
-			ini.setValue("GUILD", "FundoClan", m_guildInfo.m_fundoClan);
-			ini.setValue("GUILD", "GuildName", m_guildInfo.m_guildName);
-			ini.setValue("GUILD", "ClanFundado", m_guildInfo.m_clanFundado);
-			ini.setValue("GUILD", "ClanesParticipo", m_guildInfo.m_clanesParticipo);
-			ini.setValue("GUILD", "GuildPts", m_guildInfo.m_guildPoints);
-
-			ini.setValue("QUEST", "NroQuest", m_quest.m_nroQuest);
-			ini.setValue("QUEST", "EnQuest", m_quest.m_enQuest);
-			ini.setValue("QUEST", "RealizoQuest", m_quest.m_realizoQuest);
-			ini.setValue("QUEST", "Recompensa", m_quest.m_recompensa);
-
-			ini.setValue("BAN", "BannedBy", m_banned_by);
-			ini.setValue("BAN", "Reason", m_banned_reason);
-
-			// ¿Fueron modificados los atributos del usuario?
-			if (!m_flags.TomoPocion) {
-				for (int i = 0; i < m_estads.userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), m_estads.userAtributos[i]);
-				}
-			} else {
-				for (int i = 0; i < m_estads.userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), m_estads.userAtributosBackup[i]);
-				}
-			}
-
-			for (int i = 1; i < m_estads.userSkills.length; i++) {
-				ini.setValue("SKILLS", "SK" + i, m_estads.userSkills[i]);
-			}
-
-			ini.setValue("CONTACTO", "Email", m_email);
-
-			ini.setValue("INIT", "Genero", m_genero);
-			ini.setValue("INIT", "Raza", m_raza);
-			ini.setValue("INIT", "Hogar", m_hogar);
-			ini.setValue("INIT", "Clase", m_clase.getName());
-			ini.setValue("INIT", "Password", m_password);
-			ini.setValue("INIT", "Desc", m_desc);
-			ini.setValue("INIT", "Heading", m_infoChar.m_dir);
-
-			if (m_flags.Muerto || m_flags.Invisible || m_flags.Navegando) {
-				ini.setValue("INIT", "Head", m_origChar.m_cabeza);
-				ini.setValue("INIT", "Body", m_origChar.m_cuerpo);
-			} else {
-				ini.setValue("INIT", "Head", m_infoChar.m_cabeza);
-				ini.setValue("INIT", "Body", m_infoChar.m_cuerpo);
-			}
-
-			ini.setValue("INIT", "Arma", m_infoChar.m_arma);
-			ini.setValue("INIT", "Escudo", m_infoChar.m_escudo);
-			ini.setValue("INIT", "Casco", m_infoChar.m_casco);
-			ini.setValue("INIT", "LastIP", m_ip);
-			ini.setValue("INIT", "Position", m_pos.map + "-" + m_pos.x + "-" + m_pos.y);
-
-			ini.setValue("STATS", "GLD", m_estads.getGold());
-			ini.setValue("STATS", "BANCO", m_estads.getBankGold());
-
-			// ini.setValue("STATS", "MET", m_estads.MET);
-			ini.setValue("STATS", "MaxHP", m_estads.MaxHP);
-			ini.setValue("STATS", "MinHP", m_estads.MinHP);
-
-			// ini.setValue("STATS", "FIT", m_estads.FIT);
-			ini.setValue("STATS", "MaxSTA", m_estads.maxStamina);
-			ini.setValue("STATS", "MinSTA", m_estads.stamina);
-
-			ini.setValue("STATS", "MaxMAN", m_estads.maxMana);
-			ini.setValue("STATS", "MinMAN", m_estads.mana);
-
-			ini.setValue("STATS", "MaxHIT", m_estads.MaxHIT);
-			ini.setValue("STATS", "MinHIT", m_estads.MinHIT);
-
-			ini.setValue("STATS", "MaxAGU", m_estads.maxDrinked);
-			ini.setValue("STATS", "MinAGU", m_estads.drinked);
-
-			ini.setValue("STATS", "MaxHAM", m_estads.maxEaten);
-			ini.setValue("STATS", "MinHAM", m_estads.eaten);
-
-			ini.setValue("STATS", "SkillPtsLibres", m_estads.SkillPts);
-
-			ini.setValue("STATS", "EXP", m_estads.Exp);
-			ini.setValue("STATS", "ELV", m_estads.ELV);
-			ini.setValue("STATS", "ELU", m_estads.ELU);
-
-			ini.setValue("MUERTES", "UserMuertes", m_estads.usuariosMatados);
-			// ini.setValue("MUERTES", "CrimMuertes",
-			// m_estads.criminalesMatados);
-			ini.setValue("MUERTES", "NpcsMuertes", m_estads.NPCsMuertos);
-
-			int cant = m_bancoInv.size();
-			for (int i = 0; i < m_bancoInv.size(); i++) {
-				if (m_bancoInv.getObjeto(i + 1) == null) {
-					ini.setValue("BancoInventory", "Obj" + (i + 1), "0-0");
-					cant--;
-				} else {
-					ini.setValue("BancoInventory", "Obj" + (i + 1),
-							m_bancoInv.getObjeto(i + 1).objid + "-" + m_bancoInv.getObjeto(i + 1).cant);
-				}
-			}
-			ini.setValue("BancoInventory", "CantidadItems", cant);
-
-			cant = m_inv.size();
-			for (int i = 0; i < m_inv.size(); i++) {
-				if (m_inv.getObjeto(i + 1) == null) {
-					ini.setValue("Inventory", "Obj" + (i + 1), "0-0-0");
-					cant--;
-				} else {
-					ini.setValue("Inventory", "Obj" + (i + 1), m_inv.getObjeto(i + 1).objid + "-"
-							+ m_inv.getObjeto(i + 1).cant + "-" + (m_inv.getObjeto(i + 1).equipado ? 1 : 0));
-				}
-			}
-			ini.setValue("Inventory", "CantidadItems", cant);
-			ini.setValue("Inventory", "WeaponEqpSlot", m_inv.getArmaSlot());
-			ini.setValue("Inventory", "ArmourEqpSlot", m_inv.getArmaduraSlot());
-			ini.setValue("Inventory", "CascoEqpSlot", m_inv.getCascoSlot());
-			ini.setValue("Inventory", "EscudoEqpSlot", m_inv.getEscudoSlot());
-			ini.setValue("Inventory", "BarcoSlot", m_inv.getBarcoSlot());
-			ini.setValue("Inventory", "MunicionSlot", m_inv.getMunicionSlot());
-			ini.setValue("Inventory", "HerramientaSlot", m_inv.getHerramientaSlot());
-			ini.setValue("Inventory", "EspadaMataDragonesSlot", m_inv.getEspadaMataDragonesSlot());
-
-			// Reputacion
-			ini.setValue("REP", "Asesino", m_reputacion.asesinoRep);
-			ini.setValue("REP", "Bandido", m_reputacion.bandidoRep);
-			ini.setValue("REP", "Burguesia", m_reputacion.burguesRep);
-			ini.setValue("REP", "Ladrones", m_reputacion.ladronRep);
-			ini.setValue("REP", "Nobles", m_reputacion.nobleRep);
-			ini.setValue("REP", "Plebe", m_reputacion.plebeRep);
-
-			ini.setValue("REP", "Promedio", m_reputacion.getPromedio());
-
-			for (int slot = 1; slot <= m_spells.getCount(); slot++) {
-				ini.setValue("HECHIZOS", "H" + slot, m_spells.getSpell(slot));
-			}
-
-			cant = m_cantMascotas;
-			short cad = 0;
-			for (int i = 0; i < m_mascotas.length; i++) {
-				// Mascota valida?
-				if (m_mascotas[i] != null) {
-					// Nos aseguramos que la criatura no fue invocada
-					//if (m_mascotas[i].m_contadores.TiempoExistencia == 0) {
-					if ( !m_mascotas[i].isSpellSpawnedPet() ) {
-						// gorlok: uso un flag, que es mejor que el contador, porque no alcanza: podría quedar en cero y confundirse.
-						cad = m_mascotas[i].getNPCtype();
-					} else { // Si fue invocada no la guardamos
-						cad = 0;
-						cant--;
-					}
-					ini.setValue("MASCOTAS", "MAS" + (i + 1), cad);
-				} else {
-					cant--;
-				}
-			}
-			if (cant < 0) {
-				cant = 0;
-			}
-			ini.setValue("MASCOTAS", "NroMascotas", cant);
-
-			// Devuelve el head de muerto
-			if (!isAlive()) {
-				m_infoChar.m_cabeza = iCabezaMuerto;
-			}
-
-			// Guardar todo
-			ini.store(getPjFile(m_nick));
-		} catch (Exception e) {
-			log.fatal(m_nick + ": ERROR EN SAVEUSER()", e);
-		}
-	}
-
 	public void connectUser(String nick, String passwd) {
 		m_nick = nick;
 		m_password = passwd;
@@ -6005,7 +5685,6 @@ public class Client extends AbstractCharacter implements Constants {
 				return;
 			}
 
-			IniFile ini = new IniFile(getPjFile(m_nick));
 			// Reseteamos los FLAGS
 			m_flags.Escondido = false;
 			m_flags.TargetNpc = 0;
@@ -6019,27 +5698,19 @@ public class Client extends AbstractCharacter implements Constants {
 			}
 
 			// ¿Es el passwd valido?
-			if (!m_password.equals(ini.getString("INIT", "Password"))) {
+			if (!m_password.equals(userStorage.loadPasswordFromStorage(m_nick))) {
 				enviarError("Clave incorrecta.");
 				return;
 			}
-			// Cargamos los datos del personaje
-			loadUserInit(ini);
-			loadUserStats(ini);
-			if (!validateChr()) {
-				enviarError("Error en el personaje.");
-				return;
-			}
+			this.userStorage.loadUserFromStorage();
 
-			loadUserReputacion(ini);
-
-			if (server.esDios(m_nick)) {
+			if (server.getAdmins().esDios(m_nick)) {
 				m_flags.Privilegios = 3;
 				Log.logGM(m_nick, "El GM-DIOS se conectó desde la ip=" + m_ip);
-			} else if (server.esSemiDios(m_nick)) {
+			} else if (server.getAdmins().esSemiDios(m_nick)) {
 				m_flags.Privilegios = 2;
 				Log.logGM(m_nick, "El GM-SEMIDIOS se conectó desde la ip=" + m_ip);
-			} else if (server.esConsejero(m_nick)) {
+			} else if (server.getAdmins().esConsejero(m_nick)) {
 				m_flags.Privilegios = 1;
 				Log.logGM(m_nick, "El GM-CONSEJERO se conectó desde la ip=" + m_ip);
 			} else {
@@ -6125,22 +5796,6 @@ public class Client extends AbstractCharacter implements Constants {
 		}
 	}
 
-	private boolean validateChr() {
-		return m_infoChar.m_cabeza != 0 && m_infoChar.m_cuerpo != 0 && validateSkills();
-	}
-
-	private boolean validateSkills() {
-		for (int i = 1; i < m_estads.userSkills.length; i++) {
-			if (m_estads.userSkills[i] < 0) {
-				return false;
-			}
-			if (m_estads.userSkills[i] > 100) {
-				m_estads.userSkills[i] = 100;
-			}
-		}
-		return true;
-	}
-
 	public void doServerVersion() {
 		enviarMensaje("-=<>[ Bienvenido a Argentun Online ]<>=-", FontType.WELLCOME);
 		enviarMensaje("-=<>[    Powered by AOJ Server     ]<>=-", FontType.WELLCOME);
@@ -6163,180 +5818,6 @@ public class Client extends AbstractCharacter implements Constants {
 		if (esMiembroClan()) {
 			server.getGuildMngr().sendGuildNews(this);
 		}
-	}
-
-	private void loadUserInit(IniFile ini) throws java.io.IOException {
-		m_faccion.ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
-		m_faccion.FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
-		m_faccion.CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
-		m_faccion.CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
-		m_faccion.RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
-		m_faccion.RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
-		m_faccion.RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
-		m_faccion.RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
-		m_faccion.RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
-		m_faccion.RecompensasReal = ini.getShort("FACCIONES", "recReal");
-
-		m_flags.Muerto = ini.getShort("FLAGS", "Muerto") == 1;
-		m_flags.Escondido = ini.getShort("FLAGS", "Escondido") == 1;
-		m_flags.Hambre = ini.getShort("FLAGS", "Hambre") == 1;
-		m_flags.Sed = ini.getShort("FLAGS", "Sed") == 1;
-		m_flags.Desnudo = ini.getShort("FLAGS", "Desnudo") == 1;
-		m_flags.Envenenado = ini.getShort("FLAGS", "Envenenado") == 1;
-		m_flags.Paralizado = ini.getShort("FLAGS", "Paralizado") == 1;
-		m_flags.Ban = ini.getShort("FLAGS", "Ban") == 1;
-		if (m_flags.Paralizado) {
-			m_counters.Paralisis = IntervaloParalizado;
-		}
-		m_flags.Navegando = ini.getShort("FLAGS", "Navegando") == 1;
-		m_counters.Pena = ini.getLong("COUNTERS", "Pena");
-		m_email = ini.getString("CONTACTO", "Email");
-		m_genero = (byte) ini.getShort("INIT", "Genero");
-		m_clase = CharClassManager.getInstance().getClase(ini.getString("INIT", "Clase").toUpperCase());
-		if (m_clase == null) {
-			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
-		}
-		m_raza = (byte) ini.getShort("INIT", "Raza");
-		m_hogar = (byte) ini.getShort("INIT", "Hogar");
-		m_infoChar.m_dir = ini.getShort("INIT", "Heading");
-
-		m_origChar.m_cabeza = ini.getShort("INIT", "Head");
-		m_origChar.m_cuerpo = ini.getShort("INIT", "Body");
-		m_origChar.m_arma = ini.getShort("INIT", "Arma");
-		m_origChar.m_escudo = ini.getShort("INIT", "Escudo");
-		m_origChar.m_casco = ini.getShort("INIT", "Casco");
-		m_origChar.m_dir = (short)Direction.SOUTH.ordinal();
-
-		m_banned_by = ini.getString("BAN", "BannedBy");
-		m_banned_reason = ini.getString("BAN", "Reason");
-
-		if (isAlive()) {
-			m_infoChar.m_cabeza = m_origChar.m_cabeza;
-			m_infoChar.m_cuerpo = m_origChar.m_cuerpo;
-			m_infoChar.m_arma = m_origChar.m_arma;
-			m_infoChar.m_escudo = m_origChar.m_escudo;
-			m_infoChar.m_casco = m_origChar.m_casco;
-			m_infoChar.m_dir = m_origChar.m_dir;
-		} else {
-			m_infoChar.m_cabeza = iCabezaMuerto;
-			m_infoChar.m_cuerpo = iCuerpoMuerto;
-			m_infoChar.m_arma = NingunArma;
-			m_infoChar.m_escudo = NingunEscudo;
-			m_infoChar.m_casco = NingunCasco;
-		}
-
-		m_desc = ini.getString("INIT", "Desc");
-		{
-			StringTokenizer st = new StringTokenizer(ini.getString("INIT", "Position"), "-");
-			m_pos.map = Short.parseShort(st.nextToken());
-			m_pos.x = Short.parseShort(st.nextToken());
-			m_pos.y = Short.parseShort(st.nextToken());
-		}
-
-		// int banco_cant = ini.getInt("BancoInventory", "CantidadItems");
-		// Lista de objetos en el banco.
-		for (int i = 0; i < m_bancoInv.size(); i++) {
-			String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
-			StringTokenizer st = new StringTokenizer(tmp, "-");
-			m_bancoInv.setObjeto(i + 1,
-					new InventoryObject(Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken())));
-		}
-
-		// int cant = ini.getInt("Inventory", "CantidadItems");
-		// Lista de objetos del inventario del usuario.
-		for (int i = 0; i < m_inv.size(); i++) {
-			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
-			StringTokenizer st = new StringTokenizer(tmp, "-");
-			m_inv.setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
-					Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken()) == 1));
-		}
-		m_inv.setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
-		m_inv.setArmaduraSlot(ini.getShort("Inventory", "ArmourEqpSlot"));
-		m_flags.Desnudo = (m_inv.getArmaduraSlot() == 0);
-		m_inv.setEscudoSlot(ini.getShort("Inventory", "EscudoEqpSlot"));
-		m_inv.setCascoSlot(ini.getShort("Inventory", "CascoEqpSlot"));
-		m_inv.setBarcoSlot(ini.getShort("Inventory", "BarcoSlot"));
-		m_inv.setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
-		m_inv.setHerramientaSlot(ini.getShort("Inventory", "HerramientaSlot"));
-
-		m_cantMascotas = ini.getShort("Mascotas", "NroMascotas");
-		// Lista de mascotas.
-		for (int i = 0; i < m_cantMascotas; i++) {
-			m_mascotas[i] = server.getNpcById(ini.getShort("Mascotas", "Mas" + (i + 1)));
-		}
-
-		m_guildInfo.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
-		m_guildInfo.m_esGuildLeader = ini.getShort("Guild", "EsGuildLeader") == 1;
-		m_guildInfo.m_echadas = ini.getLong("Guild", "Echadas");
-		m_guildInfo.m_solicitudes = ini.getLong("Guild", "Solicitudes");
-		m_guildInfo.m_solicitudesRechazadas = ini.getLong("Guild", "SolicitudesRechazadas");
-		m_guildInfo.m_vecesFueGuildLeader = ini.getLong("Guild", "VecesFueGuildLeader");
-		m_guildInfo.m_yaVoto = ini.getShort("Guild", "YaVoto") == 1;
-		m_guildInfo.m_clanesParticipo = ini.getLong("Guild", "ClanesParticipo");
-		m_guildInfo.m_guildPoints = ini.getLong("Guild", "GuildPts");
-		m_guildInfo.m_clanFundado = ini.getString("Guild", "ClanFundado");
-		m_guildInfo.m_guildName = ini.getString("Guild", "GuildName");
-
-		m_quest.m_nroQuest = ini.getShort("QUEST", "NroQuest");
-		m_quest.m_recompensa = ini.getShort("QUEST", "Recompensa");
-		m_quest.m_enQuest = (ini.getShort("QUEST", "EnQuest") == 1);
-		m_quest.m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
-	}
-
-	private void loadUserStats(IniFile ini) {
-		for (int i = 0; i < NUMATRIBUTOS; i++) {
-			m_estads.userAtributos[i] = (byte) ini.getShort("ATRIBUTOS", "AT" + (i + 1));
-			m_estads.userAtributosBackup[i] = m_estads.userAtributos[i];
-		}
-
-		for (int i = 1; i < m_estads.userSkills.length; i++) {
-			m_estads.userSkills[i] = (byte) ini.getShort("SKILLS", "SK" + i);
-		}
-
-		for (int slot = 1; slot <= m_spells.getCount(); slot++) {
-			m_spells.setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
-		}
-
-		m_estads.setGold(ini.getInt("STATS", "GLD"));
-		m_estads.setBankGold(ini.getInt("STATS", "BANCO"));
-
-		m_estads.MaxHP = ini.getInt("STATS", "MaxHP");
-		m_estads.MinHP = ini.getInt("STATS", "MinHP");
-
-		m_estads.stamina = ini.getInt("STATS", "MinSTA");
-		m_estads.maxStamina = ini.getInt("STATS", "MaxSTA");
-
-		m_estads.maxMana = ini.getInt("STATS", "MaxMAN");
-		m_estads.mana = ini.getInt("STATS", "MinMAN");
-
-		m_estads.MaxHIT = ini.getInt("STATS", "MaxHIT");
-		m_estads.MinHIT = ini.getInt("STATS", "MinHIT");
-
-		m_estads.maxDrinked = ini.getInt("STATS", "MaxAGU");
-		m_estads.drinked = ini.getInt("STATS", "MinAGU");
-
-		m_estads.maxEaten = ini.getInt("STATS", "MaxHAM");
-		m_estads.eaten = ini.getInt("STATS", "MinHAM");
-
-		m_estads.SkillPts = ini.getInt("STATS", "SkillPtsLibres");
-
-		m_estads.Exp = ini.getInt("STATS", "EXP");
-		m_estads.ELU = ini.getInt("STATS", "ELU");
-		m_estads.ELV = ini.getInt("STATS", "ELV");
-
-		m_estads.usuariosMatados = ini.getInt("MUERTES", "UserMuertes");
-		// m_estads.criminalesMatados = ini.getInt("MUERTES",
-		// "CrimMuertes");
-		m_estads.NPCsMuertos = ini.getInt("MUERTES", "NpcsMuertes");
-	}
-
-	private void loadUserReputacion(IniFile ini) {
-		m_reputacion.asesinoRep = ini.getDouble("REP", "Asesino");
-		m_reputacion.bandidoRep = ini.getDouble("REP", "Bandido");
-		m_reputacion.burguesRep = ini.getDouble("REP", "Burguesia");
-		m_reputacion.ladronRep = ini.getDouble("REP", "Ladrones");
-		m_reputacion.nobleRep = ini.getDouble("REP", "Nobles");
-		m_reputacion.plebeRep = ini.getDouble("REP", "Plebe");
 	}
 
 	public void efectoCegueEstu() {
@@ -6693,7 +6174,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public boolean sexoPuedeUsarItem(short objid) {
-		ObjectInfo infoObj = server.getInfoObjeto(objid);
+		ObjectInfo infoObj = findObj(objid);
 		if (infoObj.esParaMujeres()) {
 			return (m_genero == GENERO_MUJER);
 		} else if (infoObj.esParaHombres()) {
@@ -6705,7 +6186,7 @@ public class Client extends AbstractCharacter implements Constants {
 
 	public boolean checkRazaUsaRopa(short objid) {
 		// Verifica si la raza puede usar esta ropa
-		ObjectInfo infoObj = server.getInfoObjeto(objid);
+		ObjectInfo infoObj = findObj(objid);
 		if (m_raza == RAZA_HUMANO || m_raza == RAZA_ELFO || m_raza == RAZA_ELFO_OSCURO) {
 			return !infoObj.esParaRazaEnana();
 		}
@@ -6729,7 +6210,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	private void herreroQuitarMateriales(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.LingH > 0) {
 			quitarObjetos(LingoteHierro, info.LingH);
 		}
@@ -6742,14 +6223,14 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	public void carpinteroQuitarMateriales(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.Madera > 0) {
 			quitarObjetos(Leña, info.Madera);
 		}
 	}
 
 	private boolean carpinteroTieneMateriales(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.Madera > 0) {
 			if (!tieneObjetos(Leña, info.Madera)) {
 				enviarMensaje("No tenes suficientes madera.", FontType.INFO);
@@ -6760,7 +6241,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	private boolean herreroTieneMateriales(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		if (info.LingH > 0) {
 			if (!tieneObjetos(LingoteHierro, info.LingH)) {
 				enviarMensaje("No tienes suficientes lingotes de hierro.", FontType.INFO);
@@ -6783,7 +6264,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	private boolean puedeConstruir(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		return herreroTieneMateriales(objid) && m_estads.getUserSkill(Skill.SKILL_Herreria) >= info.SkHerreria;
 	}
 
@@ -6807,7 +6288,7 @@ public class Client extends AbstractCharacter implements Constants {
 			if (mapa == null) {
 				return;
 			}
-			ObjectInfo info = server.getInfoObjeto(objid);
+			ObjectInfo info = findObj(objid);
 			herreroQuitarMateriales(objid);
 			// AGREGAR FX
 			if (info.ObjType == OBJTYPE_WEAPON) {
@@ -6839,7 +6320,7 @@ public class Client extends AbstractCharacter implements Constants {
 	}
 
 	private void carpinteroConstruirItem(short objid) {
-		ObjectInfo info = server.getInfoObjeto(objid);
+		ObjectInfo info = findObj(objid);
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa == null) {
 			return;
@@ -6933,7 +6414,7 @@ public class Client extends AbstractCharacter implements Constants {
 		ObjectInfo iobj;
 		for (int i = 1; i <= usuario.m_bancoInv.size(); i++) {
 			if ((obj = usuario.m_bancoInv.getObjeto(i)) != null) {
-				iobj = server.getInfoObjeto(obj.objid);
+				iobj = findObj(obj.objid);
 				enviarMensaje(" Objeto " + i + ": " + iobj.Nombre + " Cantidad:" + obj.cant, FontType.INFO);
 			}
 		}
@@ -6954,7 +6435,7 @@ public class Client extends AbstractCharacter implements Constants {
 					short objid = Short.parseShort(st.nextToken());
 					short cant = Short.parseShort(st.nextToken());
 					if (objid > 0) {
-						iobj = server.getInfoObjeto(objid);
+						iobj = findObj(objid);
 						enviarMensaje(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.INFO);
 					}
 				}
@@ -7028,7 +6509,7 @@ public class Client extends AbstractCharacter implements Constants {
 					short objid = Short.parseShort(st.nextToken());
 					short cant = Short.parseShort(st.nextToken());
 					if (objid > 0) {
-						iobj = server.getInfoObjeto(objid);
+						iobj = findObj(objid);
 						enviarMensaje(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.INFO);
 					}
 				}

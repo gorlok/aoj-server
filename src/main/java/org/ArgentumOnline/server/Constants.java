@@ -267,6 +267,7 @@ public interface Constants {
     
     final static int MAX_MASCOTAS_USER = 3;
     
+    final static int MAX_USER_INVENTORY_SLOTS = 20;
     final static int MAX_BANCOINVENTORY_SLOTS = 40;
     
     final static int MAXREP = 6000000;

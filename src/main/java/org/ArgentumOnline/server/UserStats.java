@@ -70,6 +70,19 @@ public class UserStats extends AbstractCharStats {
 
 	public int NPCsMuertos = 0;
 	public int SkillPts = 0; // Puntos de skills sin asignar.
+	
+	
+	public boolean validateSkills() {
+		for (int i = 1; i < userSkills.length; i++) {
+			if (userSkills[i] < 0) {
+				return false;
+			}
+			if (userSkills[i] > 100) {
+				userSkills[i] = 100;
+			}
+		}
+		return true;
+	}
 
 	public void setSkillPoints(int val) {
 		this.SkillPts = val;

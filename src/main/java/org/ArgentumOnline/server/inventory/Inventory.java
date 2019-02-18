@@ -25,6 +25,9 @@
  */
 package org.ArgentumOnline.server.inventory;
 
+import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.ObjectInfo;
+
 /**
  *
  * @author gorlok
@@ -33,11 +36,21 @@ public class Inventory {
     
     protected InventoryObject objs[] = null;
     
+    AojServer server;
+    
     /** Creates a new instance of Inventory */
-    public Inventory(int size) {
+    public Inventory(AojServer server, int size) {
+        this.server = server;
+
         this.objs = new InventoryObject[size];
         reset();
     }
+    
+	
+	protected ObjectInfo findObj(int oid) {
+		return this.server.getObjectInfoStorage().getInfoObjeto(oid);		
+	}
+    
     
     public boolean isSlotValid(int slot) {
     	return slot >= 1 && slot <= size();

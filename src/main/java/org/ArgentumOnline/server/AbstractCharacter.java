@@ -48,5 +48,9 @@ public abstract class AbstractCharacter implements Constants {
     public CharInfo getInfoChar() {
         return this.m_infoChar;
     }
+    
+    public CharInfo getOrigChar() {
+    	return this.m_origChar;
+    }
 
 }

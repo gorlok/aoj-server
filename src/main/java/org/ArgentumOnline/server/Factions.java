@@ -72,8 +72,24 @@ public class Factions implements Constants {
         this.cliente = cliente;
     }
     
+    
+	public static void loadFactionArmors(IniFile ini) {
+		// Armaduras Faccionarias:
+		Factions.ArmaduraImperial1 = ini.getShort("INIT", "ArmaduraImperial1");
+		Factions.ArmaduraImperial2 = ini.getShort("INIT", "ArmaduraImperial2");
+		Factions.ArmaduraImperial3 = ini.getShort("INIT", "ArmaduraImperial3");
+		Factions.TunicaMagoImperial = ini.getShort("INIT", "TunicaMagoImperial");
+		Factions.TunicaMagoImperialEnanos = ini.getShort("INIT", "TunicaMagoImperialEnanos");
+		Factions.ArmaduraCaos1 = ini.getShort("INIT", "ArmaduraCaos1");
+		Factions.ArmaduraCaos2 = ini.getShort("INIT", "ArmaduraCaos2");
+		Factions.ArmaduraCaos3 = ini.getShort("INIT", "ArmaduraCaos3");
+		Factions.TunicaMagoCaos = ini.getShort("INIT", "TunicaMagoCaos");
+		Factions.TunicaMagoCaosEnanos = ini.getShort("INIT", "TunicaMagoCaosEnanos");
+	}
+    
+    
     public boolean faccionPuedeUsarItem(Client cliente, short objid) {
-        ObjectInfo infoObj = this.server.getInfoObjeto(objid);
+        ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
         if (infoObj.Real == 1) {
             if (!cliente.esCriminal()) {
                 return this.ArmadaReal;

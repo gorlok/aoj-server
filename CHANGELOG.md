@@ -3,6 +3,10 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-18
+- Se mueve el código de carga y guardado de chars a UserStorage
+- Se mueve la carga del ObjectInfo a ObjectInfoStorage
+
 ### 2019-02-14
 - Cambiado: nuevo logging usando log4j2
 - Refactory de MOTD, Forum, UPnP
