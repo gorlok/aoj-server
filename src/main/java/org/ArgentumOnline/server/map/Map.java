@@ -29,16 +29,12 @@ import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_CCNPC;
 import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_HO;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Vector;
 
@@ -63,6 +59,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class Map implements Constants {
 	private static Logger log = LogManager.getLogger();
+
+    final static String FOLDER_MAPS = "maps";
+    final static String FOLDER_WORLDBACKUP = "worldBackup";
     
     /** Número de mapa. */
     private short nroMapa;
@@ -78,15 +77,15 @@ public class Map implements Constants {
     // Información del archivo .dat
     String  m_name  = "";
     String  m_music = "";
-    int     m_numUsers = 0;
-    int     m_mapVersion = 0;
+    int     m_numUsers = 0; // FIXME se usa?
+    int     m_mapVersion = 0; // FIXME se usa?
     short   m_terreno = TERRENO_BOSQUE;
     short   m_zona = ZONA_CAMPO;
     public boolean m_pk = false;
     boolean m_restringir = false;
     public boolean m_backup = false;
-    short   m_version = 0;
-    MapPos m_startPos = MapPos.empty();
+    short   m_version = 0; // FIXME se usa?
+    MapPos m_startPos = MapPos.empty(); // FIXME se usa?
     
     AojServer server;
     
@@ -240,33 +239,28 @@ public class Map implements Constants {
     
     public void load(boolean loadBackup) {
         try {
-            String datFile = "Mapa" + this.nroMapa + ".dat";
-            String mapFile = "Mapa" + this.nroMapa + ".map";
-            String infFile = "Mapa" + this.nroMapa + ".inf";
-            loadDatFile(datFile, loadBackup);
-            AojServer.showMemoryStatus("loadDatFile ready #" + this.nroMapa);
-            loadMapFile(mapFile, loadBackup);
-            AojServer.showMemoryStatus("loadMapFile ready #" + this.nroMapa);
-            loadInfFile(infFile, loadBackup);
-            AojServer.showMemoryStatus("loadInfFile ready #" + this.nroMapa);
-
+            loadDatFile("Mapa" + this.nroMapa + ".dat", loadBackup);
+            loadMapFile("Mapa" + this.nroMapa + ".map", loadBackup);
+            loadInfFile("Mapa" + this.nroMapa + ".inf", loadBackup);
         } catch (java.io.FileNotFoundException e) {
-            log.warn("Archivo de mapa " + this.nroMapa + " faltante.");
+            log.warn("Archivo de mapa %d faltante.", this.nroMapa);
         } catch (java.io.IOException e) {
-            log.warn("Error leyendo archivo de mapa " + this.nroMapa);
+            log.warn("Error leyendo archivo de mapa %d", this.nroMapa);
         } catch (Exception e) {
-        	log.warn("Error con mapa " + this.nroMapa);
+        	log.warn("Error con mapa " + this.nroMapa, e);
         }
     }
     
+    
     private void loadDatFile(String datFileName, boolean loadBackup) 
     throws java.io.FileNotFoundException, java.io.IOException {
+    	log.trace("loading file %s", datFileName);
         // Cargar información del archivo .dat
         IniFile ini = new IniFile();
-        if (loadBackup && Util.existeArchivo("worldBackup" + File.separator + datFileName)) {
-			ini.load("worldBackup" + File.separator + datFileName);
+        if (loadBackup && Files.exists(Paths.get(FOLDER_WORLDBACKUP + File.separator + datFileName))) {
+			ini.load(FOLDER_WORLDBACKUP + File.separator + datFileName);
 		} else {
-			ini.loadFromJar("mapas/" + datFileName);
+			ini.load(FOLDER_MAPS + File.separator + datFileName);			
 		}
         String section = "Mapa" + this.nroMapa;
         this.m_name = ini.getString(section, "Name");
@@ -294,6 +288,8 @@ public class Map implements Constants {
         } else {
             this.m_zona = ZONA_CAMPO;
         }
+        
+        // FIXME esta información sigue estando en los mapas?
         String startPos = ini.getString(section, "StartPos");
         if (startPos.length() > 4) {
             String mapa = startPos.substring(0, startPos.indexOf('-'));
@@ -323,182 +319,140 @@ public class Map implements Constants {
      */
     private void loadMapFile(String mapFileName, boolean loadBackup)
     throws java.io.IOException {
-
-	    File map = new File("worldBackup" + File.separator + mapFileName);
-	    byte[] bytes = null;
+    	log.trace("loading file %s", mapFileName);
 	    
-	    if (!loadBackup || !map.exists()) {
-	        bytes = readBytesFromJar(mapFileName);
-	    } else {
-	        bytes = Files.readAllBytes(map.toPath());
+    	Path path = Paths.get(FOLDER_WORLDBACKUP + File.separator + mapFileName);
+	    if (!loadBackup || !Files.exists(path)) {
+	    	path = Paths.get(FOLDER_MAPS + File.separator + mapFileName);
 	    }
 	    
+	    byte[] bytes = Files.readAllBytes(path);
 	    if (bytes == null) {
 	    	log.error("Error, archivo de mapa inexistente: " + mapFileName);
 	    	return;            	
 	    }
 	    
 	    try {
-            	 
             int byflags = 0;
-            BytesReader getter = new BytesReader();
-                 
-            getter.setBytes(bytes);
+            var reader = new BytesReader();
+            reader.setBytes(bytes);
             
-            this.version = getter.readShort();
+            this.version = reader.readShort();
+            reader.skipBytes(255);
             
-            getter.skipBytes(255);
-            
-            getter.readInt();
-            getter.readInt();
-            getter.skipBytes(8);
+            reader.readInt();
+            reader.readInt();
+            reader.skipBytes(8);
             
             for (int y = 0; y < MAPA_ALTO; y++) {
                 for (int x = 0; x < MAPA_ANCHO; x++) {
                 	
-                	byflags = getter.readByte();
+                	byflags = reader.readByte();
                 	
                 	if ((byflags & 1) == 1) {
                 		this.m_cells[x][y].setBloqueado(true);
                 	}
                     
-                	this.m_cells[x][y].setGrh(0, Util.leShort(getter.readShort()));
+                	this.m_cells[x][y].setGrh(0, Util.leShort(reader.readShort()));
                     
                     if ((byflags & 2) == 2) {
-                    	this.m_cells[x][y].setGrh(1, Util.leShort(getter.readShort()));
+                    	this.m_cells[x][y].setGrh(1, Util.leShort(reader.readShort()));
                     }
                     
                     if ((byflags & 4) == 4) {
-                    	this.m_cells[x][y].setGrh(2, Util.leShort(getter.readShort()));
+                    	this.m_cells[x][y].setGrh(2, Util.leShort(reader.readShort()));
                     }
                     if ((byflags & 8) == 8) {
-                    	this.m_cells[x][y].setGrh(3, Util.leShort(getter.readShort()));
+                    	this.m_cells[x][y].setGrh(3, Util.leShort(reader.readShort()));
                     }
                     
                     if ((byflags & 16) == 16) {
-                    	this.m_cells[x][y].setTrigger((byte) Util.leShort(getter.readShort()));
+                    	this.m_cells[x][y].setTrigger((byte) Util.leShort(reader.readShort()));
                     }
                     
                 }
             }         
             
         } catch (Exception e) {
-        	log.error("ERROR LOADING " + mapFileName);
+        	log.error("ERROR LOADING %s", mapFileName);
         }
     }
 
-	private byte[] readBytesFromJar(String mapFileName) throws MalformedURLException, IOException {
-		byte[] bytes = null;
-		URL url = new URL("jar:file:mapas.jar!/mapas/" + mapFileName);
-		URLConnection jar;
-		InputStream is = null;
-		ByteArrayOutputStream buffer = null;
-		byte[] data;
-		try {
-		    jar = url.openConnection();
-		    is = jar.getInputStream();
-			buffer = new ByteArrayOutputStream();
-		    long size = jar.getContentLengthLong();
-			int nRead;
-			data = new byte[(int)size];
-			while ((nRead = is.read(data, 0, data.length)) != -1) {
-			  buffer.write(data, 0, nRead);
-			}
-			bytes = buffer.toByteArray();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (is != null) is.close();
-			if (buffer != null) buffer.close();
-		}
-		return bytes;
-	}
-    
-    
     /**
      * Carga el archivo .inf de la carpeta backup
      * by Agush
      */
-    private void loadInfFile(String infFileName, boolean loadBackup)
-    	    throws java.io.IOException {
+    private void loadInfFile(String infFileName, boolean loadBackup) 
+    throws java.io.IOException {
+    	log.trace("load file %s", infFileName);
 
-        File map = new File("worldBackup" + File.separator + infFileName);
-        
-        if (!map.exists()) {
-        	log.error("Error, archivo de mapa inexistente: " + infFileName);
-        	return;
+        Path path = Paths.get(FOLDER_WORLDBACKUP + File.separator + infFileName);
+        if (!loadBackup || !Files.exists(path)) {
+        	path = Paths.get(FOLDER_MAPS + File.separator + infFileName);
+        	if (!Files.exists(path)) {
+        		log.error("Error, archivo de mapa inexistente: " + infFileName);
+        		return;
+        	}
         }
         
         try {
-        	
-        Npc npc = null;
-        short dest_mapa = 0;
-        short dest_x = 0;
-        short dest_y = 0;
-        int byflags = 0;
-        byte[] array = Files.readAllBytes(map.toPath());
-        BytesReader getter = new BytesReader();
-        
-             
-        getter.setBytes(array);
-        getter.skipBytes(10);
-        getter.mark();
-        
-        for (int y = 0; y < MAPA_ALTO; y++) {
-            for (int x = 0; x < MAPA_ANCHO; x++) {
-            	
-            	byflags = getter.readByte();
-            	
-            	if ((byflags & 1) == 1) {
-					this.m_cells[x][y].setTeleport(MapPos.mxy(Util.leShort(getter.readShort())
-							,Util.leShort(getter.readShort()), Util.leShort(getter.readShort())));
-            	}
-                
-                if ((byflags & 2) == 2) {
-                    short npcId = Util.leShort(getter.readShort());
-                    if (npcId > 0) {
-                        // Crear un nuevo Npc.
-                        this.m_cells[x][y].setNpc(this.server.createNpc(npcId));
-                        npc = this.m_cells[x][y].getNpc();
-                        this.m_npcs.add(npc);
-                        npc.getPos().map = this.nroMapa;
-                        npc.getPos().x = (short) (x+1);
-                        npc.getPos().y = (short) (y+1);
-                        npc.getOrig().map = this.nroMapa;
-                        if (npc.respawnOrigPos()) {
-	                        npc.getOrig().x = (short) (x+1);
-	                        npc.getOrig().y = (short) (y+1);
-                        } else {
-	                        npc.getOrig().x = (short)0;
-	                        npc.getOrig().y = (short)0;                        
-                        }
-                        npc.activar();
-                        if (npc.getNPCtype() == 5) {
-                        	log.debug(npc + " " + npc.getPos()); // FIXME
-						}
-                        // JAO: Sistema de areas!!
-                      //  this.areasData.setNpcArea(npc);
-                        this.areasData.loadNpc(npc);
-                    }
-                }
-                
-                if ((byflags & 4) == 4) {
-                    short obj_ind = Util.leShort(getter.readShort());
-                    short obj_cant = Util.leShort(getter.readShort());
-                        //Objeto obj = agregarObjeto(obj_ind, obj_cant, (short)(x+1), (short)(y+1));
-                       agregarObjeto(obj_ind, obj_cant, (short)(x+1), (short)(y+1));
-                       enviarPuerta(getObjeto((short)(x+1), (short)(y+1)));
-                    
-                }
-                
-            }
-        }         
-        
+	        Npc npc = null;
+	        int byflags = 0;
+	        byte[] array = Files.readAllBytes(path);
+	        
+	        BytesReader reader = new BytesReader();
+	        reader.setBytes(array);
+	        
+	        reader.skipBytes(10);
+	        reader.mark();
+	        
+	        for (int y = 0; y < MAPA_ALTO; y++) {
+	            for (int x = 0; x < MAPA_ANCHO; x++) {
+	            	
+	            	byflags = reader.readByte();
+	            	
+	            	if ((byflags & 1) == 1) {
+						this.m_cells[x][y].setTeleport(MapPos.mxy(Util.leShort(reader.readShort())
+								,Util.leShort(reader.readShort()), Util.leShort(reader.readShort())));
+	            	}
+	                
+	                if ((byflags & 2) == 2) {
+	                    short npcId = Util.leShort(reader.readShort());
+	                    if (npcId > 0) {
+	                        // Crear un nuevo Npc.
+	                        this.m_cells[x][y].setNpc(this.server.createNpc(npcId));
+	                        npc = this.m_cells[x][y].getNpc();
+	                        this.m_npcs.add(npc);
+	                        npc.getPos().map = this.nroMapa;
+	                        npc.getPos().x = (short) (x+1);
+	                        npc.getPos().y = (short) (y+1);
+	                        npc.getOrig().map = this.nroMapa;
+	                        if (npc.respawnOrigPos()) {
+		                        npc.getOrig().x = (short) (x+1);
+		                        npc.getOrig().y = (short) (y+1);
+	                        } else {
+		                        npc.getOrig().x = (short)0;
+		                        npc.getOrig().y = (short)0;                        
+	                        }
+	                        npc.activar();
+	                        // JAO: Sistema de areas!!
+	                        //  this.areasData.setNpcArea(npc);
+	                        this.areasData.loadNpc(npc);
+	                    }
+	                }
+	                
+	                if ((byflags & 4) == 4) {
+						short obj_ind = Util.leShort(reader.readShort());
+						short obj_cant = Util.leShort(reader.readShort());
+						agregarObjeto(obj_ind, obj_cant, (short)(x+1), (short)(y+1)); // FIXME ignora el resultado ? y si no pudo agregarlo?
+						enviarPuerta(getObjeto((short)(x+1), (short)(y+1)));
+	                }
+	            }
+	        }         
         
         } catch (Exception e) {
         	log.error("Error, cargando " + infFileName, e);
         }
-
     }
     
     public boolean entrar(Client cliente, short x, short y) {

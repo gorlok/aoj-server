@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.ArgentumOnline.server.AojServer;
 import org.ArgentumOnline.server.Client;
-import org.ArgentumOnline.server.TrainerMascot;
 import org.ArgentumOnline.server.util.IniFile;
 
 public class NpcTrainer extends Npc {

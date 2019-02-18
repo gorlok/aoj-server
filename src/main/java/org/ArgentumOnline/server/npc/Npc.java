@@ -81,15 +81,13 @@ public class Npc extends AbstractCharacter implements Constants {
     public final static short NPCTYPE_ENTRENADOR = 3;
     public final static short NPCTYPE_BANQUERO = 4;
     public final static short NPCTYPE_NOBLE = 5;
-    //public final static short NPCTYPE_GUARDIA_REAL = 5; // Guardias Reales
     public final static short NPCTYPE_DRAGON = 6;
     public final static short NPCTYPE_TIMBERO = 7;
-    public final static short NPCTYPE_GUARDIAS_CAOS = 8; // FIXME
-    
+    public final static short NPCTYPE_GUARDIAS_CAOS = 8;
+    public final static short NPCTYPE_SACERDOTE_NEWBIES = 9; // TODO PUEDE RESUCITAR SOLAMENTE A LOS NEWBIES
+
     public final static short NPCTYPE_QUEST = 98; // FIXME
     public final static short NPCTYPE_AMIGOQUEST = 99; // FIXME
-    //public final static short NPCTYPE_GUARDIA_CAOS = 11; // Guardias Caos
-    // FIXME 9 ====== PUEDE RESUCITAR SOLAMENTE A LOS NEWBIES
     
     public final static short GUARDIAS_PERSIGUEN_CIUDADANOS = 1;
     public final static short GUARDIAS_PERSIGUEN_CRIMINALES = 0;

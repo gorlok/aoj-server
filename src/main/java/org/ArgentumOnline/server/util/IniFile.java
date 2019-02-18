@@ -118,26 +118,6 @@ public class IniFile {
         }
     }
     
-    /** Carga y parsea un archivo INI.
-     * @param filename Nombre del archivo ini
-     * @throws FileNotFoundException Archivo no encontrado
-     * @throws IOException Error de E/S
-     */
-    public void loadFromJar(String filename)
-    throws java.io.FileNotFoundException, java.io.IOException {
-        URL url = new URL("jar:file:mapas.jar!/" + filename);
-        JarURLConnection jarConnection = (JarURLConnection)url.openConnection();
-        BufferedReader f = 
-            new BufferedReader(
-                new InputStreamReader(
-                    jarConnection.getInputStream()));
-        try {
-            loadFromFile(f);
-        } finally {
-            f.close();
-        }
-    }
-    
     private void loadFromFile(BufferedReader f)
     throws java.io.FileNotFoundException, java.io.IOException {    
         int corcheteCierre, separador, comentario;

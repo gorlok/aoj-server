@@ -495,12 +495,6 @@ public class AojServer implements Constants {
     	this.m_clientes_eliminar.clear();
     }
 
-    public static void showMemoryStatus(String msg) {
-    	if (DEBUG) {
-    		System.out.println(memoryStatus() + " [" + msg + "]");
-    	}
-    }
-    
     private static String memoryStatus() {
     	return  "total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
     			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
@@ -509,6 +503,7 @@ public class AojServer implements Constants {
     
     /** Load maps / Cargar los m_mapas */
     private void loadMaps(boolean loadBackup) {
+    	log.trace("loading maps");
         this.m_mapas = new Vector<Map>();
         Map mapa;
         for (short i = 1; i <= CANT_MAPAS; i++) {
@@ -520,6 +515,7 @@ public class AojServer implements Constants {
     
     /** Load objects / Cargar los m_objetos */
     private void loadObjects() {
+    	log.trace("loading objects");
         this.m_objetos = new Vector<ObjectInfo>();
         IniFile ini = new IniFile();
         try {
@@ -540,6 +536,7 @@ public class AojServer implements Constants {
     
     /** Load spells / Cargar los hechizos */
     private void loadSpells() {
+    	log.trace("loading spells");
         this.m_hechizos = new Vector<Spell>();
         IniFile ini = new IniFile();
         try {
@@ -558,8 +555,8 @@ public class AojServer implements Constants {
         }
     }
     
-    private void cargarQuests() {
-        // Obtiene el numero de quest
+    private void loadQuests() {
+    	log.trace("loading quests");
         IniFile ini = new IniFile();
         try {
             ini.load(DATDIR + java.io.File.separator + "Quests.dat");
@@ -570,7 +567,6 @@ public class AojServer implements Constants {
         }
         short cant = ini.getShort("INIT", "NumQuests");
         this.m_quests = new Vector<Quest>();        
-        // Llena la lista
         for (short i = 1; i <= cant; i++) {
             Quest quest = new Quest(this, i);
             quest.load(ini);
@@ -580,33 +576,20 @@ public class AojServer implements Constants {
 
     /** Load all initial data / Cargar todos los datos iniciales */
     private void loadAllData(boolean loadBackup) {
-    	showMemoryStatus("loadAllData() start");
+    	log.trace("loadAllData started");
         loadObjects();
-    	showMemoryStatus("loadObjects() ready");
         loadSpells();
-    	showMemoryStatus("loadSpells ready");
         loadMaps(loadBackup);
-    	showMemoryStatus("loadMaps ready");
-        cargarQuests();
-    	showMemoryStatus("cargarQuests ready");
-        loadCiudades();
-    	showMemoryStatus("loadCiudades ready");
-        loadArmasHerreria();
-    	showMemoryStatus("loadArmasHerreria ready");
-        loadArmadurasHerreria();
-    	showMemoryStatus("loadArmadurasHerreria ready");
-        loadObjCarpintero();
-    	showMemoryStatus("loadObjCarpintero ready");
+        loadQuests();
+        loadCities();
+        loadBlacksmithingWeapons();
+        loadBlacksmithingArmors();
+        loadCarpentryObjects();
         loadAdmins();
-    	showMemoryStatus("loadAdmins ready");
-        loadNombresInvalidos();
-    	showMemoryStatus("loadNombresInvalidos ready");
-        cargarSpawnList();
-    	showMemoryStatus("cargarSpawnList ready");
-        motd.loadMOTD();
-    	showMemoryStatus("loadMOTD ready");
-        //System.gc(); // Para decirle a la VM que es buen momento para liberar algo de memoria.
-    	showMemoryStatus("loadAllData() ended");
+        loadInvalidNamesList();
+        loadAdminsSpawnableCreatures();
+        motd.loadMotd();
+        log.trace("loadAllData ended");
     }
     
     public Npc createNpc(int npcNumber) {
@@ -692,7 +675,8 @@ public class AojServer implements Constants {
         }
     }
 
-    private void cargarSpawnList() {
+    private void loadAdminsSpawnableCreatures() {
+    	log.trace("loading list of spwanable creatures");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Invokar.dat");
             short cant = ini.getShort("INIT", "NumNPCs");
@@ -710,6 +694,7 @@ public class AojServer implements Constants {
     }
     
     public void loadAdmins() {
+    	log.trace("loading admins");
         try {
             // Limpiar las listas de admins.
             this.m_dioses.clear();
@@ -760,7 +745,8 @@ public class AojServer implements Constants {
         }
     }
     
-    private void loadNombresInvalidos() {
+    private void loadInvalidNamesList() {
+    	log.trace("loading invalid names list");
         this.m_nombresInvalidos.clear();
         try {
             BufferedReader f = new BufferedReader(
@@ -844,7 +830,8 @@ public class AojServer implements Constants {
         }
     }
     
-    private void loadCiudades() {
+    private void loadCities() {
+    	log.trace("loading cities");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
             this.m_ciudades = new MapPos[4];
@@ -1065,7 +1052,11 @@ public class AojServer implements Constants {
         // <<<<<-------- Log the number of users online ------>>>
     }
 
-    private void loadArmasHerreria() {
+    /**
+     * Cargar armas de herrería
+     */
+    private void loadBlacksmithingWeapons() {
+    	log.trace("loading blacksmithing weapons");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmas");
@@ -1082,7 +1073,8 @@ public class AojServer implements Constants {
         }
     }
 
-    private void loadArmadurasHerreria() {
+    private void loadBlacksmithingArmors() {
+    	log.trace("loading backsmithing armors");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmadurasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmaduras");
@@ -1099,7 +1091,8 @@ public class AojServer implements Constants {
         }
     }
 
-    private void loadObjCarpintero() {
+    private void loadCarpentryObjects() {
+    	log.trace("loading carpentry objects");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ObjCarpintero.dat");
             short cant = ini.getShort("INIT", "NumObjs");

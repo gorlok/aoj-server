@@ -20,7 +20,8 @@ public class Motd {
     public Motd() {
 	}
 
-    public void loadMOTD() {
+    public void loadMotd() {
+    	log.trace("loading MOTD");
         try {
             String msg;
             this.m_motd.clear();
