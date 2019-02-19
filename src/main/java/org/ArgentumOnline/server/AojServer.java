@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.ArgentumOnline.server.forum.ForumManager;
-import org.ArgentumOnline.server.gm.GmRequest;
 import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
@@ -94,16 +93,11 @@ public class AojServer implements Constants {
     private List<Map> 		m_mapas = new Vector<Map>();    
     private List<Quest> 	m_quests = new Vector<Quest>();
     
-    private List<GmRequest> m_pedidosAyudaGM = new Vector<GmRequest>();
-    private List<String> m_bannedIPs = new Vector<String>();
-
     private List<MapPos> m_trashCollector = new Vector<MapPos>();
     
     private short [] m_armasHerrero;
     private short [] m_armadurasHerrero;
     private short [] m_objCarpintero;
-    private short [] m_spawnList;
-    private String [] m_spawnListNames;
     
     boolean m_corriendo = false;
     boolean m_haciendoBackup = false;
@@ -133,7 +127,7 @@ public class AojServer implements Constants {
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
     	this.npcLoader = new NpcLoader(this);
-    	this.admins = new Admins();
+    	this.admins = new Admins(this);
     	this.objectInfoStorage = new ObjectInfoStorage();
     }
 
@@ -178,7 +172,7 @@ public class AojServer implements Constants {
     }
     
     public long runningTimeInSecs() {
-        return (getMillis() - this.startTime) / 1000;
+        return (Util.millis() - this.startTime) / 1000;
     }
     
     public String calculateUptime() {
@@ -198,10 +192,6 @@ public class AojServer implements Constants {
         return this.m_lloviendo;
     }
     
-    public List<GmRequest> getPedidosAyudaGM() {
-        return this.m_pedidosAyudaGM;
-    }
-    
     public boolean estaHaciendoBackup() {
         return this.m_haciendoBackup;
     }
@@ -218,14 +208,6 @@ public class AojServer implements Constants {
         return this.m_quests.size();
     }
     
-    public short[] getSpawnList() {
-        return this.m_spawnList;
-    }
-    
-    public String[] getSpawnListNames() {
-        return this.m_spawnListNames;
-    }
-    
     public short [] getArmasHerrero() {
         return this.m_armasHerrero;
     }
@@ -236,10 +218,6 @@ public class AojServer implements Constants {
     
     public short [] getObjCarpintero() {
         return this.m_objCarpintero;
-    }
-    
-    public List<String> getBannedIPs() {
-        return this.m_bannedIPs;
     }
     
     public boolean isShowDebug() {
@@ -360,20 +338,10 @@ public class AojServer implements Constants {
             	cliente.doSALIR();
             }
             
-            
         } catch (Exception e) {
             cliente.doSALIR();
             return;
         }       
-        
-    }
-    
-    public long getMillis() {
-    	// 1 s  = 1.000 ms
-    	// 1 ms = 1.000 us
-    	// 1 us = 1.000 ns
-    	// 1 ms = 1.000.000 ns
-        return System.nanoTime() / 1000000;
     }
     
     boolean loadBackup;
@@ -394,7 +362,7 @@ public class AojServer implements Constants {
         		NetworkUPnP.openUPnP();
         	}
             // Main loop.
-            this.startTime = getMillis();
+            this.startTime = Util.millis();
             long lastNpcAI = this.startTime;
             long lastFX = this.startTime;
             long lastGameTimer = this.startTime;
@@ -428,7 +396,7 @@ public class AojServer implements Constants {
                     }
                 }
                 keys.clear();
-                long now = getMillis();
+                long now = Util.millis();
                 if ((now - lastNpcAI) > 400) {
                     doAI();
                     lastNpcAI = now;
@@ -566,7 +534,7 @@ public class AojServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
-        loadAdminsSpawnableCreatures();
+        admins.loadAdminsSpawnableCreatures();
         admins.loadInvalidNamesList();
         admins.loadAdmins();
         motd.loadMotd();
@@ -652,24 +620,6 @@ public class AojServer implements Constants {
         }
     }
 
-    private void loadAdminsSpawnableCreatures() {
-    	log.trace("loading list of spwanable creatures");
-        try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "Invokar.dat");
-            short cant = ini.getShort("INIT", "NumNPCs");
-            this.m_spawnList = new short[cant];
-            this.m_spawnListNames = new String[cant];
-            for (int i = 0; i < cant; i++) {
-                this.m_spawnList[i] = ini.getShort("LIST", "NI" + (i+1));
-                this.m_spawnListNames[i] = ini.getString("LIST", "NN" + (i+1));
-            }
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
     private void pasarSegundo() {
         Vector<Client> paraSalir = new Vector<Client>();
         for (Client cli: getClientes()) {

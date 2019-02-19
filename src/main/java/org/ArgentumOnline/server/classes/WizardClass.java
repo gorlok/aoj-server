@@ -27,6 +27,7 @@ package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.UserStats;
+import org.ArgentumOnline.server.Factions.FactionArmors;
 import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.util.Util;
 
@@ -84,17 +85,17 @@ public class WizardClass extends CharClass {
     @Override
 	public short getArmaduraImperial(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.TunicaMagoImperialEnanos;
+            return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
         }
-        return Factions.TunicaMagoImperial;
+        return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL);
     }
     
     @Override
 	public short getArmaduraCaos(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.TunicaMagoCaosEnanos;
+            return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
         }
-        return Factions.TunicaMagoCaos;
+        return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS);
     }
     
 }

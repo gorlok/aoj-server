@@ -28,6 +28,7 @@ package org.ArgentumOnline.server.classes;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.UserStats;
+import org.ArgentumOnline.server.Factions.FactionArmors;
 import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
@@ -181,16 +182,16 @@ public abstract class CharClass implements Constants {
     
     public short getArmaduraImperial(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.ArmaduraImperial3;
+            return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
-        return Factions.ArmaduraImperial2;
+        return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
     }
 
     public short getArmaduraCaos(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.ArmaduraCaos3;
+            return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
-        return Factions.ArmaduraCaos2;
+        return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);
     }
     
 }

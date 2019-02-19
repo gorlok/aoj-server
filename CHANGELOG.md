@@ -6,6 +6,8 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 ### 2019-02-18
 - Se mueve el código de carga y guardado de chars a UserStorage
 - Se mueve la carga del ObjectInfo a ObjectInfoStorage
+- Se cambian las armaduras faccionarias
+- Se mueven comanddos de Admin a nueva clase
 
 ### 2019-02-14
 - Cambiado: nuevo logging usando log4j2

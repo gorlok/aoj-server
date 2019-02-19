@@ -25,6 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
+import org.ArgentumOnline.server.Factions.FactionArmors;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.npc.Npc;
@@ -34,23 +35,38 @@ import org.ArgentumOnline.server.util.*;
  * @author gorlok
  */
 public class Factions implements Constants {
+	
     ///////////////// Constantes públicas de la clase:
     public static final int EXP_AL_UNIRSE = 100000;
     public static final int EXP_X_100 = 5000;
     
     ///////////////// Miembros de la CLASE ("globales"):
-    // FACCION IMPERIAL:
-    public static short ArmaduraImperial1; // Primer jerarquia
-    public static short ArmaduraImperial2; // Segunda jerarquía
-    public static short ArmaduraImperial3; // Enanos (?)
-    public static short TunicaMagoImperial; // Magos
-    public static short TunicaMagoImperialEnanos; // Magos Enanos
-    // FACCION CAOS:
-    public static short ArmaduraCaos1; // Primer jerarquia
-    public static short ArmaduraCaos2; // Segunda jerarquia
-    public static short ArmaduraCaos3; // Enanos (?)
-    public static short TunicaMagoCaos; // Magos
-    public static short TunicaMagoCaosEnanos; // Magos Enanos
+    public static enum FactionArmors {
+
+        // FACCION IMPERIAL:
+    	ARMADURA_IMPERIAL_1("Armadura Imperial 1"),
+    	ARMADURA_IMPERIAL_2("Armadura Imperial 2"),
+    	ARMADURA_IMPERIAL_3("Armadura Imperial 3"), // ENANO / GNOMO
+    	TUNICA_MAGO_IMPERIAL("Túnica Mago Imperial"),
+    	TUNICA_MAGO_IMPERIAL_ENANOS("Túnica Mago Imperial Enanos"),
+    	
+        // FACCION CAOS:
+    	ARMADURA_CAOS_1("Armadura Caos 1"),
+    	ARMADURA_CAOS_2("Armadura Caos 2"),
+    	ARMADURA_CAOS_3("Armadura Caos 3"), // ENANO / GNOMO
+    	TUNICA_MAGO_CAOS("Túnica Mago Caos"),
+    	TUNICA_MAGO_CAOS_ENANOS("Túnica Mago Caos Enanos");
+    	
+    	private String name;
+    	FactionArmors(String name) {
+    		this.name = name;
+    	}
+    	
+    	public String getName() {
+			return name;
+		}
+    }
+    static short[] factionArmors = new short[FactionArmors.values().length];
 
     ///////////////// Miembros de instancia:
     Client cliente;
@@ -74,19 +90,36 @@ public class Factions implements Constants {
     
     
 	public static void loadFactionArmors(IniFile ini) {
-		// Armaduras Faccionarias:
-		Factions.ArmaduraImperial1 = ini.getShort("INIT", "ArmaduraImperial1");
-		Factions.ArmaduraImperial2 = ini.getShort("INIT", "ArmaduraImperial2");
-		Factions.ArmaduraImperial3 = ini.getShort("INIT", "ArmaduraImperial3");
-		Factions.TunicaMagoImperial = ini.getShort("INIT", "TunicaMagoImperial");
-		Factions.TunicaMagoImperialEnanos = ini.getShort("INIT", "TunicaMagoImperialEnanos");
-		Factions.ArmaduraCaos1 = ini.getShort("INIT", "ArmaduraCaos1");
-		Factions.ArmaduraCaos2 = ini.getShort("INIT", "ArmaduraCaos2");
-		Factions.ArmaduraCaos3 = ini.getShort("INIT", "ArmaduraCaos3");
-		Factions.TunicaMagoCaos = ini.getShort("INIT", "TunicaMagoCaos");
-		Factions.TunicaMagoCaosEnanos = ini.getShort("INIT", "TunicaMagoCaosEnanos");
+		factionArmors[FactionArmors.ARMADURA_IMPERIAL_1.ordinal()] = ini.getShort("INIT", "ArmaduraImperial1");
+		factionArmors[FactionArmors.ARMADURA_IMPERIAL_2.ordinal()] = ini.getShort("INIT", "ArmaduraImperial2");
+		factionArmors[FactionArmors.ARMADURA_IMPERIAL_3.ordinal()] = ini.getShort("INIT", "ArmaduraImperial3");
+		factionArmors[FactionArmors.TUNICA_MAGO_IMPERIAL.ordinal()] = ini.getShort("INIT", "TunicaMagoImperial");
+		factionArmors[FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS.ordinal()] = ini.getShort("INIT", "TunicaMagoImperialEnanos");
+		factionArmors[FactionArmors.ARMADURA_CAOS_1.ordinal()] = ini.getShort("INIT", "ArmaduraCaos1");
+		factionArmors[FactionArmors.ARMADURA_CAOS_2.ordinal()] = ini.getShort("INIT", "ArmaduraCaos2");
+		factionArmors[FactionArmors.ARMADURA_CAOS_3.ordinal()] = ini.getShort("INIT", "ArmaduraCaos3");
+		factionArmors[FactionArmors.TUNICA_MAGO_CAOS.ordinal()] = ini.getShort("INIT", "TunicaMagoCaos");
+		factionArmors[FactionArmors.TUNICA_MAGO_CAOS_ENANOS.ordinal()] = ini.getShort("INIT", "TunicaMagoCaosEnanos");
+	}
+	
+	public static short getFactionArmor(FactionArmors factiorArmor) {
+		return factionArmors[factiorArmor.ordinal()];
 	}
     
+	public static void sendFactionArmor(Client admin, FactionArmors factiorArmor) {
+		admin.enviarMensaje(
+				String.format("%s es %d", 
+				factiorArmor.getName(), factionArmors[factiorArmor.ordinal()]), 
+				FontType.INFO);
+	}
+	
+	public static void updateFactionArmor(Client admin, FactionArmors factiorArmor, short armorObjIdx) {
+		factionArmors[factiorArmor.ordinal()] = armorObjIdx;
+		admin.enviarMensaje(
+				String.format("%s ha sido actualizada", factiorArmor.getName()), 
+				FontType.INFO);
+	}
+	
     
     public boolean faccionPuedeUsarItem(Client cliente, short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);

@@ -27,6 +27,7 @@ package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.UserStats;
+import org.ArgentumOnline.server.Factions.FactionArmors;
 import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.util.Util;
 
@@ -101,17 +102,17 @@ public class WarriorClass extends CharClass {
     @Override
 	public short getArmaduraImperial(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.ArmaduraImperial3;
+        	return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
-        return Factions.ArmaduraImperial1;
+        return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
     }
     
     @Override
 	public short getArmaduraCaos(Client cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
-            return Factions.ArmaduraCaos3;
+            return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
-        return Factions.ArmaduraCaos1;
+        return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
     }
     
 }

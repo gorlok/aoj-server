@@ -33,6 +33,14 @@ public class Util {
 
 	private Util() {}
 
+    public static long millis() {
+    	// 1 s  = 1.000 ms
+    	// 1 ms = 1.000 us
+    	// 1 us = 1.000 ns
+    	// 1 ms = 1.000.000 ns
+        return System.nanoTime() / 1000000;
+    }
+	
 	public static boolean asciiValidos(String str) {
 		// Function AsciiValidos(ByVal cad As String) As Boolean
 		byte[] bytes = str.toLowerCase().getBytes();

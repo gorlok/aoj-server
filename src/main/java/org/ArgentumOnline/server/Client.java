@@ -39,7 +39,6 @@ import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.FishermanClass;
 import org.ArgentumOnline.server.classes.HunterClass;
 import org.ArgentumOnline.server.classes.ThiefClass;
-import org.ArgentumOnline.server.gm.GmRequest;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildInfo;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -614,23 +613,15 @@ public class Client extends AbstractCharacter {
 		Log.logGM(m_nick, "/ECHARTODOSPJS");
 	}
 
-	public void doBorrarSOS() {
-		// Comando /BORRAR SOS
-		// Comando para borrar todos pedidos /GM pendientes
-		server.getPedidosAyudaGM().clear();
-		enviarMensaje("Todos los /GM pendientes han sido eliminados.", FontType.INFO);
-		Log.logGM(m_nick, "/BORRAR SOS");
-	}
-
-	public void doComandoNave() {
-		// Comando /NAVE
-		// Comando para depurar la navegacion
-		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
-	}
-
 	public void doShowInt() {
 		// Comando /SHOW INT
 		// Comando para abrir la ventana de config de intervalos en el server.
+		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
+	}
+	
+	public void doComandoNave() {
+		// Comando /NAVE
+		// Comando para depurar la navegacion
 		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
 	}
 
@@ -788,58 +779,6 @@ public class Client extends AbstractCharacter {
 		server.getGuildMngr().sendGuildDetails(this, s);
 	}
 
-	public void doUsuariosEnMapa() {
-		// Comando /ONLINEMAP
-		// Devuelve la lista de usuarios en el mapa.
-		Map mapa = server.getMapa(m_pos.map);
-		if (mapa == null) {
-			return;
-		}
-		StringBuffer msg = new StringBuffer();
-		int cant = 0;
-		for (String usuario : mapa.getUsuarios()) {
-			if (cant > 0) {
-				msg.append(",");
-			}
-			cant++;
-			msg.append(usuario);
-		}
-		enviarMensaje("Usuarios en el mapa: " + msg, FontType.INFO);
-	}
-
-	public void doUsuariosTrabajando() {
-		// Comando /TRABAJANDO
-		// Devuelve la lista de usuarios trabajando.
-		StringBuffer msg = new StringBuffer();
-		int cant = 0;
-		for (String usuario : server.getUsuariosTrabajando()) {
-			if (cant > 0) {
-				msg.append(",");
-			}
-			cant++;
-			msg.append(usuario);
-		}
-		enviarMensaje("Usuarios trabajando: " + msg, FontType.INFO);
-	}
-
-	public void doPanelGM() {
-		// Comando /PANELGM
-		// enviar(MSG_ABPANEL);
-	}
-
-	public void doListaUsuarios() {
-		// Comando LISTUSU
-		StringBuffer msg = new StringBuffer();
-		for (String usuario : server.getUsuariosConectados()) {
-			msg.append(usuario);
-			msg.append(",");
-		}
-		if (msg.length() > 0 && msg.charAt(msg.length() - 1) == ',') {
-			msg.deleteCharAt(msg.length() - 1);
-		}
-		// enviar(MSG_LISTUSU, msg.toString());
-	}
-
 	public void doApostar(int cant) {
 		// Comando /APOSTAR
 		// Comando /APOSTAR basado en la idea de DarkLight,
@@ -906,106 +845,6 @@ public class Client extends AbstractCharacter {
 		ObjectInfo iobj = findObj(getFlags().TargetObj);
 		if (iobj.esForo()) {
 			server.getForumManager().ponerMensajeForo(iobj.ForoID, titulo, texto);
-		}
-	}
-
-	public void doArmaduraImperial1(short armadura) {
-		// Comando /AI1
-		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 1 es " + Factions.ArmaduraImperial1, FontType.INFO);
-		} else {
-			Factions.ArmaduraImperial1 = armadura;
-			enviarMensaje("Armadura Imperial 1 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraImperial2(short armadura) {
-		// Comando /AI2
-		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 2 es " + Factions.ArmaduraImperial2, FontType.INFO);
-		} else {
-			Factions.ArmaduraImperial2 = armadura;
-			enviarMensaje("Armadura Imperial 2 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraImperial3(short armadura) {
-		// Comando /AI3
-		if (armadura < 0) {
-			enviarMensaje("Armadura Imperial 3 es " + Factions.ArmaduraImperial3, FontType.INFO);
-		} else {
-			Factions.ArmaduraImperial3 = armadura;
-			enviarMensaje("Armadura Imperial 3 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraImperial4(short armadura) {
-		// Comando /AI4
-		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Imperial es " + Factions.TunicaMagoImperial, FontType.INFO);
-		} else {
-			Factions.TunicaMagoImperial = armadura;
-			enviarMensaje("Tunica Mago Imperial actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraImperial5(short armadura) {
-		// Comando /AI5
-		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Imperial Enanos es " + Factions.TunicaMagoImperialEnanos, FontType.INFO);
-		} else {
-			Factions.TunicaMagoImperialEnanos = armadura;
-			enviarMensaje("Tunica Mago Imperial Enanos actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraCaos1(short armadura) {
-		// Comando /AC1
-		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 1 es " + Factions.ArmaduraCaos1, FontType.INFO);
-		} else {
-			Factions.ArmaduraCaos1 = armadura;
-			enviarMensaje("Armadura Caos 1 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraCaos2(short armadura) {
-		// Comando /AC2
-		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 2 es " + Factions.ArmaduraCaos2, FontType.INFO);
-		} else {
-			Factions.ArmaduraCaos2 = armadura;
-			enviarMensaje("Armadura Caos 2 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraCaos3(short armadura) {
-		// Comando /AC3
-		if (armadura < 0) {
-			enviarMensaje("Armadura Caos 3 es " + Factions.ArmaduraCaos3, FontType.INFO);
-		} else {
-			Factions.ArmaduraCaos3 = armadura;
-			enviarMensaje("Armadura Caos 3 actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraCaos4(short armadura) {
-		// Comando /AC4
-		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Caos es " + Factions.TunicaMagoCaos, FontType.INFO);
-		} else {
-			Factions.TunicaMagoCaos = armadura;
-			enviarMensaje("Tunica Mago Caos actualizada.", FontType.INFO);
-		}
-	}
-
-	public void doArmaduraCaos5(short armadura) {
-		// Comando /AC5
-		if (armadura < 0) {
-			enviarMensaje("Tunica Mago Caos Enanos es " + Factions.TunicaMagoCaosEnanos, FontType.INFO);
-		} else {
-			Factions.TunicaMagoCaosEnanos = armadura;
-			enviarMensaje("Tunica Mago Caos Enanos actualizada.", FontType.INFO);
 		}
 	}
 
@@ -1226,50 +1065,6 @@ public class Client extends AbstractCharacter {
 		// server.enviarATodos(MSG_SYSMSG, s);
 	}
 
-	public void doBanIP(String s) {
-		// Ban x IP
-		// Comando /BANIP
-		Client usuario = server.getUsuario(s);
-		String ip = "";
-		if (usuario == null) {
-			Log.logGM(m_nick, "hizo /BanIP " + s);
-			ip = s;
-		} else {
-			Log.logGM(m_nick, "hizo /BanIP " + s + " - " + usuario.m_ip);
-			ip = usuario.m_ip;
-		}
-		List<String> bannedIPs = server.getBannedIPs();
-		if (bannedIPs.contains(ip)) {
-			enviarMensaje("La IP " + ip + " ya se encuentra en la lista de bans.", FontType.INFO);
-			return;
-		}
-		bannedIPs.add(ip);
-		server.enviarMensajeAAdmins(m_nick + " Baneo la IP " + ip, FontType.FIGHT);
-		if (usuario != null) {
-			server.logBan(usuario.m_nick, m_nick, "Ban por IP desde Nick");
-			server.enviarMensajeAAdmins(m_nick + " echo a " + usuario.m_nick + ".", FontType.FIGHT);
-			server.enviarMensajeAAdmins(m_nick + " Banned a " + usuario.m_nick + ".", FontType.FIGHT);
-			// Ponemos el flag de ban a 1
-			usuario.m_flags.Ban = true;
-			Log.logGM(m_nick, "Echo a " + usuario.m_nick);
-			Log.logGM(m_nick, "BAN a " + usuario.m_nick);
-			usuario.doSALIR();
-		}
-	}
-
-	public void doUnbanIP(String s) {
-		// Desbanea una IP
-		// Comando /UNBANIP
-		Log.logGM(m_nick, "/UNBANIP " + s);
-		List<String> bannedIPs = server.getBannedIPs();
-		if (bannedIPs.contains(s)) {
-			bannedIPs.remove(s);
-			enviarMensaje("La IP " + s + " se ha quitado de la lista de bans.", FontType.INFO);
-		} else {
-			enviarMensaje("La IP " + s + " NO se encuentra en la lista de bans.", FontType.INFO);
-		}
-	}
-
 	public void doNick2IP(String s) {
 		// Comando /NICK2IP
 		Client usuario = server.getUsuario(s);
@@ -1325,28 +1120,6 @@ public class Client extends AbstractCharacter {
 		Log.logGM(m_nick, "Mensaje Broadcast: " + s);
 		if (!s.equals("")) {
 			// server.enviarATodos(MSG_TALK, s + FontType.TALK);
-		}
-	}
-
-	public void sendSpawnList() {
-		// Crear criatura
-		// Comando /CC
-		// Sub EnviarSpawnList(ByVal UserIndex As Integer)
-		List<String> params = new LinkedList<String>();
-		params.add("" + server.getSpawnList().length);
-		for (String name : server.getSpawnListNames()) {
-			params.add(name);
-		}
-		// enviar(MSG_SPL, params.toArray());
-	}
-
-	public void doSPA(short index) {
-		// Spawn una criatura !!!!!
-		// SPA
-		short[] spawnList = server.getSpawnList();
-		if (index > 0 && index <= spawnList.length) {
-			Npc npc = Npc.spawnNpc(spawnList[index - 1], m_pos, true, false);
-			Log.logGM(m_nick, "Sumoneo al Npc " + npc.toString());
 		}
 	}
 
@@ -1681,30 +1454,6 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void doPedirAyudaAlGM(String s) {
-		// Comando /GM
-		// Pedir ayuda a los GMs.
-		List<GmRequest> pedidos = server.getPedidosAyudaGM();
-		GmRequest pedido = new GmRequest(m_nick, s);
-		if (!pedidos.contains(pedido)) {
-			pedidos.add(pedido);
-			enviarMensaje("El mensaje ha sido entregado, ahora solo debes esperar que se desocupe algun GM.",
-					FontType.INFO);
-		} else {
-			pedidos.remove(pedido);
-			pedidos.add(pedido);
-			enviarMensaje(
-					"Ya habias mandado un mensaje, tu mensaje ha sido movido al final de la cola de mensajes. Ten paciencia.",
-					FontType.INFO);
-		}
-	}
-
-	public void doGuardarComentario(String s) {
-		// Comando /REM comentario
-		Log.logGM(m_nick, "Hace el comentario: " + s);
-		enviarMensaje("Comentario salvado...", FontType.INFO);
-	}
-
 	public void doEnviarHora() {
 		// Comando /HORA
 		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
@@ -1791,46 +1540,6 @@ public class Client extends AbstractCharacter {
 			Log.logGM(m_nick,
 					"Transportó con un /TELEP a " + usuario.m_nick + " hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}
-	}
-
-	public void doMostrarAyuda() {
-		// Comando /SHOW SOS
-		for (GmRequest pedido : server.getPedidosAyudaGM()) {
-			// enviar("RSOS" + pedido.usuario + ": " + pedido.msg);
-			// enviar(MSG_RSOS, pedido.usuario);
-		}
-		// enviar(MSG_MSOS);
-	}
-
-	public void doFinAyuda(String s) {
-		// Comando SOSDONE
-		// String nombre = s.substring(0, s.indexOf(':'));
-		server.getPedidosAyudaGM().remove(new GmRequest(s, ""));
-	}
-
-	public void doIrAUsuario(String s) {
-		// Comando /IRA
-		if (s.length() == 0) {
-			return;
-		}
-		Client usuario = server.getUsuario(s);
-		if (usuario == null) {
-			enviarMensaje("Usuario offline.", FontType.INFO);
-			return;
-		}
-		if (warpUser(usuario.m_pos.map, usuario.m_pos.x, usuario.m_pos.y, true)) {
-			if (!m_flags.AdminInvisible) {
-				usuario.enviarMensaje(m_nick + " se ha trasportado hacia donde te encuentras.", FontType.INFO);
-			}
-			Log.logGM(m_nick, "Hizo un /IRA " + usuario.m_nick + " mapa=" + usuario.m_pos.map + " x=" + usuario.m_pos.x
-					+ " y=" + usuario.m_pos.y);
-		}
-	}
-
-	public void doHacerInvisible() {
-		// Comando /INVISIBLE
-		doAdminInvisible();
-		Log.logGM(m_nick, "Hizo un /INVISIBLE");
 	}
 
 	public void doQuieto() {
@@ -3210,7 +2919,7 @@ public class Client extends AbstractCharacter {
 		}
 		m_flags.Meditando = !m_flags.Meditando;
 		if (m_flags.Meditando) {
-			m_counters.tInicioMeditar = server.getMillis();
+			m_counters.tInicioMeditar = Util.millis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
 			enviarMensaje("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.INFO);
 			m_infoChar.m_loops = LoopAdEternum;
@@ -3310,7 +3019,6 @@ public class Client extends AbstractCharacter {
 		// crimi, m_flags.Privilegios);
 
 		m_infoChar.m_dir = dir;
-
 	}
 
 	public void enviarCP() {
@@ -3328,12 +3036,6 @@ public class Client extends AbstractCharacter {
 		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
 				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
 				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
-
-		// mapa.enviarATodos(serverPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
-		// m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(),
-		// m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.m_fx,
-		// m_infoChar.m_loops);
-
 	}
 
 	public void enviarValCode() {
@@ -5895,7 +5597,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void meditar() {
-		long tActual = server.getMillis();
+		long tActual = Util.millis();
 		if (tActual - m_counters.tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
 			return;
 		}
@@ -6342,23 +6044,6 @@ public class Client extends AbstractCharacter {
 	// //################################# FIN TRABAJO
 	// ###################################
 
-	private void doAdminInvisible() {
-		if (!m_flags.AdminInvisible) {
-			m_flags.AdminInvisible = true;
-			m_flags.Invisible = true;
-			m_flags.OldBody = m_infoChar.m_cuerpo;
-			m_flags.OldHead = m_infoChar.m_cabeza;
-			m_infoChar.m_cuerpo = 0;
-			m_infoChar.m_cabeza = 0;
-		} else {
-			m_flags.AdminInvisible = false;
-			m_flags.Invisible = false;
-			m_infoChar.m_cuerpo = m_flags.OldBody;
-			m_infoChar.m_cabeza = m_flags.OldHead;
-		}
-		enviarCP();
-	}
-
 	private void volverCiudadano() {
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS) {
@@ -6593,7 +6278,7 @@ public class Client extends AbstractCharacter {
 
 	/** INTERVALO DE CASTING DE HECHIZOS */
 	public boolean intervaloPermiteLanzarSpell() {
-		long time = server.getMillis();
+		long time = Util.millis();
 		if ((time - m_counters.TimerLanzarSpell) >= IntervaloUserPuedeCastear) {
 			m_counters.TimerLanzarSpell = time;
 			return true;
@@ -6603,7 +6288,7 @@ public class Client extends AbstractCharacter {
 
 	/** INTERVALO DE ATAQUE CUERPO A CUERPO */
 	public boolean intervaloPermiteAtacar() {
-		long time = server.getMillis();
+		long time = Util.millis();
 		if ((time - m_counters.TimerPuedeAtacar) >= IntervaloUserPuedeAtacar) {
 			m_counters.TimerPuedeAtacar = time;
 			return true;
@@ -6613,7 +6298,7 @@ public class Client extends AbstractCharacter {
 
 	/** INTERVALO DE TRABAJO */
 	public boolean intervaloPermiteTrabajar() {
-		long time = server.getMillis();
+		long time = Util.millis();
 		if ((time - m_counters.TimerPuedeTrabajar) >= IntervaloUserPuedeTrabajar) {
 			m_counters.TimerPuedeTrabajar = time;
 			return true;
@@ -6623,7 +6308,7 @@ public class Client extends AbstractCharacter {
 
 	/** INTERVALO DE USAR OBJETOS */
 	public boolean intervaloPermiteUsar() {
-		long time = server.getMillis();
+		long time = Util.millis();
 		if ((time - m_counters.TimerUsar) >= IntervaloUserPuedeUsar) {
 			m_counters.TimerUsar = time;
 			return true;
