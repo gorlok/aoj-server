@@ -425,7 +425,7 @@ public class UserStorage {
 			}
 
 			// Guardar todo
-			ini.store(Client.getChrInfo(user.getNick()));
+			ini.store(Client.getPjFile(user.m_nick));
 		} catch (Exception e) {
 			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
 		}
