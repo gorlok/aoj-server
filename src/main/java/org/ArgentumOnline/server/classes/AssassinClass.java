@@ -40,7 +40,7 @@ public class AssassinClass extends CharClass {
     /** Creates a new instance of ClaseAsesino */
     protected AssassinClass() {
         this.name = "ASESINO";
-        this.magica = true;
+        this.magic = true;
     }
     
     private static AssassinClass instance = null;

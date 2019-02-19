@@ -46,7 +46,7 @@ public class CharClassManager {
     private CharClassManager() {
         addClase(AssassinClass.getInstance());
         addClase(BanditClass.getInstance());
-        addClase(BardoClass.getInstance());
+        addClase(BardClass.getInstance());
         addClase(CarpenterClass.getInstance());
         addClase(HunterClass.getInstance());
         addClase(PriestClass.getInstance());

@@ -669,8 +669,8 @@ public class ClassicProtocol extends Protocol implements ServerCommands {
         tIndex = NameIndex(UCase$(rdata))
         If tIndex > 0 Then
             Call EacharMember(tIndex, UserList(UserIndex).Name)
-            UserList(tIndex).GuildInfo.GuildName = ""
-            UserList(tIndex).GuildInfo.EsGuildLeader = 0
+            UserList(tIndex).GuildUser.GuildName = ""
+            UserList(tIndex).GuildUser.EsGuildLeader = 0
         End If
         Exit Sub
     End If

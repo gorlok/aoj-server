@@ -47,4 +47,10 @@ public class GuildRequest {
     public String getDesc() {
         return this.desc;
     }
+    
+    public boolean isFromUserName(String userName) {
+    	return this.userName != null &&
+    			this.userName.equalsIgnoreCase(userName);
+    }
+    
 }

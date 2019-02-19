@@ -32,19 +32,19 @@ import org.ArgentumOnline.server.util.Util;
  * Class of bard character.
  * @author  Pablo Fernando Lillia
  */
-public class BardoClass extends CharClass {
+public class BardClass extends CharClass {
     
     /** Creates a new instance */
-    protected BardoClass() {
+    protected BardClass() {
         this.name = "BARDO";
-        this.magica = true;
+        this.magic = true;
     }
     
-    private static BardoClass instance = null;
+    private static BardClass instance = null;
     
-    public static BardoClass getInstance() {
+    public static BardClass getInstance() {
         if (instance == null) {
-			instance = new BardoClass();
+			instance = new BardClass();
 		}
         return instance;
     }

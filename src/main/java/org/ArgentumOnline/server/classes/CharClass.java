@@ -42,7 +42,7 @@ import org.ArgentumOnline.server.util.Util;
 public abstract class CharClass implements Constants {
     
     protected String name = null;
-    protected boolean magica = false;
+    protected boolean magic = false;
     
     /** Creates a new instance of Clase */
     protected CharClass() {
@@ -59,7 +59,7 @@ public abstract class CharClass implements Constants {
     }
     
     public boolean esMagica() {
-        return this.magica;
+        return this.magic;
     }
     
     public double modificadorEvasion() {

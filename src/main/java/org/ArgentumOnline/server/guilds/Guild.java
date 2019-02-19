@@ -314,8 +314,8 @@ public class Guild {
         ini.setValue("INIT", "Nro", this.joinRequest.size());
         int i = 1;
         for (GuildRequest solicitud: this.joinRequest) {
-        	ini.setValue("Sol"+i, "Name", solicitud.userName);
-        	ini.setValue("Sol"+i, "Desc", solicitud.desc);
+        	ini.setValue("Sol"+i, "Name", solicitud.getUserName());
+        	ini.setValue("Sol"+i, "Desc", solicitud.getDesc());
         }
         ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Solicitudes.sol");
     }
@@ -326,8 +326,8 @@ public class Guild {
         ini.setValue("INIT", "Nro", this.peacePropositions.size());
         int i = 1;
         for (GuildRequest solicitud: this.peacePropositions) {
-        	ini.setValue("Pro"+i, "Name", solicitud.userName);
-        	ini.setValue("Pro"+i, "Desc", solicitud.desc);
+        	ini.setValue("Pro"+i, "Name", solicitud.getUserName());
+        	ini.setValue("Pro"+i, "Desc", solicitud.getDesc());
         }
         ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Propositions.pro");
     }
@@ -363,7 +363,7 @@ public class Guild {
 
     public void removePeaceProposition(String userName) {
         for (GuildRequest solicitud: this.peacePropositions) {
-            if (solicitud.userName.equalsIgnoreCase(userName)) {
+            if (solicitud.isFromUserName(userName)) {
                 this.peacePropositions.remove(solicitud);
                 return;
             }
@@ -397,10 +397,15 @@ public class Guild {
             }
         }
     }
+    
+    // FIXME ?
+    public void addMember(String name) {
+    	this.members.add(name);
+    }
 
     public GuildRequest getPeaceRequest(String userName) {
         for (GuildRequest solicitud: this.peacePropositions) {
-            if (solicitud.userName.equalsIgnoreCase(userName)) {
+            if (solicitud.isFromUserName(userName)) {
                 return solicitud;
             }
         }
@@ -409,7 +414,7 @@ public class Guild {
 
     public GuildRequest getSolicitudIngreso(String userName) {
     	for (GuildRequest solicitud: this.joinRequest) {
-    		if (solicitud.userName.equalsIgnoreCase(userName)) {
+    		if (solicitud.isFromUserName(userName)) {
     			return solicitud;
     		}
     	}
@@ -418,7 +423,7 @@ public class Guild {
  
     public boolean includesPeaceOffer(String userName) {
     	for (GuildRequest solicitud: this.peacePropositions) {
-            if (solicitud.getUserName().equalsIgnoreCase(userName)) {
+            if (solicitud.isFromUserName(userName)) {
                 return true;
             }
         }

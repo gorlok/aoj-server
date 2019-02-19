@@ -37,7 +37,7 @@ public class DruidClass extends CharClass {
     /** Creates a new instance of ClaseAsesino */
     protected DruidClass() {
         this.name = "DRUIDA";
-        this.magica = true;
+        this.magic = true;
     }
     
     private static DruidClass instance = null;

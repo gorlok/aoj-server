@@ -37,7 +37,7 @@ public class PriestClass extends CharClass {
     /** Creates a new instance of ClaseAsesino */
     protected PriestClass() {
         this.name = "CLERIGO";
-        this.magica = true;
+        this.magic = true;
     }
     
     private static PriestClass instance = null;

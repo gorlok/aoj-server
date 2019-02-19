@@ -31,8 +31,9 @@ import org.ArgentumOnline.server.util.FontType;
 /**
  * @author gorlok
  */
-public class GuildInfo {
-    Client cliente;
+public class GuildUser {
+    
+	Client cliente;
     public String  m_guildName = "";
     public long    m_solicitudes = 0;
     public long    m_solicitudesRechazadas = 0;
@@ -45,9 +46,23 @@ public class GuildInfo {
     public long    m_clanesParticipo = 0;
     public long    m_guildPoints = 0;
     
-    public GuildInfo(Client cliente) {
+    public GuildUser(Client cliente) {
         this.cliente = cliente;
     }
+    
+	public void ingresarClan(String guildName) {
+		this.m_guildName = guildName;
+		incIngresos();
+	}
+
+	public void salirClan() {
+		incEchadas();
+		resetGuild();
+	}
+    
+	public boolean esMiembroClan() {
+		return m_guildName.length() != 0;
+	}
     
     public String getGuildName() {
         return this.m_guildName;

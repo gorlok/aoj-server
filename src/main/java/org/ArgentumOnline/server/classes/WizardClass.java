@@ -40,7 +40,7 @@ public class WizardClass extends CharClass {
     /** Creates a new instance of ClaseAsesino */
     protected WizardClass() {
         this.name = "MAGO";
-        this.magica = true;
+        this.magic = true;
     }
     
     private static WizardClass instance = null;

@@ -40,7 +40,7 @@ import org.ArgentumOnline.server.classes.FishermanClass;
 import org.ArgentumOnline.server.classes.HunterClass;
 import org.ArgentumOnline.server.classes.ThiefClass;
 import org.ArgentumOnline.server.guilds.Guild;
-import org.ArgentumOnline.server.guilds.GuildInfo;
+import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
@@ -99,8 +99,7 @@ public class Client extends AbstractCharacter {
 	long BytesTransmitidosUser = 0;
 	long BytesTransmitidosSvr = 0;
 
-	GuildInfo m_guildInfo = new GuildInfo(this);
-	Guild m_guild = null;
+	GuildUser guildUser = new GuildUser(this);
 
 	int m_prevCRC = 0;
 	long PacketNumber = 0;
@@ -159,6 +158,14 @@ public class Client extends AbstractCharacter {
 		}
 	}
 	
+	public GuildUser getGuildInfo() {
+		return this.guildUser;
+	}
+	
+	public Guild getGuild() {
+		return server.getGuildMngr().getGuild(this.guildUser.m_guildName);
+	}
+	
 	private ObjectInfo findObj(int oid) {
 		return server.getObjectInfoStorage().getInfoObjeto(oid);		
 	}
@@ -182,8 +189,8 @@ public class Client extends AbstractCharacter {
 		return m_estads.ELV;
 	}
 
-	public GuildInfo guildInfo() {
-		return m_guildInfo;
+	public GuildUser guildInfo() {
+		return guildUser;
 	}
 
 	public int genCRC() {
@@ -443,160 +450,6 @@ public class Client extends AbstractCharacter {
 		enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
 	}
 
-	public void doActualizarMandamientosClan(String s) {
-		// Comando DESCOD
-		server.getGuildMngr().updateCodexAndDesc(this, s);
-	}
-
-	// /// Clanes / Guilds
-	public void doFundarClan() {
-		// Comando /FUNDARCLAN
-		if (m_guildInfo.m_fundoClan) {
-			enviarMensaje("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.INFO);
-			return;
-		}
-		if (server.getGuildMngr().canCreateGuild(this)) {
-			// enviar(MSG_SHOWFUN);
-		}
-	}
-
-	public void doInfoClan() {
-		// Comando GLINFO
-		if (m_guildInfo.m_esGuildLeader) {
-			server.getGuildMngr().sendGuildLeaderInfo(this);
-		} else {
-			server.getGuildMngr().sendGuildsList(this);
-		}
-	}
-
-	public void doCrearClan(String guildName) {
-		// Comando CIG
-		server.getGuildMngr().crearClan(this, guildName);
-	}
-
-	public boolean esMiembroClan() {
-		return m_guildInfo.m_guildName.length() != 0;
-	}
-
-	public void doSalirClan() {
-		// Salir del clan.
-		// Comando /SALIRCLAN
-		if (m_guildInfo.esGuildLeader()) {
-			enviarMensaje("Eres líder del clan, no puedes salir del mismo.", FontType.INFO);
-		} else if (!esMiembroClan()) {
-			enviarMensaje("No perteneces a ningún clan.", FontType.INFO);
-		} else {
-			m_guild.enviarMensaje(m_nick + " decidió dejar el clan.", FontType.GUILD);
-			salirClan();
-		}
-	}
-
-	public void ingresarClan(String clan) {
-		// El usuario ingresa a un clan.
-		m_guildInfo.m_guildName = clan;
-		m_guildInfo.incIngresos();
-	}
-
-	public void salirClan() {
-		// El usuario sale del clan.
-		m_guild.removeMember(m_nick);
-		m_guildInfo.incEchadas();
-		m_guildInfo.resetGuild();
-	}
-
-	public void doVotarClan(String s) {
-		// Comando /VOTO
-		server.getGuildMngr().computeVote(this, s);
-	}
-
-	public void enviarMensajeVotacion() {
-		enviarMensaje("Hoy es la votación para elegir un nuevo lider del clan!!.", FontType.GUILD);
-		enviarMensaje("La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.", FontType.GUILD);
-		enviarMensaje("Para votar escribe /VOTO NICKNAME.", FontType.GUILD);
-		enviarMensaje("Solo se computarÁ un voto por miembro.", FontType.GUILD);
-	}
-
-	public void doAceptarOfertaPaz(String s) {
-		// Comando ACEPPEAT
-		server.getGuildMngr().acceptPeaceOffer(this, s);
-	}
-
-	public void doRecibirOfertaPaz(String s) {
-		// Comando PEACEOFF
-		StringTokenizer st = new StringTokenizer(s, ",");
-		String user = st.nextToken();
-		String desc = st.nextToken();
-		server.getGuildMngr().recievePeaceOffer(this, user, desc);
-	}
-
-	public void doEnviarPedidoPaz(String s) {
-		// Comnando PEACEDET
-		StringTokenizer st = new StringTokenizer(s, ",");
-		String user = st.nextToken();
-		String desc = st.nextToken();
-		server.getGuildMngr().sendPeaceRequest(this, user, desc);
-	}
-
-	public void doEnviarPeticion(String s) {
-		// Comando ENVCOMEN
-		server.getGuildMngr().sendPeticion(this, s);
-	}
-
-	public void doEnviarProposiciones() {
-		// Comando ENVPROPP
-		server.getGuildMngr().sendPeacePropositions(this);
-	}
-
-	public void doDeclararGuerra(String s) {
-		// Comando DECGUERR
-		server.getGuildMngr().declareWar(this, s);
-	}
-
-	public void doDeclararAlianza(String s) {
-		// Comando DECALIAD
-		server.getGuildMngr().declareAllie(this, s);
-	}
-
-	public void doSetNewURL(String s) {
-		// Comando NEWWEBSI
-		server.getGuildMngr().setNewURL(this, s);
-	}
-
-	public void doAceptarMiembroClan(String s) {
-		// Comando ACEPTARI
-		server.getGuildMngr().acceptClanMember(this, s);
-	}
-
-	public void doRechazarPedido(String s) {
-		// Comando RECHAZAR
-		server.getGuildMngr().denyRequest(this, s);
-	}
-
-	public void doEcharMiembro(String s) {
-		// Comando ECHARCLA
-		server.getGuildMngr().echarMember(this, s);
-	}
-
-	public void doActualizarGuildNews(String s) {
-		// Comando ACTGNEWS
-		server.getGuildMngr().updateGuildNews(this, s);
-	}
-
-	public void doCharInfoClan(String s) {
-		// Comando 1HRINFO<
-		server.getGuildMngr().sendCharInfo(this, s);
-	}
-
-	public void doSolicitudIngresoClan(String guildName, String desc) {
-		// Comando SOLICITUD
-		server.getGuildMngr().solicitudIngresoClan(this, guildName, desc);
-	}
-
-	public void doClanDetails(String s) {
-		// Comando CLANDETAILS
-		server.getGuildMngr().sendGuildDetails(this, s);
-	}
-
 	public void doApostar(int cant) {
 		// Comando /APOSTAR
 		// Comando /APOSTAR basado en la idea de DarkLight,
@@ -778,18 +631,18 @@ public class Client extends AbstractCharacter {
 		} else {
 			enviarMensaje("(CABEZA) Min Def/Max Def: 0", FontType.INFO);
 		}
-		if (esMiembroClan()) {
-			enviarMensaje("Clan: " + usuario.m_guildInfo.m_guildName, FontType.INFO);
-			if (usuario.m_guildInfo.m_esGuildLeader) {
-				if (usuario.m_guildInfo.m_clanFundado.equals(usuario.m_guildInfo.m_guildName)) {
+		if (getGuildInfo().esMiembroClan()) {
+			enviarMensaje("Clan: " + usuario.guildUser.m_guildName, FontType.INFO);
+			if (usuario.guildUser.m_esGuildLeader) {
+				if (usuario.guildUser.m_clanFundado.equals(usuario.guildUser.m_guildName)) {
 					enviarMensaje("Status: Fundador/Lider", FontType.INFO);
 				} else {
 					enviarMensaje("Status: Lider", FontType.INFO);
 				}
 			} else {
-				enviarMensaje("Status: " + usuario.m_guildInfo.m_guildPoints, FontType.INFO);
+				enviarMensaje("Status: " + usuario.guildUser.m_guildPoints, FontType.INFO);
 			}
-			enviarMensaje("User GuildPoints: " + usuario.m_guildInfo.m_guildPoints, FontType.INFO);
+			enviarMensaje("User GuildPoints: " + usuario.guildUser.m_guildPoints, FontType.INFO);
 		}
 		enviarMensaje("Oro: " + usuario.m_estads.getGold() + "  Posicion: " + usuario.m_pos.x + "," + usuario.m_pos.y
 				+ " en mapa " + usuario.m_pos.map, FontType.INFO);
@@ -2355,6 +2208,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void tirarDados() {
+		// TODO dados fáciles, configurar
 		m_estads.userAtributos[0] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[1] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[2] = (byte) (Util.Azar(16, 18));
@@ -2363,13 +2217,6 @@ public class Client extends AbstractCharacter {
 
 		enviar(ServerPacketID.dropDices, m_estads.userAtributos[0], m_estads.userAtributos[1],
 				m_estads.userAtributos[2], m_estads.userAtributos[3], m_estads.userAtributos[4]);
-	}
-
-	public void borrarPersonaje(String s) {
-		enviarError("Comando no implementado: " + s);
-		/*
-		 * FIXME: para implementar algun dia... Case "BORR" ' <<< borra
-		 */
 	}
 
 	/**
@@ -3233,7 +3080,7 @@ public class Client extends AbstractCharacter {
 
 		return params;
 	}
-
+	
 	private String getClan() {
 		if (esGM()) {
 			if (esDios()) {
@@ -3244,10 +3091,10 @@ public class Client extends AbstractCharacter {
 			}
 			return " <CONSEJERO>";
 		}
-		if (!esMiembroClan()) {
+		if (!getGuildInfo().esMiembroClan()) {
 			return "";
 		}
-		return " <" + m_guildInfo.getGuildName() + ">";
+		return " <" + guildUser.getGuildName() + ">";
 	}
 
 	public void enviarCC() {
@@ -4326,33 +4173,26 @@ public class Client extends AbstractCharacter {
 		if (triggerZonaPelea(victima) == MapCell.TRIGGER6_PERMITE) {
 			return;
 		}
-		if (!esMiembroClan() || !victima.esMiembroClan()) {
+		if (!getGuildInfo().esMiembroClan() || !victima.getGuildInfo().esMiembroClan()) {
 			if (!esCriminal() && !victima.esCriminal()) {
 				volverCriminal();
 			}
-			if (!victima.esCriminal()) {
-				m_reputacion.incBandido(vlAsalto);
-			} else {
-				m_reputacion.incNoble(vlNoble);
-			}
-		} else { // Están en clan
-			if (!m_guild.isEnemy(victima.m_guildInfo.m_guildName)) {
+		} else { // Ambos están en clan
+			if (getGuild() != null && !getGuild().isEnemy(victima.getGuildInfo().getGuildName())) {
+				// Están en clanes enemigos
 				if (!esCriminal() && !victima.esCriminal()) {
 					volverCriminal();
 				}
-				if (!victima.esCriminal()) {
-					m_reputacion.incBandido(vlAsalto);
-				} else {
-					m_reputacion.incNoble(vlNoble);
-				}
-			} else {
-				if (!victima.esCriminal()) {
-					m_reputacion.incBandido(vlAsalto);
-				} else {
-					m_reputacion.incNoble(vlNoble);
-				}
 			}
+			// TODO Revisar: ¿puede un cuidadano atacar a otro ciudadano, cuandoestán en clanes enemigos? 
 		}
+
+		if (victima.esCriminal()) {
+			m_reputacion.incNoble(vlNoble);
+		} else {
+			m_reputacion.incBandido(vlAsalto);
+		}
+		
 		allMascotasAtacanUser(victima);
 		victima.allMascotasAtacanUser(this);
 	}
@@ -4769,12 +4609,6 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	private void sendGuildNews() {
-		if (esMiembroClan()) {
-			server.getGuildMngr().sendGuildNews(this);
-		}
-	}
-
 	public void efectoCegueEstu() {
 		if (m_counters.Ceguera > 0) {
 			m_counters.Ceguera--;
@@ -5092,8 +4926,8 @@ public class Client extends AbstractCharacter {
 			msg.append(" <NEWBIE>");
 		}
 		msg.append(getTituloFaccion());
-		if (esMiembroClan()) {
-			msg.append(" <" + m_guildInfo.getGuildName() + ">");
+		if (getGuildInfo().esMiembroClan()) {
+			msg.append(" <" + guildUser.getGuildName() + ">");
 		}
 		if (m_desc.length() > 0) {
 			msg.append(" - " + m_desc);

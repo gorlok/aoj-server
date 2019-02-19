@@ -155,17 +155,17 @@ public class UserStorage {
 			user.m_mascotas[i] = server.getNpcById(ini.getShort("Mascotas", "Mas" + (i + 1)));
 		}
 
-		user.m_guildInfo.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
-		user.m_guildInfo.m_esGuildLeader = ini.getShort("Guild", "EsGuildLeader") == 1;
-		user.m_guildInfo.m_echadas = ini.getLong("Guild", "Echadas");
-		user.m_guildInfo.m_solicitudes = ini.getLong("Guild", "Solicitudes");
-		user.m_guildInfo.m_solicitudesRechazadas = ini.getLong("Guild", "SolicitudesRechazadas");
-		user.m_guildInfo.m_vecesFueGuildLeader = ini.getLong("Guild", "VecesFueGuildLeader");
-		user.m_guildInfo.m_yaVoto = ini.getShort("Guild", "YaVoto") == 1;
-		user.m_guildInfo.m_clanesParticipo = ini.getLong("Guild", "ClanesParticipo");
-		user.m_guildInfo.m_guildPoints = ini.getLong("Guild", "GuildPts");
-		user.m_guildInfo.m_clanFundado = ini.getString("Guild", "ClanFundado");
-		user.m_guildInfo.m_guildName = ini.getString("Guild", "GuildName");
+		user.guildUser.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
+		user.guildUser.m_esGuildLeader = ini.getShort("Guild", "EsGuildLeader") == 1;
+		user.guildUser.m_echadas = ini.getLong("Guild", "Echadas");
+		user.guildUser.m_solicitudes = ini.getLong("Guild", "Solicitudes");
+		user.guildUser.m_solicitudesRechazadas = ini.getLong("Guild", "SolicitudesRechazadas");
+		user.guildUser.m_vecesFueGuildLeader = ini.getLong("Guild", "VecesFueGuildLeader");
+		user.guildUser.m_yaVoto = ini.getShort("Guild", "YaVoto") == 1;
+		user.guildUser.m_clanesParticipo = ini.getLong("Guild", "ClanesParticipo");
+		user.guildUser.m_guildPoints = ini.getLong("Guild", "GuildPts");
+		user.guildUser.m_clanFundado = ini.getString("Guild", "ClanFundado");
+		user.guildUser.m_guildName = ini.getString("Guild", "GuildName");
 
 		user.m_quest.m_nroQuest = ini.getShort("QUEST", "NroQuest");
 		user.m_quest.m_recompensa = ini.getShort("QUEST", "Recompensa");
@@ -256,17 +256,17 @@ public class UserStorage {
 			ini.setValue("FACCIONES", "recCaos", user.getFaccion().RecompensasCaos);
 			ini.setValue("FACCIONES", "recReal", user.getFaccion().RecompensasReal);
 
-			ini.setValue("GUILD", "EsGuildLeader", user.m_guildInfo.m_esGuildLeader);
-			ini.setValue("GUILD", "Echadas", user.m_guildInfo.m_echadas);
-			ini.setValue("GUILD", "Solicitudes", user.m_guildInfo.m_solicitudes);
-			ini.setValue("GUILD", "SolicitudesRechazadas", user.m_guildInfo.m_solicitudesRechazadas);
-			ini.setValue("GUILD", "VecesFueGuildLeader", user.m_guildInfo.m_vecesFueGuildLeader);
-			ini.setValue("GUILD", "YaVoto", user.m_guildInfo.m_yaVoto);
-			ini.setValue("GUILD", "FundoClan", user.m_guildInfo.m_fundoClan);
-			ini.setValue("GUILD", "GuildName", user.m_guildInfo.m_guildName);
-			ini.setValue("GUILD", "ClanFundado", user.m_guildInfo.m_clanFundado);
-			ini.setValue("GUILD", "ClanesParticipo", user.m_guildInfo.m_clanesParticipo);
-			ini.setValue("GUILD", "GuildPts", user.m_guildInfo.m_guildPoints);
+			ini.setValue("GUILD", "EsGuildLeader", user.guildUser.m_esGuildLeader);
+			ini.setValue("GUILD", "Echadas", user.guildUser.m_echadas);
+			ini.setValue("GUILD", "Solicitudes", user.guildUser.m_solicitudes);
+			ini.setValue("GUILD", "SolicitudesRechazadas", user.guildUser.m_solicitudesRechazadas);
+			ini.setValue("GUILD", "VecesFueGuildLeader", user.guildUser.m_vecesFueGuildLeader);
+			ini.setValue("GUILD", "YaVoto", user.guildUser.m_yaVoto);
+			ini.setValue("GUILD", "FundoClan", user.guildUser.m_fundoClan);
+			ini.setValue("GUILD", "GuildName", user.guildUser.m_guildName);
+			ini.setValue("GUILD", "ClanFundado", user.guildUser.m_clanFundado);
+			ini.setValue("GUILD", "ClanesParticipo", user.guildUser.m_clanesParticipo);
+			ini.setValue("GUILD", "GuildPts", user.guildUser.m_guildPoints);
 
 			ini.setValue("QUEST", "NroQuest", user.m_quest.m_nroQuest);
 			ini.setValue("QUEST", "EnQuest", user.m_quest.m_enQuest);
