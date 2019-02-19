@@ -5326,7 +5326,7 @@ public class Client extends AbstractCharacter {
 
 	// FIXME
 	static String getPjFile(String nick) {
-		return "pjs" + java.io.File.separator + nick.toLowerCase() + ".chr";
+		return Constants.CHARFILES_FOLDER + java.io.File.separator + nick.toLowerCase() + ".chr";
 	}
 
 	// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
