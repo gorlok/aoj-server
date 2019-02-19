@@ -1,5 +1,5 @@
-;Archivo: pjs/b.chr
-;Ultima modificacion: 17/02/2019 23:57:22
+;Archivo: charfile/b.chr
+;Ultima modificacion: 19/02/2019 00:41:30
 
 [ATRIBUTOS]
 AT1=20
@@ -143,11 +143,11 @@ DESC=
 ESCUDO=2
 GENERO=0
 HEAD=301
-HEADING=1
+HEADING=3
 HOGAR=2
 LASTIP=192.168.0.186
 PASSWORD=92eb5ffee6ae2fec3ad71c777531578f
-POSITION=60-65-48
+POSITION=60-67-51
 RAZA=3
 
 [INVENTORY]

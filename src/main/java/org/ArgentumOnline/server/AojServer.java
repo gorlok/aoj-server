@@ -39,12 +39,13 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.forum.ForumManager;
 import org.ArgentumOnline.server.gm.Motd;
@@ -82,18 +83,18 @@ public class AojServer implements Constants {
     private final static int BUFFER_SIZE = 1024;
     private ByteBuffer serverBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     
-    private HashMap<SocketChannel, Client> m_clientSockets = new HashMap<SocketChannel, Client>();
-    private HashMap<Short, Client> m_clientes = new HashMap<Short, Client>();
-    private HashMap<Integer, Npc> 	m_npcs       = new HashMap<Integer, Npc>();
+    private HashMap<SocketChannel, Client> m_clientSockets = new HashMap<>();
+    private HashMap<Short, Client> m_clientes = new HashMap<>();
+    private HashMap<Integer, Npc> 	m_npcs = new HashMap<>();
     
-    private List<Client> m_clientes_eliminar = new LinkedList<Client>();
-    private List<Short> m_npcs_muertos = new Vector<Short>();
+    private List<Client> m_clientes_eliminar = new LinkedList<>();
+    private List<Short> m_npcs_muertos = new LinkedList<>();
     
-    private List<Spell> 	m_hechizos = new Vector<Spell>();
-    private List<Map> 		m_mapas = new Vector<Map>();    
-    private List<Quest> 	m_quests = new Vector<Quest>();
+    private List<Spell> 	m_hechizos = new LinkedList<>();
+    private List<Map> 		m_mapas = new LinkedList<>();    
+    private List<Quest> 	m_quests = new LinkedList<>();
     
-    private List<MapPos> m_trashCollector = new Vector<MapPos>();
+    private List<MapPos> m_trashCollector = new LinkedList<>();
     
     private short [] m_armasHerrero;
     private short [] m_armadurasHerrero;
@@ -163,12 +164,14 @@ public class AojServer implements Constants {
 		return npcLoader;
 	}
     
-    public Collection<Client> getClientes() {
-    	return this.m_clientes.values();
+    public List<Client> getClientes() {
+    	return this.m_clientes.values().stream()
+    			.collect(Collectors.toList());
     }
     
-    public Collection<Npc> getNpcs() {
-    	return this.m_npcs.values();
+    public List<Npc> getNpcs() {
+    	return this.m_npcs.values().stream()
+    			.collect(Collectors.toList());
     }
     
     public long runningTimeInSecs() {
@@ -229,32 +232,28 @@ public class AojServer implements Constants {
     }
     
     public List<String> getUsuariosConectados() {
-        Vector<String> usuarios = new Vector<String>();
-        for (Client cli: getClientes()) {
-            if (!"".equals(cli.getNick()) && !cli.esGM()) {
-                usuarios.add(cli.getNick());
-            }
-        }
-        return usuarios;
+    	return getClientes().stream()
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.esGM())
+			    	.map(Client::getNick)
+			    	.collect(Collectors.toList());
     }
     
     public void echarPjsNoPrivilegiados() {
-        for (Client cli: getClientes()) {
-            if (!"".equals(cli.getNick()) && !cli.esGM() && cli.isLogged()) {
-            	cli.enviarMensaje("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.SERVER);
-                cli.doSALIR();
-            }
-        }
+    	var users = getClientes().stream()
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.esGM())
+			    	.collect(Collectors.toList());
+    	
+    	users.forEach(c -> {
+	    	c.enviarMensaje("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.SERVER);
+	        c.doSALIR();
+    	});
     }
 	
     public List<String> getUsuariosTrabajando() {
-        Vector<String> usuarios = new Vector<String>();
-        for (Client cli: getClientes()) {
-            if (!"".equals(cli.getNick()) && cli.estaTrabajando()) {
-                usuarios.add(cli.getNick());
-            }
-        }
-        return usuarios;
+    	return getClientes().stream()
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.estaTrabajando())
+		    	.map(Client::getNick)
+		    	.collect(Collectors.toList());
     }
     
     public void shutdown() {
@@ -263,24 +262,18 @@ public class AojServer implements Constants {
         System.out.println("=== Goodbye. Server closed. ===");
     }
     
-    public List<String> getUsuarioConIP(String ip) {
-        Vector<String> usuarios = new Vector<String>();
-        for (Client cli: getClientes()) {
-            if (!"".equals(cli.getNick()) && cli.getIP().equals(ip)) {
-                usuarios.add(cli.getNick());
-            }
-        }
-        return usuarios;
+    public List<String> getUsuariosConIP(String ip) {
+    	return getClientes().stream()
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
+		    	.map(Client::getNick)
+		    	.collect(Collectors.toList());
     }
     
     public List<String> getGMsOnline() {
-        Vector<String> usuarios = new Vector<String>();
-        for (Client cli: getClientes()) {
-            if (cli.getNick() != null && cli.getNick().length() > 0 && cli.esGM()) {
-                usuarios.add(cli.getNick());
-            }
-        }
-        return usuarios;
+    	return getClientes().stream()
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.esGM())
+		    	.map(Client::getNick)
+		    	.collect(Collectors.toList());
     }
     
     private void initServerSocket() 
@@ -595,7 +588,7 @@ public class AojServer implements Constants {
         // TIMER_AI_Timer()
         if (!this.m_haciendoBackup) {
             // Update NPCs
-            Vector<Npc> npcs = new Vector<Npc>(getNpcs());
+            var npcs = new Vector<Npc>(getNpcs());
             for (Npc npc: npcs) {
                 if (npc.isNpcActive()) { // Nos aseguramos que sea INTELIGENTE!
                     if (npc.estaParalizado()) {
@@ -621,7 +614,7 @@ public class AojServer implements Constants {
     }
 
     private void pasarSegundo() {
-        Vector<Client> paraSalir = new Vector<Client>();
+        var paraSalir = new LinkedList<Client>();
         for (Client cli: getClientes()) {
             if (cli.m_counters.Saliendo) {
                 cli.m_counters.SalirCounter--;
