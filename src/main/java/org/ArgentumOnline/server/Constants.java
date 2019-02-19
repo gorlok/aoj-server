@@ -175,6 +175,8 @@ public interface Constants {
     byte modificadorConstitucion[]  = { 2, 0, 0, 3, 0 };
     byte modificadorInteligencia[]  = { 1, 2, 2, -6, 3 };
     byte modificadorCarisma[]       = { 0, 2, 2, 0, 0 };
+
+	public final String CHARFILES_FOLDER = "charfile";
     
     // Tamaño del tileset
     final static short TileSizeX = 32;
@@ -417,6 +419,8 @@ public interface Constants {
     final static int SUBTYPE_ESCUDO = 2;
     final static int SUBTYPE_CAÑA = 138;
     final static int SUBTYPE_MATADRAGONES = 1;
+    
+    
 
 }
 
