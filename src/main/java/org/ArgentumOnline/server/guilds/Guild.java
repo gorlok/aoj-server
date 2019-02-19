@@ -36,7 +36,7 @@ import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
 public class Guild {
 

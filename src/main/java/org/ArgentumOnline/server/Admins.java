@@ -316,7 +316,7 @@ public class Admins {
 		// SPA
 		short[] spawnList = getSpawnList();
 		if (index > 0 && index <= spawnList.length) {
-			Npc npc = Npc.spawnNpc(spawnList[index - 1], admin.getPos(), true, false);
+			Npc npc = Npc.spawnNpc(spawnList[index - 1], admin.pos(), true, false);
 			Log.logGM(admin.getNick(), "Sumoneo al Npc " + npc.toString());
 		}
 	}
@@ -414,7 +414,7 @@ public class Admins {
 	public void doUsuariosEnMapa(Client admin) {
 		// Comando /ONLINEMAP
 		// Devuelve la lista de usuarios en el mapa.
-		Map mapa = server.getMapa(admin.getPos().map);
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -518,13 +518,13 @@ public class Admins {
 	public void doCrearTeleport(Client admin, short dest_mapa, short dest_x, short dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
-		Map mapa = server.getMapa(admin.getPos().map);
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
 		// Se creara el Teleport una celda arriba de la posicion del GM.
-		short x = admin.getPos().x;
-		short y = (short) (admin.getPos().y - 1);
+		short x = admin.pos().x;
+		short y = (short) (admin.pos().y - 1);
 		if (mapa.hayObjeto(x, y)) {
 			admin.enviarMensaje("Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
 					FontType.WARNING);
@@ -540,7 +540,7 @@ public class Admins {
 			return;
 		}
 		mapa.crearTeleport(x, y, dest_mapa, dest_x, dest_y);
-		Log.logGM(admin.getNick(), "Creó un teleport: " + admin.getPos() + " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
+		Log.logGM(admin.getNick(), "Creó un teleport: " + admin.pos() + " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
 		admin.enviarMensaje("¡Teleport creado!", FontType.INFO);
 	}
 
@@ -583,7 +583,7 @@ public class Admins {
 		// Crear criatura, toma directamente el indice
 		// Comando /ACC indiceNpc
 		if (server.getNpcById(indiceNpc) != null) {
-			Npc.spawnNpc(indiceNpc, admin.getPos(), true, false);
+			Npc.spawnNpc(indiceNpc, admin.pos(), true, false);
 		} else {
 			admin.enviarMensaje("Indice de Npc invalido.", FontType.INFO);
 		}
@@ -593,7 +593,7 @@ public class Admins {
 		// Crear criatura con respawn, toma directamente el indice
 		// Comando /RACC indiceNpc
 		if (server.getNpcById(indiceNpc) != null) {
-			Npc.spawnNpc(indiceNpc, admin.getPos(), true, true);
+			Npc.spawnNpc(indiceNpc, admin.pos(), true, true);
 		} else {
 			admin.enviarMensaje("Indice de Npc invalido.", FontType.INFO);
 		}
@@ -618,7 +618,7 @@ public class Admins {
 			if (usuario.m_mascotas[i] != null) {
 				admin.enviarMensaje(
 						" mascota " + usuario.m_mascotas[i].getName() + "[" + (i + 1) + "] esta en "
-						+ usuario.m_mascotas[i].getPos() + " tiempo=" + usuario.m_mascotas[i].getContadores().TiempoExistencia,
+						+ usuario.m_mascotas[i].pos() + " tiempo=" + usuario.m_mascotas[i].getContadores().TiempoExistencia,
 						FontType.DEBUG);
 			}
 		}
@@ -637,7 +637,7 @@ public class Admins {
 			return;
 		}
 		Log.logGM(admin.getNick(), "/MODMAPINFO " + accion + " " + valor);
-		Map mapa = server.getMapa(admin.getPos().map);
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -646,13 +646,13 @@ public class Admins {
 				mapa.m_pk = (valor == 1);
 				admin.enviarMensaje("PK cambiado.", FontType.INFO);
 			}
-			admin.enviarMensaje("Mapa " + admin.getPos().map + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.INFO);
+			admin.enviarMensaje("Mapa " + admin.pos().map + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.INFO);
 		} else if (accion.equalsIgnoreCase("BACKUP")) {
 			if (valor == 0 || valor == 1) {
 				mapa.m_backup = (valor == 1);
 				admin.enviarMensaje("BACKUP cambiado.", FontType.INFO);
 			}
-			admin.enviarMensaje("Mapa " + admin.getPos().map + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.INFO);
+			admin.enviarMensaje("Mapa " + admin.pos().map + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.INFO);
 		}
 	}
 
@@ -708,27 +708,27 @@ public class Admins {
 	public void doCrearItem(Client admin, short objid) {
 		// Crear Item
 		// Comando /CI
-		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
+		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
-			if (mapa.hayObjeto(admin.getPos().x, admin.getPos().y)) {
+			if (mapa.hayObjeto(admin.pos().x, admin.pos().y)) {
 				return;
 			}
-			if (mapa.hayTeleport(admin.getPos().x, admin.getPos().y)) {
+			if (mapa.hayTeleport(admin.pos().x, admin.pos().y)) {
 				return;
 			}
 			if (findObj(objid) == null) {
 				return;
 			}
-			mapa.agregarObjeto(objid, 1, admin.getPos().x, admin.getPos().y);
+			mapa.agregarObjeto(objid, 1, admin.pos().x, admin.pos().y);
 		}
 	}
 
 	public void doGuardaMapa(Client admin) {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
-		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
+		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
 			mapa.saveMapData();
 			admin.enviarMensaje("Mapa guardado.", FontType.INFO);
@@ -738,24 +738,24 @@ public class Admins {
 	public void doDestObj(Client admin) {
 		// Destruir el objeto de la posición actual.
 		// Comando /DEST
-		Log.logGM(admin.getNick(), "/DEST " + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
+		Log.logGM(admin.getNick(), "/DEST " + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
-			mapa.quitarObjeto(admin.getPos().x, admin.getPos().y);
+			mapa.quitarObjeto(admin.pos().x, admin.pos().y);
 		}
 	}
 
 	public void doBloqPos(Client admin) {
 		// Bloquear la posición actual.
 		// Comando /BLOQ
-		Log.logGM(admin.getNick(), "/BLOQ " + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
+		Log.logGM(admin.getNick(), "/BLOQ " + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
-			if (mapa.estaBloqueado(admin.getPos().x, admin.getPos().y)) {
-				mapa.desbloquearTerreno(admin.getPos().x, admin.getPos().y);
+			if (mapa.estaBloqueado(admin.pos().x, admin.pos().y)) {
+				mapa.desbloquearTerreno(admin.pos().x, admin.pos().y);
 				admin.enviarMensaje("Posicion desbloqueada.", FontType.INFO);
 			} else {
-				mapa.bloquearTerreno(admin.getPos().x, admin.getPos().y);
+				mapa.bloquearTerreno(admin.pos().x, admin.pos().y);
 				admin.enviarMensaje("Posicion bloqueada.", FontType.INFO);
 			}
 		}
@@ -764,31 +764,31 @@ public class Admins {
 	public void doMassKill(Client admin) {
 		// Quita todos los NPCs del area.
 		// Comando /MASSKILL
-		Log.logGM(admin.getNick(), "/MASSKILL " + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
+		Log.logGM(admin.getNick(), "/MASSKILL " + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
-			mapa.quitarNpcsArea(admin.getPos().x, admin.getPos().y);
+			mapa.quitarNpcsArea(admin.pos().x, admin.pos().y);
 		}
 	}
 
 	public void doTrigger(Client admin, byte t) {
 		// Consulta o cambia el trigger de la posición actual.
 		// Comando /TRIGGER
-		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.getPos());
-		Map mapa = server.getMapa(admin.getPos().map);
-		mapa.setTrigger(admin.getPos().x, admin.getPos().y, t);
-		admin.enviarMensaje("Trigger " + mapa.getTrigger(admin.getPos().x, admin.getPos().y) + 
-				" en " + admin.getPos(), FontType.INFO);
+		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.pos());
+		Map mapa = server.getMapa(admin.pos().map);
+		mapa.setTrigger(admin.pos().x, admin.pos().y, t);
+		admin.enviarMensaje("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y) + 
+				" en " + admin.pos(), FontType.INFO);
 	}
 
 	public void doMassDest(Client admin) {
 		// Quita todos los objetos del area
 		// Comando /MASSDEST
-		Map mapa = server.getMapa(admin.getPos().map);
+		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
-		mapa.objectMassDestroy(admin.getPos().x, admin.getPos().y);
+		mapa.objectMassDestroy(admin.pos().x, admin.pos().y);
 		Log.logGM(admin.getNick(), "/MASSDEST ");
 	}
 
@@ -853,11 +853,11 @@ public class Admins {
 			return;
 		}
 		Log.logGM(admin.getNick(), "Hizo /SUM " + s);
-		if (usuario.warpUser(admin.getPos().map, admin.getPos().x, admin.getPos().y, true)) {
+		if (usuario.warpUser(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
 			admin.enviarMensaje(usuario.m_nick + " ha sido trasportado.", FontType.INFO);
 			usuario.enviarMensaje("Has sido trasportado.", FontType.INFO);
 			Log.logGM(admin.getNick(), "/SUM " + usuario.m_nick + 
-					" Map:" + admin.getPos().map + " X:" + admin.getPos().x + " Y:" + admin.getPos().y);
+					" Map:" + admin.pos().map + " X:" + admin.pos().x + " Y:" + admin.pos().y);
 		}
 	}
 
@@ -1188,6 +1188,5 @@ public class Admins {
 					" hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}
 	}
-
 	
 }

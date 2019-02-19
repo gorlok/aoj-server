@@ -25,6 +25,8 @@
  */
 package org.ArgentumOnline.server;
 
+import org.ArgentumOnline.server.map.MapPos;
+
 /** 
  * Character base class. Superclass of the clients and the NPCs.
  * @author gorlok
@@ -33,6 +35,9 @@ public abstract class AbstractCharacter implements Constants {
     
 	/** Character universal id. */
 	private short id = 0;
+	
+    protected MapPos m_pos  = MapPos.empty();
+	
 	
     protected CharInfo m_infoChar = new CharInfo();
     protected CharInfo m_origChar = new CharInfo();
@@ -51,6 +56,10 @@ public abstract class AbstractCharacter implements Constants {
     
     public CharInfo getOrigChar() {
     	return this.m_origChar;
+    }
+    
+    public MapPos pos() {
+        return this.m_pos;
     }
 
 }

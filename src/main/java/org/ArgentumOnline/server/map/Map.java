@@ -429,9 +429,9 @@ public class Map implements Constants {
 	                        this.m_cells[x][y].setNpc(this.server.createNpc(npcId));
 	                        npc = this.m_cells[x][y].getNpc();
 	                        this.m_npcs.add(npc);
-	                        npc.getPos().map = this.nroMapa;
-	                        npc.getPos().x = (short) (x+1);
-	                        npc.getPos().y = (short) (y+1);
+	                        npc.pos().map = this.nroMapa;
+	                        npc.pos().x = (short) (x+1);
+	                        npc.pos().y = (short) (y+1);
 	                        npc.getOrig().map = this.nroMapa;
 	                        if (npc.respawnOrigPos()) {
 		                        npc.getOrig().x = (short) (x+1);
@@ -470,13 +470,13 @@ public class Map implements Constants {
         //enviarATodosExc(cliente.getId(), serverPacketID.CC, cliente.ccParams());
         //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.CC, cliente.ccParams());
         
-        cliente.getPos().set(this.nroMapa, x, y); // REVISAR
+        cliente.pos().set(this.nroMapa, x, y); // REVISAR
         return true;
     }
     
     public boolean salir(Client cliente) {
-        short x = cliente.getPos().x;
-        short y = cliente.getPos().y;
+        short x = cliente.pos().x;
+        short y = cliente.pos().y;
         try {
 	        //if (estaCliente(cliente)) {
 	        	try {
@@ -509,7 +509,7 @@ public class Map implements Constants {
         if (this.m_cells[x-1][y-1].getNpc() != null) {
 			log.fatal("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
 		}
-        this.m_cells[npc.getPos().x-1][npc.getPos().y-1].setNpc(null);
+        this.m_cells[npc.pos().x-1][npc.pos().y-1].setNpc(null);
         this.m_cells[x-1][y-1].setNpc(npc);
         
         //areasData.updateNpcArea(npc);
@@ -538,7 +538,7 @@ public class Map implements Constants {
         this.m_cells[x-1][y-1].setNpc(npc);
         this.m_npcs.add(npc);
         
-        npc.getPos().set(this.nroMapa, x, y);
+        npc.pos().set(this.nroMapa, x, y);
       
         this.areasData.loadNpc(npc);
         
@@ -549,15 +549,15 @@ public class Map implements Constants {
     }
     
     public boolean salir(Npc npc) {
-        int x = npc.getPos().x;
-        int y = npc.getPos().y;
+        int x = npc.pos().x;
+        int y = npc.pos().y;
         try {
 	      //  enviarATodos(MSG_QDL, npc.getId());
 	        enviarAlArea((short) x, (short) y, ServerPacketID.MSG_BP, npc.getId());
         } finally {
             this.m_cells[x-1][y-1].setNpc(null);
 	        this.m_npcs.remove(npc);
-	        npc.getPos().set(this.nroMapa, (short)0, (short)0);
+	        npc.pos().set(this.nroMapa, (short)0, (short)0);
         }
         return true;
     }
@@ -824,9 +824,9 @@ public class Map implements Constants {
     }
     
     public void mover(Client cliente, short x, short y) {
-        this.m_cells[cliente.getPos().x-1][cliente.getPos().y-1].setClienteId((short) 0);
+        this.m_cells[cliente.pos().x-1][cliente.pos().y-1].setClienteId((short) 0);
         this.m_cells[x-1][y-1].setClienteId(cliente.getId());
-        cliente.getPos().set(this.nroMapa, x, y);
+        cliente.pos().set(this.nroMapa, x, y);
         
 		//JAO: Nuevo sistema de areas !!
 		//this.areasData.updateUserArea(cliente);
@@ -917,7 +917,7 @@ public class Map implements Constants {
     public void consultar(Client cliente, short x, short y) {
         // Sub LookatTile(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
     	
-    	if (!cliente.getPos().inRangoVision(x, y)) {
+    	if (!cliente.pos().inRangoVision(x, y)) {
             return;
         }
         
@@ -1009,7 +1009,7 @@ public class Map implements Constants {
     }
     
     public void accionParaRamita(short x, short y, Client cliente) {
-        if (Util.distance(cliente.getPos().x, cliente.getPos().y, x, y) > 2) {
+        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
             return;
         }
@@ -1039,7 +1039,7 @@ public class Map implements Constants {
     }
     
     public void accionParaForo(short x, short y, Client cliente) {
-        if (Util.distance(cliente.getPos().x, cliente.getPos().y, x, y) > 2) {
+        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
             return;
         }
@@ -1053,7 +1053,7 @@ public class Map implements Constants {
     }
     
     public void accionParaPuerta(short x, short y, Client cliente) {
-        if (Util.distance(cliente.getPos().x, cliente.getPos().y, x, y) > 2) {
+        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estas demasiado lejos.", FontType.INFO);
             return;
         }

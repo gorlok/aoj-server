@@ -26,8 +26,7 @@
 package org.ArgentumOnline.server.guilds;
 
 /**
- *
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
 public class InvalidGuildNameException extends Exception {
 	private static final long serialVersionUID = 0L;

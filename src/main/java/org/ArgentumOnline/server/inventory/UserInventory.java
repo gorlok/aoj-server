@@ -270,9 +270,9 @@ public class UserInventory extends Inventory implements Constants {
                 cant = this.objs[slot-1].cant;
             }
             // Check objeto en el suelo
-            Map mapa = this.server.getMapa(this.dueño.getPos().map);
-            short x = this.dueño.getPos().x;
-            short y = this.dueño.getPos().y;
+            Map mapa = this.server.getMapa(this.dueño.pos().map);
+            short x = this.dueño.pos().x;
+            short y = this.dueño.pos().y;
             short objid = this.objs[slot-1].objid;
             if (!mapa.hayObjeto(x, y)) {
                 if (this.objs[slot-1].equipado) {
@@ -679,12 +679,12 @@ public class UserInventory extends Inventory implements Constants {
     }
 
     public void tirarTodosLosItemsNoNewbies() {
-        Map mapa = this.server.getMapa(this.dueño.getPos().map);
+        Map mapa = this.server.getMapa(this.dueño.pos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo obj = findObj(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
-                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, element);
+                    mapa.tirarItemAlPiso(this.dueño.pos().x, this.dueño.pos().y, element);
                 }
             }
         }
@@ -709,7 +709,7 @@ public class UserInventory extends Inventory implements Constants {
         }
         this.dueño.getFlags().TargetObjInvIndex = obj.objid;
         this.dueño.getFlags().TargetObjInvSlot = slot;
-        Map mapa = this.server.getMapa(this.dueño.getPos().map);
+        Map mapa = this.server.getMapa(this.dueño.pos().map);
         switch (info.ObjType) {
             case OBJTYPE_USEONCE:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
@@ -854,7 +854,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(info.IndexAbierta, 1) == 0) {
-                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, new InventoryObject(info.IndexAbierta, 1));
+                    mapa.tirarItemAlPiso(this.dueño.pos().x, this.dueño.pos().y, new InventoryObject(info.IndexAbierta, 1));
                 }
                 break;
             case OBJTYPE_BOTELLALLENA:
@@ -867,7 +867,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarEstadsHambreSed();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(info.IndexCerrada, 1) == 0) {
-                    mapa.tirarItemAlPiso(this.dueño.getPos().x, this.dueño.getPos().y, new InventoryObject(info.IndexCerrada, 1));
+                    mapa.tirarItemAlPiso(this.dueño.pos().x, this.dueño.pos().y, new InventoryObject(info.IndexCerrada, 1));
                 }
                 break;
             case OBJTYPE_HERRAMIENTAS:
@@ -929,9 +929,9 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarSonido(info.Snd1);
                 break;
             case OBJTYPE_BARCOS:
-                short m = this.dueño.getPos().map;
-                short x = this.dueño.getPos().x;
-                short y = this.dueño.getPos().y;
+                short m = this.dueño.pos().map;
+                short x = this.dueño.pos().x;
+                short y = this.dueño.pos().y;
                 if (((mapa.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true) || 
                 mapa.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) || 
                 mapa.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) || 

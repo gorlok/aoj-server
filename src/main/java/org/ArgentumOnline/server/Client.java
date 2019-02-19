@@ -120,9 +120,7 @@ public class Client extends AbstractCharacter {
 
 	Factions m_faccion;
 
-	MapPos m_pos = MapPos.empty();
-
-		UserCounters m_counters = new UserCounters();
+	UserCounters m_counters = new UserCounters();
 
 	public UserTrade m_comUsu = new UserTrade();
 	
@@ -200,15 +198,6 @@ public class Client extends AbstractCharacter {
 	 */
 	public short getRaza() {
 		return m_raza;
-	}
-
-	/**
-	 * Gives the user position.
-	 * 
-	 * @return position
-	 */
-	public MapPos getPos() {
-		return m_pos;
 	}
 
 	/**
@@ -686,7 +675,7 @@ public class Client extends AbstractCharacter {
 					npc.getId());
 			return;
 		}
-		if (getPos().distance(npc.getPos()) > 4) {
+		if (pos().distance(npc.pos()) > 4) {
 			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
 			return;
 		}
@@ -935,7 +924,7 @@ public class Client extends AbstractCharacter {
 	}
 	
 	private boolean checkNpcNear(Npc npc, int distance) {
-		if (npc.getPos().distance(m_pos) > distance) {
+		if (npc.pos().distance(m_pos) > distance) {
 			enviarMensaje("Estas demasiado lejos.", FontType.INFO);
 			return false;
 		}
@@ -1611,7 +1600,7 @@ public class Client extends AbstractCharacter {
 				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
 				subirSkill(Skill.SKILL_Domar);
 				// hacemos respawn del npc para reponerlo.
-				Npc.spawnNpc(npc.getNPCtype(), MapPos.mxy(npc.getPos().map, (short) 0, (short) 0), false, true);
+				Npc.spawnNpc(npc.getNPCtype(), MapPos.mxy(npc.pos().map, (short) 0, (short) 0), false, true);
 			} else {
 				if (m_flags.UltimoMensaje != 5) {
 					enviarMensaje("No has logrado domar la criatura.", FontType.INFO);
@@ -1975,7 +1964,7 @@ public class Client extends AbstractCharacter {
 							return;
 						}
 						// Nos aseguramos que el trigger le permite robar
-						if (mapa.getTrigger(tu.getPos().x, tu.getPos().y) == 4) {
+						if (mapa.getTrigger(tu.pos().x, tu.pos().y) == 4) {
 							enviarMensaje("No podes robar aquí.", FontType.WARNING);
 							return;
 						}
@@ -2272,7 +2261,7 @@ public class Client extends AbstractCharacter {
 		if (esCriminal())
 			crimi = 1;
 
-		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
 				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
 				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
 
@@ -2297,7 +2286,7 @@ public class Client extends AbstractCharacter {
 		if (esCriminal())
 			crimi = 1;
 
-		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
 				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
 				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
 	}
@@ -2863,7 +2852,7 @@ public class Client extends AbstractCharacter {
 
 		// Agus:Mapa restringido?
 		if (m.getForbbiden() && !esNewbie()) {
-			warpUser(getPos().map, this.m_pos.x--, this.m_pos.y--, true);
+			warpUser(pos().map, this.m_pos.x--, this.m_pos.y--, true);
 			return;
 		}
 
@@ -3011,7 +3000,7 @@ public class Client extends AbstractCharacter {
 		for (int i = 0; i < m_mascotas.length; i++) {
 			if (m_mascotas[i] != null && m_mascotas[i].getContadores().TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa.
-				oldMapa = server.getMapa(m_mascotas[i].getPos().map);
+				oldMapa = server.getMapa(m_mascotas[i].pos().map);
 				oldMapa.salir(m_mascotas[i]);
 				npc = m_mascotas[i];
 				m_mascotas[i].releasePet();
@@ -3023,7 +3012,7 @@ public class Client extends AbstractCharacter {
 				// Es una mascota domada.
 				if (m_mascotas[i].puedeReSpawn()) {
 					// La mascota puede hacer respawn
-					oldMapa = server.getMapa(m_mascotas[i].getPos().map);
+					oldMapa = server.getMapa(m_mascotas[i].pos().map);
 					newMapa = server.getMapa(m_pos.map);
 					lugarLibre = newMapa.closestLegalPosNpc(m_pos.x, m_pos.y, m_mascotas[i].esAguaValida(),
 							m_mascotas[i].esTierraInvalida(), true);
@@ -3066,7 +3055,7 @@ public class Client extends AbstractCharacter {
 		Npc npc;
 		for (int i = 0; i < m_mascotas.length; i++) {
 			if (m_mascotas[i] != null) {
-				mapa = server.getMapa(m_mascotas[i].getPos().map);
+				mapa = server.getMapa(m_mascotas[i].pos().map);
 				mapa.salir(m_mascotas[i]);
 				npc = m_mascotas[i];
 				m_mascotas[i].releasePet();
@@ -3182,7 +3171,7 @@ public class Client extends AbstractCharacter {
 
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.dialog, color, texto, (short) quienId);
+			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.dialog, color, texto, (short) quienId);
 			// mapa.enviarATodos(serverPacketID.dialog, color, texto, (short) quienId);
 		}
 	}
@@ -3238,8 +3227,8 @@ public class Client extends AbstractCharacter {
 		if (esCriminal())
 			crimi = 1;
 
-		Object[] params = { getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x,
-				getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(),
+		Object[] params = { getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), pos().x,
+				pos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(),
 				(short) 999, m_nick + getClan(), crimi, m_flags.Privilegios };
 
 		return params;
@@ -3269,7 +3258,7 @@ public class Client extends AbstractCharacter {
 		// 999, m_nick + getClan(), crimi, m_flags.Privilegios};
 
 		enviar(ServerPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(),
-				getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
+				pos().x, pos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
 				m_infoChar.getFX(), (short) 999, m_nick + getClan(), (short) 1, m_flags.Privilegios);
 	}
 
@@ -4024,7 +4013,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void usuarioAtacaNpc(Npc npc) {
-		if (m_pos.distance(npc.getPos()) > MAX_DISTANCIA_ARCO) {
+		if (m_pos.distance(npc.pos()) > MAX_DISTANCIA_ARCO) {
 			enviarMensaje("Estás muy lejos para disparar.", FontType.FIGHT);
 			return;
 		}
@@ -4193,7 +4182,7 @@ public class Client extends AbstractCharacter {
 		if (!puedeAtacar(victima)) {
 			return;
 		}
-		if (m_pos.distance(victima.getPos()) > MAX_DISTANCIA_ARCO) {
+		if (m_pos.distance(victima.pos()) > MAX_DISTANCIA_ARCO) {
 			enviarMensaje("Estás muy lejos para disparar.", FontType.FIGHT);
 			return;
 		}
@@ -4378,7 +4367,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public boolean puedeAtacar(Client victima) {
-		Map mapa = server.getMapa(victima.getPos().map);
+		Map mapa = server.getMapa(victima.pos().map);
 
 		if (!victima.isAlive()) {
 			enviarMensaje("No puedes atacar a un espíritu", FontType.INFO);
@@ -4394,7 +4383,7 @@ public class Client extends AbstractCharacter {
 			enviarMensaje("Esta es una zona segura, aqui no puedes atacar usuarios.", FontType.WARNING);
 			return false;
 		}
-		if (mapa.getTrigger(victima.getPos().x, victima.getPos().y) == 4) {
+		if (mapa.getTrigger(victima.pos().x, victima.pos().y) == 4) {
 			enviarMensaje("No puedes pelear aqui.", FontType.WARNING);
 			return false;
 		}
@@ -4430,10 +4419,10 @@ public class Client extends AbstractCharacter {
 		// Implementacion de trigger 7 - Para torneos con espectadores
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == 7) {
 			if (mapa.getTrigger(m_pos.x, m_pos.y) == 7
-					&& mapa.getTrigger(victima.getPos().x, victima.getPos().y) != 7) {
+					&& mapa.getTrigger(victima.pos().x, victima.pos().y) != 7) {
 				enviarMensaje("Para atacar a ese usuario, él se debe encontrar en tu misma zona.", FontType.FIGHT);
 			} else if (mapa.getTrigger(m_pos.x, m_pos.y) != 7
-					&& mapa.getTrigger(victima.getPos().x, victima.getPos().y) == 7) {
+					&& mapa.getTrigger(victima.pos().x, victima.pos().y) == 7) {
 				enviarMensaje("Para atacar a ese usuario, debes encontrarte en la misma zona que él.", FontType.FIGHT);
 			}
 			return false;
@@ -5331,12 +5320,12 @@ public class Client extends AbstractCharacter {
 
 	private void refreshPk() {
 		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.updateStats, getId(), (byte) 1);
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.updateStats, getId(), (byte) 1);
 	}
 
 	public void refreshCiu() {
 		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(getPos().x, getPos().y, ServerPacketID.updateStats, getId(), (byte) 0);
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.updateStats, getId(), (byte) 0);
 	}
 
 	public void cerrarUsuario() {
@@ -5475,7 +5464,7 @@ public class Client extends AbstractCharacter {
 			return MapCell.TRIGGER6_AUSENTE;
 		}
 		int t1 = server.getMapa(m_pos.map).getTrigger(m_pos.x, m_pos.y);
-		int t2 = server.getMapa(victima.getPos().map).getTrigger(victima.getPos().x, victima.getPos().y);
+		int t2 = server.getMapa(victima.pos().map).getTrigger(victima.pos().x, victima.pos().y);
 		if (t1 != MapCell.TRIGGER_ARENA_DUELOS && t2 != MapCell.TRIGGER_ARENA_DUELOS) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}

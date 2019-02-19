@@ -51,7 +51,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @author Gorlok
+ * @author gorlok
  */
 public class GuildManager {
 	private static Logger log = LogManager.getLogger();

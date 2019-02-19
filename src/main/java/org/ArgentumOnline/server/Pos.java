@@ -62,7 +62,13 @@ public class Pos implements Constants {
 	
 	@Override
 	public String toString() {
-		return String.format("(x=%d,y=%d)", this.x, this.y);
+		return new StringBuilder()
+				.append("(x=")
+				.append(this.x)
+				.append(",y=")
+				.append(this.y)
+				.append(")")
+				.toString();
 	}
 
 }

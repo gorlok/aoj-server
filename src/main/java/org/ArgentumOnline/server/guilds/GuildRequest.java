@@ -27,7 +27,7 @@ package org.ArgentumOnline.server.guilds;
 
 /**
  *
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
 public class GuildRequest {
     

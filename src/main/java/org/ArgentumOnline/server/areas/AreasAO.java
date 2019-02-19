@@ -89,7 +89,7 @@ public class AreasAO implements Constants {
 		
 		var userArea = user.getUserArea();
 		
-		if (userArea.getArea() == areasInfo[user.getPos().x][user.getPos().y]) {
+		if (userArea.getArea() == areasInfo[user.pos().x][user.pos().y]) {
 			return;
 		}
 		
@@ -125,10 +125,10 @@ public class AreasAO implements Constants {
 			userArea.minX = minX - 18;
 			userArea.minY = minY;
 		default: //user nuevo
-			minY = ((user.getPos().y / 9) - 1) * 9;
+			minY = ((user.pos().y / 9) - 1) * 9;
 			maxY = minY + 26;
 			
-			minX = ((user.getPos().x / 9) - 1) * 9;
+			minX = ((user.pos().x / 9) - 1) * 9;
 			maxX = minX + 26;
 			
 			userArea.minX = minX;
@@ -151,7 +151,7 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(ServerPacketID.areasChange, user.getPos().x, user.getPos().y);
+    	user.enviar(ServerPacketID.areasChange, user.pos().x, user.pos().y);
     	
     	for(short x = (short) minX; x < maxX;x++) {
     		for(short y = (short) minY; y < maxY; y++) {
@@ -190,15 +190,15 @@ public class AreasAO implements Constants {
     		}
     	}
     	
-    	tempInt = (short) (user.getPos().x / 9);
+    	tempInt = (short) (user.pos().x / 9);
     	userArea.setAreaRecibeX(areasRecibe[tempInt]);
     	userArea.setAreaPerteneceX((int) Math.pow(2, tempInt));
     	
-    	tempInt = (short) (user.getPos().y / 9);
+    	tempInt = (short) (user.pos().y / 9);
     	userArea.setAreaRecibeY(areasRecibe[tempInt]);
     	userArea.setAreaPerteneceY( (int) Math.pow(2, tempInt));
     	
-    	userArea.setArea(areasInfo[user.getPos().x][user.getPos().y]);
+    	userArea.setArea(areasInfo[user.pos().x][user.pos().y]);
 	}
 	
 	/**
@@ -206,7 +206,7 @@ public class AreasAO implements Constants {
 	 */
 	public void checkUpdateNeededNpc(Npc npc, short dir) {
 		
-		if (npc.getArea() == areasInfo[npc.getPos().x][npc.getPos().y]) return;
+		if (npc.getArea() == areasInfo[npc.pos().x][npc.pos().y]) return;
 		
 		int minX = 0; int maxX = 0; int minY = 0; int maxY = 0;
 		short tempInt = 0;
@@ -240,10 +240,10 @@ public class AreasAO implements Constants {
 			npc.minX = minX - 18;
 			npc.minY = minY;
 		default: //user nuevo
-			minY = ((npc.getPos().y / 9) - 1) * 9;
+			minY = ((npc.pos().y / 9) - 1) * 9;
 			maxY = minY + 26;
 			
-			minX = ((npc.getPos().x / 9) * 9);
+			minX = ((npc.pos().x / 9) * 9);
 			maxX = minX + 26;
 			
 			npc.minX = minX;
@@ -281,15 +281,15 @@ public class AreasAO implements Constants {
     		}
     	}
     	
-    	tempInt = (short) (npc.getPos().x / 9);
+    	tempInt = (short) (npc.pos().x / 9);
     	npc.setAreaRecibeX(areasRecibe[tempInt]);
     	npc.setAreaPerteneceX((int) Math.pow(2, tempInt));
     	
-    	tempInt = (short) (npc.getPos().y / 9);
+    	tempInt = (short) (npc.pos().y / 9);
     	npc.setAreaRecibeY(areasRecibe[tempInt]);
     	npc.setAreaPerteneceY( (int) Math.pow(2, tempInt));
     	
-    	npc.setArea(areasInfo[npc.getPos().x][npc.getPos().y]);
+    	npc.setArea(areasInfo[npc.pos().x][npc.pos().y]);
 		
 	}
 	

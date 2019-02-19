@@ -737,7 +737,7 @@ public class UserSpells implements Constants {
 		}
 		MapPos targetPos = MapPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
-		if (client.getPos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
+		if (client.pos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
 			client.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
 			return false;
 		}
@@ -766,7 +766,7 @@ public class UserSpells implements Constants {
 			return false;
 		}
 		
-		Map mapa = server.getMapa(client.getPos().map);
+		Map mapa = server.getMapa(client.pos().map);
 		
 		if (mapa.esZonaSegura()) {
 			client.enviarMensaje("¡Estás en una zona segura!", FontType.INFO);
@@ -848,15 +848,15 @@ public class UserSpells implements Constants {
 	}
 
 	public void infoHechizo() {
-		Map mapa = server.getMapa(client.getPos().map);
+		Map mapa = server.getMapa(client.pos().map);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		client.decirPalabrasMagicas(hechizo.PalabrasMagicas);
 		client.enviarSonido(hechizo.WAV);
 		if (client.getFlags().TargetUser > 0) {
-			mapa.enviarCFX(client.getPos().x, client.getPos().y, client.getFlags().TargetUser,
+			mapa.enviarCFX(client.pos().x, client.pos().y, client.getFlags().TargetUser,
 				hechizo.FXgrh, hechizo.loops);
 		} else if (client.getFlags().TargetNpc > 0) {
-			mapa.enviarCFX(client.getPos().x, client.getPos().y, client.getFlags().TargetNpc,
+			mapa.enviarCFX(client.pos().x, client.pos().y, client.getFlags().TargetNpc,
 				hechizo.FXgrh, hechizo.loops);
 		}
 		if (client.getFlags().TargetUser > 0) {

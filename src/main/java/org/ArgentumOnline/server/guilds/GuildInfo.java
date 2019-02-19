@@ -28,7 +28,6 @@ package org.ArgentumOnline.server.guilds;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.util.FontType;
 
-
 /**
  * @author gorlok
  */

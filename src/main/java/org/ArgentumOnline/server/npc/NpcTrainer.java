@@ -95,7 +95,7 @@ public class NpcTrainer extends Npc {
 	public void spawnTrainerPet(short slot) {
 		if (getCantMascotas() < Client.MAX_MASCOTAS_ENTRENADOR) {
 			if (slot > 0 && slot <= getCantCriaturas()) {
-				Npc criatura = Npc.spawnNpc(getCriaturaIndex(slot), getPos(), true, false);
+				Npc criatura = Npc.spawnNpc(getCriaturaIndex(slot), pos(), true, false);
 				if (criatura != null) {
 					agregarMascota(criatura);
 				}

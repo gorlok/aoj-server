@@ -107,17 +107,22 @@ public class Factions implements Constants {
 	}
     
 	public static void sendFactionArmor(Client admin, FactionArmors factiorArmor) {
-		admin.enviarMensaje(
-				String.format("%s es %d", 
-				factiorArmor.getName(), factionArmors[factiorArmor.ordinal()]), 
-				FontType.INFO);
+		String msg = new StringBuilder()
+				.append(factiorArmor.getName())
+				.append(" es ")
+				.append(factionArmors[factiorArmor.ordinal()])
+				.toString();
+		admin.enviarMensaje(msg, FontType.INFO);
 	}
 	
 	public static void updateFactionArmor(Client admin, FactionArmors factiorArmor, short armorObjIdx) {
 		factionArmors[factiorArmor.ordinal()] = armorObjIdx;
-		admin.enviarMensaje(
-				String.format("%s ha sido actualizada", factiorArmor.getName()), 
-				FontType.INFO);
+		
+		String msg = new StringBuilder()
+				.append(factiorArmor.getName())
+				.append(" ha sido actualizada")
+				.toString();
+		admin.enviarMensaje(msg, FontType.INFO);
 	}
 	
     
@@ -169,8 +174,8 @@ public class Factions implements Constants {
         if (!this.RecibioArmaduraReal) {
             short armadura = this.cliente.getClase().getArmaduraImperial(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMapa(this.cliente.getPos().map);
-                mapa.tirarItemAlPiso(this.cliente.getPos().x, this.cliente.getPos().y, new InventoryObject(armadura, 1));
+                Map mapa = this.server.getMapa(this.cliente.pos().map);
+                mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraReal = true;
         }
@@ -216,8 +221,8 @@ public class Factions implements Constants {
         if (!this.RecibioArmaduraCaos) {
             short armadura = this.cliente.getClase().getArmaduraCaos(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMapa(this.cliente.getPos().map);
-                mapa.tirarItemAlPiso(this.cliente.getPos().x, this.cliente.getPos().y, new InventoryObject(armadura, 1));
+                Map mapa = this.server.getMapa(this.cliente.pos().map);
+                mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraCaos = true;
         }

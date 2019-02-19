@@ -209,7 +209,6 @@ public class Npc extends AbstractCharacter implements Constants {
     List<Node> current_path = null;
     int current_step = 0;
     
-    MapPos m_pos  = MapPos.empty();
     MapPos m_orig  = MapPos.empty();
     
     protected AojServer server;
@@ -244,7 +243,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	return null;
         }
 
-        npc.getPos().set(tmp.map, tmp.x, tmp.y);
+        npc.pos().set(tmp.map, tmp.x, tmp.y);
         mapa.entrar(npc, tmp.x, tmp.y);
         return npc;
     }
@@ -526,10 +525,6 @@ public class Npc extends AbstractCharacter implements Constants {
     	return this.m_name;
     }
     
-    public MapPos getPos() {
-        return this.m_pos;
-    }
-    
     public MapPos getOrig() {
         return this.m_orig;
     }
@@ -662,7 +657,7 @@ public class Npc extends AbstractCharacter implements Constants {
         
     public Object[] ccParams() {
     	Object[] params = {getInfoChar().getCuerpo(), getInfoChar().getCabeza(), 
-    			getInfoChar().getDir(), getId(), getPos().x, getPos().y};
+    			getInfoChar().getDir(), getId(), pos().x, pos().y};
     	
     	return params;
     }
@@ -729,12 +724,12 @@ public class Npc extends AbstractCharacter implements Constants {
         if (cliente != null) {
         	boolean eraCrimi = cliente.esCriminal();
         	
-            MapPos pos = cliente.getPos();
+            MapPos pos = cliente.pos();
             Map m = this.server.getMapa(pos.map);
             
             if (this.m_snd3 > 0) {
                // m.enviarAlArea(pos.x, pos.y, MSG_TW, this.m_snd3);
-            	m.enviarAlArea(pos.x, pos.y, ServerPacketID.MSG_TW, (byte) this.m_snd3, cliente.getPos().x, cliente.getPos().y);
+            	m.enviarAlArea(pos.x, pos.y, ServerPacketID.MSG_TW, (byte) this.m_snd3, cliente.pos().x, cliente.pos().y);
             }
             cliente.getFlags().TargetNpc = 0;
             cliente.getFlags().TargetNpcTipo = 0;
@@ -1159,7 +1154,7 @@ public class Npc extends AbstractCharacter implements Constants {
                                 if (lanzaSpells()) {
                                    npcLanzaUnSpell(cliente);
                                 }
-                                Direction dir = this.m_pos.findDirection(cliente.getPos());
+                                Direction dir = this.m_pos.findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1196,7 +1191,7 @@ public class Npc extends AbstractCharacter implements Constants {
                                 if (lanzaSpells()) {
                                     npcLanzaUnSpell(cliente);
                                 }
-                                Direction dir = this.m_pos.findDirection(cliente.getPos());
+                                Direction dir = this.m_pos.findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1238,7 +1233,7 @@ public class Npc extends AbstractCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Direction dir = this.m_pos.findDirection(cliente.getPos());
+                            Direction dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1264,7 +1259,7 @@ public class Npc extends AbstractCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Direction dir = this.m_pos.findDirection(cliente.getPos());
+                            Direction dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1294,8 +1289,8 @@ public class Npc extends AbstractCharacter implements Constants {
                     if (mapa.hayCliente(x, y)) {
                         Client cliente = mapa.getCliente(x, y);
                         if (cliente.isAlive() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
-                        		getPetUserOwner().getPos().distance(this.m_pos) > 3) {
-                            Direction dir = this.m_pos.findDirection(cliente.getPos());
+                        		getPetUserOwner().pos().distance(this.m_pos) > 3) {
+                            Direction dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }

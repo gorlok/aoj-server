@@ -63,9 +63,9 @@ public class PathFinding {
     
     public Vector<Node> seekPath(Npc npc) {
     	AojServer server = AojServer.instance();
-    	short m = npc.getPos().map;
+    	short m = npc.pos().map;
     	Map mapa = server.getMapa(m);
-    	MapPos start = npc.getPos();
+    	MapPos start = npc.pos();
     	MapPos end = npc.m_pfinfo.m_targetPos;
     	for (short x = 1; x <= 100; x++) {
 			for (short y = 1; y <= 100; y++) {

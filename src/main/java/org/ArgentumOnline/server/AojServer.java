@@ -39,7 +39,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -178,13 +177,22 @@ public class AojServer implements Constants {
         return (Util.millis() - this.startTime) / 1000;
     }
     
-    public String calculateUptime() {
+	public String calculateUptime() {
 		long tsegs = runningTimeInSecs();
 		long segs = tsegs % 60;
 		long mins = tsegs / 60;
 		long horas = mins / 60;
 		long dias = horas / 24;
-		return String.format("%d dias, %d horas, %d mins, %d segs.", dias, horas, mins, segs);
+
+		return new StringBuilder()
+				.append(dias)
+				.append(" días, ")
+				.append(horas)
+				.append(" horas, ")
+				.append(mins)
+				.append(" mins, ")
+				.append(segs)
+				.append(" segs.").toString();
 	}
     
     public short getNextId() {
@@ -595,8 +603,8 @@ public class AojServer implements Constants {
                         npc.efectoParalisisNpc();
                     } else {
                         // Usamos AI si hay algun user en el mapa
-                        if (npc.getPos().isValid()) {
-                            Map mapa = getMapa(npc.getPos().map);
+                        if (npc.pos().isValid()) {
+                            Map mapa = getMapa(npc.pos().map);
                             if (mapa != null && mapa.getCantUsuarios() > 0) {
                                 if (!npc.isStatic()) {
                                     npc.doAI();
@@ -784,8 +792,8 @@ public class AojServer implements Constants {
         this.segundos += 6;
         for (Client cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                Map mapa = getMapa(cli.getPos().map);
-                if (mapa.getTrigger(cli.getPos().x, cli.getPos().y) == 5) {
+                Map mapa = getMapa(cli.pos().map);
+                if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
                     cli.m_counters.PiqueteC++;
                     cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.INFO);
                     if (cli.m_counters.PiqueteC > 23) {

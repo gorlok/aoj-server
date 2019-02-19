@@ -117,7 +117,7 @@ public class UserStorage {
 		user.m_desc = ini.getString("INIT", "Desc");
 		{
 			StringTokenizer st = new StringTokenizer(ini.getString("INIT", "Position"), "-");
-			user.getPos().set(
+			user.pos().set(
 					Short.parseShort(st.nextToken()),  // map
 					Short.parseShort(st.nextToken()),  // x
 					Short.parseShort(st.nextToken())); // y
@@ -313,7 +313,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Escudo", user.getInfoChar().m_escudo);
 			ini.setValue("INIT", "Casco", user.getInfoChar().m_casco);
 			ini.setValue("INIT", "LastIP", user.getIP());
-			ini.setValue("INIT", "Position", user.getPos().map + "-" + user.getPos().x + "-" + user.getPos().y);
+			ini.setValue("INIT", "Position", user.pos().map + "-" + user.pos().x + "-" + user.pos().y);
 
 			ini.setValue("STATS", "GLD", user.getEstads().getGold());
 			ini.setValue("STATS", "BANCO", user.getEstads().getBankGold());
