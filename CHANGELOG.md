@@ -5,6 +5,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ### 2019-02-19
 - Refactory de clanes
+- Nuevo protocolo binario. Está todo roto ahora \o/
 
 ### 2019-02-18
 - Se mueve el código de carga y guardado de chars a UserStorage

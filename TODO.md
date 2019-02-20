@@ -12,3 +12,5 @@
 * competableFuture Async
 * implement full AO's network protocol
 * object pool
+* generate protocol from a file? document protocol
+
