@@ -37,9 +37,11 @@ import org.apache.logging.log4j.Logger;
 
 public class ObjectInfo implements Constants {
 	private static Logger log = LogManager.getLogger();
+	
+	public final static ObjectInfo EMPTY = new ObjectInfo(); 
 
     public short ObjIndex = 0;
-    public String Nombre;
+    public String Nombre = "";
     public short ObjType; // Tipo enum que determina cuales son las caract del obj
     public short SubTipo; // Tipo enum que determina cuales son las caract del obj
     public short GrhIndex; // Indice del grafico que representa el obj
@@ -89,7 +91,7 @@ public class ObjectInfo implements Constants {
     public short ShieldAnim; // Apunta a una anim de escudo
     public short CascoAnim;
     
-    public int Valor; // Precio
+    public int Valor; // Precio FIXME esto es un float en VB6 ???
     
     public short Llave;
     public short Clave; // Cuando clave=llave la puerta se abre o se cierra

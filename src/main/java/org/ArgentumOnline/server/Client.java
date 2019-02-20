@@ -72,7 +72,7 @@ public class Client extends AbstractCharacter {
 	public List<Integer> lengthClient = new LinkedList<Integer>();
 
 	String m_nick = "";
-	String m_password = "";
+	String m_password = ""; // FIXME SEGURIDAD
 
 	public SocketChannel socketChannel = null;
 
@@ -419,9 +419,7 @@ public class Client extends AbstractCharacter {
 			log.debug(">>" + m_nick + ">> " + msg);
 
 			this.clientBuffer.clear();
-
 			BufferWriter.write(this.clientBuffer, msg, params);
-
 			this.clientBuffer.flip();
 
 			if (socketChannel.write(clientBuffer) == 0) {
@@ -500,7 +498,7 @@ public class Client extends AbstractCharacter {
 		 * fixme Apuestas.Jugadas = Apuestas.Jugadas + 1 Call WriteVar(DatPath &
 		 * "apuestas.dat", "Main", "Jugadas", CStr(Apuestas.Jugadas))
 		 */
-		refreshStatus(1);
+		updateUserStats();
 	}
 
 	public void doPonerMensajeForo(String titulo, String texto) {
@@ -569,7 +567,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void doEnviarMiniEstadisticas() {
-		enviar(ServerPacketID.littleStats, (int) m_faccion.CiudadanosMatados, (int) m_faccion.CriminalesMatados,
+		enviar(ServerPacketID.MiniStats, (int) m_faccion.CiudadanosMatados, (int) m_faccion.CriminalesMatados,
 				(int) m_estads.usuariosMatados, (int) m_estads.NPCsMuertos, m_clase.getName(), (int) m_counters.Pena);
 
 		sendUserAtributos();
@@ -837,7 +835,7 @@ public class Client extends AbstractCharacter {
 
 	private void userDepositaItem(short slot, int cant) {
 		// El usuario deposita un item
-		refreshStatus(1);
+		updateUserStats();
 		if (m_inv.getObjeto(slot).cant > 0 && !m_inv.getObjeto(slot).equipado) {
 			if (cant > 0 && cant > m_inv.getObjeto(slot).cant) {
 				cant = m_inv.getObjeto(slot).cant;
@@ -884,7 +882,7 @@ public class Client extends AbstractCharacter {
 		if (cant < 1) {
 			return;
 		}
-		refreshStatus(1);
+		updateUserStats();
 		if (m_bancoInv.getObjeto(slot).cant > 0) {
 			if (cant > m_bancoInv.getObjeto(slot).cant) {
 				cant = m_bancoInv.getObjeto(slot).cant;
@@ -942,16 +940,16 @@ public class Client extends AbstractCharacter {
 	}
 
 	private void updateVentanaBanco(short slot, int npc_inv) {
-		enviar(ServerPacketID.bancoOk);
+		enviar(ServerPacketID.BankOK);
 	}
 
 	private void iniciarDeposito() {
 		// Hacemos un Update del inventario del usuario
 		updateBankUserInv();
 		// Actualizamos el dinero
-		refreshStatus(1);
+		updateUserStats();
 
-		enviar(ServerPacketID.wBank);
+		enviar(ServerPacketID.BankInit);
 
 		m_flags.Comerciando = true;
 	}
@@ -962,7 +960,7 @@ public class Client extends AbstractCharacter {
 		if (m_bancoInv.getObjeto(slot).objid > 0) {
 			sendBanObj(slot, m_bancoInv.getObjeto(slot));
 		} else {
-			enviar(ServerPacketID.oBank, (byte) slot, (short) 0);
+			enviar(ServerPacketID.ChangeBankSlot, (byte) slot, (short) 0);
 		}
 	}
 
@@ -977,10 +975,8 @@ public class Client extends AbstractCharacter {
 	private void sendBanObj(short slot, InventoryObject obj_inv) {
 		if (obj_inv != null) {
 			ObjectInfo info = findObj(obj_inv.objid);
-			enviar(ServerPacketID.oBank, (byte) slot, info.ObjIndex, info.Nombre, obj_inv.cant, info.GrhIndex,
+			enviar(ServerPacketID.ChangeBankSlot, (byte) slot, info.ObjIndex, info.Nombre, obj_inv.cant, info.GrhIndex,
 					(byte) info.ObjType, info.MaxHIT, info.MinHIT, info.MaxDef);
-		} else {
-			// enviar(serverPacketID.oBank, (byte) slot, (short) 0);
 		}
 	}
 
@@ -988,7 +984,7 @@ public class Client extends AbstractCharacter {
 		// Comando FINBAN
 		// User sale del modo BANCO
 		m_flags.Comerciando = false;
-		enviar(ServerPacketID.fBank);
+		enviar(ServerPacketID.BankEnd);
 	}
 
 	public void cambiarPasswd(String s) {
@@ -1161,13 +1157,13 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void updateVentanaComercio(short slot, short npcInv) {
-		// enviar(MSG_TRANSOK, slot, npcInv);
-		enviar(ServerPacketID.tradeOk);
+		enviar(ServerPacketID.ChangeUserTradeSlot, slot, npcInv);
+		//enviar(ServerPacketID.ChangeUserTradeSlot); FIXME
 	}
 
 	public void doFinComerciar() {
 		m_flags.Comerciando = false;
-		enviar(ServerPacketID.MSG_FINCOM);
+		enviar(ServerPacketID.CommerceEnd);
 	}
 
 	public double descuento() {
@@ -1223,7 +1219,7 @@ public class Client extends AbstractCharacter {
 		// Hacemos un Update del inventario del usuario
 		enviarInventario();
 		// Atcualizamos el dinero
-		refreshStatus(1);
+		updateUserStats();
 		// Mostramos la ventana pa' comerciar y ver ladear la osamenta. jajaja
 		// enviar(MSG_INITCOM);
 		m_flags.Comerciando = true;
@@ -1278,7 +1274,7 @@ public class Client extends AbstractCharacter {
 
 	// or long?...
 	public void doEnviarFama() {
-		enviar(ServerPacketID.userFame, (int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
+		enviar(ServerPacketID.Fame, (int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
 				(int) m_reputacion.burguesRep, (int) m_reputacion.ladronRep, (int) m_reputacion.nobleRep,
 				(int) m_reputacion.plebeRep);
 	}
@@ -1341,7 +1337,7 @@ public class Client extends AbstractCharacter {
 			}
 		}
 		enviarCP();
-		enviar(ServerPacketID.navigateToggle);
+		enviar(ServerPacketID.NavigateToggle);
 	}
 
 	public void tratarDeHacerFogata() {
@@ -1942,7 +1938,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void doUK(short val) {
+	public void doUK(int val) {
 		// Comando UK
 		if (!checkAlive()) {
 			return;
@@ -1950,13 +1946,13 @@ public class Client extends AbstractCharacter {
 
 		switch (val) {
 		case Skill.SKILL_Robar:
-			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Robar);
+			enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Robar);
 			break;
 		case Skill.SKILL_Magia:
-			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Magia);
+			enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Magia);
 			break;
 		case Skill.SKILL_Domar:
-			enviar(ServerPacketID.MSG_TO1, Skill.SKILL_Domar);
+			enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Domar);
 			break;
 		case Skill.SKILL_Ocultarse:
 			if (m_flags.Navegando) {
@@ -2017,7 +2013,7 @@ public class Client extends AbstractCharacter {
 		if (!checkAlive("¡¡Estas muerto!! Solo los vivos pueden meditar.")) {
 			return;
 		}
-		enviar(ServerPacketID.medOk);
+		enviar(ServerPacketID.MeditateToggle);
 		if (!m_flags.Meditando) {
 			enviarMensaje("Comienzas a meditar.", FontType.INFO);
 		} else {
@@ -2083,8 +2079,7 @@ public class Client extends AbstractCharacter {
 			return;
 		}
 		m_estads.MinHP = m_estads.MaxHP;
-		// enviarEstadsUsuario();
-		refreshStatus(2);
+		updateUserStats();
 		enviarMensaje("¡¡Has sido curado!!", FontType.INFO);
 	}
 
@@ -2105,41 +2100,20 @@ public class Client extends AbstractCharacter {
 	/**
 	 * Change user look direction
 	 * 
-	 * @param dir is new direction
+	 * @param heading is new direction
 	 */
-	public void changeDir(short dir) {
-
-		Map mapa = server.getMapa(m_pos.map);
-		short crimi = 0;
-		if (esCriminal())
-			crimi = 1;
-
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
-				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
-				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
-
-		// mapa.enviarAlArea(getPos().x, getPos().y, serverPacketID.CC, getId(),
-		// m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(),
-		// getPos().x, getPos().y, m_infoChar.getArma(), m_infoChar.getEscudo(),
-		// m_infoChar.getCasco(), m_infoChar.getFX(), (short) 999, m_nick + getClan(),
-		// crimi, m_flags.Privilegios);
-
-		m_infoChar.m_dir = dir;
+	public void changeHeading(short heading) {
+		m_infoChar.m_dir = heading;
+		enviarCP();
 	}
 
 	public void enviarCP() {
-		// Enviar ChangePlayer a todos.
-		// Sub ChangeUserChar.
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
 
-		short crimi = 0;
-		if (esCriminal())
-			crimi = 1;
-
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.MSG_CP, getId(), m_infoChar.getCuerpo(),
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.CharacterChange, getId(), m_infoChar.getCuerpo(),
 				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
 				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
 	}
@@ -2180,9 +2154,9 @@ public class Client extends AbstractCharacter {
 				try {
 					if (server.estaLloviendo()) {
 						// Detener la lluvia.
-						enviar(ServerPacketID.userRain);
+						enviar(ServerPacketID.RainToggle);
 					}
-					enviar(ServerPacketID.finOk);
+					enviar(ServerPacketID.Disconnect);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -2215,7 +2189,7 @@ public class Client extends AbstractCharacter {
 		m_estads.userAtributos[3] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[4] = (byte) (Util.Azar(16, 18));
 
-		enviar(ServerPacketID.dropDices, m_estads.userAtributos[0], m_estads.userAtributos[1],
+		enviar(ServerPacketID.DiceRoll, m_estads.userAtributos[0], m_estads.userAtributos[1],
 				m_estads.userAtributos[2], m_estads.userAtributos[3], m_estads.userAtributos[4]);
 	}
 
@@ -2328,7 +2302,7 @@ public class Client extends AbstractCharacter {
 		}
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.dialog, COLOR_BLANCO, s, getId());
+			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.ChatOverHead, COLOR_BLANCO, s, getId());
 		}
 		if (esConsejero()) {
 			Log.logGM(m_nick, "El consejero dijo: " + s);
@@ -2420,7 +2394,7 @@ public class Client extends AbstractCharacter {
 		}
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(ServerPacketID.medOk);
+			enviar(ServerPacketID.MeditateToggle);
 			enviarMensaje("Dejas de meditar.", FontType.INFO);
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -2489,7 +2463,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void enviarPU() {
-		enviar(ServerPacketID.MSG_PU, m_pos.x, m_pos.y);
+		enviar(ServerPacketID.PosUpdate, (byte)m_pos.x, (byte)m_pos.y);
 	}
 
 	public void agarrarObjeto() {
@@ -2517,8 +2491,7 @@ public class Client extends AbstractCharacter {
 		}
 		if (slot == FLAGORO) {
 			tirarOro(cant);
-			// enviarEstadsUsuario();
-			refreshStatus(1);
+			updateUserStats();
 		} else {
 			if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
 				if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid > 0) {
@@ -2575,70 +2548,50 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void setNullObject(int slot) {
-		enviar(ServerPacketID.deleteObject, (byte) slot);
-	}
-
 	public void enviarObjetoInventario(int slot) {
-		InventoryObject objInv = m_inv.getObjeto(slot);
+		InventoryObject inv = m_inv.getObjeto(slot);
 
-		if (objInv != null && objInv.objid != 0) {
-			ObjectInfo io = findObj(objInv.objid);
-
-			enviar(ServerPacketID.MSG_CSI, (byte) slot, objInv.objid, io.Nombre, (short) objInv.cant,
-					(byte) (objInv.equipado ? 1 : 0), io.GrhIndex, (byte) io.ObjType, io.MaxHIT, io.MinHIT, io.MaxDef,
-					(int) io.Valor);
-
+		ObjectInfo objInfo;
+		if (inv != null && inv.objid != 0) {
+			objInfo = findObj(inv.objid);
 		} else {
-			enviar(ServerPacketID.MSG_CSI, (byte) slot, (short) 0);
+			objInfo = ObjectInfo.EMPTY;
 		}
+		enviar(ServerPacketID.ChangeInventorySlot, 
+				(byte) slot, 
+				inv.objid, 
+				objInfo.Nombre, 
+				(short) inv.cant,
+				(byte) (inv.equipado ? 1 : 0), 
+				objInfo.GrhIndex, 
+				(byte)objInfo.ObjType, 
+				objInfo.MaxHIT, 
+				objInfo.MinHIT, 
+				objInfo.MaxDef,
+				Float.valueOf(objInfo.Valor));
 	}
 
 	private void enviarIndiceUsuario() {
-		// enviar(MSG_UI, getId());
-		enviar(ServerPacketID.IP, getId());
+		enviar(ServerPacketID.UserCharIndexInServer, getId());
 	}
 
 	public void enviarMensaje(String msg, FontType fuente) {
-		// enviar(MSG_TALK, msg, fuente.toString());
-		enviar(ServerPacketID.talk, msg, fuente.toString());
+		enviar(ServerPacketID.ChatOverHead, msg, fuente.toString());
 	}
 
 	public void enviarHabla(int color, String msg, short id) {
-		// enviar(MSG_DIALOG, color, msg, id);
-		enviar(ServerPacketID.dialog, color, msg, id);
+		enviar(ServerPacketID.ConsoleMsg, color, msg, id);
 	}
 
-	public void refreshStatus(int value) {
-		byte id = (byte) value;
-
-		switch (value) {
-
-		case 1: // GOLD
-			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.getGold());
-			break;
-
-		case 2: // user hp
-			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.MinHP, (short) m_estads.MaxHP);
-			break;
-
-		case 3: // user mana
-			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.mana, (short) m_estads.maxMana);
-			break;
-
-		case 4: // user stamina
-			enviar(ServerPacketID.MSG_REFRESH, id, (short) m_estads.stamina, (short) m_estads.maxStamina);
-			break;
-
-		case 5: // user level, exp & elu
-			enviar(ServerPacketID.MSG_REFRESH, id, m_estads.ELV, m_estads.Exp, m_estads.ELU);
-			break;
-
-		default:
-			return;
-
-		}
-
+	public void updateUserStats() {
+		enviar(ServerPacketID.UpdateUserStats, 
+				(short) m_estads.MaxHP, (short) m_estads.MinHP,
+				(short) m_estads.maxMana, (short) m_estads.mana, 
+				(short) m_estads.maxStamina, (short) m_estads.stamina,
+				m_estads.getGold(),
+				(byte)m_estads.ELV, // level 
+				m_estads.ELU, // pasar de nivel
+				m_estads.Exp); // expteriencia
 	}
 
 	public void enviarEstadsHambreSed() {
@@ -2679,42 +2632,42 @@ public class Client extends AbstractCharacter {
 		cambiarMapa(mapa, x, y, true, true);
 	}
 
-	private void cambiarMapa(short mapa, short x, short y, boolean conFX, boolean enviarData) {
+	private void cambiarMapa(short nroMapa, short x, short y, boolean conFX, boolean enviarData) {
 
 		short oldMap = m_pos.map;
 		if (m_pos.map != 0) {
-			Map m = server.getMapa(m_pos.map);
-			if (m == null) {
+			Map mapa = server.getMapa(m_pos.map);
+			if (mapa == null) {
 				return;
 			}
-			if (m.estaCliente(this) && !m.salir(this)) {
+			if (mapa.estaCliente(this) && !mapa.salir(this)) {
 				// No pudo salir del mapa :)
 				log.fatal(this + "> No pudo salir del mapa actual");
 			}
 		}
-		Map m = server.getMapa(mapa);
-		if (m == null) {
+		Map mapa = server.getMapa(nroMapa);
+		if (mapa == null) {
 			return;
 		}
 
 		// Agus:Mapa restringido?
-		if (m.getForbbiden() && !esNewbie()) {
+		if (mapa.getForbbiden() && !esNewbie()) {
 			warpUser(pos().map, this.m_pos.x--, this.m_pos.y--, true);
 			return;
 		}
 
-		MapPos pos_libre = m.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
-		if (m.entrar(this, pos_libre.x, pos_libre.y)) {
-			m_pos = MapPos.mxy(mapa, pos_libre.x, pos_libre.y);
+		MapPos pos_libre = mapa.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
+		if (mapa.entrar(this, pos_libre.x, pos_libre.y)) {
+			m_pos = MapPos.mxy(nroMapa, pos_libre.x, pos_libre.y);
 
 			Map old = server.getMapa(oldMap);
 
 			// Agus: check if user pet exists
-			if (oldMap != mapa)
+			if (oldMap != nroMapa)
 				petDelete();
 
 			if (enviarData) {
-				enviar(ServerPacketID.CMP, mapa);
+				enviar(ServerPacketID.ChangeMap, nroMapa, (byte)mapa.getVersion());
 			}
 
 			short crimi = 0;
@@ -2727,7 +2680,7 @@ public class Client extends AbstractCharacter {
 			// m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi,
 			// m_flags.Privilegios);
 
-			m.areasData.loadUser(this);
+			mapa.areasData.loadUser(this);
 			enviarPU();
 
 			// old.areasData.userDisconnect(this);
@@ -2750,7 +2703,7 @@ public class Client extends AbstractCharacter {
 				// Enviarme los objetos del mapa.
 				// m.enviarObjetos(this);
 				// Enviarme las posiciones bloqueadas del mapa.
-				m.enviarBQs(this);
+				mapa.enviarBQs(this);
 			}
 		} else {
 			enviarMensaje("No se pudo entrar en el mapa deseado", FontType.WARNING);
@@ -2789,7 +2742,7 @@ public class Client extends AbstractCharacter {
 		m_infoChar.m_cabeza = m_origChar.m_cabeza;
 		cuerpoDesnudo();
 		enviarCP();
-		refreshStatus(2);
+		updateUserStats();
 		enviarEstadsHambreSed();
 	}
 
@@ -2936,7 +2889,7 @@ public class Client extends AbstractCharacter {
 				int modifi = Util.porcentaje(m_estads.maxStamina, 3);
 				m_estads.quitarStamina(modifi);
 				enviarMensaje("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.INFO);
-				refreshStatus(4);
+				updateUserStats();
 			}
 		}
 	}
@@ -2946,7 +2899,7 @@ public class Client extends AbstractCharacter {
 			m_counters.Paralisis--;
 		} else {
 			m_flags.Paralizado = false;
-			enviar(ServerPacketID.paradOk);
+			enviar(ServerPacketID.ParalizeOK);
 		}
 	}
 
@@ -3005,7 +2958,7 @@ public class Client extends AbstractCharacter {
 			getCounters().Paralisis = IntervaloParalizado;
 			enviarSonido(hechizo.WAV);
 			enviarCFX(hechizo.FXgrh, hechizo.loops);
-			enviar(ServerPacketID.paradOk);
+			enviar(ServerPacketID.ParalizeOK);
 		}
 	}
 
@@ -3018,8 +2971,7 @@ public class Client extends AbstractCharacter {
 
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.dialog, color, texto, (short) quienId);
-			// mapa.enviarATodos(serverPacketID.dialog, color, texto, (short) quienId);
+			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.ChatOverHead, color, texto, (short) quienId);
 		}
 	}
 
@@ -3063,20 +3015,27 @@ public class Client extends AbstractCharacter {
 	}
 
 	public Object[] ccParams() {
-		// Object[] params = { m_infoChar.getCuerpo(),
-		// m_infoChar.getCabeza(), m_infoChar.getDir(), getId(),
-		// getPos().x, getPos().y, m_infoChar.getArma(),
-		// m_infoChar.getEscudo(), m_infoChar.getFX(), (short) 999,
-		// m_infoChar.getCasco(), m_nick + getClan(),
-		// (esCriminal() ? 255 : 0), m_flags.Privilegios };
+		byte crimi = (byte) (esCriminal() ? 1 : 0);
 
-		short crimi = 0;
-		if (esCriminal())
-			crimi = 1;
-
-		Object[] params = { getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(), pos().x,
-				pos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(),
-				(short) 999, m_nick + getClan(), crimi, m_flags.Privilegios };
+		Object[] params = { 
+				(short)getId(), 
+				(short)m_infoChar.getCuerpo(), 
+				(short)m_infoChar.getCabeza(),
+				
+				(byte)m_infoChar.getDir(), 
+				(byte)pos().x,
+				(byte)pos().y,
+				
+				(short)m_infoChar.getArma(), 
+				(short)m_infoChar.getEscudo(), 
+				(short)m_infoChar.getCasco(),
+				
+				(short)m_infoChar.getFX(),
+				(short)m_infoChar.getLoops(),
+				
+				(String)m_nick + getClan(), 
+				(byte)crimi, 
+				(byte)m_flags.Privilegios };
 
 		return params;
 	}
@@ -3098,15 +3057,21 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void enviarCC() {
-
-		// {getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(),
-		// m_infoChar.getDir(), getPos().x, getPos().y ,m_infoChar.getArma(),
-		// m_infoChar.getEscudo(), m_infoChar.getCasco(), m_infoChar.getFX(), (short)
-		// 999, m_nick + getClan(), crimi, m_flags.Privilegios};
-
-		enviar(ServerPacketID.CC, getId(), m_infoChar.getCuerpo(), m_infoChar.getCabeza(), m_infoChar.getDir(),
-				pos().x, pos().y, m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
-				m_infoChar.getFX(), (short) 999, m_nick + getClan(), (short) 1, m_flags.Privilegios);
+		enviar(ServerPacketID.CharacterCreate, 
+				getId(), 
+				m_infoChar.getCuerpo(), 
+				m_infoChar.getCabeza(), 
+				m_infoChar.getDir(),
+				
+				pos().x, pos().y, 
+				m_infoChar.getArma(), 
+				m_infoChar.getEscudo(), 
+				m_infoChar.getCasco(),
+				m_infoChar.getFX(), 
+				(short) m_infoChar.m_loops,
+				m_nick + getClan(),
+				(short) (this.esCriminal() ? 0 : 1), // crimi ? 
+				m_flags.Privilegios);
 	}
 
 	/*
@@ -3119,8 +3084,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	private void enviarLogged() {
-		// enviar(MSG_LOGGED);
-		enviar(ServerPacketID.login);
+		enviar(ServerPacketID.Logged);
 	}
 
 	private void enviarCambioMapa(short mapa) {
@@ -3139,14 +3103,14 @@ public class Client extends AbstractCharacter {
 	public void enviarObjeto(int objId, int x, int y) {
 		short grhIndex = findObj(objId).GrhIndex;
 
-		enviar(ServerPacketID.MSG_HO, grhIndex, (short) x, (short) y);
+		enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)grhIndex);
 	}
 
 	public void enviarBQ(int x, int y, boolean bloqueado) {
-		short bq = 0;
+		byte bq = 0;
 		if (bloqueado)
 			bq = 1;
-		enviar(ServerPacketID.MSG_BQ, (short) x, (short) y, bq);
+		enviar(ServerPacketID.BlockPosition, (byte)x, (byte)y, (byte)bq);
 	}
 
 	public void cuerpoDesnudo() {
@@ -3177,7 +3141,7 @@ public class Client extends AbstractCharacter {
 		// Sonido
 		if (mapa != null) {
 			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TW, sonido);
-			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.MSG_TW, (byte) sonido, m_pos.x, m_pos.y);
+			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.PlayWave, (byte) sonido, m_pos.x, m_pos.y);
 		}
 	}
 
@@ -3207,7 +3171,7 @@ public class Client extends AbstractCharacter {
 		// <<<< Paralisis >>>>
 		if (m_flags.Paralizado) {
 			m_flags.Paralizado = false;
-			enviar(ServerPacketID.paradOk);
+			enviar(ServerPacketID.ParalizeOK);
 		}
 		// <<<< Descansando >>>>
 		if (m_flags.Descansar) {
@@ -3217,7 +3181,7 @@ public class Client extends AbstractCharacter {
 		// <<<< Meditando >>>>
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(ServerPacketID.medOk);
+			enviar(ServerPacketID.MeditateToggle);
 		}
 		// desequipar armadura
 		if (m_inv.tieneArmaduraEquipada()) {
@@ -3275,7 +3239,7 @@ public class Client extends AbstractCharacter {
 		}
 		m_cantMascotas = 0;
 		enviarCP(); // Actualizar m_clients para mostrar el fantasmita.
-		refreshStatus(2);
+		updateUserStats();
 	}
 
 	public void tirarTodo() {
@@ -3426,7 +3390,7 @@ public class Client extends AbstractCharacter {
 			}
 		}
 
-		enviar(ServerPacketID.userSkills, skills.toArray());
+		enviar(ServerPacketID.SendSkills, skills.toArray());
 	}
 
 	public void enviarSubirNivel(int pts) {
@@ -3495,7 +3459,7 @@ public class Client extends AbstractCharacter {
 			m_clase.subirEstads(this);
 			enviarSkills();
 			enviarSubirNivel(pts);
-			refreshStatus(5);
+			updateUserStats();
 		}
 	}
 
@@ -3712,11 +3676,11 @@ public class Client extends AbstractCharacter {
 		}
 		npc.getEstads().MinHP -= daño;
 		if (daño > 0) {
-			enviar(ServerPacketID.MSG_USERHITNPC, daño);
+			enviar(ServerPacketID.UserHitNPC, daño);
 			npc.calcularDarExp(this, daño);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(ServerPacketID.MSG_USERSWING);
+			enviar(ServerPacketID.UserSwing);
 		}
 		if (npc.getEstads().MinHP > 0) {
 			// Trata de apuñalar por la espalda al enemigo
@@ -3801,13 +3765,12 @@ public class Client extends AbstractCharacter {
 			}
 			break;
 		}
-		// enviar(MSG_N2, lugar, daño);
-		enviar(ServerPacketID.msgN1, (byte) 1, lugar, daño);
+		enviar(ServerPacketID.NPCHitUser, (byte) 1, lugar, daño);
 		if (m_flags.Privilegios == 0) {
 			m_estads.MinHP -= daño;
 		}
 
-		refreshStatus(2);
+		updateUserStats();
 
 		// Muere el usuario
 		if (m_estads.MinHP <= 0) {
@@ -3887,7 +3850,7 @@ public class Client extends AbstractCharacter {
 			userDañoNpc(npc);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(ServerPacketID.MSG_USERSWING);
+			enviar(ServerPacketID.UserSwing);
 		}
 	}
 
@@ -3942,8 +3905,8 @@ public class Client extends AbstractCharacter {
 			// Look for user
 			if (cliente != null) {
 				usuarioAtacaUsuario(cliente);
-				// enviarEstadsUsuario();
-				// cliente.enviarEstadsUsuario();
+				updateUserStats();
+				cliente.updateUserStats();
 				return;
 			}
 			// Look for Npc
@@ -3958,11 +3921,11 @@ public class Client extends AbstractCharacter {
 				} else {
 					enviarMensaje("No podés atacar a este Npc", FontType.FIGHT);
 				}
-				refreshStatus(4);
+				updateUserStats();
 				return;
 			}
 			enviarSonido(SOUND_SWING);
-			refreshStatus(4);
+			updateUserStats();
 			m_flags.Trabajando = false;
 		} else {
 			log.info("NO PUEDE ATACAR");
@@ -4465,7 +4428,7 @@ public class Client extends AbstractCharacter {
 
 	public void enviarError(String msg) {
 		log.warn("ERROR: " + msg);
-		enviar(ServerPacketID.msgErr, msg);
+		enviar(ServerPacketID.ErrorMsg, msg);
 	}
 
 	public void connectUser(String nick, String passwd) {
@@ -4532,12 +4495,7 @@ public class Client extends AbstractCharacter {
 
 			enviarInventario();
 			m_spells.enviarHechizos();
-
-			int max_refresh = 5;
-
-			for (int i = 1; i <= max_refresh; i++) {
-				refreshStatus(i);
-			}
+			updateUserStats();
 
 			if (m_pos.map == 0) {
 				// Posicion de comienzo
@@ -4562,13 +4520,13 @@ public class Client extends AbstractCharacter {
 
 			// agush ;-)
 			if (server.estaLloviendo())
-				enviar(ServerPacketID.userRain);
+				enviar(ServerPacketID.RainToggle);
 
 			if (!esCriminal()) {
 				m_flags.Seguro = true;
-				enviar(ServerPacketID.safeToggle, (byte) 1);
+				enviar(ServerPacketID.SafeModeOn);
 			} else {
-				enviar(ServerPacketID.safeToggle, (byte) 0);
+				enviar(ServerPacketID.SafeModeOff);
 				m_flags.Seguro = false;
 			}
 
@@ -4632,7 +4590,6 @@ public class Client extends AbstractCharacter {
 				enviarMensaje("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.INFO);
 				int modifi = Util.porcentaje(m_estads.MaxHP, 5);
 				m_estads.MinHP -= modifi;
-				refreshStatus(2);
 
 				if (m_estads.MinHP < 1) {
 					enviarMensaje("¡¡Has muerto de frio!!.", FontType.INFO);
@@ -4647,7 +4604,7 @@ public class Client extends AbstractCharacter {
 				}
 			}
 			m_counters.Frio = 0;
-			refreshStatus(4);
+			updateUserStats();
 		}
 	}
 
@@ -4661,16 +4618,18 @@ public class Client extends AbstractCharacter {
 		if (m_estads.MinHP < m_estads.MaxHP) {
 			if (m_counters.HPCounter < intervalo) {
 				m_counters.HPCounter++;
+				updateUserStats();
 			} else {
 				int mashit = Util.Azar(2, Util.porcentaje(m_estads.maxStamina, 5));
 				m_counters.HPCounter = 0;
 				m_estads.MinHP += mashit;
-				refreshStatus(2);
 
 				if (m_estads.MinHP > m_estads.MaxHP) {
 					m_estads.MinHP = m_estads.MaxHP;
 				}
 				enviarMensaje("Has sanado.", FontType.INFO);
+				
+				updateUserStats();
 				return true;
 			}
 		}
@@ -4694,7 +4653,7 @@ public class Client extends AbstractCharacter {
 		m_counters.IdleCount = 0;
 		if (m_estads.mana >= m_estads.maxMana) {
 			enviarMensaje("Has terminado de meditar.", FontType.INFO);
-			enviar(ServerPacketID.medOk);
+			enviar(ServerPacketID.MeditateToggle);
 			m_flags.Meditando = false;
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -4705,7 +4664,7 @@ public class Client extends AbstractCharacter {
 			int cant = Util.porcentaje(m_estads.maxMana, 3);
 			m_estads.aumentarMana(cant);
 			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!", FontType.INFO);
-			refreshStatus(3);
+			updateUserStats();
 			subirSkill(Skill.SKILL_Meditar);
 		}
 	}
@@ -4717,7 +4676,7 @@ public class Client extends AbstractCharacter {
 			enviarMensaje("Estas envenenado, si no te curas moriras.", FontType.VENENO);
 			m_counters.Veneno = 0;
 			m_estads.MinHP -= Util.Azar(1, 5);
-			refreshStatus(2);
+			updateUserStats();
 			if (m_estads.MinHP < 1) {
 				userDie();
 			}
@@ -4747,8 +4706,12 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void sendUserAtributos() {
-		enviar(ServerPacketID.userAtri, m_estads.userAtributos[0], m_estads.userAtributos[1], m_estads.userAtributos[2],
-				m_estads.userAtributos[3], m_estads.userAtributos[4]);
+		enviar(ServerPacketID.Atributes, 
+				m_estads.userAtributos[0], 
+				m_estads.userAtributos[1], 
+				m_estads.userAtributos[2],
+				m_estads.userAtributos[3], 
+				m_estads.userAtributos[4]);
 	}
 
 	public boolean aplicarHambreYSed() {
@@ -4797,7 +4760,7 @@ public class Client extends AbstractCharacter {
 				m_counters.STACounter = 0;
 				int massta = Util.Azar(1, Util.porcentaje(m_estads.maxStamina, 5));
 				m_estads.aumentarStamina(massta);
-				refreshStatus(4);
+				updateUserStats();
 				// enviarMensaje("Te sientes menos cansado.", FontType.INFO);
 				return true;
 			}
@@ -4854,24 +4817,19 @@ public class Client extends AbstractCharacter {
 				if (!(server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y))) {
 					if (!m_flags.Descansar && !m_flags.Hambre && !m_flags.Sed) {
 						// No esta descansando
-
 						if (sanar(SanaIntervaloSinDescansar))
-							refreshStatus(2);
+							bEnviarStats = true;
 						if (recStamina(StaminaIntervaloSinDescansar))
-							refreshStatus(4);
-
-						// bEnviarStats = sanar(SanaIntervaloSinDescansar);
-						// bEnviarStats = recStamina(StaminaIntervaloSinDescansar);
+							bEnviarStats = true;
+						
 					} else if (m_flags.Descansar) {
 						// esta descansando
 
 						if (sanar(SanaIntervaloDescansar))
-							refreshStatus(2);
+							bEnviarStats = true;
 						if (recStamina(StaminaIntervaloDescansar))
-							refreshStatus(4);
+							bEnviarStats = true;
 
-						// bEnviarStats = sanar(SanaIntervaloDescansar);
-						// bEnviarStats = recStamina(StaminaIntervaloDescansar);
 						// termina de descansar automaticamente
 						if (m_estads.MaxHP == m_estads.MinHP && m_estads.maxStamina == m_estads.stamina) {
 							// enviar(MSG_DOK);
@@ -4892,9 +4850,9 @@ public class Client extends AbstractCharacter {
 					m_estads.drinked = 0;
 					userDie();
 				}
-				// if (bEnviarStats) {
-				// enviarEstadsUsuario();
-				// }
+				if (bEnviarStats) {
+					updateUserStats();
+				}
 				if (bEnviarAyS) {
 					enviarEstadsHambreSed();
 				}
@@ -4921,7 +4879,8 @@ public class Client extends AbstractCharacter {
 	}
 
 	public String getTagsDesc() {
-		StringBuffer msg = new StringBuffer(m_nick);
+		var msg = new StringBuilder()
+				.append(getNick());
 		if (esNewbie()) {
 			msg.append(" <NEWBIE>");
 		}
@@ -5154,12 +5113,12 @@ public class Client extends AbstractCharacter {
 
 	private void refreshPk() {
 		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.updateStats, getId(), (byte) 1);
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 1, getTagsDesc());
 	}
 
 	public void refreshCiu() {
 		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.updateStats, getId(), (byte) 0);
+		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 0, getTagsDesc());
 	}
 
 	public void cerrarUsuario() {
@@ -5219,7 +5178,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void desplazarHechizo(short dir, short slot) {
+	public void moveSpell(short dir, short slot) {
 		if (dir < 1 || dir > 2) {
 			return;
 		}

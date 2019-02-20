@@ -69,12 +69,20 @@ public class NpcMerchant extends Npc {
                 ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
-                cliente.enviar(ServerPacketID.MSG_NPC_INV, (byte) i, info.Nombre, (short) this.m_inv.getObjeto(i).cant, ((int) val),
-                		info.GrhIndex, this.m_inv.getObjeto(i).objid, (byte) info.ObjType,
-               		info.MaxHIT, info.MinHIT, info.MaxDef);
+                cliente.enviar(ServerPacketID.ChangeNPCInventorySlot, 
+                		(byte) i, 
+                		info.Nombre, 
+                		(short) this.m_inv.getObjeto(i).cant, 
+                		((int) val),
+                		info.GrhIndex, 
+                		this.m_inv.getObjeto(i).objid, 
+                		(byte) info.ObjType,
+                		info.MaxHIT, 
+                		info.MinHIT, 
+                		info.MaxDef);
 
             } else {
-                cliente.enviar(ServerPacketID.MSG_NPC_INV, (byte) i, "Nada", (short) 0);
+                cliente.enviar(ServerPacketID.ChangeNPCInventorySlot, (byte) i, "Nada", (short) 0);
             }
         }
     }
@@ -85,7 +93,7 @@ public class NpcMerchant extends Npc {
 			return;
 		}
         // NPC VENDE UN OBJ A UN USUARIO
-        cliente.refreshStatus(1);
+        cliente.updateUserStats();
         // Calculamos el valor unitario
         if (this.m_inv.getObjeto(slot).objid == 0) {
 			return;
@@ -113,7 +121,7 @@ public class NpcMerchant extends Npc {
             // Actualizamos el inventario del usuario
             cliente.enviarInventario();
             // Actualizamos el oro
-            cliente.refreshStatus(1);
+            cliente.updateUserStats();
             // Actualizamos la ventana de comercio
             enviarNpcInv(cliente);
             cliente.updateVentanaComercio(slot, (short) 0);
@@ -123,7 +131,7 @@ public class NpcMerchant extends Npc {
     public void comprarItem(Client cliente, short slot, int cant) {
         // Sub NPCCompraItem(ByVal UserIndex As Integer, ByVal Item As Integer, ByVal Cantidad As Integer)
         // NPC COMPRA UN OBJ A UN USUARIO
-        cliente.refreshStatus(1);
+        cliente.updateUserStats();
         if (cliente.getInv().getObjeto(slot).cant > 0 && !cliente.getInv().getObjeto(slot).equipado) {
             if (cant > 0 && cant > cliente.getInv().getObjeto(slot).cant) {
                 cant = cliente.getInv().getObjeto(slot).cant;
@@ -133,7 +141,7 @@ public class NpcMerchant extends Npc {
             // Actualizamos el inventario del usuario
             cliente.enviarInventario();
             // Actualizamos el oro
-            cliente.refreshStatus(1);
+            cliente.updateUserStats();
             enviarNpcInv(cliente);
             // Actualizamos la ventana de comercio
             cliente.updateVentanaComercio(slot, (short) 1);

@@ -33,7 +33,7 @@ import org.ArgentumOnline.server.ObjectInfo;
  * @author gorlok
  */
 public class InventoryObject {
-
+	
 	public short objid = 0;
 
 	public int cant = 0;

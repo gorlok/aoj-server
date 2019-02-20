@@ -389,7 +389,7 @@ public class Quest implements Constants {
                     }
                     break;
             }
-            cliente.refreshStatus(5);
+            cliente.updateUserStats();
         } catch (Exception e) {
             log.fatal(cliente.getNick() + " Error en RecibirRecompensaQuest!", e);
         }

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.map.MapPos.Direction;
@@ -42,7 +43,7 @@ public class ClientProcessThread extends Thread {
 				ClientPacketID.ID packet = ClientPacketID.ID.values()[r.readByte()];
 				switch (packet) {
 
-				case logged: // logged
+				case LoginExistingChar: // logged
 					String name = r.readString();
 					String password = r.readString();
 
@@ -54,60 +55,60 @@ public class ClientProcessThread extends Thread {
 					cliente.connectUser(name, password);
 					break;
 
-				case move: // move
+				case Walk: // move
 					short dir = r.readShort();
 					cliente.mover(Direction.value(dir));
 					break;
 
-				case talk: // talk
+				case Talk: // talk
 					String texto = r.readString();
 					cliente.doHablar(texto);
 					break;
 
-				case LC: // Left click
+				case LeftClick: // Left click
 					short x = r.readShort();
 					short y = r.readShort();
 					cliente.clicIzquierdoMapa(x, y);
 					break;
 
-				case RC: // Right click
+				case DoubleClick: // Right click / Doble clic ?
 					x = r.readShort();
 					y = r.readShort();
 					cliente.clicDerechoMapa(x, y);
 					break;
 
-				case WLC:// WLC
+				case WorkLeftClick:// WLC
 					x = r.readShort();
 					y = r.readShort();
 					short usingskill = r.readShort();
 					cliente.doWLC(x, y, usingskill);
 					break;
 
-				case cDir: // change dir
+				case ChangeHeading: // change heading
 					dir = r.readShort();
 					if (dir > 0)
-						cliente.changeDir(dir);
+						cliente.changeHeading(dir);
 					break;
 
-				case dirSP:
+				case MoveSpell:
 					dir = r.readShort();
 					short nroSpell = r.readShort();
-					cliente.desplazarHechizo(dir, nroSpell);
+					cliente.moveSpell(dir, nroSpell);
 					break;
 
-				case LH:
+				case CastSpell:
 					nroSpell = r.readShort();
 					// dir = r.readShort();
 					cliente.doLanzarHechizo(nroSpell);
-					cliente.doUK((short) 2);
+					cliente.doUK(Skill.SKILL_Magia);
 					break;
 
-				case doUK:
-					dir = r.readShort();
-					cliente.doUK(dir);
+				case Work:
+					short skill = r.readShort();
+					cliente.doUK(skill);
 					break;
 
-				case pickUp:
+				case PickUp:
 					cliente.agarrarObjeto();
 					break;
 
@@ -117,7 +118,7 @@ public class ClientProcessThread extends Thread {
 					cliente.tirarObjeto((short) slot, (int) amount);
 					break;
 
-				case Equip:
+				case EquipItem:
 					slot = r.readByte();
 					cliente.equiparObjeto((short) slot);
 					break;
@@ -126,39 +127,39 @@ public class ClientProcessThread extends Thread {
 					cliente.doAtacar();
 					break;
 
-				case useItem:
+				case UseItem:
 					cliente.usarItem((byte) r.readByte());
 					break;
 
-				case endGame:
+				case Quit:
 					cliente.cerrarUsuario();
 					break;
 
-				case commerceStart:
+				case CommerceStart:
 					cliente.doComerciar();
 					break;
 
-				case commerceEnd:
+				case UserCommerceEnd:
 					cliente.m_comUsu.doFinComerciarUsuario(cliente);
 					break;
 
-				case commerceBuy:
+				case CommerceBuy:
 					cliente.doComprar((byte) r.readByte(), r.readShort());
 					break;
 
-				case commerceSell:
+				case CommerceSell:
 					cliente.doVender((byte) r.readByte(), r.readShort());
 					break;
 
-				case meditate:
+				case Meditate:
 					cliente.doMeditar();
 					break;
 
-				case refreshPos:
+				case RequestPositionUpdate:
 					cliente.enviarPU();
 					break;
 
-				case createCharacter:
+				case LoginNewChar:
 					String nick = r.readString();
 					String pass = r.readString();
 					short raza = cliente.indiceRaza(r.readString());
@@ -169,35 +170,35 @@ public class ClientProcessThread extends Thread {
 					cliente.connectNewUser(nick, pass, raza, genero, clase, email, hogar);
 					break;
 
-				case throwDices:
+				case ThrowDices:
 					cliente.tirarDados();
 					break;
 
-				case reciveUserStats:
+				case RequestMiniStats:
 					cliente.doEnviarMiniEstadisticas();
 					break;
 
-				case assignSkills:
+				case RequestSkills:
 					cliente.userAsignaSkill(r.readInt(), r.readByte());
 					break;
 
-				case doBank:
+				case BankStart:
 					cliente.doBoveda();
 					break;
 
-				case finBank:
+				case BankEnd:
 					cliente.doFinBanco();
 					break;
 
-				case sellBank:
+				case BankDeposit:
 					cliente.doDepositarBoveda(r.readShort(), r.readInt());
 					break;
 
-				case buyBank:
+				case BankExtractItem:
 					cliente.doRetirarBoveda(r.readShort(), r.readInt());
 					break;
 
-				case safeToggle:
+				case SafeToggle:
 					cliente.cambiarSeguro();
 					break;
 

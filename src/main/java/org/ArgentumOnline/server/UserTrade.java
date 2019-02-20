@@ -105,10 +105,10 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
 			targetClient.m_estads.addGold(-this.cant);
-			targetClient.refreshStatus(1);
+			targetClient.updateUserStats();
 			// y se la doy al otro
 			client.m_estads.addGold(this.cant);
-			client.refreshStatus(1);
+			client.updateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
 			int agregados = client.m_inv.agregarItem(obj2_objid, obj2_cant);
@@ -124,10 +124,10 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
 			client.m_estads.addGold(-this.cant); // restar
-			client.refreshStatus(1);
+			client.updateUserStats();
 			// y se la doy al otro
 			targetClient.m_estads.addGold(this.cant); // sumar
-			targetClient.refreshStatus(1);
+			targetClient.updateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
 			int agregados = targetClient.m_inv.agregarItem(obj1_objid, obj1_objid);
@@ -164,7 +164,7 @@ public class UserTrade {
 		this.destUsu = 0;
 		this.objeto = 0;
 		client.m_flags.Comerciando = false;
-		client.enviar(ServerPacketID.MSG_FINCOM);
+		client.enviar(ServerPacketID.UserCommerceEnd);
 	}
 
 	public void doRechazarComerciarUsuario(Client client) {

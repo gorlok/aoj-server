@@ -151,7 +151,7 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(ServerPacketID.areasChange, user.pos().x, user.pos().y);
+    	user.enviar(ServerPacketID.AreaChanged, user.pos().x, user.pos().y);
     	
     	for(short x = (short) minX; x < maxX;x++) {
     		for(short y = (short) minY; y < maxY; y++) {
@@ -161,25 +161,24 @@ public class AreasAO implements Constants {
     			
     			
     			if (user.getId() != tempInt && tempInt > 0) {
-    				Client jao = this.server.getClientById(tempInt);
-    				
-    				user.enviar(ServerPacketID.CC, jao.ccParams());
-    				jao.enviar(ServerPacketID.CC, user.ccParams());
+    				Client other = this.server.getClientById(tempInt);
+    				user.enviar(ServerPacketID.CharacterCreate, other.ccParams());
+    				other.enviar(ServerPacketID.CharacterCreate, user.ccParams());
     				
     			} else if (dir == USER_NUEVO) {
-    				user.enviar(ServerPacketID.CC, user.ccParams());
+    				user.enviar(ServerPacketID.CharacterCreate, user.ccParams());
     			}
     			
     			}
     			
     			if (map.hayNpc(x, y)) {
-    				user.enviar(ServerPacketID.MSG_CCNPC, map.getNpc(x, y).ccParams());
+    				user.enviar(ServerPacketID.CharacterCreate, map.getNpc(x, y).ccParams());
     			}
     			
     			if (map.hayObjeto(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
-    				user.enviar(ServerPacketID.MSG_HO, obj.getInfo().GrhIndex, x, y);
+    				user.enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)obj.getInfo().GrhIndex);
     				
     				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
@@ -274,7 +273,7 @@ public class AreasAO implements Constants {
         			if (map.hayCliente(x, y)) {
         				Client jao = map.getCliente(x, y);
         				
-        				jao.enviar(ServerPacketID.MSG_CCNPC, npc.ccParams());
+        				jao.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
         				
         			}
         		}

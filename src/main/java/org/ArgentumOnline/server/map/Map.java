@@ -25,9 +25,6 @@
  */
 package org.ArgentumOnline.server.map;
 
-import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_CCNPC;
-import static org.ArgentumOnline.server.protocol.ServerPacketID.MSG_HO;
-
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -122,6 +119,10 @@ public class Map implements Constants {
     public int getNroMapa() {
         return this.nroMapa;
     }
+    
+    public short getVersion() {
+		return version;
+	}
     
     public short getZona() {
         return this.m_zona;
@@ -480,10 +481,8 @@ public class Map implements Constants {
         try {
 	        //if (estaCliente(cliente)) {
 	        	try {
-		           // enviarATodos(MSG_QDL, cliente.getId());
-		            //enviarATodos(serverPacketID.MSG_BP, cliente.getId());
-		            //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.MSG_BP, cliente.getId());
-	        		this.areasData.sendToUserArea(cliente, ServerPacketID.MSG_BP, cliente.getId());
+	        		this.areasData.sendToUserArea(cliente, ServerPacketID.RemoveCharDialog, cliente.getId());
+	        		this.areasData.sendToUserArea(cliente, ServerPacketID.CharacterRemove, cliente.getId());
 	        	} finally {
 	        		this.m_clients.remove(cliente);
 	        		// Nuevo sistema de areas by JAO
@@ -512,10 +511,8 @@ public class Map implements Constants {
         this.m_cells[npc.pos().x-1][npc.pos().y-1].setNpc(null);
         this.m_cells[x-1][y-1].setNpc(npc);
         
-        //areasData.updateNpcArea(npc);
-		//this.areasData.sendToArea(x, y, npc.getId(), serverPacketID.MSG_MP, npc.getId(), x, y);
         this.areasData.checkUpdateNeededNpc(npc, npc.getInfoChar().getDir());
-        this.areasData.sendToNPCArea(npc, ServerPacketID.MSG_MP, npc.getId(), x, y);
+        this.areasData.sendToNPCArea(npc, ServerPacketID.CharacterMove, npc.getId(), x, y);
         
     }
     
@@ -552,8 +549,8 @@ public class Map implements Constants {
         int x = npc.pos().x;
         int y = npc.pos().y;
         try {
-	      //  enviarATodos(MSG_QDL, npc.getId());
-	        enviarAlArea((short) x, (short) y, ServerPacketID.MSG_BP, npc.getId());
+        	enviarAlArea((short) x, (short) y, ServerPacketID.RemoveCharDialog, npc.getId());
+	        enviarAlArea((short) x, (short) y, ServerPacketID.CharacterRemove, npc.getId());
         } finally {
             this.m_cells[x-1][y-1].setNpc(null);
 	        this.m_npcs.remove(npc);
@@ -597,10 +594,7 @@ public class Map implements Constants {
         }
     }    
     
-    //public Objeto agregarObjeto(short objid, int cant, short x, short y) {
     public boolean agregarObjeto(short objid, int cant, short x, short y) {
-        //Objeto obj = new Objeto(objid, cant, x, y);
-        //bloques[x-1][y-1].setObj(obj);
     	if (hayObjeto(x, y)) {
             log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.nroMapa + " x=" + x + " y=" + y);
     		return false;
@@ -612,51 +606,27 @@ public class Map implements Constants {
         if (DEBUG)
         	log.debug(grhIndex + "-" + x + "-" + y);
         
-        //Agush: Nuevo sistema de areas!!
-        //this.areasData.setObjArea(x, y, objid);
-        //enviarAlArea(x,y, serverPacketID.MSG_HO, grhIndex, x ,y);
-        
-        this.areasData.sendToAreaByPos(this, x, y,ServerPacketID.MSG_HO, grhIndex, x ,y);
-        
-        //enviarAlArea(x,y, serverPacketID.MSG_HO, grhIndex,x,y);
-        
-        //enviarATodos(serverPacketID.MSG_HO, grhIndex, x, y);
-        
-        //return obj;
+        this.areasData.sendToAreaByPos(this, x, y, ServerPacketID.ObjectCreate, (byte)x ,(byte)y, (short)grhIndex);
         return true;
     }
     
     public void quitarObjeto(short x, short y) {
-        //objetos.remove(getObjeto(x, y));
     	short obj = this.m_cells[x-1][y-1].getObjInd();
-    	//this.areasData.deleteObj(x, y, obj);
     	this.bloquesConObjetos.remove(this.m_cells[x-1][y-1]);
         this.m_cells[x-1][y-1].quitarObjeto();
-       // enviarATodos(serverPacketID.MSG_BO, x, y);
-        enviarAlArea(x,y,ServerPacketID.MSG_BO, x,y);
+        enviarAlArea(x,y,ServerPacketID.ObjectDelete, x,y);
     }
     
     public void bloquearTerreno(int x, int y) {
         this.m_cells[x-1][y-1].setBloqueado(true);
         this.m_cells[x-1][y-1].setModificado(true);
-       // enviarATodos(serverPacketID.MSG_BQ, (short) x, (short) y, (short) 1);
-        
-        short mx = (short) x;
-        short my = (short) y;
-        
-        enviarAlArea(mx,my, ServerPacketID.MSG_BQ, mx, my, (short) 1);
+        enviarAlArea((short)x, (short)y, ServerPacketID.BlockPosition, (short)x, (short)y, (short) 1);
     }
     
     public void desbloquearTerreno(int x, int y) {
         this.m_cells[x-1][y-1].setBloqueado(false);
         this.m_cells[x-1][y-1].setModificado(true);
-        //enviarATodos(serverPacketID.MSG_BQ, (short) x, (short) y, (short) 0);
-        
-        short mx = (short) x;
-        short my = (short) y;
-        
-        enviarAlArea(mx,my, ServerPacketID.MSG_BQ, mx, my, (short) 0);
-        
+        enviarAlArea((short)x, (short)y, ServerPacketID.BlockPosition, (short)x, (short)y, (short) 0);
     }
     
     public void abrirCerrarPuerta(MapObject obj) {
@@ -677,7 +647,7 @@ public class Map implements Constants {
             }
             obj = getObjeto(obj.x, obj.y);
             enviarPuerta(obj);
-            enviarAlArea(obj.x, obj.y, ServerPacketID.MSG_TW, (byte) SND_PUERTA, obj.x, obj.y);
+            enviarAlArea(obj.x, obj.y, ServerPacketID.PlayWave, (byte) SND_PUERTA, obj.x, obj.y);
         }
     }
     
@@ -691,15 +661,12 @@ public class Map implements Constants {
                 desbloquearTerreno(obj.x-1, obj.y);
                 desbloquearTerreno(obj.x, obj.y);
             }
-            
-          //  System.out.println("Envío puerta: " + obj.x + "-" + obj.y);
-            enviarAlArea(obj.x,obj.y,ServerPacketID.MSG_HO, obj.getInfo().GrhIndex, obj.x, obj.y);
+            enviarAlArea(obj.x,obj.y, ServerPacketID.ObjectCreate, (byte)obj.x, (byte)obj.y, (short)obj.getInfo().GrhIndex);
         }
     }
     
     public void enviarCFX(short x, short y, int id, int fx, int val) {
-       // enviarAlArea(x, y, MSG_CFX, id, fx, val);
-    	enviarAlArea(x,y,ServerPacketID.MSG_FX, (short) id, (short) fx, (short) val);
+    	enviarAlArea(x,y,ServerPacketID.CreateFX, (short) id, (short) fx, (short) val);
     }
     
     public void enviarATodos(ServerPacketID msg, Object... params) {
@@ -808,7 +775,7 @@ public class Map implements Constants {
     public void enviarNPCs(Client cliente) {
         for (Object element : this.m_npcs) {
             Npc npc = (Npc) element;
-            cliente.enviar(MSG_CCNPC, npc.ccParams());
+            cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
         }
     }
     
@@ -829,12 +796,8 @@ public class Map implements Constants {
         cliente.pos().set(this.nroMapa, x, y);
         
 		//JAO: Nuevo sistema de areas !!
-		//this.areasData.updateUserArea(cliente);
-		//this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.MSG_MP, cliente.getId(), x, y);
-        
-        this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(), ServerPacketID.MSG_MP, cliente.getId(), x, y);
+        this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(), ServerPacketID.CharacterMove, cliente.getId(), x, y);
         this.areasData.checkUpdateNeededUser(cliente, cliente.getInfoChar().getDir());
-        
     }
     
     public boolean hayTeleport(short x, short y) {
@@ -1476,6 +1439,7 @@ public class Map implements Constants {
         }
     }
     
+    // FIXME!!!
     private void saveInfFile(String filename) {
         //////// ARCHIVO .INF
         log.info("Guardando mapa: " + filename);
@@ -1550,54 +1514,14 @@ public class Map implements Constants {
         }
     }    
     
-    //public void construirAreaChar(Client cliente, Client other) {
-       // cliente.enviar(MSG_CC, other.ccParams());
-    	//cliente.enviar(serverPacketID.CC, other.ccParams());
-        
-   //}
-    
     public void construirAreaObj(Client cliente, short x, short y) {
     	MapObject obj = getObjeto(x,y);
-    	if (obj != null) cliente.enviar(MSG_HO, obj.getInfo().GrhIndex, x, y);
+    	if (obj != null) cliente.enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)obj.getInfo().GrhIndex);
     }
     
     public void construirAreaNpc(Client cliente, Npc npc) {
-    //	cliente.enviar(MSG_CC, npc.ccParams());
-    	cliente.enviar(ServerPacketID.MSG_CCNPC, npc.ccParams());
+    	cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
     }
-    
-    //when user enter in the game, or change map
-   // public void areasLogged(Client client) {
-    //	int minY = client.getPos().y - areasData.getTileY();
-    	//int maxY = client.getPos().y + areasData.getTileY();
-    	//int minX = client.getPos().x - areasData.getTileX();
-    	//int maxX = client.getPos().x + areasData.getTileX();
-    	
-    	//if (maxY > YMaxMapSize - 1) maxY = YMaxMapSize - 1;
-    	//if (minY < YMinMapSize) minY = YMinMapSize;
-
-    	//if (maxX > XMaxMapSize - 1) maxX = XMaxMapSize - 1;
-    	//if (minX < XMinMapSize) minX = XMinMapSize;
-    	
-    	//if (client.getArea() != 0) client.enviar(serverPacketID.areasChange);
-    	
-    	//for (short x = (short) minX; x <= maxX; ++x) {
-			//for (short y = (short) minY; y <= maxY; ++y) {
-				
-				//if (this.m_cells[x-1][y-1].getClienteId() > 0) {
-				//	Client user = server.getCliente(this.m_cells[x-1][y-1].getClienteId());
-				//	user.enviar(serverPacketID.CC, client.ccParams());
-				//    client.enviar(serverPacketID.CC, user.ccParams());
-				//}
-				
-				//if (hayNpc(x,y)) client.enviar(serverPacketID.MSG_CCNPC, getNpc(x,y).ccParams());
-				
-				//if (hayObjeto(x,y)) client.enviar(serverPacketID.MSG_HO, getObjeto(x,y).getInfo().GrhIndex, x, y);
-				
-				
-			//}
-		//}
-    //}
     
 }
 

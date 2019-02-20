@@ -654,10 +654,29 @@ public class Npc extends AbstractCharacter implements Constants {
     public short domable() {
         return this.m_domable;
     }
-        
+    
     public Object[] ccParams() {
-    	Object[] params = {getInfoChar().getCuerpo(), getInfoChar().getCabeza(), 
-    			getInfoChar().getDir(), getId(), pos().x, pos().y};
+        
+        
+    	Object[] params = { 
+			(short)getId(), 
+			(short)m_infoChar.getCuerpo(), 
+			(short)m_infoChar.getCabeza(),
+			
+			(byte)m_infoChar.getDir(), 
+			(byte)pos().x,
+			(byte)pos().y,
+			
+			(short)m_infoChar.getArma(), 
+			(short)m_infoChar.getEscudo(), 
+			(short)m_infoChar.getCasco(),
+			
+			(short)m_infoChar.getFX(),
+			(short)m_infoChar.getLoops(),
+			
+			(String)"", 
+			(byte)0, 
+			(byte)0 };
     	
     	return params;
     }
@@ -713,7 +732,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	expADar = expADar * 1000;
             cliente.getEstads().addExp(expADar);
             cliente.enviarMensaje("Has ganado " + expADar + " puntos de experiencia.", FontType.FIGHT);
-            cliente.refreshStatus(5);
+            cliente.updateUserStats();
             cliente.checkUserLevel();
         }
     }
@@ -728,8 +747,7 @@ public class Npc extends AbstractCharacter implements Constants {
             Map m = this.server.getMapa(pos.map);
             
             if (this.m_snd3 > 0) {
-               // m.enviarAlArea(pos.x, pos.y, MSG_TW, this.m_snd3);
-            	m.enviarAlArea(pos.x, pos.y, ServerPacketID.MSG_TW, (byte) this.m_snd3, cliente.pos().x, cliente.pos().y);
+            	m.enviarAlArea(pos.x, pos.y, ServerPacketID.PlayWave, (byte) this.m_snd3, cliente.pos().x, cliente.pos().y);
             }
             cliente.getFlags().TargetNpc = 0;
             cliente.getFlags().TargetNpcTipo = 0;
@@ -811,7 +829,7 @@ public class Npc extends AbstractCharacter implements Constants {
             mapa.salir(this);
         }
         
-        mapa.enviarAlArea(this.m_pos.x,this.m_pos.y,ServerPacketID.MSG_BP, this.getId());
+        mapa.enviarAlArea(this.m_pos.x,this.m_pos.y,ServerPacketID.CharacterRemove, this.getId());
         
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
@@ -927,7 +945,7 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         // Sonido
         if (mapa != null) {
-			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) sonido, this.m_pos.x,this.m_pos.y);
+			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) sonido, this.m_pos.x,this.m_pos.y);
 		}
     }
     
@@ -992,7 +1010,7 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.dialog, color, texto, this.getId());
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.ChatOverHead, color, texto, this.getId());
         }
     }
     
@@ -1006,11 +1024,16 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {
             this.m_infoChar.setDir(dir);
-
-            //mapa.enviarATodos(serverPacketID.MSG_CP, this.m_id, getInfoChar().getCuerpo(), getInfoChar().getCabeza(), getInfoChar().getDir(), getInfoChar().getArma(), getInfoChar().getEscudo(), getInfoChar().getCasco(), getInfoChar().m_fx, getInfoChar().m_loops);
-            
-            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_CP, this.getId(), getInfoChar().getCuerpo(), getInfoChar().getCabeza(), getInfoChar().getDir(), getInfoChar().getArma(), getInfoChar().getEscudo(), getInfoChar().getCasco(), getInfoChar().m_fx, getInfoChar().m_loops);
-            
+            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.CharacterChange, 
+            		this.getId(), 
+            		getInfoChar().getCuerpo(), 
+            		getInfoChar().getCabeza(), 
+            		getInfoChar().getDir(), 
+            		getInfoChar().getArma(), 
+            		getInfoChar().getEscudo(), 
+            		getInfoChar().getCasco(), 
+            		getInfoChar().m_fx, 
+            		getInfoChar().m_loops);
         }
     }
     
@@ -1455,14 +1478,14 @@ public class Npc extends AbstractCharacter implements Constants {
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
             cliente.getEstads().addMinHP(daño);
             cliente.enviarMensaje(this.m_name + " te ha dado " + daño + " puntos de vida.", FontType.FIGHT);
-            cliente.refreshStatus(2);
+            cliente.updateUserStats();
         } else if (hechizo.SubeHP == 2) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             cliente.enviarSonido(hechizo.WAV);            
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
             cliente.getEstads().quitarHP(daño);
             cliente.enviarMensaje(this.m_name + " te ha quitado " + daño + " puntos de vida.", FontType.FIGHT);
-            cliente.refreshStatus(2);
+            cliente.updateUserStats();
             // Muere
             if (cliente.getEstads().MinHP < 1) {
                 cliente.getEstads().MinHP = 0;
@@ -1496,15 +1519,12 @@ public class Npc extends AbstractCharacter implements Constants {
 		}
         this.m_flags.set(FLAG_PUEDE_ATACAR, false);
         if (this.m_snd1 > 0) {
-			//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, this.m_snd1);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) this.m_snd1, this.m_pos.x,this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) this.m_snd1, this.m_pos.x,this.m_pos.y);
 		}
         if (cliente.npcImpacto(this)) {
-           // mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SND_IMPACTO);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO, this.m_pos.x,this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, this.m_pos.x,this.m_pos.y);
             if (!cliente.estaNavegando()) {
-				//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_CFX, cliente.getId(), FXSANGRE, 0);
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_FX, cliente.getId(), FXSANGRE, (short) 0);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.CreateFX, cliente.getId(), FXSANGRE, (short) 0);
 			}
             cliente.npcDaño(this);
             // ¿Puede envenenar?
@@ -1512,11 +1532,11 @@ public class Npc extends AbstractCharacter implements Constants {
 				npcEnvenenarUser(cliente);
 			}
         } else {
-        	cliente.enviar(ServerPacketID.msgN1, (byte) 0);
+        	cliente.enviar(ServerPacketID.NPCSwing);//, (byte) 0);
         }
         // -----Tal vez suba los skills------
         cliente.subirSkill(Skill.SKILL_Tacticas);
-        cliente.refreshStatus(5);
+        cliente.updateUserStats();
         // Controla el nivel del usuario
         cliente.checkUserLevel();
     }
@@ -1554,31 +1574,31 @@ public class Npc extends AbstractCharacter implements Constants {
         
         if (this.m_snd1 > 0) {
 			//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, this.m_snd1);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) this.m_snd1, this.m_pos.x, this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) this.m_snd1, this.m_pos.x, this.m_pos.y);
 		}
         if (npcImpactoNpc(victima)) {
             if (victima.m_snd2 > 0) {
 			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, victima.m_snd2);
-            	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.MSG_TW, (byte) victima.m_snd2, victima.m_pos.x, victima.m_pos.y);
+            	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) victima.m_snd2, victima.m_pos.x, victima.m_pos.y);
 			} else {
 			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SND_IMPACTO2);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y);
 			}
             if (this.petUserOwner != null) {
 			//	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SND_IMPACTO);
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO, this.m_pos.x, this.m_pos.y);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, this.m_pos.x, this.m_pos.y);
 			} else {
 			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SND_IMPACTO);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.MSG_TW, (byte) SND_IMPACTO, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, victima.m_pos.x, victima.m_pos.y);
 			}
             npcDañoNpc(victima);
         } else {
             if (this.petUserOwner != null) {
 				//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SOUND_SWING);
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.MSG_TW, (byte) SOUND_SWING, this.m_pos.x, this.m_pos.y);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SOUND_SWING, this.m_pos.x, this.m_pos.y);
 			} else {
 				//mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SOUND_SWING);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.MSG_TW, (byte) SOUND_SWING, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SOUND_SWING, victima.m_pos.x, victima.m_pos.y);
 			}
         }
     }

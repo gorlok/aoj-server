@@ -59,7 +59,7 @@ public class NpcCashier extends Npc {
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.refreshStatus(1);
+		client.updateUserStats();
 	}
 
 	public void depositarOroBanco(Client client, int cant) {
@@ -75,7 +75,7 @@ public class NpcCashier extends Npc {
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.refreshStatus(1);
+		client.updateUserStats();
 	}
 
 

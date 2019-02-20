@@ -756,13 +756,13 @@ public class AojServer implements Constants {
     public void iniciarLluvia() {
         this.m_lloviendo = true;
         this.minutosSinLluvia = 0;
-        enviarATodos(ServerPacketID.userRain);
+        enviarATodos(ServerPacketID.RainToggle);
     }
     
     public void detenerLluvia() {
         this.m_lloviendo = false;
         this.minutosSinLluvia = 0;
-        enviarATodos(ServerPacketID.userRain);
+        enviarATodos(ServerPacketID.RainToggle);
     }
     
     private void lluviaEvent() {

@@ -1,69 +1,130 @@
 package org.ArgentumOnline.server.protocol;
 
 /**
-*
-* @author: JAO (Juan Agustín Oliva)
-* @userforos: Agushh, Thorkes
-* FIXME
+* @author gorlok
+* @author JAO (userforos: agushh/thorkes)
 */
 public enum ServerPacketID { 
-	login		        ((byte) 1),
-	msgErr              ((byte) 2),
-	IP                  ((byte) 3), // index pj
-	CC                  ((byte) 4), //create char
-	CMP                 ((byte) 5), //change map
-	talk                ((byte) 6), // dialog console
-	dialog              ((byte) 7), //dialog 
-	MSG_CCNPC           ((byte) 8), //create npc
-	MSG_PU              ((byte) 9), //change heading
-	MSG_HO              ((byte)10), //create object
-	MSG_MP              ((byte)11), //move char
-	MSG_BO              ((byte)12), //delete object
-	MSG_BQ              ((byte)13), //bloq position
-	MSG_TW              ((byte)14), //play music
-	MSG_CP              ((byte)15), //character change
-	MSG_FX              ((byte)16), //create FX
-	MSG_CSI             ((byte)17), //change inventory slot
-	MSG_SHS             ((byte)18), //change spell slot
-	MSG_BP              ((byte)19), //character remove
-	MSG_TO1             ((byte)20), // msgs
-	MSG_NPC_INV         ((byte)21), //change npc inventory
-	MSG_REFRESH         ((byte)22), //refresh user status
-	MSG_FINCOM          ((byte)23), // commerce end
-	MSG_USERHITNPC      ((byte)24),
-	MSG_USERSWING       ((byte)25), // swing hit
-	tradeOk             ((byte)26), //update commerce pics
-	medOk               ((byte)27), // update user med
-	deleteObject        ((byte)28), //delete user item
-	dropDices           ((byte)29),
-	littleStats         ((byte)30),
-	userAtri            ((byte)31),
-	userSkills          ((byte)32),
-	msgN1               ((byte)33),
-	paradOk             ((byte)34),
-	wBank               ((byte)35),
-	oBank               ((byte)36),
-	fBank               ((byte)37),
-	userWork            ((byte)38),
-	userRain            ((byte)39),
-	finOk               ((byte)40),
-	userFame            ((byte)41),
-	bancoOk             ((byte)42),
-	safeToggle          ((byte)43),
-	updateStats         ((byte)44),
-	areasChange         ((byte)45),
-	navigateToggle      ((byte)46);
-	
-	private final byte binCode; 
-	
-	ServerPacketID(byte bin) {
-		this.binCode = bin;
+    Logged                  ,// LOGGED
+    RemoveDialogs           ,// QTDL
+    RemoveCharDialog        ,// QDL
+    NavigateToggle          ,// NAVEG
+    Disconnect              ,// FINOK
+    CommerceEnd             ,// FINCOMOK
+    BankEnd                 ,// FINBANOK
+    CommerceInit            ,// INITCOM
+    BankInit                ,// INITBANCO
+    UserCommerceInit        ,// INITCOMUSU
+    UserCommerceEnd         ,// FINCOMUSUOK
+    ShowBlacksmithForm      ,// SFH
+    ShowCarpenterForm       ,// SFC
+    NPCSwing                ,// N1
+    NPCKillUser             ,// 6
+    BlockedWithShieldUser   ,// 7
+    BlockedWithShieldOther  ,// 8
+    UserSwing               ,// U1
+    UpdateNeeded            ,// REAU
+    SafeModeOn              ,// SEGON
+    SafeModeOff             ,// SEGOFF
+    ResuscitationSafeOn		,
+    ResuscitationSafeOff	,
+    NobilityLost            ,// PN
+    CantUseWhileMeditating  ,// M!
+    UpdateSta               ,// ASS
+    UpdateMana              ,// ASM
+    UpdateHP                ,// ASH
+    UpdateGold              ,// ASG
+    UpdateExp               ,// ASE
+    ChangeMap               ,// CM
+    PosUpdate               ,// PU
+    NPCHitUser              ,// N2
+    UserHitNPC              ,// U2
+    UserAttackedSwing       ,// U3
+    UserHittedByUser        ,// N4
+    UserHittedUser          ,// N5
+    ChatOverHead            ,// ||
+    ConsoleMsg              ,// || - Beware!! its the same as above, but it was properly splitted
+    GuildChat               ,// |+
+    ShowMessageBox          ,// !!
+    UserIndexInServer       ,// IU
+    UserCharIndexInServer   ,// IP
+    CharacterCreate         ,// CC
+    CharacterRemove         ,// BP
+    CharacterChangeNick		,
+    CharacterMove           ,// MP, +, * and _ ,//
+    ForceCharMove			,
+    CharacterChange         ,// CP
+    ObjectCreate            ,// HO
+    ObjectDelete            ,// BO
+    BlockPosition           ,// BQ
+    PlayMIDI                ,// TM
+    PlayWave                ,// TW
+    guildList               ,// GL
+    AreaChanged             ,// CA
+    PauseToggle             ,// BKW
+    RainToggle              ,// LLU
+    CreateFX                ,// CFX
+    UpdateUserStats         ,// EST
+    WorkRequestTarget       ,// T01
+    ChangeInventorySlot     ,// CSI
+    ChangeBankSlot          ,// SBO
+    ChangeSpellSlot         ,// SHS
+    Atributes               ,// ATR
+    BlacksmithWeapons       ,// LAH
+    BlacksmithArmors        ,// LAR
+    CarpenterObjects        ,// OBR
+    RestOK                  ,// DOK
+    ErrorMsg                ,// ERR
+    Blind                   ,// CEGU
+    Dumb                    ,// DUMB
+    ShowSignal              ,// MCAR
+    ChangeNPCInventorySlot  ,// NPCI
+    UpdateHungerAndThirst   ,// EHYS
+    Fame                    ,// FAMA
+    MiniStats               ,// MEST
+    LevelUp                 ,// SUNI
+    AddForumMsg             ,// FMSG
+    ShowForumForm           ,// MFOR
+    SetInvisible            ,// NOVER
+    DiceRoll                ,// DADOS
+    MeditateToggle          ,// MEDOK
+    BlindNoMore             ,// NSEGUE
+    DumbNoMore              ,// NESTUP
+    SendSkills              ,// SKILLS
+    TrainerCreatureList     ,// LSTCRI
+    guildNews               ,// GUILDNE
+    OfferDetails            ,// PEACEDE & ALLIEDE
+    AlianceProposalsList    ,// ALLIEPR
+    PeaceProposalsList      ,// PEACEPR
+    CharacterInfo           ,// CHRINFO
+    GuildLeaderInfo         ,// LEADERI
+    GuildDetails            ,// CLANDET
+    ShowGuildFundationForm  ,// SHOWFUN
+    ParalizeOK              ,// PARADOK
+    ShowUserRequest         ,// PETICIO
+    TradeOK                 ,// TRANSOK
+    BankOK                  ,// BANCOOK
+    ChangeUserTradeSlot     ,// COMUSUINV
+    SendNight               ,// NOC
+    Pong					,
+    UpdateTagAndStatus		,
+    
+    //GM messages
+    SpawnList               ,// SPL
+    ShowSOSForm             ,// MSOS
+    ShowMOTDEditionForm     ,// ZMOTD
+    ShowGMPanelForm         ,// ABPANEL
+    UserNameList            ;// LISTUSU
+    
+    public byte id() {
+    	return (byte)this.ordinal();
+    }
+    
+    public static void main(String[] args) {
+		for (ServerPacketID e : ServerPacketID.values()) {
+			System.out.println(e.ordinal() + " - " + e.name());
+		}
 	}
-	
-	public byte binCode() {
-		return this.binCode;
-	}
-	
 }
 
 

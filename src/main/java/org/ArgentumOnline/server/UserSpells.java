@@ -94,13 +94,11 @@ public class UserSpells implements Constants {
 			return;
 		}
 		if (isSlotEmpty(slot)) {
-			//client.enviar(MSG_SHS, slot, 0, "(None)");
-			client.enviar(ServerPacketID.MSG_SHS, (byte) slot, (short) 0, "(Vacío)");
+			client.enviar(ServerPacketID.ChangeSpellSlot, (byte) slot, (short) 0, "(Vacío)");
 			return;
 		}
 		Spell spell = server.getHechizo(getSpell(slot));
-		//client.enviar(MSG_SHS, slot, spell.getId(), spell.getName());
-		client.enviar(ServerPacketID.MSG_SHS, (byte) slot, (short) spell.getId(), spell.getName());
+		client.enviar(ServerPacketID.ChangeSpellSlot, (byte) slot, (short) spell.getId(), spell.getName());
 	}
 
 	public void sendMeSpellInfo(short slot) {
@@ -296,7 +294,7 @@ public class UserSpells implements Constants {
 				}
 				targetUser.m_flags.Paralizado = true;
 				targetUser.m_counters.Paralisis = IntervaloParalizado;
-				targetUser.enviar(ServerPacketID.paradOk);
+				targetUser.enviar(ServerPacketID.ParalizeOK);
 				infoHechizo();
 				return true;
 			}
@@ -304,7 +302,7 @@ public class UserSpells implements Constants {
 		if (hechizo.RemoverParalisis == 1) {
 			if (targetUser.m_flags.Paralizado) {
 				targetUser.m_flags.Paralizado = false;
-				targetUser.enviar(ServerPacketID.paradOk);
+				targetUser.enviar(ServerPacketID.ParalizeOK);
 				infoHechizo();
 				return true;
 			}
@@ -796,8 +794,7 @@ public class UserSpells implements Constants {
 			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.refreshStatus(3);
-			client.refreshStatus(4);
+			client.updateUserStats();
 		}
 	}
 
@@ -819,9 +816,7 @@ public class UserSpells implements Constants {
 			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.refreshStatus(3);
-			client.refreshStatus(4);
-			//target.enviarEstadsUsuario();
+			client.updateUserStats();
 			client.getFlags().TargetUser = 0;
 		}
 	}
@@ -842,8 +837,7 @@ public class UserSpells implements Constants {
 			client.getFlags().TargetNpc = 0;
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.refreshStatus(3);
-			client.refreshStatus(4);
+			client.updateUserStats();
 		}
 	}
 

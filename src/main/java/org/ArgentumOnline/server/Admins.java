@@ -672,7 +672,7 @@ public class Admins {
 		if (accion.equalsIgnoreCase("ORO")) {
 			if (valor < 95001) {
 				usuario.m_estads.setGold(valor);
-				usuario.refreshStatus(1);
+				usuario.updateUserStats();
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
@@ -682,7 +682,7 @@ public class Admins {
 			if (valor < 1000000) {
 				usuario.m_estads.Exp += valor;
 				usuario.checkUserLevel();
-				usuario.refreshStatus(5);
+				usuario.updateUserStats();
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",

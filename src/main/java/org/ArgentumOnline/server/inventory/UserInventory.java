@@ -252,19 +252,17 @@ public class UserInventory extends Inventory implements Constants {
         
         // Quita un objeto
         this.objs[slot-1].cant -= cant;
-        // ¿Quedan mas?
+        
+        // ¿Se terminaron?
         if (this.objs[slot-1].cant <= 0) {
+        	// No quedan mas, limpiar este slot
             this.objs[slot-1].cant = 0;
             this.objs[slot-1].objid = 0;
-            this.dueño.setNullObject(slot);
-            //cantItems--;
-        } else {
-        this.dueño.enviarObjetoInventario(slot);
         }
+       	this.dueño.enviarObjetoInventario(slot);
     }
 
     public void dropObj(short slot, int cant) {
-        // Sub DropObj(ByVal UserIndex As Integer, ByVal Slot As Byte, ByVal num As Integer, ByVal Map As Integer, ByVal x As Integer, ByVal y As Integer)
         if (cant > 0) {
             if (cant > this.objs[slot-1].cant) {
                 cant = this.objs[slot-1].cant;
@@ -573,7 +571,6 @@ public class UserInventory extends Inventory implements Constants {
      * @return cantidad de items agregados
      */
     public int agregarItem(short objid, int cant) {
-        // Function MeterItemEnInventario(ByVal UserIndex As Integer, ByRef MiObj As Obj) As Boolean
     	if (cant < 1 || objid < 1) {
 			return 0;
 		}
@@ -729,7 +726,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 this.dueño.getEstads().addGold(obj.cant);
-                this.dueño.refreshStatus(1);
+                this.dueño.updateUserStats();
                 quitarUserInvItem(slot, obj.cant);
                 break;
             case OBJTYPE_WEAPON:
@@ -775,12 +772,12 @@ public class UserInventory extends Inventory implements Constants {
                     case 3: // Pocion roja, restaura HP
                         // Usa el item
                         this.dueño.getEstads().addMinHP(Util.Azar(info.MinModificador, info.MaxModificador));
-                        this.dueño.refreshStatus(2);
+                        this.dueño.updateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
                         // Usa el item
                         this.dueño.getEstads().aumentarMana(Util.porcentaje(this.dueño.getEstads().maxMana, 5));
-                        this.dueño.refreshStatus(3);
+                        this.dueño.updateUserStats();
                         break;
                     case 5: // Pocion violeta
                         if (this.dueño.getFlags().Envenenado) {
@@ -792,7 +789,7 @@ public class UserInventory extends Inventory implements Constants {
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
                 this.dueño.enviarSonido(SND_BEBER);
-                //this.dueño.enviarEstadsUsuario();
+                this.dueño.updateUserStats();
                 break;
             case OBJTYPE_BEBIDA:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
@@ -888,16 +885,16 @@ public class UserInventory extends Inventory implements Constants {
                     	
                     	break;
                     case OBJTYPE_RED_PESCA:
-                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Pesca);
+                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Pesca);
                         break;
                     case OBJTYPE_HACHA_LEÑADOR:
-                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Talar);
+                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Talar);
                         break;
                     case OBJTYPE_PIQUETE_MINERO:
-                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Mineria);
+                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Mineria);
                         break;
                     case OBJTYPE_MARTILLO_HERRERO:
-                        this.dueño.enviar(ServerPacketID.userWork, Skill.SKILL_Herreria);
+                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Herreria);
                         break;
                     case OBJTYPE_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();
@@ -947,7 +944,7 @@ public class UserInventory extends Inventory implements Constants {
                 log.fatal("No se como usar este tipo de objeto: " + info.ObjType);
         }
         // Actualiza
-        //this.dueño.enviarEstadsUsuario();
+        //this.dueño.refreshStatus();
     }
     
 }
