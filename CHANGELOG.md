@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-20
+- escribo en archivo una definición del protocolo binario, para usarlo en un generador de código
+
 ### 2019-02-19
 - Refactory de clanes
 - Nuevo protocolo binario. Está todo roto ahora \o/

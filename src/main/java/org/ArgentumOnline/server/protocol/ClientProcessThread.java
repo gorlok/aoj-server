@@ -40,7 +40,7 @@ public class ClientProcessThread extends Thread {
 		try {
 			while (r.getPos() < length) {
 				r.mark();
-				ClientPacketID.ID packet = ClientPacketID.ID.values()[r.readByte()];
+				ClientPacketID packet = ClientPacketID.values()[r.readByte()];
 				switch (packet) {
 
 				case LoginExistingChar: // logged
