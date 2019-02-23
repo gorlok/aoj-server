@@ -2,7 +2,7 @@ package org.ArgentumOnline.server.forum;
 
 import java.util.HashMap;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +19,7 @@ public class ForumManager {
         forum.addMessage(titulo, texto);
     }
     
-    public void enviarMensajesForo(String foroId, Client cliente) {
+    public void enviarMensajesForo(String foroId, Player cliente) {
         Forum forum = this.m_foros.get(foroId);
         if (forum == null) {
             this.m_foros.put(foroId, (forum = new Forum(foroId)));

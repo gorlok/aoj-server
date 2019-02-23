@@ -3,7 +3,7 @@ package org.ArgentumOnline.server.areas;
 import java.util.BitSet;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.npc.Npc;
@@ -85,7 +85,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos cuando un usuario cambia de área, y updatea el área ID y adyacentes
 	 */
-	public void checkUpdateNeededUser(Client user, short dir) {
+	public void checkUpdateNeededUser(Player user, short dir) {
 		
 		var userArea = user.getUserArea();
 		
@@ -161,7 +161,7 @@ public class AreasAO implements Constants {
     			
     			
     			if (user.getId() != tempInt && tempInt > 0) {
-    				Client other = this.server.getClientById(tempInt);
+    				Player other = this.server.getClientById(tempInt);
     				user.enviar(ServerPacketID.CharacterCreate, other.ccParams());
     				other.enviar(ServerPacketID.CharacterCreate, user.ccParams());
     				
@@ -271,7 +271,7 @@ public class AreasAO implements Constants {
     		for(short x = (short) minX; x < maxX;x++) {
         		for(short y = (short) minY; y < maxY; y++) {
         			if (map.hayCliente(x, y)) {
-        				Client jao = map.getCliente(x, y);
+        				Player jao = map.getCliente(x, y);
         				
         				jao.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
         				
@@ -300,7 +300,7 @@ public class AreasAO implements Constants {
 		npc.setAreaRecibeY(0);
 	}
 	
-	public void resetUser(Client user) {
+	public void resetUser(Player user) {
 		var userArea = user.getUserArea();
 		userArea.setArea(0);
 		userArea.setAreaPerteneceX(0);
@@ -318,7 +318,7 @@ public class AreasAO implements Constants {
 		checkUpdateNeededNpc(npc, USER_NUEVO);
 	}
 	
-	public void loadUser(Client user) {
+	public void loadUser(Player user) {
 		resetUser(user);
 		checkUpdateNeededUser(user, USER_NUEVO);
 	}
@@ -332,7 +332,7 @@ public class AreasAO implements Constants {
 		areaY = (int) Math.pow(2, areaY / 9);
 
 		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Client user = map.spUser(loopc);
+			Player user = map.spUser(loopc);
 			
 			int tempInt = (user.getUserArea().areaRecibeX & areaX);
 			
@@ -359,7 +359,7 @@ public class AreasAO implements Constants {
 		areaY = (int) Math.pow(2, areaY / 9);
 
 		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Client user = map.spUser(loopc);
+			Player user = map.spUser(loopc);
 			
 			int tempInt = (user.getUserArea().areaRecibeX & areaX);
 			
@@ -382,14 +382,14 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del user, y adyacentes
 	 */
-	public void sendToUserArea(Client user, ServerPacketID msg, Object... params) {
+	public void sendToUserArea(Player user, ServerPacketID msg, Object... params) {
 		var userArea = user.getUserArea();
 		
 		int areaX = userArea.areaPerteneceX;
 		int areaY = userArea.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Client tempIndex = map.spUser(i);
+			Player tempIndex = map.spUser(i);
 			
 			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
@@ -410,14 +410,14 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
-	public void sendToUserAreaButIndex(Client user, ServerPacketID msg, Object... params) {
+	public void sendToUserAreaButIndex(Player user, ServerPacketID msg, Object... params) {
 		var userArea = user.getUserArea();
 
 		int areaX = userArea.areaPerteneceX;
 		int areaY = userArea.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Client tempIndex = map.spUser(i);
+			Player tempIndex = map.spUser(i);
 			
 			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
@@ -444,7 +444,7 @@ public class AreasAO implements Constants {
 		int areaY = npc.areaPerteneceY;
 		
 		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Client tempIndex = map.spUser(i);
+			Player tempIndex = map.spUser(i);
 			
 			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();

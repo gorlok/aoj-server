@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -99,7 +99,7 @@ public class Guild {
     
     public void enviarMensaje(String mensaje, FontType font) {
     	// ToGuildMembers
-        Client cliente;
+        Player cliente;
         for (String member: this.members) {
             cliente = this.server.getUsuario(member);
             cliente.enviarMensaje(mensaje, font);            
@@ -108,7 +108,7 @@ public class Guild {
     
     public void enviarSonido(int sonido) {
     	// ToGuildMembers
-        Client cliente;
+        Player cliente;
         for (String member: this.members) {
             cliente = this.server.getUsuario(member);
             // FIXME
@@ -389,7 +389,7 @@ public class Guild {
     }
 
     public void removeMember(String name) {
-        Client cliente;
+        Player cliente;
         for (String member: this.members) {
             cliente = this.server.getUsuario(member);
             if (cliente.getNick().equalsIgnoreCase(name)) {
@@ -450,7 +450,7 @@ public class Guild {
         return this.ballotBox.getWinner();
     }
 
-    public void computeVote(Client cliente, String vote) {
+    public void computeVote(Player cliente, String vote) {
         if (!this.elections) {
             cliente.enviarMensaje("Aun no es período de elecciones.", FontType.GUILD);
             return;

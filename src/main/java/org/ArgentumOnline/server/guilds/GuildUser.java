@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.guilds;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.util.FontType;
 
 /**
@@ -33,7 +33,7 @@ import org.ArgentumOnline.server.util.FontType;
  */
 public class GuildUser {
     
-	Client cliente;
+	Player cliente;
     public String  m_guildName = "";
     public long    m_solicitudes = 0;
     public long    m_solicitudesRechazadas = 0;
@@ -46,7 +46,7 @@ public class GuildUser {
     public long    m_clanesParticipo = 0;
     public long    m_guildPoints = 0;
     
-    public GuildUser(Client cliente) {
+    public GuildUser(Player cliente) {
         this.cliente = cliente;
     }
     

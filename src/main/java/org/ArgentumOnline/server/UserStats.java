@@ -60,9 +60,9 @@ public class UserStats extends AbstractCharStats {
 	int drinked = 0; // bebida (cuando llega a cero, muere)
 	int maxDrinked = 0; // máximo de bebida, totalmente hidratado y sin sed
 
-	int Exp = 0; // Experiencia
-	int ELV = 0; // Nivel
-	int ELU = 0; // Exp. Max del nivel
+	public int Exp = 0; // Experiencia
+	public int ELV = 0; // Nivel
+	public int ELU = 0; // Exp. Max del nivel
 
 	public byte userSkills[] = new byte[Skill.MAX_SKILLS + 1];
 	public byte userAtributos[] = new byte[NUMATRIBUTOS];

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -61,7 +61,7 @@ public class Motd {
     	this.m_motd.addAll(motd);
     }
 
-	public void doIniciarCambiarMOTD(Client client) {
+	public void doIniciarCambiarMOTD(Player client) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
 		if (!client.esDios()) {
@@ -80,7 +80,7 @@ public class Motd {
 		// enviar(MSG_ZMOTD, sb.toString());
 	}
 
-	public void doFinCambiarMOTD(Client client, String s) {
+	public void doFinCambiarMOTD(Player client, String s) {
 		// Finalizar el cambio de MOTD
 		// Comando ZMOTD
 		String CRLF = "" + (char) 13 + (char) 10;
@@ -94,7 +94,7 @@ public class Motd {
 		client.enviarMensaje("MOTD actualizado.", FontType.INFO);
 	}
 
-	public void doEnviarMOTD(Client client) {
+	public void doEnviarMOTD(Player client) {
 		// Comando /MOTD
 		// Envia los mensajes del dia.
 		List<String> motd = getMOTD();

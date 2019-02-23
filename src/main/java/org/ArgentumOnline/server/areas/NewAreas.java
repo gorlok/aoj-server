@@ -3,7 +3,7 @@ package org.ArgentumOnline.server.areas;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.npc.Npc;
 
@@ -29,15 +29,15 @@ public class NewAreas implements Constants {
 
 	public int[] adyacent = new int[SE + 1];
 
-	public List<Client> user = new LinkedList<Client>();
+	public List<Player> user = new LinkedList<Player>();
 	public List<Npc> npc = new LinkedList<Npc>();
 	public List<Short> obj = new LinkedList<Short>();
 
-	public void addUsers(Client id) {
+	public void addUsers(Player id) {
 		this.user.add(id);
 	}
 
-	public void deleteUser(Client id) {
+	public void deleteUser(Player id) {
 		this.user.remove(id);
 	}
 
@@ -82,7 +82,7 @@ public class NewAreas implements Constants {
 		this.id = id;
 	}
 
-	public boolean userInArray(Client user) {
+	public boolean userInArray(Player user) {
 		return this.user.contains(user);
 	}
 

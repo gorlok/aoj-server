@@ -39,10 +39,12 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.forum.ForumManager;
+import org.ArgentumOnline.server.gm.Admins;
 import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.net.NetworkServer;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
@@ -56,7 +58,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** 
- * AOJ Server main class
+ * Server main class
  * @author gorlok
  */
 public class GameServer implements Constants {
@@ -66,17 +68,17 @@ public class GameServer implements Constants {
 	
     private boolean useUPnP = true;
 
-    private HashMap<Short, Client> m_clientes = new HashMap<>();
-    private HashMap<Integer, Npc> 	m_npcs = new HashMap<>();
+    private HashMap<Short, Player> players = new HashMap<>();
+    private HashMap<Integer, Npc> 	npcs = new HashMap<>();
     
-    private List<Client> m_clientes_eliminar = new LinkedList<>();
+    private List<Player> m_clientes_eliminar = new LinkedList<>();
     private List<Short> m_npcs_muertos = new LinkedList<>();
     
-    private List<Spell> 	m_hechizos = new LinkedList<>();
-    private List<Map> 		m_mapas = new LinkedList<>();    
-    private List<Quest> 	m_quests = new LinkedList<>();
+    private List<Spell> 	spells = new LinkedList<>();
+    private List<Map> 		maps = new LinkedList<>();    
+    private List<Quest> 	quests = new LinkedList<>();
     
-    private List<MapPos> m_trashCollector = new LinkedList<>();
+    private List<MapPos> trashCollector = new LinkedList<>();
     
     private short [] m_armasHerrero;
     private short [] m_armadurasHerrero;
@@ -98,15 +100,17 @@ public class GameServer implements Constants {
     
     private boolean m_showDebug = false;
     
-    private GuildManager m_guildMngr;
+    private GuildManager guildManager;
     private Motd motd;
     private ForumManager forumManager;
     private NpcLoader npcLoader;
     private Admins admins;
     private ObjectInfoStorage objectInfoStorage;
+
+    private Feedback m_feedback = new Feedback();
     
     private GameServer() {
-    	this.m_guildMngr = new GuildManager(this);
+    	this.guildManager = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
     	this.npcLoader = new NpcLoader(this);
@@ -135,7 +139,7 @@ public class GameServer implements Constants {
     }
     
     public GuildManager getGuildMngr() {
-    	return this.m_guildMngr;
+    	return this.guildManager;
     }
     
     public ForumManager getForumManager() {
@@ -146,13 +150,13 @@ public class GameServer implements Constants {
 		return npcLoader;
 	}
     
-    public List<Client> getClientes() {
-    	return this.m_clientes.values().stream()
+    public List<Player> getClientes() {
+    	return this.players.values().stream()
     			.collect(Collectors.toList());
     }
     
     public List<Npc> getNpcs() {
-    	return this.m_npcs.values().stream()
+    	return this.npcs.values().stream()
     			.collect(Collectors.toList());
     }
     
@@ -191,15 +195,15 @@ public class GameServer implements Constants {
     }
     
     public List<MapPos> getTrashCollector() {
-        return this.m_trashCollector;
+        return this.trashCollector;
     }
     
     public Quest getQuest(int n) {
-        return this.m_quests.get(n - 1);
+        return this.quests.get(n - 1);
     }
     
     public int getQuestCount() {
-        return this.m_quests.size();
+        return this.quests.size();
     }
     
     public short [] getArmasHerrero() {
@@ -225,7 +229,7 @@ public class GameServer implements Constants {
     public List<String> getUsuariosConectados() {
     	return getClientes().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.esGM())
-			    	.map(Client::getNick)
+			    	.map(Player::getNick)
 			    	.collect(Collectors.toList());
     }
     
@@ -243,7 +247,7 @@ public class GameServer implements Constants {
     public List<String> getUsuariosTrabajando() {
     	return getClientes().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.estaTrabajando())
-		    	.map(Client::getNick)
+		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
     
@@ -257,26 +261,24 @@ public class GameServer implements Constants {
     public List<String> getUsuariosConIP(String ip) {
     	return getClientes().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
-		    	.map(Client::getNick)
+		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
     
     public List<String> getGMsOnline() {
     	return getClientes().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.esGM())
-		    	.map(Client::getNick)
+		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
     
-    boolean loadBackup;
     public boolean isLoadBackup() {
 		return loadBackup;
 	}
     
     private NetworkServer networkServer;
     /** Main loop of the game. */
-    public void run(boolean loadBackup) {
-    	this.loadBackup = loadBackup;
+    public void runGameLoop() {
         loadAllData(loadBackup);
         
         networkServer = NetworkServer.startServer(this);
@@ -357,7 +359,7 @@ public class GameServer implements Constants {
         }
     }
     
-    public void dropClient(Client client) {
+    public void dropClient(Player client) {
     	this.m_clientes_eliminar.add(client);
     	this.networkServer.closeConnection(client);
     }
@@ -365,8 +367,8 @@ public class GameServer implements Constants {
     private synchronized void eliminarClientes() {
     	// La eliminación de m_clientes de la lista de m_clientes se hace aquí
     	// para evitar modificaciones concurrentes al hashmap, entre otras cosas.
-    	for (Client cliente: this.m_clientes_eliminar) {
-            this.m_clientes.remove(cliente.getId());
+    	for (Player cliente: this.m_clientes_eliminar) {
+            this.players.remove(cliente.getId());
     	}
     	this.m_clientes_eliminar.clear();
     }
@@ -380,19 +382,19 @@ public class GameServer implements Constants {
     /** Load maps / Cargar los m_mapas */
     private void loadMaps(boolean loadBackup) {
     	log.trace("loading maps");
-        this.m_mapas = new Vector<Map>();
+        this.maps = new Vector<Map>();
         Map mapa;
         for (short i = 1; i <= CANT_MAPAS; i++) {
             mapa = new Map(i, this);
             mapa.load(loadBackup);
-            this.m_mapas.add(mapa);
+            this.maps.add(mapa);
         }
     }
     
     /** Load spells / Cargar los hechizos */
     private void loadSpells() {
     	log.trace("loading spells");
-        this.m_hechizos = new Vector<Spell>();
+        this.spells = new Vector<Spell>();
         IniFile ini = new IniFile();
         try {
             ini.load(DATDIR + java.io.File.separator + "Hechizos.dat");
@@ -406,7 +408,7 @@ public class GameServer implements Constants {
         for (int i = 0; i < cant; i++) {
             Spell hechizo = new Spell(i+1);
         	hechizo.load(ini);
-            this.m_hechizos.add(hechizo);
+            this.spells.add(hechizo);
         }
     }
     
@@ -421,11 +423,11 @@ public class GameServer implements Constants {
             e.printStackTrace();
         }
         short cant = ini.getShort("INIT", "NumQuests");
-        this.m_quests = new Vector<Quest>();        
+        this.quests = new Vector<Quest>();        
         for (short i = 1; i <= cant; i++) {
             Quest quest = new Quest(this, i);
             quest.load(ini);
-            this.m_quests.add(quest);
+            this.quests.add(quest);
         }
     }
 
@@ -449,13 +451,13 @@ public class GameServer implements Constants {
     
     public Npc createNpc(int npcNumber) {
         Npc npc = getNpcLoader().createNpc(npcNumber);
-        this.m_npcs.put(Integer.valueOf(npc.getId()), npc);
+        this.npcs.put(Integer.valueOf(npc.getId()), npc);
         return npc;
     }
     
-    public Client createClient(SocketChannel clientSocket) {
-        Client cliente = new Client(clientSocket, this);
-        this.m_clientes.put(cliente.getId(), cliente);    	
+    public Player createClient(SocketChannel clientSocket) {
+        Player cliente = new Player(clientSocket, this);
+        this.players.put(cliente.getId(), cliente);    	
         return cliente;
     }
     
@@ -464,29 +466,29 @@ public class GameServer implements Constants {
     }
     
     public Npc getNpcById(int npcId) {
-        return this.m_npcs.get(Integer.valueOf(npcId));
+        return this.npcs.get(Integer.valueOf(npcId));
     }
     
-    public Client getClientById(short id) {
-        return this.m_clientes.get(id);
+    public Player getClientById(short id) {
+        return this.players.get(id);
     }
     
     public Spell getHechizo(int spell) {
-        return this.m_hechizos.get(spell - 1);
+        return this.spells.get(spell - 1);
     }
     
     public Map getMapa(int mapa) {
-        if (mapa > 0 && mapa <= this.m_mapas.size()) {
-			return this.m_mapas.get(mapa - 1);
+        if (mapa > 0 && mapa <= this.maps.size()) {
+			return this.maps.get(mapa - 1);
 		}
 		return null;
     }
     
-    public Client getUsuario(String nombre) {
+    public Player getUsuario(String nombre) {
     	if ("".equals(nombre)) {
 			return null;
 		}
-    	for (Client cliente: getClientes()) {
+    	for (Player cliente: getClientes()) {
             if (cliente.getNick().equalsIgnoreCase(nombre)) {
                 return cliente;
             }
@@ -494,8 +496,8 @@ public class GameServer implements Constants {
         return null;
     }
     
-    public boolean usuarioYaConectado(Client cliente) {
-    	for (Client c: getClientes()) {
+    public boolean usuarioYaConectado(Player cliente) {
+    	for (Player c: getClientes()) {
             if (cliente != c && cliente.getNick().equalsIgnoreCase(c.getNick())) {
                 return true;
             }
@@ -526,15 +528,15 @@ public class GameServer implements Constants {
                 }
             }
             for (Object element : this.m_npcs_muertos) {
-                this.m_npcs.remove(element);
+                this.npcs.remove(element);
             }
             this.m_npcs_muertos.clear();
         }
     }
 
     private void pasarSegundo() {
-        var paraSalir = new LinkedList<Client>();
-        for (Client cli: getClientes()) {
+        var paraSalir = new LinkedList<Player>();
+        for (Player cli: getClientes()) {
             if (cli.m_counters.Saliendo) {
                 cli.m_counters.SalirCounter--;
                 if (cli.m_counters.SalirCounter <= 0) {
@@ -551,7 +553,7 @@ public class GameServer implements Constants {
                 }
             }
         }
-        for (Client cli: paraSalir) {
+        for (Player cli: paraSalir) {
             cli.doSALIR();
         }
     }
@@ -561,7 +563,7 @@ public class GameServer implements Constants {
         try {
             //enviarATodos(MSG_BKW);
             //enviarATodos(MSG_TALK, "Servidor> Grabando Personajes" + FontType.SERVER);
-            for (Client cli: getClientes()) {
+            for (Player cli: getClientes()) {
                 if (cli.isLogged()) {
                     cli.userStorage.saveUserToStorage();
                 }
@@ -594,7 +596,7 @@ public class GameServer implements Constants {
     }
     
     private void FX_Timer() {
-    	for (Map mapa: this.m_mapas) {
+    	for (Map mapa: this.maps) {
             if ((Util.Azar(1, 150) < 12) && (mapa.getCantUsuarios() > 0)) {
                 mapa.doFX();
             }
@@ -603,7 +605,7 @@ public class GameServer implements Constants {
     
     private void gameTimer() {
         // <<<<<< Procesa eventos de los usuarios >>>>>>
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0) {
                 cli.procesarEventos();
             }
@@ -617,7 +619,7 @@ public class GameServer implements Constants {
     }
     
     private void timerOculto() {
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0) {
                 if (cli.estaOculto()) {
 					cli.doPermanecerOculto();
@@ -630,7 +632,7 @@ public class GameServer implements Constants {
         if (!this.m_lloviendo) {
 			return;
 		}
-        for (Client cli: getClientes()) {
+        for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0) {
                 cli.efectoLluvia();
             }
@@ -638,7 +640,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarATodos(ServerPacketID msg, Object... params) {
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 cli.enviar(msg, params);
             }
@@ -646,7 +648,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarAAdmins(ServerPacketID msg, Object... params) {
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
                 cli.enviar(msg, params);
             }
@@ -654,7 +656,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarMensajeAAdmins(String msg, FontType fuente) {
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
                 cli.enviarMensaje(msg, fuente);
             }
@@ -701,7 +703,7 @@ public class GameServer implements Constants {
     int segundos = 0;
     public void piqueteTimer() {
         this.segundos += 6;
-        for (Client cli: getClientes()) {
+        for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 Map mapa = getMapa(cli.pos().map);
                 if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
@@ -727,7 +729,7 @@ public class GameServer implements Constants {
     }
     
     public void purgarPenas() {
-    	for (Client cli: getClientes()) {
+    	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.getFlags().UserLogged) {
                 if (cli.m_counters.Pena > 0) {
                     cli.m_counters.Pena--;
@@ -743,7 +745,7 @@ public class GameServer implements Constants {
     
     // FIXME
     private void checkIdleUser() {
-    	for (Client cliente: getClientes()) {
+    	for (Player cliente: getClientes()) {
             if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
                 cliente.m_counters.IdleCount++;
                 if (cliente.m_counters.IdleCount >= IdleLimit) {
@@ -871,7 +873,7 @@ public class GameServer implements Constants {
     }
 
     public void enviarMensajeALosGMs(String msg) {
-        for (Client cli: getClientes()) {
+        for (Player cli: getClientes()) {
             if (cli.isLogged() && cli.esGM()) {
                 cli.enviarMensaje(msg, FontType.TALKGM);
             }
@@ -916,7 +918,7 @@ public class GameServer implements Constants {
         /////////// fixme - fixme - fixme
     }
     
-    public void limpiarMundo(Client cli) {
+    public void limpiarMundo(Player cli) {
     	int cant = limpiarMundo();
         if (cli != null) {
 			cli.enviarMensaje("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.SERVER);
@@ -926,16 +928,14 @@ public class GameServer implements Constants {
     private int limpiarMundo() {
         //Sub LimpiarMundo()
     	int cant = 0;
-    	for (MapPos pos: this.m_trashCollector) {
+    	for (MapPos pos: this.trashCollector) {
             Map mapa = getMapa(pos.map);
             mapa.quitarObjeto(pos.x, pos.y);
             cant++;
         }
-        this.m_trashCollector.clear();
+        this.trashCollector.clear();
         return cant;
     }
-    
-    Feedback m_feedback = new Feedback();
     
     private synchronized void worldSave() {
         //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.INFO);
@@ -943,7 +943,7 @@ public class GameServer implements Constants {
         reSpawnOrigPosNpcs();
         // Ver cuantos m_mapas necesitan backup.
         int cant = 0;
-        for (Map mapa: this.m_mapas) {
+        for (Map mapa: this.maps) {
             if (mapa.m_backup) {
 				cant++;
 			}
@@ -951,7 +951,7 @@ public class GameServer implements Constants {
         // Guardar los m_mapas
         this.m_feedback.init("Guardando m_mapas modificados", cant);
         int i = 0;
-        for (Map mapa: this.m_mapas) {
+        for (Map mapa: this.maps) {
             if (mapa.m_backup) {
                 mapa.saveMapData();
                 this.m_feedback.step("Mapa " + (++i));
@@ -973,7 +973,6 @@ public class GameServer implements Constants {
         }
         //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.INFO);
     }
-
     
     private void reSpawnOrigPosNpcs() {
         List<Npc> spawnNPCs = new Vector<Npc>();
@@ -1029,14 +1028,15 @@ public class GameServer implements Constants {
 		System.out.println("Memoria: " + memoryStatus());
 	}
 
+	private static boolean loadBackup = false;
     public static void main(String[] args) {
-        boolean loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
+        loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
         if (loadBackup) {
 			log.info("Arrancando usando el backup");
 		} else {
 			log.info("Arrancando sin usar backup");
 		}
-        GameServer.instance().run(loadBackup);
+        GameServer.instance().runGameLoop();
     }
 
 }

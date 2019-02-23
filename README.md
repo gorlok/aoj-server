@@ -9,7 +9,7 @@ Work in progress. Not even alpha. __Here be dragons__.
 
 ## Requirements to build
 
-* JDK 10+
+* JDK 11+
 * Maven 3.5+
 
 Please note that sources are keep in ISO-8859-1

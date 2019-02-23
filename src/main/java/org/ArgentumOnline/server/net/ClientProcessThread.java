@@ -1,13 +1,14 @@
-package org.ArgentumOnline.server.protocol;
+package org.ArgentumOnline.server.net;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.protocol.ClientPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.NotEnoughDataException;
 
@@ -21,7 +22,7 @@ public class ClientProcessThread extends Thread {
 
 	private BytesReader r;
 
-	List<Client> clientQueue = new LinkedList<Client>();
+	List<Player> clientQueue = new LinkedList<Player>();
 
 	public ClientProcessThread() {
 		setName("ClientProcessThread");
@@ -29,12 +30,12 @@ public class ClientProcessThread extends Thread {
 		r.setLittleEndian(true);
 	}
 
-	public void addClientQueue(Client value) {
+	public void addClientQueue(Player value) {
 		this.clientQueue.add(value);
 	}
 
 	//Una vez decodificado, buscamos qué acción efectuar
-	private void handleClientData(byte[] data, Client cliente, int length) {
+	private void handleClientData(byte[] data, Player cliente, int length) {
 		r.appendBytes(data);
 		try {
 			while (r.getPos() < length) {
@@ -232,7 +233,7 @@ public class ClientProcessThread extends Thread {
 
 			if (this.clientQueue.size() > 0) { 
 				// hay alguien esperando ??
-				Client client = this.clientQueue.get(0);
+				Player client = this.clientQueue.get(0);
 				client.readBuffer.flip();
 
 				handleClientData(client.readBuffer.array(), 

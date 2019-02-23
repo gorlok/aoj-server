@@ -69,7 +69,7 @@ public class Factions implements Constants {
     static short[] factionArmors = new short[FactionArmors.values().length];
 
     ///////////////// Miembros de instancia:
-    Client cliente;
+    Player cliente;
     GameServer server;
     
     public boolean ArmadaReal  = false;
@@ -83,7 +83,7 @@ public class Factions implements Constants {
     public boolean RecibioArmaduraReal   = false;
     public boolean RecibioArmaduraCaos   = false;
     
-    public Factions(GameServer server, Client cliente) {
+    public Factions(GameServer server, Player cliente) {
     	this.server = server;
         this.cliente = cliente;
     }
@@ -106,7 +106,7 @@ public class Factions implements Constants {
 		return factionArmors[factiorArmor.ordinal()];
 	}
     
-	public static void sendFactionArmor(Client admin, FactionArmors factiorArmor) {
+	public static void sendFactionArmor(Player admin, FactionArmors factiorArmor) {
 		String msg = new StringBuilder()
 				.append(factiorArmor.getName())
 				.append(" es ")
@@ -115,7 +115,7 @@ public class Factions implements Constants {
 		admin.enviarMensaje(msg, FontType.INFO);
 	}
 	
-	public static void updateFactionArmor(Client admin, FactionArmors factiorArmor, short armorObjIdx) {
+	public static void updateFactionArmor(Player admin, FactionArmors factiorArmor, short armorObjIdx) {
 		factionArmors[factiorArmor.ordinal()] = armorObjIdx;
 		
 		String msg = new StringBuilder()
@@ -126,7 +126,7 @@ public class Factions implements Constants {
 	}
 	
     
-    public boolean faccionPuedeUsarItem(Client cliente, short objid) {
+    public boolean faccionPuedeUsarItem(Player cliente, short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
         if (infoObj.Real == 1) {
             if (!cliente.esCriminal()) {

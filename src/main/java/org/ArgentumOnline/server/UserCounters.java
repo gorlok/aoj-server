@@ -44,7 +44,7 @@ public class UserCounters {
     int Estupidez = 0;
     int Invisibilidad = 0;
     long PiqueteC = 0;
-    long Pena = 0;
+    public long Pena = 0;
     MapPos SendMapCounter = MapPos.empty();
     int Pasos = 0;
     boolean Saliendo = false;

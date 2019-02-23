@@ -45,14 +45,14 @@ public class UserTrade {
 
 	boolean acepto = false;
 
-	public void doAceptarComerciarUsuario(Client client) {
+	public void doAceptarComerciarUsuario(Player client) {
 		// Comando COMUSUOK
 		// Aceptar el cambio
 
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getClientById(this.destUsu);
+		Player targetClient = client.server.getClientById(this.destUsu);
 		if (this.destUsu != client.getId()) {
 			return;
 		}
@@ -105,10 +105,10 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
 			targetClient.m_estads.addGold(-this.cant);
-			targetClient.updateUserStats();
+			targetClient.sendUpdateUserStats();
 			// y se la doy al otro
 			client.m_estads.addGold(this.cant);
-			client.updateUserStats();
+			client.sendUpdateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
 			int agregados = client.m_inv.agregarItem(obj2_objid, obj2_cant);
@@ -124,10 +124,10 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
 			client.m_estads.addGold(-this.cant); // restar
-			client.updateUserStats();
+			client.sendUpdateUserStats();
 			// y se la doy al otro
 			targetClient.m_estads.addGold(this.cant); // sumar
-			targetClient.updateUserStats();
+			targetClient.sendUpdateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
 			int agregados = targetClient.m_inv.agregarItem(obj1_objid, obj1_objid);
@@ -145,11 +145,11 @@ public class UserTrade {
 		targetClient.m_comUsu.finComerciarUsu(targetClient);
 	}
 
-	public void doFinComerciarUsuario(Client client) {
+	public void doFinComerciarUsuario(Player client) {
 		// Comando FINCOMUSU
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == client.getId()) {
-			Client targetClient = client.server.getClientById(this.destUsu);
+			Player targetClient = client.server.getClientById(this.destUsu);
 			targetClient.enviarMensaje(client.m_nick + " ha dejado de comerciar con vos.", FontType.TALK);
 			if (targetClient != null) {
 				targetClient.m_comUsu.finComerciarUsu(targetClient);
@@ -158,7 +158,7 @@ public class UserTrade {
 		client.m_comUsu.finComerciarUsu(client);
 	}
 
-	public void finComerciarUsu(Client client) {
+	public void finComerciarUsu(Player client) {
 		this.acepto = false;
 		this.cant = 0;
 		this.destUsu = 0;
@@ -167,11 +167,11 @@ public class UserTrade {
 		client.enviar(ServerPacketID.UserCommerceEnd);
 	}
 
-	public void doRechazarComerciarUsuario(Client client) {
+	public void doRechazarComerciarUsuario(Player client) {
 		// Comando COMUSUNO
 		// Rechazar el cambio
 		if (this.destUsu > 0) {
-			Client targetClient = client.server.getClientById(this.destUsu);
+			Player targetClient = client.server.getClientById(this.destUsu);
 			targetClient.enviarMensaje(client.m_nick + " ha rechazado tu oferta.", FontType.TALK);
 			finComerciarUsu(targetClient);
 		}
@@ -179,7 +179,7 @@ public class UserTrade {
 		finComerciarUsu(client);
 	}
 
-	public void doOfrecerComerciarUsuario(Client client, short slot, int cant) {
+	public void doOfrecerComerciarUsuario(Player client, short slot, int cant) {
 		// Comando OFRECER
 		if (slot < 1 || cant < 1) {
 			return;
@@ -187,7 +187,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getClientById(this.destUsu);
+		Player targetClient = client.server.getClientById(this.destUsu);
 		// sigue conectado el usuario ?
 		if (!targetClient.m_flags.UserLogged) {
 			finComerciarUsu(client);
@@ -231,11 +231,11 @@ public class UserTrade {
 		targetClient.m_comUsu.recibirObjetoTransaccion(targetClient);
 	}
 
-	void recibirObjetoTransaccion(Client client) {
+	void recibirObjetoTransaccion(Player client) {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Client targetClient = client.server.getClientById(this.destUsu);
+		Player targetClient = client.server.getClientById(this.destUsu);
 
 		short objid = 0;
 		if (this.objeto == Constants.FLAGORO) {

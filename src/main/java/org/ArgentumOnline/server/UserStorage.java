@@ -1,5 +1,13 @@
 package org.ArgentumOnline.server;
 
+import static org.ArgentumOnline.server.Constants.IntervaloParalizado;
+import static org.ArgentumOnline.server.Constants.NUMATRIBUTOS;
+import static org.ArgentumOnline.server.Constants.NingunArma;
+import static org.ArgentumOnline.server.Constants.NingunCasco;
+import static org.ArgentumOnline.server.Constants.NingunEscudo;
+import static org.ArgentumOnline.server.Constants.iCabezaMuerto;
+import static org.ArgentumOnline.server.Constants.iCuerpoMuerto;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -7,19 +15,18 @@ import java.util.StringTokenizer;
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static org.ArgentumOnline.server.Constants.*;
 
 public class UserStorage {
 	private static Logger log = LogManager.getLogger();
 
 	private GameServer server;
-	private Client user;
+	private Player user;
 	
-	public UserStorage(GameServer server, Client user) {
+	public UserStorage(GameServer server, Player user) {
 		this.server = server;
 		this.user = user;
 	}
@@ -31,7 +38,7 @@ public class UserStorage {
 	 */
 	void loadUserFromStorage() 
 	throws IOException {
-		IniFile ini = new IniFile(Client.getPjFile(user.m_nick));
+		IniFile ini = new IniFile(Player.getPjFile(user.m_nick));
 		
 		loadUserInit(ini);
 		loadUserStats(ini);
@@ -48,7 +55,7 @@ public class UserStorage {
 	
 	public String loadPasswordFromStorage(String nick) 
 	throws FileNotFoundException, IOException {
-		IniFile ini = new IniFile(Client.getPjFile(user.getNick()));
+		IniFile ini = new IniFile(Player.getPjFile(user.getNick()));
 		
 		return ini.getString("INIT", "Password");
 	}
@@ -149,10 +156,12 @@ public class UserStorage {
 		user.getInv().setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
 		user.getInv().setHerramientaSlot(ini.getShort("Inventory", "HerramientaSlot"));
 
-		user.m_cantMascotas = ini.getShort("Mascotas", "NroMascotas");
+		int cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
-		for (int i = 0; i < user.m_cantMascotas; i++) {
-			user.m_mascotas[i] = server.getNpcById(ini.getShort("Mascotas", "Mas" + (i + 1)));
+		for (int i = 1; i <= cantMascotas; i++) {
+			short npcNumber = ini.getShort("Mascotas", "Mas" + i);
+			Npc pet = server.createNpc(npcNumber);
+			user.getUserPets().addPet(pet);
 		}
 
 		user.guildUser.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
@@ -395,29 +404,15 @@ public class UserStorage {
 				ini.setValue("HECHIZOS", "H" + slot, user.m_spells.getSpell(slot));
 			}
 
-			cant = user.m_cantMascotas;
-			short cad = 0;
-			for (int i = 0; i < user.m_mascotas.length; i++) {
-				// Mascota valida?
-				if (user.m_mascotas[i] != null) {
-					// Nos aseguramos que la criatura no fue invocada
-					//if (m_mascotas[i].m_contadores.TiempoExistencia == 0) {
-					if ( !user.m_mascotas[i].isSpellSpawnedPet() ) {
-						// gorlok: uso un flag, que es mejor que el contador, porque no alcanza: podría quedar en cero y confundirse.
-						cad = user.m_mascotas[i].getNPCtype();
-					} else { // Si fue invocada no la guardamos
-						cad = 0;
-						cant--;
-					}
-					ini.setValue("MASCOTAS", "MAS" + (i + 1), cad);
-				} else {
-					cant--;
+			var pets = user.getUserPets().getPets();
+			int savedCount = 0;
+			for (Npc pet: pets) {
+				// Se guardan las mascotas que no fueron invocadas
+				if ( ! pet.isSpellSpawnedPet() ) {
+					ini.setValue("MASCOTAS", "MAS" + (++savedCount), pet.getNumero());
 				}
 			}
-			if (cant < 0) {
-				cant = 0;
-			}
-			ini.setValue("MASCOTAS", "NroMascotas", cant);
+			ini.setValue("MASCOTAS", "NroMascotas", savedCount);
 
 			// Devuelve el head de muerto
 			if (!user.isAlive()) {
@@ -425,7 +420,7 @@ public class UserStorage {
 			}
 
 			// Guardar todo
-			ini.store(Client.getPjFile(user.m_nick));
+			ini.store(Player.getPjFile(user.m_nick));
 		} catch (Exception e) {
 			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
 		}

@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
@@ -93,7 +93,7 @@ public class Map implements Constants {
     Vector<MapCell> bloquesConObjetos = new Vector<MapCell>();
     
     /** Clientes en el mapa */
-    Vector<Client> m_clients = new Vector<Client>();
+    Vector<Player> m_clients = new Vector<Player>();
     
     /** NPCs en el mapa */
     Vector<Npc> m_npcs = new Vector<Npc>();
@@ -201,7 +201,7 @@ public class Map implements Constants {
 
     }
     
-    public boolean estaCliente(Client cliente) {
+    public boolean estaCliente(Player cliente) {
         return this.m_clients.contains(cliente);
     }
     
@@ -222,7 +222,7 @@ public class Map implements Constants {
     
     public List<String> getUsuarios() {
         Vector<String> usuarios = new Vector<String>();
-        for (Client cli: this.m_clients) {
+        for (Player cli: this.m_clients) {
             if (!"".equals(cli.getNick())) {
                 usuarios.add(cli.getNick());
             }
@@ -231,7 +231,7 @@ public class Map implements Constants {
     }
     
     // FIXME
-    public Client spUser(int value) {
+    public Player spUser(int value) {
     	return this.m_clients.get(value);
     }
     
@@ -462,7 +462,7 @@ public class Map implements Constants {
         }
     }
     
-    public boolean entrar(Client cliente, short x, short y) {
+    public boolean entrar(Player cliente, short x, short y) {
         if (this.m_cells[x-1][y-1].getClienteId() != 0) {
 			return false;
 		}
@@ -475,7 +475,7 @@ public class Map implements Constants {
         return true;
     }
     
-    public boolean salir(Client cliente) {
+    public boolean salir(Player cliente) {
         short x = cliente.pos().x;
         short y = cliente.pos().y;
         try {
@@ -584,7 +584,7 @@ public class Map implements Constants {
                 	
                 	//agush: fix mascotas ;-)
                 	if (npc.getPetUserOwner() != null) {
-                		Client masterUser = (npc.getPetUserOwner());
+                		Player masterUser = (npc.getPetUserOwner());
                 		masterUser.quitarMascota(npc);
                 	}
                 	
@@ -675,7 +675,7 @@ public class Map implements Constants {
     
     public void enviarATodosExc(int excepto, ServerPacketID msg, Object... params) {
         for (Object element : this.m_clients) {
-            Client cliente = (Client) element;
+            Player cliente = (Player) element;
             if (cliente.getId() != excepto) {
             	try {
             		cliente.enviar(msg, params); // FIXME: acceso concurrente, ojo.
@@ -712,7 +712,7 @@ public class Map implements Constants {
         if (y2 > 100) {
 			y2 = 100;
 		}
-        Client cliente;
+        Player cliente;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
                 if (this.m_cells[x-1][y-1].getClienteId() > 0) {
@@ -725,7 +725,7 @@ public class Map implements Constants {
         }
     }
     
-    public Client buscarEnElArea(short pos_x, short pos_y, short cli_id) {
+    public Player buscarEnElArea(short pos_x, short pos_y, short cli_id) {
         short x1 = (short) (pos_x - MinXBorder + 1);
         short x2 = (short) (pos_x + MaxXBorder + 1);
         short y1 = (short) (pos_y - MinYBorder + 1);
@@ -764,7 +764,7 @@ public class Map implements Constants {
    // }
     
     /** Enviarme los objetos del mapa. */
-    public void enviarObjetos(Client cliente) {
+    public void enviarObjetos(Player cliente) {
         for (Object element : this.bloquesConObjetos) {
             MapCell b = (MapCell) element;
             cliente.enviarObjeto(b.getObjInd(), b.getX(), b.getY());
@@ -772,7 +772,7 @@ public class Map implements Constants {
     }
     
     /** Enviarme los NPCs del mapa. */
-    public void enviarNPCs(Client cliente) {
+    public void enviarNPCs(Player cliente) {
         for (Object element : this.m_npcs) {
             Npc npc = (Npc) element;
             cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
@@ -780,7 +780,7 @@ public class Map implements Constants {
     }
     
     /** Enviarme las posiciones bloqueadas del mapa. */
-    public void enviarBQs(Client cliente) {
+    public void enviarBQs(Player cliente) {
         for (int y = 0; y < MAPA_ALTO; y++) {
             for (int x = 0; x < MAPA_ANCHO; x++) {
                 if (this.m_cells[x][y].estaModificado()) {
@@ -790,7 +790,7 @@ public class Map implements Constants {
         }
     }
     
-    public void mover(Client cliente, short x, short y) {
+    public void mover(Player cliente, short x, short y) {
         this.m_cells[cliente.pos().x-1][cliente.pos().y-1].setClienteId((short) 0);
         this.m_cells[x-1][y-1].setClienteId(cliente.getId());
         cliente.pos().set(this.nroMapa, x, y);
@@ -832,7 +832,7 @@ public class Map implements Constants {
         return (this.m_cells[x-1][y-1].getNpc() != null);
     }
     
-    public Client getCliente(short x, short y) {
+    public Player getCliente(short x, short y) {
         return this.server.getClientById(this.m_cells[x-1][y-1].getClienteId());
     }
     
@@ -856,7 +856,7 @@ public class Map implements Constants {
         }
         return null;
     }
-    public Client buscarCliente(short x, short y) {
+    public Player buscarCliente(short x, short y) {
         // Ver si hay un cliente en los alrededores...
         if (hayCliente(x, (short) (y+1))) {
             return getCliente(x, (short) (y+1));
@@ -877,7 +877,7 @@ public class Map implements Constants {
         return null;
     }
     
-    public void consultar(Client cliente, short x, short y) {
+    public void consultar(Player cliente, short x, short y) {
         // Sub LookatTile(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
     	
     	if (!cliente.pos().inRangoVision(x, y)) {
@@ -932,7 +932,7 @@ public class Map implements Constants {
         }
         
         
-        Client cli;
+        Player cli;
         if ((cli = buscarCliente(x, y)) != null) {
         	
             if (!cli.getFlags().AdminInvisible) {
@@ -971,7 +971,7 @@ public class Map implements Constants {
         return this.m_cells[x-1][y-1].getTeleport();
     }
     
-    public void accionParaRamita(short x, short y, Client cliente) {
+    public void accionParaRamita(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
             return;
@@ -1001,7 +1001,7 @@ public class Map implements Constants {
 		}
     }
     
-    public void accionParaForo(short x, short y, Client cliente) {
+    public void accionParaForo(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
             return;
@@ -1015,7 +1015,7 @@ public class Map implements Constants {
         this.server.getForumManager().enviarMensajesForo(foroId, cliente);
     }
     
-    public void accionParaPuerta(short x, short y, Client cliente) {
+    public void accionParaPuerta(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
             cliente.enviarMensaje("Estas demasiado lejos.", FontType.INFO);
             return;
@@ -1032,7 +1032,7 @@ public class Map implements Constants {
         }
     }
     
-    public void accionParaCartel(short x, short y, Client cliente) {
+    public void accionParaCartel(short x, short y, Player cliente) {
         MapObject obj = getObjeto(x, y);
         if (obj == null || obj.getInfo().ObjType != OBJTYPE_CARTELES) {
 			return;
@@ -1514,12 +1514,12 @@ public class Map implements Constants {
         }
     }    
     
-    public void construirAreaObj(Client cliente, short x, short y) {
+    public void construirAreaObj(Player cliente, short x, short y) {
     	MapObject obj = getObjeto(x,y);
     	if (obj != null) cliente.enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)obj.getInfo().GrhIndex);
     }
     
-    public void construirAreaNpc(Client cliente, Npc npc) {
+    public void construirAreaNpc(Player cliente, Npc npc) {
     	cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
     }
     

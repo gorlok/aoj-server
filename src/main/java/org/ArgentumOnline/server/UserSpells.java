@@ -50,10 +50,10 @@ public class UserSpells implements Constants {
 	
 	short m_hechizos[] = new short[MAX_HECHIZOS];
 	
-	private Client client;
+	private Player client;
 	private GameServer server;
 	
-	public UserSpells(GameServer server, Client client) {
+	public UserSpells(GameServer server, Player client) {
 		this.server = server;
 		this.client = client;
 	}
@@ -240,7 +240,7 @@ public class UserSpells implements Constants {
 
 	public boolean hechizoEstadoUsuario() {
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
-		Client targetUser = server.getClientById(client.getFlags().TargetUser);
+		Player targetUser = server.getClientById(client.getFlags().TargetUser);
 		if (hechizo.Invisibilidad == 1) {
 			targetUser.m_flags.Invisible = true;
 			//mapa.enviarATodos(MSG_NOVER, targetUser.m_id, 1);
@@ -470,7 +470,7 @@ public class UserSpells implements Constants {
 
 	public boolean hechizoPropUsuario() {
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
-		Client targetUser = server.getClientById(client.getFlags().TargetUser);
+		Player targetUser = server.getClientById(client.getFlags().TargetUser);
 		// Hambre
 		if (hechizo.SubeHam == 1) {
 			// Aumentar hambre
@@ -759,7 +759,7 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoInvocacion() {
-		if (client.m_cantMascotas >= MAX_MASCOTAS_USER) {
+		if (client.getUserPets().isFullPets()) {
 			client.enviarMensaje("No puedes invocar más mascotas!", FontType.INFO);
 			return false;
 		}
@@ -794,13 +794,13 @@ public class UserSpells implements Constants {
 			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.updateUserStats();
+			client.sendUpdateUserStats();
 		}
 	}
 
 	private void handleHechizoUsuario(Spell hechizo) {
 		boolean exito = false;
-		Client target = server.getClientById(client.getFlags().TargetUser);
+		Player target = server.getClientById(client.getFlags().TargetUser);
 		if (target == null || target.esGM()) {
 			return;
 		}
@@ -816,7 +816,7 @@ public class UserSpells implements Constants {
 			client.subirSkill(Skill.SKILL_Magia);
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.updateUserStats();
+			client.sendUpdateUserStats();
 			client.getFlags().TargetUser = 0;
 		}
 	}
@@ -837,7 +837,7 @@ public class UserSpells implements Constants {
 			client.getFlags().TargetNpc = 0;
 			client.getEstads().quitarMana(hechizo.ManaRequerido);
 			client.getEstads().quitarStamina(hechizo.StaRequerida);
-			client.updateUserStats();
+			client.sendUpdateUserStats();
 		}
 	}
 
@@ -855,7 +855,7 @@ public class UserSpells implements Constants {
 		}
 		if (client.getFlags().TargetUser > 0) {
 			if (client.getId() != client.getFlags().TargetUser) {
-				Client target = server.getClientById(client.getFlags().TargetUser);
+				Player target = server.getClientById(client.getFlags().TargetUser);
 				client.enviarMensaje(hechizo.HechiceroMsg + " " + target.m_nick,
 					FontType.FIGHT);
 				target.enviarMensaje(client.getNick() + " " + hechizo.TargetMsg,

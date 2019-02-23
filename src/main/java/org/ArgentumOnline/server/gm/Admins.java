@@ -1,4 +1,4 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.gm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,8 +9,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.Factions.FactionArmors;
-import org.ArgentumOnline.server.gm.GmRequest;
+import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.Pos;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.FontType;
@@ -22,14 +28,14 @@ import org.apache.logging.log4j.Logger;
 public class Admins {
 	private static Logger log = LogManager.getLogger();
 	
-    private List<String> m_dioses = new ArrayList<>();
-    private List<String> m_semidioses = new ArrayList<>();
-    private List<String> m_consejeros = new ArrayList<>();
+    private List<String> gods = new ArrayList<>();
+    private List<String> demigods = new ArrayList<>();
+    private List<String> advisers = new ArrayList<>();
     
-    private List<String> m_nombresInvalidos = new ArrayList<>();
+    private List<String> invalidNames = new ArrayList<>();
     
-    private List<GmRequest> m_pedidosAyudaGM = new ArrayList<>();
-    private List<String> m_bannedIPs = new ArrayList<>();
+    private List<GmRequest> helpRequests = new ArrayList<>();
+    private List<String> bannedIPs = new ArrayList<>();
 
     private short [] m_spawnList;
     private String [] m_spawnListNames;
@@ -45,19 +51,19 @@ public class Admins {
 	}
 
     public boolean esDios(String name) {
-        return this.m_dioses.contains(name.toUpperCase());
+        return this.gods.contains(name.toUpperCase());
     }
     
     public boolean esSemiDios(String name) {
-        return this.m_semidioses.contains(name.toUpperCase());
+        return this.demigods.contains(name.toUpperCase());
     }
     
     public boolean esConsejero(String name) {
-        return this.m_consejeros.contains(name.toUpperCase());
+        return this.advisers.contains(name.toUpperCase());
     }
     
     public boolean nombrePermitido(String nombre) {
-        return (!this.m_nombresInvalidos.contains(nombre.toUpperCase()));
+        return (!this.invalidNames.contains(nombre.toUpperCase()));
     }
     
     public short[] getSpawnList() {
@@ -88,7 +94,7 @@ public class Admins {
     
     public void loadInvalidNamesList() {
     	log.trace("loading invalid names list");
-        this.m_nombresInvalidos.clear();
+        this.invalidNames.clear();
         try {
             BufferedReader f = new BufferedReader(
                 new InputStreamReader(
@@ -100,7 +106,7 @@ public class Admins {
 				}
                 str = str.trim().toUpperCase();
                 if (!"".equals(str)) {
-					this.m_nombresInvalidos.add(str);
+					this.invalidNames.add(str);
 				}
             } finally {
                 f.close();
@@ -118,9 +124,9 @@ public class Admins {
     	log.trace("loading admins");
         try {
             // Limpiar las listas de admins.
-            this.m_dioses.clear();
-            this.m_semidioses.clear();
-            this.m_consejeros.clear();
+            this.gods.clear();
+            this.demigods.clear();
+            this.advisers.clear();
             
             // Cargar dioses:
             IniFile ini = new IniFile(Constants.DATDIR + java.io.File.separator + "Server.ini");
@@ -128,7 +134,7 @@ public class Admins {
             for (int i = 1; i <= cant; i++) {
                 String nombre = ini.getString("DIOSES", "Dios"+i, "").toUpperCase();
                 if (!"".equals(nombre)) {
-					this.m_dioses.add(nombre);
+					this.gods.add(nombre);
 				}
             }
             // Cargar semidioses:
@@ -136,7 +142,7 @@ public class Admins {
             for (int i = 1; i <= cant; i++) {
                 String nombre = ini.getString("SEMIDIOSES", "Semidios"+i, "").toUpperCase();
                 if (!"".equals(nombre)) {
-					this.m_semidioses.add(nombre);
+					this.demigods.add(nombre);
 				}
             }
             // Cargar consejeros:
@@ -144,7 +150,7 @@ public class Admins {
             for (int i = 1; i <= cant; i++) {
                 String nombre = ini.getString("CONSEJEROS", "Consejero"+i, "").toUpperCase();
                 if (!"".equals(nombre)) {
-					this.m_consejeros.add(nombre);
+					this.advisers.add(nombre);
 				}
             }
             
@@ -159,10 +165,10 @@ public class Admins {
     }
 
     public List<GmRequest> getPedidosAyudaGM() {
-        return this.m_pedidosAyudaGM;
+        return this.helpRequests;
     }
     
-	public void clearAllHelpRequestToGm(Client admin) {
+	public void clearAllHelpRequestToGm(Player admin) {
 		// TODO
 		// Comando /BORRAR SOS
 		// Comando para borrar todos pedidos /GM pendientes
@@ -172,10 +178,10 @@ public class Admins {
 	}
 
     public List<String> getBannedIPs() {
-        return this.m_bannedIPs;
+        return this.bannedIPs;
     }
 
-	public void doBanIP(Client admin, String s) {
+	public void doBanIP(Player admin, String s) {
 		// Ban x IP
 		// Comando /BANIP
 		var usuario = server.getUsuario(s);
@@ -184,8 +190,8 @@ public class Admins {
 			Log.logGM(admin.getNick(), "hizo /BanIP " + s);
 			ip = s;
 		} else {
-			Log.logGM(admin.getNick(), "hizo /BanIP " + s + " - " + usuario.m_ip);
-			ip = usuario.m_ip;
+			Log.logGM(admin.getNick(), "hizo /BanIP " + s + " - " + usuario.getIP());
+			ip = usuario.getIP();
 		}
 		var bannedIPs = getBannedIPs();
 		if (bannedIPs.contains(ip)) {
@@ -195,18 +201,18 @@ public class Admins {
 		bannedIPs.add(ip);
 		server.enviarMensajeAAdmins(admin.getNick() + " Baneo la IP " + ip, FontType.FIGHT);
 		if (usuario != null) {
-			server.logBan(usuario.m_nick, admin.getNick(), "Ban por IP desde Nick");
-			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.m_nick + ".", FontType.FIGHT);
-			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.m_nick + ".", FontType.FIGHT);
+			server.logBan(usuario.getNick(), admin.getNick(), "Ban por IP desde Nick");
+			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FIGHT);
+			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FIGHT);
 			// Ponemos el flag de ban a 1
 			usuario.getFlags().Ban = true;
-			Log.logGM(admin.getNick(), "Echo a " + usuario.m_nick);
-			Log.logGM(admin.getNick(), "BAN a " + usuario.m_nick);
+			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
+			Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
 			usuario.doSALIR();
 		}
 	}
 
-	public void doUnbanIP(Client admin, String s) {
+	public void doUnbanIP(Player admin, String s) {
 		// Desbanea una IP
 		// Comando /UNBANIP
 		Log.logGM(admin.getNick(), "/UNBANIP " + s);
@@ -219,7 +225,7 @@ public class Admins {
 		}
 	}
 
-	public void doPedirAyudaAlGM(Client user, String s) {
+	public void doPedirAyudaAlGM(Player user, String s) {
 		// Comando /GM
 		// Pedir ayuda a los GMs.
 		var pedidos = getPedidosAyudaGM();
@@ -237,13 +243,13 @@ public class Admins {
 		}
 	}
 
-	public void doGuardarComentario(Client admin, String s) {
+	public void doGuardarComentario(Player admin, String s) {
 		// Comando /REM comentario
 		Log.logGM(admin.getNick(), "Hace el comentario: " + s);
 		admin.enviarMensaje("Comentario salvado...", FontType.INFO);
 	}
 
-	public void doMostrarAyuda(Client admin) {
+	public void doMostrarAyuda(Player admin) {
 		// Comando /SHOW SOS
 		for (var pedido : getPedidosAyudaGM()) {
 			// admin.enviar("RSOS" + pedido.usuario + ": " + pedido.msg);
@@ -252,38 +258,38 @@ public class Admins {
 		// admin.enviar(MSG_MSOS);
 	}
 
-	public void doFinAyuda(Client admin, String s) {
+	public void doFinAyuda(Player admin, String s) {
 		// Comando SOSDONE
 		// String nombre = s.substring(0, s.indexOf(':'));
 		getPedidosAyudaGM().remove(new GmRequest(s, ""));
 	}
 
-	public void doIrAUsuario(Client admin, String s) {
+	public void doIrAUsuario(Player admin, String s) {
 		// Comando /IRA
 		if (s.length() == 0) {
 			return;
 		}
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		if (admin.warpUser(usuario.m_pos.map, usuario.m_pos.x, usuario.m_pos.y, true)) {
+		if (admin.warpUser(usuario.pos().map, usuario.pos().x, usuario.pos().y, true)) {
 			if (!admin.getFlags().AdminInvisible) {
 				usuario.enviarMensaje(admin.getNick() + " se ha trasportado hacia donde te encuentras.", FontType.INFO);
 			}
-			Log.logGM(admin.getNick(), "Hizo un /IRA " + usuario.m_nick + " mapa=" + usuario.m_pos.map + " x=" + usuario.m_pos.x
-					+ " y=" + usuario.m_pos.y);
+			Log.logGM(admin.getNick(), "Hizo un /IRA " + usuario.getNick() + " mapa=" + usuario.pos().map + " x=" + usuario.pos().x
+					+ " y=" + usuario.pos().y);
 		}
 	}
 
-	public void doHacerInvisible(Client admin) {
+	public void doHacerInvisible(Player admin) {
 		// Comando /INVISIBLE
 		doAdminInvisible(admin);
 		Log.logGM(admin.getNick(), "Hizo un /INVISIBLE");
 	}
 
-	private void doAdminInvisible(Client admin) {
+	private void doAdminInvisible(Player admin) {
 		if (!admin.getFlags().AdminInvisible) {
 			admin.getFlags().AdminInvisible = true;
 			admin.getFlags().Invisible = true;
@@ -297,10 +303,10 @@ public class Admins {
 			admin.getInfoChar().m_cuerpo = admin.getFlags().OldBody;
 			admin.getInfoChar().m_cabeza = admin.getFlags().OldHead;
 		}
-		admin.enviarCP();
+		admin.sendCharacterChange();
 	}
 
-	public void sendSpawnCreatureList(Client admin) {
+	public void sendSpawnCreatureList(Player admin) {
 		// Crear criatura
 		// Comando /CC
 		List<String> params = new LinkedList<String>();
@@ -311,7 +317,7 @@ public class Admins {
 		// enviar(MSG_SPL, params.toArray());
 	}
 
-	public void doSpawnCreature(Client admin, short index) {
+	public void doSpawnCreature(Player admin, short index) {
 		// Spawn una criatura !!!!!
 		// SPA
 		short[] spawnList = getSpawnList();
@@ -321,7 +327,7 @@ public class Admins {
 		}
 	}
 	
-	public void doArmaduraImperial1(Client admin, short armadura) {
+	public void doArmaduraImperial1(Player admin, short armadura) {
 		// Comando /AI1
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1);
@@ -330,7 +336,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraImperial2(Client admin, short armadura) {
+	public void doArmaduraImperial2(Player admin, short armadura) {
 		// Comando /AI2
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2);
@@ -339,7 +345,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraImperial3(Client admin, short armadura) {
+	public void doArmaduraImperial3(Player admin, short armadura) {
 		// Comando /AI3
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3);
@@ -348,7 +354,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraImperial4(Client admin, short armadura) {
+	public void doArmaduraImperial4(Player admin, short armadura) {
 		// Comando /AI4
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL);
@@ -357,7 +363,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraImperial5(Client admin, short armadura) {
+	public void doArmaduraImperial5(Player admin, short armadura) {
 		// Comando /AI5
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
@@ -366,7 +372,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraCaos1(Client admin, short armadura) {
+	public void doArmaduraCaos1(Player admin, short armadura) {
 		// Comando /AC1
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1);
@@ -375,7 +381,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraCaos2(Client admin, short armadura) {
+	public void doArmaduraCaos2(Player admin, short armadura) {
 		// Comando /AC2
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2);
@@ -384,7 +390,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraCaos3(Client admin, short armadura) {
+	public void doArmaduraCaos3(Player admin, short armadura) {
 		// Comando /AC3
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3);
@@ -393,7 +399,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraCaos4(Client admin, short armadura) {
+	public void doArmaduraCaos4(Player admin, short armadura) {
 		// Comando /AC4
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS);
@@ -402,7 +408,7 @@ public class Admins {
 		}
 	}
 
-	public void doArmaduraCaos5(Client admin, short armadura) {
+	public void doArmaduraCaos5(Player admin, short armadura) {
 		// Comando /AC5
 		if (armadura < 0) {
 			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
@@ -411,7 +417,7 @@ public class Admins {
 		}
 	}
 
-	public void doUsuariosEnMapa(Client admin) {
+	public void doUsuariosEnMapa(Player admin) {
 		// Comando /ONLINEMAP
 		// Devuelve la lista de usuarios en el mapa.
 		Map mapa = server.getMapa(admin.pos().map);
@@ -430,7 +436,7 @@ public class Admins {
 		admin.enviarMensaje("Usuarios en el mapa: " + msg, FontType.INFO);
 	}
 
-	public void doUsuariosTrabajando(Client admin) {
+	public void doUsuariosTrabajando(Player admin) {
 		// Comando /TRABAJANDO
 		// Devuelve la lista de usuarios trabajando.
 		var msg = new StringBuilder();
@@ -445,12 +451,12 @@ public class Admins {
 		admin.enviarMensaje("Usuarios trabajando: " + msg, FontType.INFO);
 	}
 
-	public void doPanelGM(Client admin) {
+	public void doPanelGM(Player admin) {
 		// Comando /PANELGM
 		// enviar(MSG_ABPANEL);
 	}
 
-	public void doListaUsuarios(Client admin) {
+	public void doListaUsuarios(Player admin) {
 		// Comando LISTUSU
 		var msg = new StringBuilder();
 		for (String usuario : server.getUsuariosConectados()) {
@@ -463,25 +469,25 @@ public class Admins {
 		// enviar(MSG_LISTUSU, msg.toString());
 	}
     
-	public void doPASSDAY(Client admin) {
+	public void doPASSDAY(Player admin) {
 		// Comando /PASSDAY
 		Log.logGM(admin.getNick(), "/PASSDAY");
 		server.getGuildMngr().dayElapsed();
 	}
 
-	public void doBackup(Client admin) {
+	public void doBackup(Player admin) {
 		// Comando /DOBACKUP
 		// Hacer un backup del mundo.
 		server.doBackup();
 	}
 
-	public void doGrabar(Client admin) {
+	public void doGrabar(Player admin) {
 		// Comando /GRABAR
 		// Guardar todos los usuarios conectados.
 		server.guardarUsuarios();
 	}
 
-	public void doApagar(Client admin) {
+	public void doApagar(Player admin) {
 		// Comando /APAGAR
 		log.info("SERVIDOR APAGADO POR " + admin.getNick());
 		Log.logGM(admin.getNick(), "APAGO EL SERVIDOR");
@@ -497,7 +503,7 @@ public class Admins {
 		}
 	}
 
-	public void doSystemMsg(Client admin, String msg) {
+	public void doSystemMsg(Player admin, String msg) {
 		// Mensaje del sistema
 		// Comando /SMSG
 		msg = msg.trim();
@@ -505,17 +511,17 @@ public class Admins {
 		// server.enviarATodos(MSG_SYSMSG, s);
 	}
 
-	public void doNick2IP(Client admin, String userName) {
+	public void doNick2IP(Player admin, String userName) {
 		// Comando /NICK2IP
-		Client usuario = server.getUsuario(userName);
+		Player usuario = server.getUsuario(userName);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		admin.enviarMensaje("El ip de " + userName + " es " + usuario.m_ip, FontType.INFO);
+		admin.enviarMensaje("El ip de " + userName + " es " + usuario.getIP(), FontType.INFO);
 	}
 
-	public void doCrearTeleport(Client admin, short dest_mapa, short dest_x, short dest_y) {
+	public void doCrearTeleport(Player admin, short dest_mapa, short dest_x, short dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
 		Map mapa = server.getMapa(admin.pos().map);
@@ -544,7 +550,7 @@ public class Admins {
 		admin.enviarMensaje("¡Teleport creado!", FontType.INFO);
 	}
 
-	public void doDestruirTeleport(Client admin) {
+	public void doDestruirTeleport(Player admin) {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
 		if (admin.getFlags().TargetMap == 0 || admin.getFlags().TargetX == 0 || admin.getFlags().TargetY == 0) {
@@ -567,7 +573,7 @@ public class Admins {
 		mapa.destruirTeleport(x, y);
 	}
 
-	public void doMataNpc(Client admin) {
+	public void doMataNpc(Player admin) {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
 		Npc npc = server.getNpcById(admin.getFlags().TargetNpc);
@@ -579,7 +585,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/MATA " + npc);
 	}
 
-	public void doCrearCriatura(Client admin, short indiceNpc) {
+	public void doCrearCriatura(Player admin, short indiceNpc) {
 		// Crear criatura, toma directamente el indice
 		// Comando /ACC indiceNpc
 		if (server.getNpcById(indiceNpc) != null) {
@@ -589,7 +595,7 @@ public class Admins {
 		}
 	}
 
-	public void doCrearCriaturaRespawn(Client admin, short indiceNpc) {
+	public void doCrearCriaturaRespawn(Player admin, short indiceNpc) {
 		// Crear criatura con respawn, toma directamente el indice
 		// Comando /RACC indiceNpc
 		if (server.getNpcById(indiceNpc) != null) {
@@ -600,10 +606,10 @@ public class Admins {
 	}
 
 
-	public void doMascotas(Client admin, String s) {
+	public void doMascotas(Player admin, String s) {
 		// Comando /MASCOTAS
 		// Informa cantidad, nombre y ubicación de las mascotas.
-		Client usuario;
+		Player usuario;
 		if (!"".equals(s)) {
 			usuario = server.getUsuario(s);
 		} else {
@@ -613,24 +619,22 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		admin.enviarMensaje(usuario.getNick() + " tiene " + usuario.m_cantMascotas + " mascotas.", FontType.DEBUG);
-		for (int i = 0; i < usuario.m_mascotas.length; i++) {
-			if (usuario.m_mascotas[i] != null) {
-				admin.enviarMensaje(
-						" mascota " + usuario.m_mascotas[i].getName() + "[" + (i + 1) + "] esta en "
-						+ usuario.m_mascotas[i].pos() + " tiempo=" + usuario.m_mascotas[i].getContadores().TiempoExistencia,
-						FontType.DEBUG);
-			}
-		}
+		var pets = usuario.getUserPets().getPets();
+		
+		admin.enviarMensaje(usuario.getNick() + " tiene " + pets.size() + " mascotas.", FontType.DEBUG);
+		pets.forEach(pet -> {
+			admin.enviarMensaje(" mascota " + pet.getName() + " esta en " + pet.pos() + " tiempo=" + pet.getContadores().TiempoExistencia,
+					FontType.DEBUG);
+		});
 	}
 
-	public void doUptime(Client admin) {
+	public void doUptime(Player admin) {
 		// Comando /UPTIME
 		admin.enviarMensaje("Uptime: " + server.calculateUptime(), FontType.INFO);
 	}
 	
 
-	public void doModMapInfo(Client admin, String accion, int valor) {
+	public void doModMapInfo(Player admin, String accion, int valor) {
 		// Comando /MODMAPINFO
 		if ("".equals(accion)) {
 			admin.enviarMensaje("Parámetros inválidos!", FontType.INFO);
@@ -656,7 +660,7 @@ public class Admins {
 		}
 	}
 
-	public void doModificarCaracter(Client admin, String nick, String accion, int valor) {
+	public void doModificarCaracter(Player admin, String nick, String accion, int valor) {
 		// MODIFICA CARACTER
 		// Comando /MOD
 		Log.logGM(admin.getNick(), "/MOD " + nick + " " + accion + " " + valor);
@@ -664,15 +668,15 @@ public class Admins {
 			admin.enviarMensaje("Parámetros inválidos!", FontType.INFO);
 			return;
 		}
-		Client usuario = server.getUsuario(nick);
+		Player usuario = server.getUsuario(nick);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
 		if (accion.equalsIgnoreCase("ORO")) {
 			if (valor < 95001) {
-				usuario.m_estads.setGold(valor);
-				usuario.updateUserStats();
+				usuario.getEstads().setGold(valor);
+				usuario.sendUpdateUserStats();
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
@@ -680,32 +684,32 @@ public class Admins {
 			}
 		} else if (accion.equalsIgnoreCase("EXP")) {
 			if (valor < 1000000) {
-				usuario.m_estads.Exp += valor;
+				usuario.getEstads().Exp += valor;
 				usuario.checkUserLevel();
-				usuario.updateUserStats();
+				usuario.sendUpdateUserStats();
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
 						FontType.INFO);
 			}
 		} else if (accion.equalsIgnoreCase("BODY")) {
-			usuario.m_infoChar.m_cuerpo = (short) valor;
-			usuario.enviarCP();
+			usuario.getInfoChar().m_cuerpo = (short) valor;
+			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("HEAD")) {
-			usuario.m_infoChar.m_cabeza = (short) valor;
-			usuario.enviarCP();
+			usuario.getInfoChar().m_cabeza = (short) valor;
+			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("CRI")) {
-			usuario.m_faccion.CriminalesMatados = valor;
+			usuario.getFaccion().CriminalesMatados = valor;
 		} else if (accion.equalsIgnoreCase("CIU")) {
-			usuario.m_faccion.CiudadanosMatados = valor;
+			usuario.getFaccion().CiudadanosMatados = valor;
 		} else if (accion.equalsIgnoreCase("LEVEL")) {
-			usuario.m_estads.ELV = valor;
+			usuario.getEstads().ELV = valor;
 		} else {
 			admin.enviarMensaje("Comando no permitido o inválido.", FontType.INFO);
 		}
 	}
 
-	public void doCrearItem(Client admin, short objid) {
+	public void doCrearItem(Player admin, short objid) {
 		// Crear Item
 		// Comando /CI
 		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
@@ -724,7 +728,7 @@ public class Admins {
 		}
 	}
 
-	public void doGuardaMapa(Client admin) {
+	public void doGuardaMapa(Player admin) {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
 		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.pos());
@@ -735,7 +739,7 @@ public class Admins {
 		}
 	}
 
-	public void doDestObj(Client admin) {
+	public void doDestObj(Player admin) {
 		// Destruir el objeto de la posición actual.
 		// Comando /DEST
 		Log.logGM(admin.getNick(), "/DEST " + admin.pos());
@@ -745,7 +749,7 @@ public class Admins {
 		}
 	}
 
-	public void doBloqPos(Client admin) {
+	public void doBloqPos(Player admin) {
 		// Bloquear la posición actual.
 		// Comando /BLOQ
 		Log.logGM(admin.getNick(), "/BLOQ " + admin.pos());
@@ -761,7 +765,7 @@ public class Admins {
 		}
 	}
 
-	public void doMassKill(Client admin) {
+	public void doMassKill(Player admin) {
 		// Quita todos los NPCs del area.
 		// Comando /MASSKILL
 		Log.logGM(admin.getNick(), "/MASSKILL " + admin.pos());
@@ -771,7 +775,7 @@ public class Admins {
 		}
 	}
 
-	public void doTrigger(Client admin, byte t) {
+	public void doTrigger(Player admin, byte t) {
 		// Consulta o cambia el trigger de la posición actual.
 		// Comando /TRIGGER
 		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.pos());
@@ -781,7 +785,7 @@ public class Admins {
 				" en " + admin.pos(), FontType.INFO);
 	}
 
-	public void doMassDest(Client admin) {
+	public void doMassDest(Player admin) {
 		// Quita todos los objetos del area
 		// Comando /MASSDEST
 		Map mapa = server.getMapa(admin.pos().map);
@@ -792,7 +796,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/MASSDEST ");
 	}
 
-	public void doEcharTodosPjs(Client admin) {
+	public void doEcharTodosPjs(Player admin) {
 		// Comando /ECHARTODOSPJS
 		// Comando para echar a todos los pjs conectados no privilegiados.
 		server.echarPjsNoPrivilegiados();
@@ -800,13 +804,13 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/ECHARTODOSPJS");
 	}
 
-	public void doShowInt(Client admin) {
+	public void doShowInt(Player admin) {
 		// Comando /SHOW INT
 		// Comando para abrir la ventana de config de intervalos en el server.
 		admin.enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
 	}
 
-	public void doIP2Nick(Client admin, String s) {
+	public void doIP2Nick(Player admin, String s) {
 		// Comando /IP2NICK
 		List<String> usuarios = server.getUsuariosConIP(s);
 		if (usuarios.isEmpty()) {
@@ -816,7 +820,7 @@ public class Admins {
 		}
 	}
 
-	public void doResetInv(Client admin) {
+	public void doResetInv(Player admin) {
 		// Resetea el inventario
 		// Comando /RESETINV
 		if (admin.getFlags().TargetNpc == 0) {
@@ -828,12 +832,12 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/RESETINV " + npc.toString());
 	}
 
-	public void doLimpiarMundo(Client admin) {
+	public void doLimpiarMundo(Player admin) {
 		// Comando /LIMPIAR
 		server.limpiarMundo(admin);
 	}
 
-	public void doRMSG(Client admin, String s) {
+	public void doRMSG(Player admin, String s) {
 		// Mensaje del servidor
 		// Comando /RMSG
 		Log.logGM(admin.getNick(), "Mensaje Broadcast: " + s);
@@ -842,54 +846,54 @@ public class Admins {
 		}
 	}
 
-	public void doSUM(Client admin, String s) {
+	public void doSUM(Player admin, String s) {
 		// Comando /SUM usuario
 		if (s.length() == 0) {
 			return;
 		}
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("El usuario esta offline.", FontType.INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "Hizo /SUM " + s);
 		if (usuario.warpUser(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
-			admin.enviarMensaje(usuario.m_nick + " ha sido trasportado.", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " ha sido trasportado.", FontType.INFO);
 			usuario.enviarMensaje("Has sido trasportado.", FontType.INFO);
-			Log.logGM(admin.getNick(), "/SUM " + usuario.m_nick + 
+			Log.logGM(admin.getNick(), "/SUM " + usuario.getNick() + 
 					" Map:" + admin.pos().map + " X:" + admin.pos().x + " Y:" + admin.pos().y);
 		}
 	}
 
-	public void doBan(Client admin, String nombre, String motivo) {
+	public void doBan(Player admin, String nombre, String motivo) {
 		// Comando /BAN
-		Client usuario = server.getUsuario(nombre);
+		Player usuario = server.getUsuario(nombre);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		if (usuario.m_flags.Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/BAN " + nombre + " por: " + motivo);
-		server.logBan(usuario.m_nick, admin.getNick(), motivo);
-		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.m_nick + ".", FontType.FIGHT);
-		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.m_nick + ".", FontType.FIGHT);
+		server.logBan(usuario.getNick(), admin.getNick(), motivo);
+		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FIGHT);
 		// Ponemos el flag de ban a 1
-		usuario.m_flags.Ban = true;
+		usuario.getFlags().Ban = true;
 		if (usuario.esGM()) {
 			admin.getFlags().Ban = true;
 			admin.doSALIR();
 			server.enviarMensajeAAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
 					FontType.FIGHT);
 		}
-		Log.logGM(admin.getNick(), "Echo a " + usuario.m_nick);
-		Log.logGM(admin.getNick(), "BAN a " + usuario.m_nick);
+		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
+		Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
 		usuario.doSALIR();
 	}
 
-	public void doUnban(Client admin, String s) {
+	public void doUnban(Player admin, String s) {
 		// Comando /UNBAN
 		Log.logGM(admin.getNick(), "/UNBAN " + s);
 		server.unBan(s);
@@ -897,26 +901,26 @@ public class Admins {
 		admin.enviarMensaje(s + " unbanned.", FontType.INFO);
 	}
 
-	public void doEchar(Client admin, String s) {
+	public void doEchar(Player admin, String s) {
 		// Echar usuario
 		// Comando /ECHAR
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + s);
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		if (usuario.m_flags.Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
-		// server.enviarATodos(MSG_TALK, m_nick + " echo a "
-		// + usuario.m_nick + ".", FontType.INFO.toString());
+		// server.enviarATodos(MSG_TALK, getNick() + " echo a "
+		// + usuario.getNick() + ".", FontType.INFO.toString());
 		// usuario.doSALIR();
-		Log.logGM(admin.getNick(), "Echó a " + usuario.m_nick);
+		Log.logGM(admin.getNick(), "Echó a " + usuario.getNick());
 	}
 
-	public void doEncarcelar(Client admin, String s) {
+	public void doEncarcelar(Player admin, String s) {
 		// Comando /CARCEL
 		Log.logGM(admin.getNick(), "quizo /CARCEL " + s);
 		StringTokenizer st = new StringTokenizer(s, " ");
@@ -929,16 +933,16 @@ public class Admins {
 			admin.enviarMensaje("Error en el comando. Formato: /CARCEL minutos usuario", FontType.WARNING);
 			return;
 		}
-		Client usuario = server.getUsuario(nombre);
+		Player usuario = server.getUsuario(nombre);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		if (usuario.m_flags.Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
 			return;
 		}
-		if (usuario.m_counters.Pena > 0) {
+		if (usuario.getCounters().Pena > 0) {
 			admin.enviarMensaje("El usuario ya esta en la carcel. Le quedan " + admin.getCounters().Pena + " minutos.",
 					FontType.WARNING);
 			return;
@@ -950,17 +954,17 @@ public class Admins {
 		usuario.encarcelar(minutos, admin.getNick());
 	}
 
-	public void doPerdonar(Client admin, String s) {
+	public void doPerdonar(Player admin, String s) {
 		// Comando /PERDON usuario
 		// Perdonar a un usuario. Volverlo cuidadano.
 		Log.logGM(admin.getNick(), "quizo /PERDON " + s);
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
 		if (usuario.esNewbie()) {
-			if (usuario.m_reputacion.esIntachable()) {
+			if (usuario.getReputacion().esIntachable()) {
 				admin.enviarMensaje("No hay que perdonarle a " + usuario.getNick(), FontType.INFO);
 				return;
 			}
@@ -973,16 +977,16 @@ public class Admins {
 		}
 	}
 
-	public void doCondenar(Client admin, String s) {
+	public void doCondenar(Player admin, String s) {
 		// Comando /CONDEN usuario
 		// Condenar a un usuario. Volverlo criminal.
 		Log.logGM(admin.getNick(), "quizo /CONDEN " + s);
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
-		if (usuario.m_reputacion.esCriminal()) {
+		if (usuario.getReputacion().esCriminal()) {
 			admin.enviarMensaje(usuario.getNick() + " ya es un criminal condenado.", FontType.INFO);
 			return;
 		}
@@ -991,10 +995,10 @@ public class Admins {
 		usuario.enviarMensaje("Los dioses te han condenado por tus acciones.", FontType.INFO);
 	}
 
-	public void doRevivir(Client admin, String s) {
+	public void doRevivir(Player admin, String s) {
 		// Comando /REVIVIR
 		Log.logGM(admin.getNick(), "quizo /REVIVIR " + s);
-		Client usuario;
+		Player usuario;
 		if (!s.equalsIgnoreCase("YO") && s.length() > 0) {
 			usuario = server.getUsuario(s);
 			if (usuario == null) {
@@ -1005,15 +1009,15 @@ public class Admins {
 			usuario = admin;
 		}
 		if (usuario.isAlive()) {
-			admin.enviarMensaje(usuario.m_nick + " no esta muerto!", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " no esta muerto!", FontType.INFO);
 		} else {
 			usuario.revivirUsuario();
 			usuario.enviarMensaje(admin.getNick() + " te ha resucitado.", FontType.INFO);
-			Log.logGM(admin.getNick(), "Resucitó a " + usuario.m_nick);
+			Log.logGM(admin.getNick(), "Resucitó a " + usuario.getNick());
 		}
 	}
 
-	public void doONLINEGM(Client admin) {
+	public void doONLINEGM(Player admin) {
 		// Comando /ONLINEGM
 		if (!admin.esGM()) {
 			return;
@@ -1033,65 +1037,65 @@ public class Admins {
 		}
 	}
 
-	public void doInvUser(Client admin, String s) {
+	public void doInvUser(Player admin, String s) {
 		// Inventario del usuario.
 		// Comando /INV
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/INV " + s);
 
-		admin.enviarMensaje(usuario.m_nick, FontType.INFO);
-		admin.enviarMensaje(" Tiene " + usuario.m_inv.getCantObjs() + " objetos.", FontType.INFO);
-		for (int i = 1; i <= usuario.m_inv.size(); i++) {
-			if (usuario.m_inv.getObjeto(i).objid > 0) {
-				ObjectInfo info = findObj(usuario.m_inv.getObjeto(i).objid);
-				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_inv.getObjeto(i).cant,
+		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
+		admin.enviarMensaje(" Tiene " + usuario.getInv().getCantObjs() + " objetos.", FontType.INFO);
+		for (int i = 1; i <= usuario.getInv().size(); i++) {
+			if (usuario.getInv().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(usuario.getInv().getObjeto(i).objid);
+				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getInv().getObjeto(i).cant,
 						FontType.INFO);
 			}
 		}
 	}
 
-	public void doBovUser(Client admin, String s) {
+	public void doBovUser(Player admin, String s) {
 		// Boveda del usuario
 		// Comando /BOV
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/BOV " + s);
 
-		admin.enviarMensaje(usuario.m_nick, FontType.INFO);
-		admin.enviarMensaje(" Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
-		for (int i = 1; i <= usuario.m_bancoInv.size(); i++) {
-			if (usuario.m_bancoInv.getObjeto(i).objid > 0) {
-				ObjectInfo info = findObj(usuario.m_bancoInv.getObjeto(i).objid);
-				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.m_bancoInv.getObjeto(i).cant,
+		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
+		admin.enviarMensaje(" Tiene " + usuario.getBankInventory().getCantObjs() + " objetos.", FontType.INFO);
+		for (int i = 1; i <= usuario.getBankInventory().size(); i++) {
+			if (usuario.getBankInventory().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(usuario.getBankInventory().getObjeto(i).objid);
+				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getBankInventory().getObjeto(i).cant,
 						FontType.INFO);
 			}
 		}
 	}
 
-	public void doSkillsUser(Client admin, String s) {
+	public void doSkillsUser(Player admin, String s) {
 		// Skills del usuario
 		// Comando /SKILLS
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/SKILLS " + s);
 
-		admin.enviarMensaje(usuario.m_nick, FontType.INFO);
+		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.m_estads.userSkills[i], FontType.INFO);
+			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.getEstads().userSkills[i], FontType.INFO);
 		}
 	}
 
-	public void doMensajeALosGM(Client admin, String s) {
+	public void doMensajeALosGM(Player admin, String s) {
 		// Mensaje para los GMs
 		if (!admin.esGM()) {
 			return;
@@ -1102,7 +1106,7 @@ public class Admins {
 		}
 	}
 
-	public void doEnviarHora(Client admin) {
+	public void doEnviarHora(Player admin) {
 		// Comando /HORA
 		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
 		java.util.Date ahora = new java.util.Date();
@@ -1112,11 +1116,11 @@ public class Admins {
 		admin.enviarMensaje("Hora: " + hora + " Fecha: " + fecha, FontType.INFO);
 	}
 
-	public void doDonde(Client admin, String s) {
+	public void doDonde(Player admin, String s) {
 		// Comando /DONDE
 		// ¿Donde esta fulano?
 		s = s.trim();
-		Client usuario;
+		Player usuario;
 		if (s.length() == 0) {
 			usuario = admin;
 		} else {
@@ -1125,13 +1129,13 @@ public class Admins {
 				admin.enviarMensaje("Usuario offline.", FontType.INFO);
 				return;
 			}
-			Log.logGM(admin.getNick(), "consultó /DONDE " + usuario.m_nick);
+			Log.logGM(admin.getNick(), "consultó /DONDE " + usuario.getNick());
 		}
-		admin.enviarMensaje("Ubicacion de " + usuario.m_nick + ": " + usuario.m_pos.map + ", " + usuario.m_pos.x + ", "
-				+ usuario.m_pos.y + ".", FontType.INFO);
+		admin.enviarMensaje("Ubicacion de " + usuario.getNick() + ": " + usuario.pos().map + ", " + usuario.pos().x + ", "
+				+ usuario.pos().y + ".", FontType.INFO);
 	}
 
-	public void doEnviarCantidadHostiles(Client admin, short m) {
+	public void doEnviarCantidadHostiles(Player admin, short m) {
 		if (m < 1) {
 			admin.enviarMensaje("Has ingresado un número de mapa inválido.", FontType.INFO);
 			return;
@@ -1145,7 +1149,7 @@ public class Admins {
 		}
 	}
 
-	public void doTeleploc(Client admin) {
+	public void doTeleploc(Player admin) {
 		// Comando /TELEPLOC
 		if (admin.warpUser(admin.getFlags().TargetMap, admin.getFlags().TargetX, admin.getFlags().TargetY, true)) {
 			Log.logGM(admin.getNick(), "hizo un /TELEPLOC a x=" + admin.getFlags().TargetX + 
@@ -1153,7 +1157,7 @@ public class Admins {
 		}
 	}
 
-	public void doTeleportUsuario(Client admin, String nombre, short m, short x, short y) {
+	public void doTeleportUsuario(Player admin, String nombre, short m, short x, short y) {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {
@@ -1168,7 +1172,7 @@ public class Admins {
 			return;
 		}
 
-		Client usuario = admin;
+		Player usuario = admin;
 		if (!nombre.equalsIgnoreCase("YO")) {
 			if (admin.getFlags().Privilegios < 2) {
 				return;
@@ -1183,8 +1187,8 @@ public class Admins {
 			return;
 		}
 		if (usuario.warpUser(m, x, y, true)) {
-			usuario.enviarMensaje(usuario.m_nick + " transportado.", FontType.INFO);
-			Log.logGM(admin.getNick(), "Transportó con un /TELEP a " + usuario.m_nick + 
+			usuario.enviarMensaje(usuario.getNick() + " transportado.", FontType.INFO);
+			Log.logGM(admin.getNick(), "Transportó con un /TELEP a " + usuario.getNick() + 
 					" hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}
 	}

@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.classes;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.Factions.FactionArmors;
 
@@ -80,7 +80,7 @@ public class BanditClass extends CharClass {
     }
     
     @Override
-	public short getArmaduraImperial(Client cliente) {
+	public short getArmaduraImperial(Player cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
@@ -88,7 +88,7 @@ public class BanditClass extends CharClass {
     }
     
     @Override
-	public short getArmaduraCaos(Client cliente) {
+	public short getArmaduraCaos(Player cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }

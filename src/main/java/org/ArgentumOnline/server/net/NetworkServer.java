@@ -1,4 +1,4 @@
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.net;
 
 import static org.ArgentumOnline.server.Constants.SERVER_PORT;
 
@@ -14,7 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.ArgentumOnline.server.protocol.ClientProcessThread;
+import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.GameServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +30,7 @@ public class NetworkServer extends Thread {
     private Selector selector;
     private final static int BUFFER_SIZE = 1024;
     private ByteBuffer serverBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-    private Map<SocketChannel, Client> m_clientSockets = new HashMap<>();
+    private Map<SocketChannel, Player> m_clientSockets = new HashMap<>();
 	
 	private NetworkServer(GameServer server) {
 		this.server = server;
@@ -105,13 +106,13 @@ public class NetworkServer extends Thread {
         // recording to the selector (reading)
         clientSocket.register(this.selector, SelectionKey.OP_READ);
         
-        Client cliente = server.createClient(clientSocket);
+        Player cliente = server.createClient(clientSocket);
         this.m_clientSockets.put(clientSocket, cliente);
         
         log.info("NUEVA CONEXION");
     }
     
-    public void closeConnection(Client client) {
+    public void closeConnection(Player client) {
         log.info("cerrando conexion");
         this.m_clientSockets.remove(client.socketChannel);
         try {
@@ -124,7 +125,7 @@ public class NetworkServer extends Thread {
     /** Lee datos de una conexión existente. */
     private void readConnection(SocketChannel clientSocket) 
     throws java.io.IOException {
-        Client cliente = this.m_clientSockets.get(clientSocket);
+        Player cliente = this.m_clientSockets.get(clientSocket);
         log.info("Recibiendo del cliente: " + cliente);
         // Read bytes coming from the client.
         this.serverBuffer.clear();

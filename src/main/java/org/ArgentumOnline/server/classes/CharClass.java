@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.classes;
 
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.Factions.FactionArmors;
@@ -151,7 +151,7 @@ public abstract class CharClass implements Constants {
     }
     
     /** Subir las estadísticas segun la clase */
-    public void subirEstads(Client cliente) {
+    public void subirEstads(Player cliente) {
         UserStats estads = cliente.getEstads();
 
         // Las mejoras varian según las características de cada clase.
@@ -180,14 +180,14 @@ public abstract class CharClass implements Constants {
         }
     }
     
-    public short getArmaduraImperial(Client cliente) {
+    public short getArmaduraImperial(Player cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
         return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
     }
 
-    public short getArmaduraCaos(Client cliente) {
+    public short getArmaduraCaos(Player cliente) {
         if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }

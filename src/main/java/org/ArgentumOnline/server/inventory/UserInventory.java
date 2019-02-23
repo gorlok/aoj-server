@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.ObjectInfo;
@@ -49,7 +49,7 @@ import org.apache.logging.log4j.Logger;
 public class UserInventory extends Inventory implements Constants {
 	private static Logger log = LogManager.getLogger();
     
-    Client dueño;
+    Player dueño;
     
     boolean armaEquipada = false;
     boolean municionEquipada = false;
@@ -69,7 +69,7 @@ public class UserInventory extends Inventory implements Constants {
     int espadaMataDragonesSlot = 0;
     
     /** Creates a new instance of UserInventory */
-    public UserInventory(GameServer server, Client dueño, int slots) {
+    public UserInventory(GameServer server, Player dueño, int slots) {
         super(server, slots);
         this.dueño = dueño;
     }
@@ -305,7 +305,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.armaSlot = 0;
                 this.armaEquipada = false;
                 this.dueño.getInfoChar().m_arma = NingunArma;
-                this.dueño.enviarCP();
+                this.dueño.sendCharacterChange();
                 break;
             case OBJTYPE_FLECHAS:
                 this.objs[slot-1].equipado = false;
@@ -329,21 +329,21 @@ public class UserInventory extends Inventory implements Constants {
                         this.armaduraSlot = 0;
                         this.armaduraEquipada = false;
                         this.dueño.cuerpoDesnudo();
-                        this.dueño.enviarCP();
+                        this.dueño.sendCharacterChange();
                         break;
                     case SUBTYPE_CASCO:
                         this.objs[slot-1].equipado = false;
                         this.cascoSlot = 0;
                         this.cascoEquipado = false;
                         this.dueño.getInfoChar().m_casco = NingunCasco;
-                        this.dueño.enviarCP();
+                        this.dueño.sendCharacterChange();
                         break;
                     case SUBTYPE_ESCUDO:
                         this.objs[slot-1].equipado = false;
                         this.escudoSlot = 0;
                         this.escudoEquipado = false;
                         this.dueño.getInfoChar().m_escudo = NingunEscudo;
-                        this.dueño.enviarCP();
+                        this.dueño.sendCharacterChange();
                         break;
                 }
         }
@@ -391,7 +391,7 @@ public class UserInventory extends Inventory implements Constants {
                     // Sonido
                     this.dueño.enviarSonido(SOUND_SACARARMA);
                     this.dueño.getInfoChar().m_arma = infoObj.WeaponAnim;
-                    this.dueño.enviarCP();
+                    this.dueño.sendCharacterChange();
                 } else {
                     this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
                 }
@@ -456,7 +456,7 @@ public class UserInventory extends Inventory implements Constants {
                                 // Quitamos del inv el item
                                 desequipar(slot);
                                 this.dueño.cuerpoDesnudo();
-                                this.dueño.enviarCP();
+                                this.dueño.sendCharacterChange();
                                 return;
                             }
                             // Quita el anterior
@@ -469,7 +469,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.armaduraSlot = slot;
                             this.dueño.getInfoChar().m_cuerpo = infoObj.Ropaje;
                             this.dueño.getFlags().Desnudo = false;
-                            this.dueño.enviarCP();
+                            this.dueño.sendCharacterChange();
                         } else {
                             this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.INFO);
                         }
@@ -483,7 +483,7 @@ public class UserInventory extends Inventory implements Constants {
                                 // Quitamos del inv el item
                                 desequipar(slot);
                                 this.dueño.getInfoChar().m_casco = NingunCasco;
-                                this.dueño.enviarCP();
+                                this.dueño.sendCharacterChange();
                                 return;
                             }
                             // Quita el anterior
@@ -495,7 +495,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.cascoEquipado = true;
                             this.cascoSlot = slot;
                             this.dueño.getInfoChar().m_casco = infoObj.CascoAnim;
-                            this.dueño.enviarCP();
+                            this.dueño.sendCharacterChange();
                         } else {
                             this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
                         }
@@ -509,7 +509,7 @@ public class UserInventory extends Inventory implements Constants {
                                 // Quitamos del inv el item
                                 desequipar(slot);
                                 this.dueño.getInfoChar().m_escudo = NingunEscudo;
-                                this.dueño.enviarCP();
+                                this.dueño.sendCharacterChange();
                                 return;
                             }
                             // Quita el anterior
@@ -521,7 +521,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.escudoEquipado = true;
                             this.escudoSlot = slot;
                             this.dueño.getInfoChar().m_escudo = infoObj.ShieldAnim;
-                            this.dueño.enviarCP();
+                            this.dueño.sendCharacterChange();
                         } else {
                             this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
                         }
@@ -726,7 +726,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 this.dueño.getEstads().addGold(obj.cant);
-                this.dueño.updateUserStats();
+                this.dueño.sendUpdateUserStats();
                 quitarUserInvItem(slot, obj.cant);
                 break;
             case OBJTYPE_WEAPON:
@@ -772,12 +772,12 @@ public class UserInventory extends Inventory implements Constants {
                     case 3: // Pocion roja, restaura HP
                         // Usa el item
                         this.dueño.getEstads().addMinHP(Util.Azar(info.MinModificador, info.MaxModificador));
-                        this.dueño.updateUserStats();
+                        this.dueño.sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
                         // Usa el item
                         this.dueño.getEstads().aumentarMana(Util.porcentaje(this.dueño.getEstads().maxMana, 5));
-                        this.dueño.updateUserStats();
+                        this.dueño.sendUpdateUserStats();
                         break;
                     case 5: // Pocion violeta
                         if (this.dueño.getFlags().Envenenado) {
@@ -789,7 +789,7 @@ public class UserInventory extends Inventory implements Constants {
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
                 this.dueño.enviarSonido(SND_BEBER);
-                this.dueño.updateUserStats();
+                this.dueño.sendUpdateUserStats();
                 break;
             case OBJTYPE_BEBIDA:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {

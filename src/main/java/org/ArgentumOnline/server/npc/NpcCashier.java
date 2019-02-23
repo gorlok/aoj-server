@@ -1,7 +1,7 @@
 package org.ArgentumOnline.server.npc;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +13,7 @@ public class NpcCashier extends Npc {
 		super(npc_numero, server);
 	}
 	
-	public void doBalance(Client client) {
+	public void doBalance(Player client) {
 		// Comando /BALANCE
 		// ¿Esta el user muerto? Si es asi no puede comerciar
 		if (!client.checkAlive()) {
@@ -40,7 +40,7 @@ public class NpcCashier extends Npc {
 		client.hablar(COLOR_BLANCO, "Tienes " + client.getEstads().getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
 	}
 
-	public void retirarOroBanco(Client client, int cant) {
+	public void retirarOroBanco(Player client, int cant) {
 		if (this.pos().distance(m_pos) > 10) {
 			client.enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
 			return;
@@ -59,10 +59,10 @@ public class NpcCashier extends Npc {
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.updateUserStats();
+		client.sendUpdateUserStats();
 	}
 
-	public void depositarOroBanco(Client client, int cant) {
+	public void depositarOroBanco(Player client, int cant) {
 		if (this.pos().distance(m_pos) > 10) {
 			client.enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
 			return;
@@ -75,7 +75,7 @@ public class NpcCashier extends Npc {
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.updateUserStats();
+		client.sendUpdateUserStats();
 	}
 
 

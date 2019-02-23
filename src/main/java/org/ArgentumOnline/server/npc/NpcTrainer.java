@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.util.IniFile;
 
 public class NpcTrainer extends Npc {
@@ -57,7 +57,7 @@ public class NpcTrainer extends Npc {
     }
     
 	/** Envia la lista de criaturas del entrenador. */
-    public void enviarListaCriaturas(Client cliente) {
+    public void enviarListaCriaturas(Player cliente) {
     	List<Object> criaturas = new LinkedList<Object>();
         criaturas.add(this.m_criaturas_entrenador_cant);
         for (int i = 0; i < this.m_criaturas_entrenador_cant; i++) {
@@ -93,7 +93,7 @@ public class NpcTrainer extends Npc {
     }
 
 	public void spawnTrainerPet(short slot) {
-		if (getCantMascotas() < Client.MAX_MASCOTAS_ENTRENADOR) {
+		if (getCantMascotas() < Player.MAX_MASCOTAS_ENTRENADOR) {
 			if (slot > 0 && slot <= getCantCriaturas()) {
 				Npc criatura = Npc.spawnNpc(getCriaturaIndex(slot), pos(), true, false);
 				if (criatura != null) {

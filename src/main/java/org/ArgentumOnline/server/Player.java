@@ -28,9 +28,11 @@ package org.ArgentumOnline.server;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
+import java.security.AllPermission;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
@@ -66,18 +68,17 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author gorlok
  */
-public class Client extends AbstractCharacter {
+public class Player extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
 
-	String m_nick = "";
-	String m_password = ""; // FIXME SEGURIDAD
-
 	public SocketChannel socketChannel = null;
-
 	private final static int BUFFER_SIZE = 1024;
 	public ByteBuffer readBuffer;
 	public ByteBuffer writeBuffer;
 	public List<Integer> bufferLengths = new LinkedList<Integer>();
+
+	String m_nick = "";
+	String m_password = ""; // FIXME SEGURIDAD
 
 	String m_desc = ""; // Descripcion
 
@@ -88,24 +89,26 @@ public class Client extends AbstractCharacter {
 	String m_email = "";
 	short m_hogar = CIUDAD_ULLA;
 
-	int m_cantMascotas = 0;
-	Npc m_mascotas[] = new Npc[MAX_MASCOTAS_USER];
-
 	int m_cantHechizos = 0;
 	UserSpells m_spells;
+	
+	private UserPets userPets = new UserPets();
 
+	// FIXME network
 	long NumeroPaquetesPorMiliSec = 0;
 	long BytesTransmitidosUser = 0;
 	long BytesTransmitidosSvr = 0;
 
 	GuildUser guildUser = new GuildUser(this);
 
+	// FIXME security/anticheat
 	int m_prevCRC = 0;
 	long PacketNumber = 0;
 	long RandKey = 0;
 
 	boolean m_saliendo = false;
 
+	// FIXME GM 
 	String m_ip = "";
 	String m_banned_by = "";
 	String m_banned_reason = "";
@@ -126,32 +129,32 @@ public class Client extends AbstractCharacter {
 	
 	UserStorage userStorage;
 
-	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
-
 	public UserQuest m_quest;
 
 	UserInventory m_inv;
 	Inventory m_bancoInv; 
 
+	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
+
 	GameServer server;
 
 	/** Creates a new instance of Client */
-	public Client(SocketChannel socketChannel, GameServer aoserver) {
+	public Player(SocketChannel socketChannel, GameServer aoserver) {
 		this.userStorage = new UserStorage(server, this);
-
-		this.writeBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-		this.writeBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		
-		this.readBuffer = ByteBuffer.allocate(2048);
-		this.readBuffer.order(ByteOrder.LITTLE_ENDIAN);
-
 		this.server = aoserver;
+		
 		this.setId(server.getNextId());
 		this.m_spells = new UserSpells(server, this);
 		this.m_quest = new UserQuest(this.server);
 		this.m_inv = new UserInventory(this.server, this, MAX_USER_INVENTORY_SLOTS);
 		this.m_bancoInv = new Inventory(this.server, MAX_BANCOINVENTORY_SLOTS);
 		this.m_faccion = new Factions(this.server, this);
+
+		this.writeBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+		this.writeBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		this.readBuffer = ByteBuffer.allocate(2048);
+		this.readBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
 		this.socketChannel = socketChannel;
 		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
 		if (addr != null) {
@@ -180,10 +183,10 @@ public class Client extends AbstractCharacter {
 		return userArea;
 	}
 	
-	public boolean hasPets() {
-		return this.m_cantMascotas > 0;		
+	public UserPets getUserPets() {
+		return this.userPets;
 	}
-
+	
 	/**
 	 * Gives the current user level.
 	 */
@@ -348,10 +351,6 @@ public class Client extends AbstractCharacter {
 		return m_reputacion;
 	}
 
-	public short thatDir() {
-		return m_infoChar.getDir();
-	}
-
 	/**
 	 * Gives the user's flags.
 	 * 
@@ -500,7 +499,7 @@ public class Client extends AbstractCharacter {
 		 * fixme Apuestas.Jugadas = Apuestas.Jugadas + 1 Call WriteVar(DatPath &
 		 * "apuestas.dat", "Main", "Jugadas", CStr(Apuestas.Jugadas))
 		 */
-		updateUserStats();
+		sendUpdateUserStats();
 	}
 
 	public void doPonerMensajeForo(String titulo, String texto) {
@@ -596,7 +595,7 @@ public class Client extends AbstractCharacter {
 	public void doInfoUsuario(String s) {
 		// INFO DE USER
 		// Comando /INFO usuario
-		Client usuario = server.getUsuario(s);
+		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
 			enviarMensaje("Usuario offline.", FontType.INFO);
 			return;
@@ -605,7 +604,7 @@ public class Client extends AbstractCharacter {
 		sendUserStatsTxt(usuario);
 	}
 
-	private void sendUserStatsTxt(Client usuario) {
+	private void sendUserStatsTxt(Player usuario) {
 		enviarMensaje("Estadisticas de: " + usuario.m_nick, FontType.INFO_B);
 		enviarMensaje("Nivel: " + usuario.m_estads.ELV + "  EXP: " + usuario.m_estads.Exp + "/" + usuario.m_estads.ELU,
 				FontType.INFO);
@@ -837,7 +836,7 @@ public class Client extends AbstractCharacter {
 
 	private void userDepositaItem(short slot, int cant) {
 		// El usuario deposita un item
-		updateUserStats();
+		sendUpdateUserStats();
 		if (m_inv.getObjeto(slot).cant > 0 && !m_inv.getObjeto(slot).equipado) {
 			if (cant > 0 && cant > m_inv.getObjeto(slot).cant) {
 				cant = m_inv.getObjeto(slot).cant;
@@ -884,7 +883,7 @@ public class Client extends AbstractCharacter {
 		if (cant < 1) {
 			return;
 		}
-		updateUserStats();
+		sendUpdateUserStats();
 		if (m_bancoInv.getObjeto(slot).cant > 0) {
 			if (cant > m_bancoInv.getObjeto(slot).cant) {
 				cant = m_bancoInv.getObjeto(slot).cant;
@@ -949,7 +948,7 @@ public class Client extends AbstractCharacter {
 		// Hacemos un Update del inventario del usuario
 		updateBankUserInv();
 		// Actualizamos el dinero
-		updateUserStats();
+		sendUpdateUserStats();
 
 		enviar(ServerPacketID.BankInit);
 
@@ -1221,7 +1220,7 @@ public class Client extends AbstractCharacter {
 		// Hacemos un Update del inventario del usuario
 		enviarInventario();
 		// Atcualizamos el dinero
-		updateUserStats();
+		sendUpdateUserStats();
 		// Mostramos la ventana pa' comerciar y ver ladear la osamenta. jajaja
 		// enviar(MSG_INITCOM);
 		m_flags.Comerciando = true;
@@ -1338,7 +1337,7 @@ public class Client extends AbstractCharacter {
 				m_infoChar.m_casco = NingunCasco;
 			}
 		}
-		enviarCP();
+		sendCharacterChange();
 		enviar(ServerPacketID.NavigateToggle);
 	}
 
@@ -1432,34 +1431,35 @@ public class Client extends AbstractCharacter {
 	}
 
 	private void doDomar(Npc npc) {
-		if (m_cantMascotas < MAX_MASCOTAS_USER) {
-			if (npc.getPetUserOwner() == this) {
-				enviarMensaje("La criatura ya te ha aceptado como su amo.", FontType.INFO);
-				return;
-			}
-			if (npc.getPetUserOwner() != null) {
-				enviarMensaje("La criatura ya tiene amo.", FontType.INFO);
-				return;
-			}
-			double suerteDoma = calcularPoderDomador();
-			if (npc.domable() <= suerteDoma) {
-				m_cantMascotas++;
-				int slot = freeMascotaSlot();
-				m_mascotas[slot - 1] = npc;
-				npc.setPetUserOwner(this);
-				npc.followMaster();
-				enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
-				subirSkill(Skill.SKILL_Domar);
-				// hacemos respawn del npc para reponerlo.
-				Npc.spawnNpc(npc.getNPCtype(), MapPos.mxy(npc.pos().map, (short) 0, (short) 0), false, true);
-			} else {
-				if (m_flags.UltimoMensaje != 5) {
-					enviarMensaje("No has logrado domar la criatura.", FontType.INFO);
-					m_flags.UltimoMensaje = 5;
-				}
-			}
-		} else {
+		if (getUserPets().isFullPets()) {
 			enviarMensaje("No podes controlar mas criaturas.", FontType.INFO);
+			return;
+		}
+		
+		if (npc.getPetUserOwner() == this) {
+			enviarMensaje("La criatura ya te ha aceptado como su amo.", FontType.INFO);
+			return;
+		}
+		
+		if (npc.getPetUserOwner() != null) {
+			enviarMensaje("La criatura ya tiene amo.", FontType.INFO);
+			return;
+		}
+		
+		double suerteDoma = calcularPoderDomador();
+		if (npc.domable() <= suerteDoma) {
+			getUserPets().addPet(npc);
+			npc.setPetUserOwner(this);
+			npc.followMaster();
+			enviarMensaje("La criatura te ha aceptado como su amo.", FontType.INFO);
+			subirSkill(Skill.SKILL_Domar);
+			// y hacemos respawn del npc original para reponerlo.
+			Npc.spawnNpc(npc.getNPCtype(), MapPos.mxy(npc.pos().map, (short) 0, (short) 0), false, true);
+		} else {
+			if (m_flags.UltimoMensaje != 5) {
+				enviarMensaje("No has logrado domar la criatura.", FontType.INFO);
+				m_flags.UltimoMensaje = 5;
+			}
 		}
 	}
 
@@ -1522,7 +1522,7 @@ public class Client extends AbstractCharacter {
 		m_flags.Trabajando = true;
 	}
 
-	private void robarObjeto(Client victima) {
+	private void robarObjeto(Player victima) {
 		boolean flag = false;
 		short slot = 0;
 		if (Util.Azar(1, 12) < 6) { // Comenzamos por el principio o el final?
@@ -1582,7 +1582,7 @@ public class Client extends AbstractCharacter {
 		return (Util.Azar(1, rango) < 3);
 	}
 
-	private void doRobar(Client victima) {
+	private void doRobar(Player victima) {
 		Map mapa = server.getMapa(m_pos.map);
 		if (!mapa.esZonaSegura() || triggerZonaPelea(victima) != MapCell.TRIGGER6_AUSENTE) {
 			return;
@@ -1693,7 +1693,7 @@ public class Client extends AbstractCharacter {
 			return;
 		}
 		Map mapa = server.getMapa(m_pos.map);
-		Client tu = null;
+		Player tu = null;
 		MapObject obj = null;
 
 		switch (tLong) {
@@ -2081,7 +2081,7 @@ public class Client extends AbstractCharacter {
 			return;
 		}
 		m_estads.MinHP = m_estads.MaxHP;
-		updateUserStats();
+		sendUpdateUserStats();
 		enviarMensaje("¡¡Has sido curado!!", FontType.INFO);
 	}
 
@@ -2106,10 +2106,10 @@ public class Client extends AbstractCharacter {
 	 */
 	public void changeHeading(short heading) {
 		m_infoChar.m_dir = heading;
-		enviarCP();
+		sendCharacterChange();
 	}
 
-	public void enviarCP() {
+	public void sendCharacterChange() {
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa == null) {
 			return;
@@ -2141,27 +2141,15 @@ public class Client extends AbstractCharacter {
 		try {
 			Map mapa = server.getMapa(m_pos.map);
 			if (mapa != null && mapa.estaCliente(this)) {
-				try {
-					quitarMascotas();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				try {
-					mapa.salir(this);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				getUserPets().removeAll();
+				mapa.salir(this);
 			}
 			if (wasLogged) {
-				try {
-					if (server.estaLloviendo()) {
-						// Detener la lluvia.
-						enviar(ServerPacketID.RainToggle);
-					}
-					enviar(ServerPacketID.Disconnect);
-				} catch (Exception e) {
-					e.printStackTrace();
+				if (server.estaLloviendo()) {
+					// Detener la lluvia.
+					enviar(ServerPacketID.RainToggle);
 				}
+				enviar(ServerPacketID.Disconnect);
 			}
 			m_flags.UserLogged = false;
 		} catch (Exception ex) {
@@ -2180,7 +2168,7 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void tirarDados() {
-		// TODO dados fáciles, configurar
+		// TODO dados fáciles, hacerlo configurable
 		m_estads.userAtributos[0] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[1] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[2] = (byte) (Util.Azar(16, 18));
@@ -2341,7 +2329,7 @@ public class Client extends AbstractCharacter {
 			if (mapa == null) {
 				return;
 			}
-			Client usuario = server.getUsuario(nombre);
+			Player usuario = server.getUsuario(nombre);
 			if (usuario != null) {
 				if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario.getId()) == null) {
 					enviarMensaje("Estas muy lejos de " + nombre, FontType.INFO);
@@ -2489,7 +2477,7 @@ public class Client extends AbstractCharacter {
 		}
 		if (slot == FLAGORO) {
 			tirarOro(cant);
-			updateUserStats();
+			sendUpdateUserStats();
 		} else {
 			if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
 				if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid > 0) {
@@ -2581,7 +2569,7 @@ public class Client extends AbstractCharacter {
 		enviar(ServerPacketID.ConsoleMsg, color, msg, id);
 	}
 
-	public void updateUserStats() {
+	public void sendUpdateUserStats() {
 		enviar(ServerPacketID.UpdateUserStats, 
 				(short) m_estads.MaxHP, (short) m_estads.MinHP,
 				(short) m_estads.maxMana, (short) m_estads.mana, 
@@ -2592,6 +2580,7 @@ public class Client extends AbstractCharacter {
 				m_estads.Exp); // expteriencia
 	}
 
+	// FIXME
 	public void enviarEstadsHambreSed() {
 		// Ejemplo: EHYS100,100,100,100
 		// "EHYS" MaxAGU MinAGU MaxHam MinHam
@@ -2600,27 +2589,8 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void petDelete() {
-		int i = 0;
-
-		while (i < m_mascotas.length) {
-
-			if (m_mascotas[i] != null) {
-
-				Npc npc;
-
-				npc = m_mascotas[i];
-				m_mascotas[i].releasePet();
-				m_mascotas[i] = null;
-				m_cantMascotas--;
-
-				npc.quitarNPC();
-
-				// Evitamos crear una variable al dope
-				if (i < 1)
-					enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
-			}
-			i++;
-		}
+		getUserPets().removeAll();
+		enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
 	}
 
 	private void cambiarMapa(short mapa, short x, short y) {
@@ -2739,8 +2709,8 @@ public class Client extends AbstractCharacter {
 		}
 		m_infoChar.m_cabeza = m_origChar.m_cabeza;
 		cuerpoDesnudo();
-		enviarCP();
-		updateUserStats();
+		sendCharacterChange();
+		sendUpdateUserStats();
 		enviarEstadsHambreSed();
 	}
 
@@ -2791,79 +2761,46 @@ public class Client extends AbstractCharacter {
 
 	private void warpMascotas() {
 		// FIXME - revisar
-		int invocadosMatados = 0;
-		Map oldMapa, newMapa;
-		Npc npc;
-		MapPos lugarLibre;
-		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] != null && m_mascotas[i].getContadores().TiempoExistencia > 0) {
-				// Es una mascota de invocación. Se pierde al cambiar de mapa.
-				oldMapa = server.getMapa(m_mascotas[i].pos().map);
-				oldMapa.salir(m_mascotas[i]);
-				npc = m_mascotas[i];
-				m_mascotas[i].releasePet();
-				m_mascotas[i] = null;
-				m_cantMascotas--;
-				invocadosMatados++;
-				npc.quitarNPC();
-			} else if (m_mascotas[i] != null) {
-				// Es una mascota domada.
-				if (m_mascotas[i].puedeReSpawn()) {
-					// La mascota puede hacer respawn
-					oldMapa = server.getMapa(m_mascotas[i].pos().map);
-					newMapa = server.getMapa(m_pos.map);
-					lugarLibre = newMapa.closestLegalPosNpc(m_pos.x, m_pos.y, m_mascotas[i].esAguaValida(),
-							m_mascotas[i].esTierraInvalida(), true);
-					if (lugarLibre != null) {
-						// La mascota lo sigue al nuevo mapa, y mantiene su
-						// control.
-						oldMapa.salir(m_mascotas[i]);
-						// envio un BP adicional, porque ya sali del mapa y
-						// sino no soy notificado de que salio la mascota.
-						// enviar(MSG_QDL, m_mascotas[i].getId());
-						// enviar(MSG_BP, m_mascotas[i].getId());
-						if (newMapa.entrar(m_mascotas[i], lugarLibre.x, lugarLibre.y)) {
-							// FIXME !!!
-						}
-					} else {
-						// La mascota no puede seguirlo al nuevo mapa, asi que
-						// pierde su control.
-						m_mascotas[i].releasePet();
-						m_mascotas[i] = null;
-						m_cantMascotas--;
-						invocadosMatados++;
+
+		// copy list first
+		var pets = getUserPets().getPets().stream().collect(Collectors.toList());
+		
+		pets.forEach(pet -> {
+			if (pet.getContadores().TiempoExistencia > 0) {
+				// Es una mascota de invocación. Se pierde al cambiar de mapa
+				getUserPets().removePet(pet);
+			} else if (pet.puedeReSpawn()) {
+				// Es una mascota domada que puede hacer respawn
+				
+				Map oldMapa = server.getMapa(pet.pos().map);
+				Map newMapa = server.getMapa(m_pos.map);
+				MapPos lugarLibre = newMapa.closestLegalPosNpc(m_pos.x, m_pos.y, pet.esAguaValida(), pet.esTierraInvalida(), true);
+				
+				if (lugarLibre != null) {
+					// La mascota lo sigue al nuevo mapa, y mantiene su
+					// control.
+					oldMapa.salir(pet);
+					// envio un BP adicional, porque ya sali del mapa y
+					// sino no soy notificado de que salio la mascota.
+					// enviar(MSG_QDL, m_mascotas[i].getId());
+					// enviar(MSG_BP, m_mascotas[i].getId());
+					if (newMapa.entrar(pet, lugarLibre.x, lugarLibre.y)) {
+						// FIXME !!!
 					}
 				} else {
 					// La mascota no puede seguirlo al nuevo mapa, asi que
 					// pierde su control.
-					m_mascotas[i].releasePet();
-					m_mascotas[i] = null;
-					m_cantMascotas--;
-					invocadosMatados++;
+					getUserPets().removePet(pet);
 				}
+			} else {
+				// La mascota no puede seguirlo al nuevo mapa, asi que
+				// pierde su control.
+				getUserPets().removePet(pet);
 			}
-		}
-		if (invocadosMatados > 0) {
+		});
+		
+		if (pets.size() < getUserPets().getPets().size()) {
 			enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
-		}
-	}
-
-	private void quitarMascotas() {
-		Map mapa;
-		Npc npc;
-		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] != null) {
-				mapa = server.getMapa(m_mascotas[i].pos().map);
-				mapa.salir(m_mascotas[i]);
-				npc = m_mascotas[i];
-				m_mascotas[i].releasePet();
-				m_mascotas[i] = null;
-				m_cantMascotas--;
-				npc.quitarNPC();
-			}
-		}
-		if (m_cantMascotas != 0) {
-			System.out.println("ERROR: Luego de quitarMascotas() la cant de mascotas != 0 !!!");
 		}
 	}
 
@@ -2887,7 +2824,7 @@ public class Client extends AbstractCharacter {
 				int modifi = Util.porcentaje(m_estads.maxStamina, 3);
 				m_estads.quitarStamina(modifi);
 				enviarMensaje("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.INFO);
-				updateUserStats();
+				sendUpdateUserStats();
 			}
 		}
 	}
@@ -2973,15 +2910,6 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	private int freeMascotaSlot() {
-		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] == null) {
-				return i + 1;
-			}
-		}
-		return 0;
-	}
-
 	/**
 	 * Crea mascotas temporales invocadas por hechizos del usuario
 	 * @param npcId
@@ -2989,7 +2917,7 @@ public class Client extends AbstractCharacter {
 	 * @return
 	 */
 	public Npc crearMascotaInvocacion(int npcId, MapPos targetPos) {
-		if (m_cantMascotas >= MAX_MASCOTAS_USER) {
+		if (getUserPets().isFullPets()) {
 			return null;
 		}
 		Npc npc = Npc.spawnPetNpc(npcId, targetPos, true, server);
@@ -2997,9 +2925,7 @@ public class Client extends AbstractCharacter {
 			return null;
 		}
 
-		m_cantMascotas++;
-		int slot = freeMascotaSlot();
-		m_mascotas[slot - 1] = npc;
+		getUserPets().addPet(npc);
 		npc.setPetUserOwner(this);
 		npc.getContadores().TiempoExistencia = IntervaloInvocacion; // Duración que tendrá la invocación
 		npc.setSpellSpawnedPet(true);
@@ -3118,20 +3044,11 @@ public class Client extends AbstractCharacter {
 	}
 
 	public void quitarMascota(Npc npc) {
-		if (!hasPets()) {
+		if ( !getUserPets().hasPets()) {
 			return;
 		}
-		for (int i = 0; i < m_mascotas.length; i++) {
-			if (m_mascotas[i] == npc) {
-				m_mascotas[i].releasePet();
-				m_mascotas[i] = null;
-				m_cantMascotas--;
-				if (m_cantMascotas < 0) {
-					m_cantMascotas = 0;
-				}
-				return;
-			}
-		}
+		
+		getUserPets().removePet(npc);
 	}
 
 	public void enviarSonido(int sonido) {
@@ -3225,19 +3142,10 @@ public class Client extends AbstractCharacter {
 		} else {
 			m_infoChar.m_cuerpo = iFragataFantasmal;
 		}
-		for (Npc element : m_mascotas) {
-			if (element != null) {
-				if (element.getContadores().TiempoExistencia > 0) {
-					element.muereNpc(null);
-				} else {
-					element.setPetUserOwner((Client) null);
-					element.oldMovement();
-				}
-			}
-		}
-		m_cantMascotas = 0;
-		enviarCP(); // Actualizar m_clients para mostrar el fantasmita.
-		updateUserStats();
+		
+		getUserPets().removeAll();
+		sendCharacterChange();
+		sendUpdateUserStats();
 	}
 
 	public void tirarTodo() {
@@ -3457,7 +3365,7 @@ public class Client extends AbstractCharacter {
 			m_clase.subirEstads(this);
 			enviarSkills();
 			enviarSubirNivel(pts);
-			updateUserStats();
+			sendUpdateUserStats();
 		}
 	}
 
@@ -3692,11 +3600,7 @@ public class Client extends AbstractCharacter {
 			if (npc.getNPCtype() == Npc.NPCTYPE_DRAGON) {
 				quitarObjetos(iEspadaMataDragones, 1);
 			}
-			for (Npc element : m_mascotas) {
-				if (element != null) {
-					element.followMaster();
-				}
-			}
+			getUserPets().petsFollowMaster();
 
 			npc.muereNpc(this);
 		}
@@ -3768,7 +3672,7 @@ public class Client extends AbstractCharacter {
 			m_estads.MinHP -= daño;
 		}
 
-		updateUserStats();
+		sendUpdateUserStats();
 
 		// Muere el usuario
 		if (m_estads.MinHP <= 0) {
@@ -3780,7 +3684,7 @@ public class Client extends AbstractCharacter {
 				m_reputacion.decLadron(vlCazador / 3);
 			}
 			if (npc.getPetUserOwner() != null) {
-				npc.getPetUserOwner().allFollowMaster();
+				npc.getPetUserOwner().getUserPets().petsFollowMaster();
 			} else {
 				// Al matarlo no lo sigue mas
 				if (npc.m_estads.Alineacion == 0) {
@@ -3788,35 +3692,6 @@ public class Client extends AbstractCharacter {
 				}
 			}
 			userDie();
-		}
-	}
-
-	/** Ordenar a las mascotas del usuario atacar a un Npc */
-	public void checkPets(Npc targetNpc) {
-		for (Npc pet : m_mascotas) {
-			if (pet != null && pet != targetNpc) {
-				pet.setPetTargetNpc(targetNpc);
-			}
-		}
-	}
-
-	private void allFollowMaster() {
-		for (Npc pet : m_mascotas) {
-			if (pet != null) {
-				pet.followMaster();
-			}
-		}
-	}
-
-	/**
-	 * Las mascotas que tienen como objetivo al Npc target, deben volver a seguir al
-	 * amo
-	 */
-	public void petsFollowMaster(Npc targetNpc) {
-		for (Npc pet : m_mascotas) {
-			if ((pet != null) && (pet.getTargetNpc() == targetNpc)) {
-				pet.followMaster();
-			}
 		}
 	}
 
@@ -3899,12 +3774,12 @@ public class Client extends AbstractCharacter {
 				return;
 			}
 			Map mapa = server.getMapa(m_pos.map);
-			Client cliente = mapa.getCliente(attackPos.x, attackPos.y);
+			Player cliente = mapa.getCliente(attackPos.x, attackPos.y);
 			// Look for user
 			if (cliente != null) {
 				usuarioAtacaUsuario(cliente);
-				updateUserStats();
-				cliente.updateUserStats();
+				sendUpdateUserStats();
+				cliente.sendUpdateUserStats();
 				return;
 			}
 			// Look for Npc
@@ -3919,18 +3794,18 @@ public class Client extends AbstractCharacter {
 				} else {
 					enviarMensaje("No podés atacar a este Npc", FontType.FIGHT);
 				}
-				updateUserStats();
+				sendUpdateUserStats();
 				return;
 			}
 			enviarSonido(SOUND_SWING);
-			updateUserStats();
+			sendUpdateUserStats();
 			m_flags.Trabajando = false;
 		} else {
 			log.info("NO PUEDE ATACAR");
 		}
 	}
 
-	public boolean usuarioImpacto(Client victima) {
+	public boolean usuarioImpacto(Player victima) {
 		double probExito = 0;
 		long skillTacticas = victima.m_estads.userSkills[Skill.SKILL_Tacticas];
 		long skillDefensa = victima.m_estads.userSkills[Skill.SKILL_Defensa];
@@ -3986,7 +3861,7 @@ public class Client extends AbstractCharacter {
 		return huboImpacto;
 	}
 
-	public void usuarioAtacaUsuario(Client victima) {
+	public void usuarioAtacaUsuario(Player victima) {
 		if (!puedeAtacar(victima)) {
 			return;
 		}
@@ -4008,7 +3883,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void userDañoUser(Client victima) {
+	public void userDañoUser(Player victima) {
 		int daño = calcularDaño(null);
 		int defbarco = 0;
 		envenenarUsuario(victima); // revisar... FIXME
@@ -4066,21 +3941,14 @@ public class Client extends AbstractCharacter {
 		}
 		if (victima.m_estads.MinHP <= 0) {
 			contarMuerte(victima);
-			for (Npc element : m_mascotas) {
-				if (element != null) {
-					if (element.getTarget() == victima.getId()) {
-						element.setTarget(0);
-					}
-					element.followMaster();
-				}
-			}
+			getUserPets().petsFollowMaster(victima.getId());
 			actStats(victima);
 		}
 		// Controla el nivel del usuario
 		checkUserLevel();
 	}
 
-	public void actStats(Client victima) {
+	public void actStats(Player victima) {
 		int daExp = victima.m_estads.ELV * 2;
 		m_estads.addExp(daExp);
 		// Lo mata
@@ -4102,7 +3970,7 @@ public class Client extends AbstractCharacter {
 		log.info("ASESINATO: " + m_nick + " asesino a " + victima.m_nick);
 	}
 
-	public void contarMuerte(Client usuarioMuerto) {
+	public void contarMuerte(Player usuarioMuerto) {
 		if (usuarioMuerto.esNewbie()) {
 			return;
 		}
@@ -4130,7 +3998,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void usuarioAtacadoPorUsuario(Client victima) {
+	public void usuarioAtacadoPorUsuario(Player victima) {
 		if (triggerZonaPelea(victima) == MapCell.TRIGGER6_PERMITE) {
 			return;
 		}
@@ -4154,20 +4022,18 @@ public class Client extends AbstractCharacter {
 			m_reputacion.incBandido(vlAsalto);
 		}
 		
-		allMascotasAtacanUser(victima);
-		victima.allMascotasAtacanUser(this);
+		allPetsAttackUser(victima);
+		victima.allPetsAttackUser(this);
 	}
 
-	public void allMascotasAtacanUser(Client objetivo) {
-		for (Npc element : m_mascotas) {
-			if (element != null) {
-				element.setAttackedBy(objetivo.getNick());
-				element.defenderse();
-			}
-		}
+	public void allPetsAttackUser(Player objetivo) {
+		getUserPets().getPets().forEach(pet -> {
+			pet.setAttackedBy(objetivo.getNick());
+			pet.defenderse();
+		});
 	}
 
-	public boolean puedeAtacar(Client victima) {
+	public boolean puedeAtacar(Player victima) {
 		Map mapa = server.getMapa(victima.pos().map);
 
 		if (!victima.isAlive()) {
@@ -4250,7 +4116,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	public void apuñalar(Client victimaUsuario, int daño) {
+	public void apuñalar(Player victimaUsuario, int daño) {
 		// DoApuñalar
 		if (suerteApuñalar()) {
 			daño *= 1.5;
@@ -4266,7 +4132,7 @@ public class Client extends AbstractCharacter {
 		// Guardamos el usuario que ataco el npc
 		npc.setAttackedBy(m_nick);
 		if (npc.getPetUserOwner() != null) {
-			npc.getPetUserOwner().allMascotasAtacanUser(this);
+			npc.getPetUserOwner().allPetsAttackUser(this);
 		}
 		if (esMascotaCiudadano(npc)) {
 			volverCriminal();
@@ -4284,7 +4150,7 @@ public class Client extends AbstractCharacter {
 			}
 			// hacemos que el npc se defienda
 			npc.defenderse();
-			checkPets(npc);
+			getUserPets().petsAttackNpc(npc);
 		}
 	}
 
@@ -4493,7 +4359,7 @@ public class Client extends AbstractCharacter {
 
 			enviarInventario();
 			m_spells.enviarHechizos();
-			updateUserStats();
+			sendUpdateUserStats();
 
 			if (m_pos.map == 0) {
 				// Posicion de comienzo
@@ -4602,7 +4468,7 @@ public class Client extends AbstractCharacter {
 				}
 			}
 			m_counters.Frio = 0;
-			updateUserStats();
+			sendUpdateUserStats();
 		}
 	}
 
@@ -4616,7 +4482,7 @@ public class Client extends AbstractCharacter {
 		if (m_estads.MinHP < m_estads.MaxHP) {
 			if (m_counters.HPCounter < intervalo) {
 				m_counters.HPCounter++;
-				updateUserStats();
+				sendUpdateUserStats();
 			} else {
 				int mashit = Util.Azar(2, Util.porcentaje(m_estads.maxStamina, 5));
 				m_counters.HPCounter = 0;
@@ -4627,7 +4493,7 @@ public class Client extends AbstractCharacter {
 				}
 				enviarMensaje("Has sanado.", FontType.INFO);
 				
-				updateUserStats();
+				sendUpdateUserStats();
 				return true;
 			}
 		}
@@ -4662,7 +4528,7 @@ public class Client extends AbstractCharacter {
 			int cant = Util.porcentaje(m_estads.maxMana, 3);
 			m_estads.aumentarMana(cant);
 			enviarMensaje("¡Has recuperado " + cant + " puntos de mana!", FontType.INFO);
-			updateUserStats();
+			sendUpdateUserStats();
 			subirSkill(Skill.SKILL_Meditar);
 		}
 	}
@@ -4674,7 +4540,7 @@ public class Client extends AbstractCharacter {
 			enviarMensaje("Estas envenenado, si no te curas moriras.", FontType.VENENO);
 			m_counters.Veneno = 0;
 			m_estads.MinHP -= Util.Azar(1, 5);
-			updateUserStats();
+			sendUpdateUserStats();
 			if (m_estads.MinHP < 1) {
 				userDie();
 			}
@@ -4758,7 +4624,7 @@ public class Client extends AbstractCharacter {
 				m_counters.STACounter = 0;
 				int massta = Util.Azar(1, Util.porcentaje(m_estads.maxStamina, 5));
 				m_estads.aumentarStamina(massta);
-				updateUserStats();
+				sendUpdateUserStats();
 				// enviarMensaje("Te sientes menos cansado.", FontType.INFO);
 				return true;
 			}
@@ -4766,19 +4632,16 @@ public class Client extends AbstractCharacter {
 		return false;
 	}
 
-	private void tiempoInvocacion() {
-		for (Npc element : m_mascotas) {
-			if (element != null) {
-				if (element.getContadores().TiempoExistencia > 0) {
-					element.getContadores().TiempoExistencia--;
-					if (element.getContadores().TiempoExistencia == 0) {
-						Npc mascota = element;
-						quitarMascota(element);
-						mascota.muereNpc(null);
-					}
+	private void checkSummonTimeout() {
+		getUserPets().getPets().forEach(pet -> {
+			if (pet.getContadores().TiempoExistencia > 0) {
+				pet.getContadores().TiempoExistencia--;
+				if (pet.getContadores().TiempoExistencia == 0) {
+					quitarMascota(pet);
+					pet.muereNpc(null);
 				}
 			}
-		}
+		});
 	}
 
 	long lTirarBasura;
@@ -4849,13 +4712,13 @@ public class Client extends AbstractCharacter {
 					userDie();
 				}
 				if (bEnviarStats) {
-					updateUserStats();
+					sendUpdateUserStats();
 				}
 				if (bEnviarAyS) {
 					enviarEstadsHambreSed();
 				}
-				if (hasPets()) {
-					tiempoInvocacion();
+				if (getUserPets().hasPets()) {
+					checkSummonTimeout();
 				}
 			}
 		} else {
@@ -5088,7 +4951,7 @@ public class Client extends AbstractCharacter {
 	// //################################# FIN TRABAJO
 	// ###################################
 
-	void volverCiudadano() {
+	public void volverCiudadano() {
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS) {
 			return;
@@ -5136,7 +4999,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	private void sendUserBovedaTxt(Client usuario) {
+	private void sendUserBovedaTxt(Player usuario) {
 		enviarMensaje("El usuario " + usuario.getNick(), FontType.INFO_B);
 		enviarMensaje("Tiene " + usuario.m_bancoInv.getCantObjs() + " objetos.", FontType.INFO);
 		InventoryObject obj;
@@ -5187,7 +5050,7 @@ public class Client extends AbstractCharacter {
 		m_spells.moveSpell(slot, dir);
 	}
 
-	private void sendUserMiniStatsTxt(Client usuario) {
+	private void sendUserMiniStatsTxt(Player usuario) {
 		if (usuario == null) {
 			return;
 		}
@@ -5250,7 +5113,7 @@ public class Client extends AbstractCharacter {
 		}
 	}
 
-	private int triggerZonaPelea(Client victima) {
+	private int triggerZonaPelea(Player victima) {
 		if (victima == null) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}
@@ -5265,7 +5128,7 @@ public class Client extends AbstractCharacter {
 		return MapCell.TRIGGER6_PROHIBE;
 	}
 
-	private void envenenarUsuario(Client victima) {
+	private void envenenarUsuario(Player victima) {
 		// UserEnvenenar
 		ObjectInfo arma = m_inv.getArma();
 		if (arma != null) {

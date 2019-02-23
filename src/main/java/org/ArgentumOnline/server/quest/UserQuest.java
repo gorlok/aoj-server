@@ -26,7 +26,7 @@
 package org.ArgentumOnline.server.quest;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Client;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.*;
 
@@ -52,7 +52,7 @@ public class UserQuest {
         return this.server.getQuest(this.m_nroQuest);
     }
     
-    public void checkNpcEnemigo(Client cliente, Npc npc) {
+    public void checkNpcEnemigo(Player cliente, Npc npc) {
         if (this.m_enQuest && npc.esDeQuest()) {
             Quest quest  = this.server.getQuest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
@@ -62,10 +62,10 @@ public class UserQuest {
         }
     }
 
-	public void doIniciarAventura(Client client) {
+	public void doIniciarAventura(Player client) {
 		// Comando /AVENTURA
 		// Se asegura que el target es un npc
-		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		Npc npc = client.getNearNpcSelected(Player.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
@@ -79,10 +79,10 @@ public class UserQuest {
 		getQuest().hacerQuest(client, npc);
 	}
 
-	public void doRecompensaAventura(Client client) {
+	public void doRecompensaAventura(Player client) {
 		// Comando /REWARD
 		// Se asegura que el target es un npc
-		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		Npc npc = client.getNearNpcSelected(Player.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
@@ -96,10 +96,10 @@ public class UserQuest {
 		getQuest().recibirRecompensaQuest(client);
 	}
 
-	public void doInfoAventura(Client client) {
+	public void doInfoAventura(Player client) {
 		// Comando /INFOQ
 		// Se asegura que el target es un npc
-		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		Npc npc = client.getNearNpcSelected(Player.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
@@ -113,10 +113,10 @@ public class UserQuest {
 		getQuest().sendInfoQuest(client);
 	}
 
-	public void doRendirseAventura(Client client) {
+	public void doRendirseAventura(Player client) {
 		// Comando /MERINDO
 		// Se asegura que el target es un npc
-		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		Npc npc = client.getNearNpcSelected(Player.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
@@ -130,10 +130,10 @@ public class UserQuest {
 		getQuest().userSeRinde(client);
 	}
 
-	public void doAdivinarAventura(Client client) {
+	public void doAdivinarAventura(Player client) {
 		// Comando /ADIVINA
 		// Se asegura que el target es un npc
-		Npc npc = client.getNearNpcSelected(Client.DISTANCE_QUEST);
+		Npc npc = client.getNearNpcSelected(Player.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
