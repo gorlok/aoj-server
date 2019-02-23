@@ -22,7 +22,6 @@ public class ClientProcessThread extends Thread {
 	private BytesReader r;
 
 	List<Client> clientQueue = new LinkedList<Client>();
-	List<byte[]> colaProcesos = new LinkedList<byte[]>();
 
 	public ClientProcessThread() {
 		setName("ClientProcessThread");
@@ -234,14 +233,14 @@ public class ClientProcessThread extends Thread {
 			if (this.clientQueue.size() > 0) { 
 				// hay alguien esperando ??
 				Client client = this.clientQueue.get(0);
-				client.colaClient.flip();
+				client.readBuffer.flip();
 
-				handleClientData(client.colaClient.array(), 
+				handleClientData(client.readBuffer.array(), 
 						client,
-						client.lengthClient.get(0));
+						client.bufferLengths.get(0));
 
-				client.colaClient.clear();
-				client.lengthClient.remove(0);
+				client.readBuffer.clear();
+				client.bufferLengths.remove(0);
 				this.clientQueue.remove(0);
 			}
 

@@ -3,7 +3,7 @@ package org.ArgentumOnline.server.npc;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.util.IniFile;
 
@@ -16,7 +16,7 @@ public class NpcTrainer extends Npc {
     short petsCount    = 0;
     Npc pets[] = new Npc[MAX_MASCOTAS_ENTRENADOR];
     
-	protected NpcTrainer(int npc_numero, AojServer server) {
+	protected NpcTrainer(int npc_numero, GameServer server) {
 		super(npc_numero, server);
 	}
 

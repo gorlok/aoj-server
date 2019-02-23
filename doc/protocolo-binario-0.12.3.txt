@@ -1,16 +1,9 @@
 # s=string
-# b=byte (1)
-# i=int  (2)
-# l=long (4)
-# f=float/single (4)
+# b=byte 1
+# i=int  2
+# l=long 4
+# f=float/single 4
 #
-# x[n] = array of n times 'x'
-#
-# (....) tupla, ejemplo: (b:x,b:y)
-# (....)[n]  array of n tuplas
-#
-# Constantes
-# NUMSKILLS
 #
 LoginExistingChar,s:userName,s:password,b:version1,b:version2,b:version3,i:versionGrafs,i:versionWavs,i:versionMidis,i:versionInits,i:versionMapas,i:versionAoExe,i:versionExtras
 ThrowDices
@@ -49,7 +42,7 @@ CreateNewGuild,s:desc,s:guildName,s:site,s:codex
 SpellInfo,b:spellSlot
 EquipItem,b:itemSlot
 ChangeHeading,b:heading
-ModifySkills,b[NUMSKILLS]
+ModifySkills,b[NUMSKILLS]:skills
 Train,b:petIndex
 CommerceBuy,b:slot,i:amount
 BankExtractItem,b:slot,i:amount
@@ -65,7 +58,7 @@ GuildRejectAlliance,s:guild
 GuildRejectPeace,s:guild
 GuildAcceptAlliance,s:guild
 GuildOfferPeace,s:guild,s:proposal
-GuildOfferAlliance:s:guild,s:proposal
+GuildOfferAlliance,s:guild,s:proposal
 GuildAllianceDetails,s:guild
 GuildPeaceDetails,s:guild
 GuildRequestJoinerInfo,s:userName
@@ -260,7 +253,7 @@ SetMOTD,s:newMOTD
 ChangeMOTD
 Ping
 SetIniVar,s:section,s:key,s:value
-##############################################################################################################################################
+#------------------------------------------------------------------------------------------------------------------------------
 LoggedMessage
 RemoveAllDialogs
 RemoveCharDialog,i:charIndex
@@ -325,9 +318,9 @@ ChangeInventorySlot,b:slot,i:objIndex,s:name,i:amount,b:equiped,i:grhIndex,b:obj
 ChangeBankSlot,b:slot,i:objIndex,s:name,i:amount,i:grhIndex,b:objType,i:maxHIT,i:minHIT,i:def,l:valor
 ChangeSpellSlot,b:slot,i:spell,s:name
 Attributes,b:fuerza,b:agilidad,b:inteligencia,b:carisma,b:constitucion
-BlacksmithWeapons,i:count,(s:name,i:lingH,i:lingP,i:lingO,i:index)[]
-BlacksmithArmors,i:count,(s:name,i:lingH,i:lingP,i:lingO,i:index)[]
-CarpenterObjects,i:count,(s:name,i:madera,i:index)[]
+BlacksmithWeapons,i:count,(s:name,i:lingH,i:lingP,i:lingO,i:index)[.]:weapons
+BlacksmithArmors,i:count,(s:name,i:lingH,i:lingP,i:lingO,i:index)[.]:armors
+CarpenterObjects,i:count,(s:name,i:madera,i:index)[.]:objects
 RestOK
 ErrorMsg,s:msg
 Blind
@@ -345,7 +338,7 @@ DiceRoll,b:fuerza,b:agilidad,b:inteligencia,b:carisma,b:constitucion
 MeditateToggle
 BlindNoMore
 DumbNoMore
-SendSkills,b[NUMSKILLS]
+SendSkills,b[NUMSKILLS]:skills
 TrainerCreatureList,s:npcList
 GuildNews,s:guildNews,s:enemiesList,s:alliesList
 OfferDetails,s:details
@@ -367,6 +360,4 @@ ShowMOTDEditionForm,s:currentMOTD
 ShowGMPanelForm
 UserNameList,s:userNamesList
 Pong
-##########################################################################################################################
-
-
+#------------------------------------------------------------------------------------------------------------

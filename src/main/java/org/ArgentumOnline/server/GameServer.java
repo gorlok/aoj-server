@@ -29,20 +29,12 @@ package org.ArgentumOnline.server;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -54,7 +46,6 @@ import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
-import org.ArgentumOnline.server.protocol.ClientProcessThread;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.Quest;
 import org.ArgentumOnline.server.util.Feedback;
@@ -68,21 +59,13 @@ import org.apache.logging.log4j.Logger;
  * AOJ Server main class
  * @author gorlok
  */
-public class AojServer implements Constants {
+public class GameServer implements Constants {
 	private static Logger log = LogManager.getLogger();
 	
 	public ManageServer manager = new ManageServer(this);
 	
-    private ClientProcessThread processThread;
-    
     private boolean useUPnP = true;
-    
-    private ServerSocketChannel server;
-    private Selector selector;
-    private final static int BUFFER_SIZE = 1024;
-    private ByteBuffer serverBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-    
-    private HashMap<SocketChannel, Client> m_clientSockets = new HashMap<>();
+
     private HashMap<Short, Client> m_clientes = new HashMap<>();
     private HashMap<Integer, Npc> 	m_npcs = new HashMap<>();
     
@@ -122,7 +105,7 @@ public class AojServer implements Constants {
     private Admins admins;
     private ObjectInfoStorage objectInfoStorage;
     
-    private AojServer() {
+    private GameServer() {
     	this.m_guildMngr = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
@@ -131,10 +114,10 @@ public class AojServer implements Constants {
     	this.objectInfoStorage = new ObjectInfoStorage();
     }
 
-    private static AojServer instance = null;
-    public static AojServer instance() {
+    private static GameServer instance = null;
+    public static GameServer instance() {
         if (instance == null) {
-			instance = new AojServer();
+			instance = new GameServer();
 		}
         return instance;
     }
@@ -266,7 +249,8 @@ public class AojServer implements Constants {
     
     public void shutdown() {
         this.m_corriendo = false;
-        this.processThread.endThread();
+        
+        this.networkServer.shutdown();
         System.out.println("=== Goodbye. Server closed. ===");
     }
     
@@ -284,85 +268,23 @@ public class AojServer implements Constants {
 		    	.collect(Collectors.toList());
     }
     
-    private void initServerSocket() 
-    throws java.io.IOException {
-        this.server = ServerSocketChannel.open();
-        this.server.configureBlocking(false);
-        this.server.socket().bind(new InetSocketAddress(SERVER_PORT));
-        log.info("Escuchando en el puerto " + SERVER_PORT);
-        this.selector = Selector.open();
-        this.server.register(this.selector, SelectionKey.OP_ACCEPT);
-    }
-    
-    private void acceptConnection() 
-    throws java.io.IOException {
-        // get client socket channel.
-        SocketChannel clientSocket = this.server.accept();
-        // Non blocking I/O
-        clientSocket.configureBlocking(false);
-        // recording to the selector (reading)
-        clientSocket.register(this.selector, SelectionKey.OP_READ);
-        Client cliente = new Client(clientSocket, this);
-        this.m_clientSockets.put(clientSocket, cliente);
-        this.m_clientes.put(cliente.getId(), cliente);
-        log.info("NUEVA CONEXION");
-    }
-    
-    public void closeConnection(Client cliente) 
-    throws java.io.IOException {
-        log.info("cerrando conexion");
-        
-        this.m_clientSockets.remove(cliente.socketChannel);
-        this.m_clientes_eliminar.add(cliente);
-        cliente.socketChannel.close();
-    }
-    
-    /** Lee datos de una conexión existente. */
-    private void readConnection(SocketChannel clientSocket) 
-    throws java.io.IOException {
-        Client cliente = this.m_clientSockets.get(clientSocket);
-        log.info("Recibiendo del cliente: " + cliente);
-        // Read bytes coming from the client.
-        this.serverBuffer.clear();
-        try {
-            clientSocket.read(this.serverBuffer);
-            
-            // process the message.
-            this.serverBuffer.flip();
-            
-            if (this.serverBuffer.limit() > 0) {
-            	cliente.lengthClient.add(this.serverBuffer.limit());
-            	cliente.colaClient.put(this.serverBuffer.array());
-                
-                this.processThread.addClientQueue(cliente);
-            }else {
-            	cliente.doSALIR();
-            }
-            
-        } catch (Exception e) {
-            cliente.doSALIR();
-            return;
-        }       
-    }
-    
     boolean loadBackup;
     public boolean isLoadBackup() {
 		return loadBackup;
 	}
     
+    private NetworkServer networkServer;
     /** Main loop of the game. */
     public void run(boolean loadBackup) {
     	this.loadBackup = loadBackup;
         loadAllData(loadBackup);
         
-        (this.processThread = new ClientProcessThread()).start();
-        
+        networkServer = NetworkServer.startServer(this);
         try {
-            initServerSocket();
         	if (this.useUPnP) {
         		NetworkUPnP.openUPnP();
         	}
-            // Main loop.
+
             this.startTime = Util.millis();
             long lastNpcAI = this.startTime;
             long lastFX = this.startTime;
@@ -377,26 +299,10 @@ public class AojServer implements Constants {
             long lastPasarSegundoTimer = this.startTime;
             this.m_corriendo = true;
             this.manager.start();
-            //setupCleanShutdown();
+            
+        	// Main loop.
             while (this.m_corriendo) {
-                // Wainting for events...
-                this.selector.select(40); // milisegundos
-                Set<SelectionKey> keys = this.selector.selectedKeys();
-                for (SelectionKey key: keys) {
-                    // if isAcceptable, then a client required a connection.
-                    if (key.isAcceptable()) {
-                        log.info("nueva conexion");
-                        acceptConnection();
-                        continue;
-                    }
-                    // if isReadable, then the server is ready to read
-                    if (key.isReadable()) {
-                        log.info("leer de conexion");
-                        readConnection((SocketChannel) key.channel());
-                        continue;
-                    }
-                }
-                keys.clear();
+            	
                 long now = Util.millis();
                 if ((now - lastNpcAI) > 400) {
                     doAI();
@@ -444,17 +350,16 @@ public class AojServer implements Constants {
                 }
                 eliminarClientes();
             }
-        } catch (UnknownHostException ex) {
-            log.fatal("AOServer run loop", ex);
-        } catch (java.net.BindException ex) {
-            log.fatal("El puerto ya está en uso. ¿El servidor ya está corriendo?", ex);
-        } catch (IOException ex) {
-            log.fatal("AOServer run loop", ex);
         } finally {
             doBackup();
             guardarUsuarios();
             log.info("Server apagado por doBackUp");
         }
+    }
+    
+    public void dropClient(Client client) {
+    	this.m_clientes_eliminar.add(client);
+    	this.networkServer.closeConnection(client);
     }
     
     private synchronized void eliminarClientes() {
@@ -546,6 +451,12 @@ public class AojServer implements Constants {
         Npc npc = getNpcLoader().createNpc(npcNumber);
         this.m_npcs.put(Integer.valueOf(npc.getId()), npc);
         return npc;
+    }
+    
+    public Client createClient(SocketChannel clientSocket) {
+        Client cliente = new Client(clientSocket, this);
+        this.m_clientes.put(cliente.getId(), cliente);    	
+        return cliente;
     }
     
     public void deleteNpc(Npc npc) {
@@ -830,6 +741,7 @@ public class AojServer implements Constants {
         }
     }
     
+    // FIXME
     private void checkIdleUser() {
     	for (Client cliente: getClientes()) {
             if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
@@ -1124,7 +1036,7 @@ public class AojServer implements Constants {
 		} else {
 			log.info("Arrancando sin usar backup");
 		}
-        AojServer.instance().run(loadBackup);
+        GameServer.instance().run(loadBackup);
     }
 
 }

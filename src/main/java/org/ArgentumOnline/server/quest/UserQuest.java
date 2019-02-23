@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.quest;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.*;
@@ -41,10 +41,10 @@ public class UserQuest {
     public boolean m_enQuest = false;
     public boolean m_realizoQuest = false;
     
-    private AojServer server;
+    private GameServer server;
     
     /** Creates a new instance of UserQuest */
-    public UserQuest(AojServer server) {
+    public UserQuest(GameServer server) {
     	this.server = server;
     }
     

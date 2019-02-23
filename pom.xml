@@ -6,7 +6,6 @@
 	<artifactId>aoserver</artifactId>
 	<version>0.0.1</version>
 	<build>
-		<!-- <sourceDirectory>src</sourceDirectory> -->
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -60,6 +59,13 @@
 			<artifactId>jackson-dataformat-yaml</artifactId>
 			<version>2.9.8</version>
 		</dependency>
+
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.33.Final</version>
+		</dependency>
+
 
 	</dependencies>
 

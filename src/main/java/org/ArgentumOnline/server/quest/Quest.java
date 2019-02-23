@@ -27,7 +27,7 @@ package org.ArgentumOnline.server.quest;
 
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.inventory.InventoryObject;
@@ -79,10 +79,10 @@ public class Quest implements Constants {
     /** Matar a un npc específico */
     public final static short OBJETIVO_MATAR_UN_NPC = 4;
 
-    AojServer server;
+    GameServer server;
     
     /** Creates a new instance of Quest */
-    public Quest(AojServer server, short nroQuest) {
+    public Quest(GameServer server, short nroQuest) {
     	this.server = server;
         this.nroQuest = nroQuest;
     }

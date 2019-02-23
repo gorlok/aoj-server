@@ -34,9 +34,9 @@ public class Admins {
     private short [] m_spawnList;
     private String [] m_spawnListNames;
     
-    AojServer server;
+    GameServer server;
 
-    public Admins(AojServer server) {
+    public Admins(GameServer server) {
     	this.server = server;
 	}
     

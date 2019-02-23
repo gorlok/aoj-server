@@ -35,7 +35,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Vector;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjectInfo;
@@ -84,7 +84,7 @@ public class Map implements Constants {
     short   m_version = 0; // FIXME se usa?
     MapPos m_startPos = MapPos.empty(); // FIXME se usa?
     
-    AojServer server;
+    GameServer server;
     
     /** Bloques o celdas del mapa. */
     MapCell m_cells[][] = new MapCell[MAPA_ANCHO][MAPA_ALTO];
@@ -99,7 +99,7 @@ public class Map implements Constants {
     Vector<Npc> m_npcs = new Vector<Npc>();
     
     /** Creates a new instance of Map */
-    public Map(short nroMapa, AojServer server) {
+    public Map(short nroMapa, GameServer server) {
     	this.server = server;
         this.nroMapa = nroMapa;
         

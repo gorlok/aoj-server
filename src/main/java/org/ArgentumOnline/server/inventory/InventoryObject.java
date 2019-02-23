@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.inventory;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjectInfo;
 
@@ -71,7 +71,7 @@ public class InventoryObject {
 
 	public boolean esRobable() {
 		// Determina qué objetos son robables.
-		var storage = AojServer.instance().getObjectInfoStorage();
+		var storage = GameServer.instance().getObjectInfoStorage();
 		
 		ObjectInfo info = storage.getInfoObjeto(this.objid);
 		

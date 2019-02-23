@@ -16,10 +16,10 @@ import static org.ArgentumOnline.server.Constants.*;
 public class UserStorage {
 	private static Logger log = LogManager.getLogger();
 
-	private AojServer server;
+	private GameServer server;
 	private Client user;
 	
-	public UserStorage(AojServer server, Client user) {
+	public UserStorage(GameServer server, Client user) {
 		this.server = server;
 		this.user = user;
 	}

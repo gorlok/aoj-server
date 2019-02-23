@@ -13,6 +13,7 @@ import static java.nio.ByteOrder.*;
  * littleEndian: indica el orden en que se tienen que leer los bytes.
  */
 public class BytesReader {
+	
     private byte[] bytes;
     private int pos;
     private int posMark;
@@ -95,7 +96,7 @@ public class BytesReader {
         return bytes.length;
     }
 
-    public int getPos() {
+	public int getPos() {
         return pos;
     }
 

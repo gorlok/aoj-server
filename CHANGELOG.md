@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-22
+- nuevo protocolo, compatible con AO 0.12.3 (se usa el cliente gs-zone-v0.12.3 como referencia)
+
 ### 2019-02-20
 - escribo en archivo una definición del protocolo binario, para usarlo en un generador de código
 

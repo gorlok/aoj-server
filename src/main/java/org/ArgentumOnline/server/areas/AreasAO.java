@@ -2,7 +2,7 @@ package org.ArgentumOnline.server.areas;
 
 import java.util.BitSet;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
@@ -32,7 +32,7 @@ public class AreasAO implements Constants {
 	private int areasRecibe[] = new int[12];
 	
 	//Declaramos el AojServer, que se iniciará en el método initAreas
-	AojServer server;
+	GameServer server;
 	
 	//Declaramos el mapa, que será iniciado en el initAreas
 	Map map;
@@ -66,7 +66,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Cargamos las áreas por mapa
 	 */
-	public void initAreas(AojServer server, Map map) {
+	public void initAreas(GameServer server, Map map) {
 		
 		this.server = server;
 		this.map = map;

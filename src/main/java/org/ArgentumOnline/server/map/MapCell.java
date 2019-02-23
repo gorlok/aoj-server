@@ -27,7 +27,7 @@ package org.ArgentumOnline.server.map;
 
 import java.util.BitSet;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.npc.Npc;
 
 /**
@@ -142,7 +142,7 @@ public class MapCell {
     }
     
     public Npc getNpc() {
-        return AojServer.instance().getNpcById(this.m_npc);
+        return GameServer.instance().getNpcById(this.m_npc);
     }
     
     public void setNpc(Npc npc) {

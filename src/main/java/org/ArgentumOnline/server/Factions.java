@@ -70,7 +70,7 @@ public class Factions implements Constants {
 
     ///////////////// Miembros de instancia:
     Client cliente;
-    AojServer server;
+    GameServer server;
     
     public boolean ArmadaReal  = false;
     public boolean FuerzasCaos = false;
@@ -83,7 +83,7 @@ public class Factions implements Constants {
     public boolean RecibioArmaduraReal   = false;
     public boolean RecibioArmaduraCaos   = false;
     
-    public Factions(AojServer server, Client cliente) {
+    public Factions(GameServer server, Client cliente) {
     	this.server = server;
         this.cliente = cliente;
     }

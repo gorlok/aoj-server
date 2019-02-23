@@ -1,6 +1,6 @@
 package org.ArgentumOnline.server.npc;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
@@ -11,7 +11,7 @@ import org.ArgentumOnline.server.util.IniFile;
 
 public class NpcMerchant extends Npc {
 
-	protected NpcMerchant(int npc_numero, AojServer server) {
+	protected NpcMerchant(int npc_numero, GameServer server) {
 		super(npc_numero, server);
 	}
 	

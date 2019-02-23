@@ -1,18 +1,18 @@
 package org.ArgentumOnline.server.npc;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.IniFile;
 
 public class NpcLoader {
 	
-	private AojServer server;
+	private GameServer server;
 	
     private static IniFile iniNPC = null;
     private static IniFile iniHostiles = null;
     private static IniFile iniBackup = null;
     
-    public NpcLoader(AojServer server) {
+    public NpcLoader(GameServer server) {
     	this.server = server;
 	}
     

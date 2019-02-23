@@ -69,16 +69,15 @@ import org.apache.logging.log4j.Logger;
 public class Client extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
 
-	public List<Integer> lengthClient = new LinkedList<Integer>();
-
 	String m_nick = "";
 	String m_password = ""; // FIXME SEGURIDAD
 
 	public SocketChannel socketChannel = null;
 
 	private final static int BUFFER_SIZE = 1024;
-	public ByteBuffer colaClient = ByteBuffer.allocate(2048);
-	public ByteBuffer clientBuffer;
+	public ByteBuffer readBuffer;
+	public ByteBuffer writeBuffer;
+	public List<Integer> bufferLengths = new LinkedList<Integer>();
 
 	String m_desc = ""; // Descripcion
 
@@ -134,14 +133,17 @@ public class Client extends AbstractCharacter {
 	UserInventory m_inv;
 	Inventory m_bancoInv; 
 
-	AojServer server;
+	GameServer server;
 
 	/** Creates a new instance of Client */
-	public Client(SocketChannel socketChannel, AojServer aoserver) {
+	public Client(SocketChannel socketChannel, GameServer aoserver) {
 		this.userStorage = new UserStorage(server, this);
 
-		this.clientBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-		this.clientBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		this.writeBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+		this.writeBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		
+		this.readBuffer = ByteBuffer.allocate(2048);
+		this.readBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
 		this.server = aoserver;
 		this.setId(server.getNextId());
@@ -418,11 +420,11 @@ public class Client extends AbstractCharacter {
 		try {
 			log.debug(">>" + m_nick + ">> " + msg);
 
-			this.clientBuffer.clear();
-			BufferWriter.write(this.clientBuffer, msg, params);
-			this.clientBuffer.flip();
+			this.writeBuffer.clear();
+			BufferWriter.write(this.writeBuffer, msg, params);
+			this.writeBuffer.flip();
 
-			if (socketChannel.write(clientBuffer) == 0) {
+			if (socketChannel.write(writeBuffer) == 0) {
 				// FIXME: ESTO SIGNIFICA QUE NO PUDO ESCRIBIR, HAY QUE ENCOLAR
 				// SI NO ESCRIBIO TODO!!!
 				log.error("zero bytes writen!");
@@ -2165,11 +2167,7 @@ public class Client extends AbstractCharacter {
 		} catch (Exception ex) {
 			log.fatal("ERROR EN doSALIR(): ", ex);
 		} finally {
-			try {
-				server.closeConnection(this);
-			} catch (java.io.IOException e) {
-				e.printStackTrace();
-			}
+			server.dropClient(this);
 			if (wasLogged) {
 				try {
 					userStorage.saveUserToStorage();
@@ -2871,7 +2869,7 @@ public class Client extends AbstractCharacter {
 
 	public void encarcelar(int minutos, String gm_name) {
 		m_counters.Pena = minutos;
-		if (warpUser(AojServer.WP_PRISION.map, AojServer.WP_PRISION.x, AojServer.WP_PRISION.y, true)) {
+		if (warpUser(GameServer.WP_PRISION.map, GameServer.WP_PRISION.x, GameServer.WP_PRISION.y, true)) {
 			if (gm_name == null) {
 				enviarMensaje("Has sido encarcelado, deberas permanecer en la carcel " + minutos + " minutos.",
 						FontType.INFO);

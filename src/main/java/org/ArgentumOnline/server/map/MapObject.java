@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.map;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
 
 /**
@@ -47,7 +47,7 @@ public class MapObject {
 	}
 
 	public ObjectInfo getInfo() {
-		return AojServer.instance().getObjectInfoStorage().getInfoObjeto(this.obj_ind); // FIXME
+		return GameServer.instance().getObjectInfoStorage().getInfoObjeto(this.obj_ind); // FIXME
 	}
 
 	@Override

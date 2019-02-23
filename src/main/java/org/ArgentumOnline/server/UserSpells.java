@@ -51,9 +51,9 @@ public class UserSpells implements Constants {
 	short m_hechizos[] = new short[MAX_HECHIZOS];
 	
 	private Client client;
-	private AojServer server;
+	private GameServer server;
 	
-	public UserSpells(AojServer server, Client client) {
+	public UserSpells(GameServer server, Client client) {
 		this.server = server;
 		this.client = client;
 	}

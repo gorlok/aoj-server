@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.FontType;
@@ -63,13 +63,13 @@ public class Guild {
     
     private static java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
 
-    private AojServer server;
+    private GameServer server;
     
     /** 
      * Guild of users / Clan de usuarios.
      * @author Gorlok 
      */
-    public Guild(AojServer server) {
+    public Guild(GameServer server) {
     	this.server = server;
     }
     

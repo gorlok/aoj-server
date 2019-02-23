@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class ManageServer extends Thread {
-	AojServer server;
+	GameServer server;
 	
 	enum Command {
 		help("help"),
@@ -22,7 +22,7 @@ public class ManageServer extends Thread {
 		}
 	};
 
-	public ManageServer(AojServer server) {
+	public ManageServer(GameServer server) {
 		this.server = server;
 	}
 

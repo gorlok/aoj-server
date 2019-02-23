@@ -29,7 +29,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.ArgentumOnline.server.AbstractCharacter;
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjectInfo;
@@ -211,10 +211,10 @@ public class Npc extends AbstractCharacter implements Constants {
     
     MapPos m_orig  = MapPos.empty();
     
-    protected AojServer server;
+    protected GameServer server;
     
     /** Creates a new instance of NPC */
-    protected Npc(int npc_numero, AojServer server) {
+    protected Npc(int npc_numero, GameServer server) {
     	this.server = server;
     	
         this.m_numero = npc_numero;
@@ -231,7 +231,7 @@ public class Npc extends AbstractCharacter implements Constants {
      * @param server
      * @return a new pet npc
      */
-    public static Npc spawnPetNpc(int nroNPC, MapPos orig, boolean bajoTecho, AojServer server) {
+    public static Npc spawnPetNpc(int nroNPC, MapPos orig, boolean bajoTecho, GameServer server) {
         // Crea un NPC del tipo NRONPC
         Npc npc = server.createNpc(nroNPC);
         Map mapa = server.getMapa(orig.map);
@@ -250,7 +250,7 @@ public class Npc extends AbstractCharacter implements Constants {
     
     public static Npc spawnNpc(int indiceNPC, MapPos orig, boolean conFX, boolean conRespawn) {
         // Crea un NPC del tipo indiceNPC
-    	AojServer server = AojServer.instance();
+    	GameServer server = GameServer.instance();
         Npc npc = server.createNpc(indiceNPC);
         if (!conRespawn) {
 			npc.m_flags.set(FLAG_RESPAWN, false);

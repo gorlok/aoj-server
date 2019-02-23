@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Skill;
@@ -56,9 +56,9 @@ import org.apache.logging.log4j.Logger;
 public class GuildManager {
 	private static Logger log = LogManager.getLogger();
 
-	private AojServer server;
+	private GameServer server;
 	
-	public GuildManager(AojServer server) {
+	public GuildManager(GameServer server) {
 		this.server = server;
 	}
 	

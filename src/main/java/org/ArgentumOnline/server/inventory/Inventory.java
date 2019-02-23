@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.inventory;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
 
 /**
@@ -36,10 +36,10 @@ public class Inventory {
     
     protected InventoryObject objs[] = null;
     
-    AojServer server;
+    GameServer server;
     
     /** Creates a new instance of Inventory */
-    public Inventory(AojServer server, int size) {
+    public Inventory(GameServer server, int size) {
         this.server = server;
 
         this.objs = new InventoryObject[size];

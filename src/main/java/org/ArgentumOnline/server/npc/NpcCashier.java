@@ -1,6 +1,6 @@
 package org.ArgentumOnline.server.npc;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.util.FontType;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 public class NpcCashier extends Npc {
 	private static Logger log = LogManager.getLogger();
 
-	protected NpcCashier(int npc_numero, AojServer server) {
+	protected NpcCashier(int npc_numero, GameServer server) {
 		super(npc_numero, server);
 	}
 	

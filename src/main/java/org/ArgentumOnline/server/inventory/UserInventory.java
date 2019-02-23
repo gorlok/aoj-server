@@ -28,7 +28,7 @@ package org.ArgentumOnline.server.inventory;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.AojServer;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Client;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Pos;
@@ -69,7 +69,7 @@ public class UserInventory extends Inventory implements Constants {
     int espadaMataDragonesSlot = 0;
     
     /** Creates a new instance of UserInventory */
-    public UserInventory(AojServer server, Client dueño, int slots) {
+    public UserInventory(GameServer server, Client dueño, int slots) {
         super(server, slots);
         this.dueño = dueño;
     }
