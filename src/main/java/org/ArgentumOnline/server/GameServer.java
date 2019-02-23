@@ -277,6 +277,7 @@ public class GameServer implements Constants {
 	}
     
     private NetworkServer networkServer;
+    
     /** Main loop of the game. */
     public void runGameLoop() {
         loadAllData(loadBackup);
@@ -304,6 +305,7 @@ public class GameServer implements Constants {
             
         	// Main loop.
             while (this.m_corriendo) {
+            	// FIXME add Updates/Seconds and warning when low.
             	
                 long now = Util.millis();
                 if ((now - lastNpcAI) > 400) {
@@ -339,7 +341,7 @@ public class GameServer implements Constants {
                     lastPiqueteTimer = now;
                 }
                 if ((now - lastPurgarPenas) > 60000) {
-                    purgarPenas();
+                    purgePenalties();
                     lastPurgarPenas = now;
                 }
                 if ((now - lastAutoSaveTimer) > 60000) {
@@ -379,7 +381,6 @@ public class GameServer implements Constants {
 				" KB"; 
     }
     
-    /** Load maps / Cargar los m_mapas */
     private void loadMaps(boolean loadBackup) {
     	log.trace("loading maps");
         this.maps = new Vector<Map>();
@@ -391,7 +392,6 @@ public class GameServer implements Constants {
         }
     }
     
-    /** Load spells / Cargar los hechizos */
     private void loadSpells() {
     	log.trace("loading spells");
         this.spells = new Vector<Spell>();
@@ -561,6 +561,7 @@ public class GameServer implements Constants {
     public void guardarUsuarios() {
         this.m_haciendoBackup = true;
         try {
+        	// FIXME
             //enviarATodos(MSG_BKW);
             //enviarATodos(MSG_TALK, "Servidor> Grabando Personajes" + FontType.SERVER);
             for (Player cli: getClientes()) {
@@ -728,7 +729,7 @@ public class GameServer implements Constants {
 		}
     }
     
-    public void purgarPenas() {
+    public void purgePenalties() {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.getFlags().UserLogged) {
                 if (cli.m_counters.Pena > 0) {
@@ -743,8 +744,8 @@ public class GameServer implements Constants {
         }
     }
     
-    // FIXME
     private void checkIdleUser() {
+        // FIXME
     	for (Player cliente: getClientes()) {
             if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
                 cliente.m_counters.IdleCount++;
@@ -780,7 +781,7 @@ public class GameServer implements Constants {
         this.minutos++;
         if (this.minutos >= IntervaloMinutosWs) {
             doBackup();
-            ///////// fixme
+            ///////// FIXME
             // aClon.VaciarColeccion();
             this.minutos = 0;
         }
@@ -791,7 +792,7 @@ public class GameServer implements Constants {
         } else {
             this.minutosLatsClean++;
         }
-        purgarPenas();
+        purgePenalties();
         //checkIdleUser();
         // <<<<<-------- Log the number of users online ------>>>
         log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
@@ -898,7 +899,7 @@ public class GameServer implements Constants {
   
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
     public void doBackup() {
-        // Public Sub DoBackUp()
+    	// FIXME
         this.m_haciendoBackup = true;
         //enviarATodos(MSG_BKW);
       //  enviarATodos(MSG_TALK, "Servidor> Realizando WorldSave..." + FontType.SERVER);
@@ -915,7 +916,7 @@ public class GameServer implements Constants {
     }
     
     private void saveGuildsDB() {
-        /////////// fixme - fixme - fixme
+        /////////// FIXME
     }
     
     public void limpiarMundo(Player cli) {
@@ -926,7 +927,6 @@ public class GameServer implements Constants {
     }
     
     private int limpiarMundo() {
-        //Sub LimpiarMundo()
     	int cant = 0;
     	for (MapPos pos: this.trashCollector) {
             Map mapa = getMapa(pos.map);
@@ -938,6 +938,7 @@ public class GameServer implements Constants {
     }
     
     private synchronized void worldSave() {
+    	// FIXME
         //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.INFO);
         // Hacer un respawn de los guardias en las pos originales.
         reSpawnOrigPosNpcs();

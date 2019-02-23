@@ -617,7 +617,7 @@ public class GuildManager {
     }
     
     private boolean canCreateGuild(Player cliente) {
-        if (cliente.level() < 20) {
+        if (cliente.getEstads().ELV < 20) {
             cliente.enviarMensaje("Para fundar un clan debes de ser nivel 20 o superior", FontType.GUILD);
             return false;
         }

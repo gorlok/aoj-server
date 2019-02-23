@@ -28,7 +28,6 @@ package org.ArgentumOnline.server;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
-import java.security.AllPermission;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -138,7 +137,6 @@ public class Player extends AbstractCharacter {
 
 	GameServer server;
 
-	/** Creates a new instance of Client */
 	public Player(SocketChannel socketChannel, GameServer aoserver) {
 		this.userStorage = new UserStorage(server, this);
 		this.server = aoserver;
@@ -187,13 +185,6 @@ public class Player extends AbstractCharacter {
 		return this.userPets;
 	}
 	
-	/**
-	 * Gives the current user level.
-	 */
-	public int level() {
-		return m_estads.ELV;
-	}
-
 	public GuildUser guildInfo() {
 		return guildUser;
 	}
@@ -203,20 +194,10 @@ public class Player extends AbstractCharacter {
 		return (m_prevCRC = m_prevCRC % CRCKEY);
 	}
 
-	/**
-	 * Gives the user race.
-	 * 
-	 * @return race
-	 */
 	public short getRaza() {
 		return m_raza;
 	}
 
-	/**
-	 * Gives the user nickname.
-	 * 
-	 * @return nickname
-	 */
 	public String getNick() {
 		return m_nick;
 	}
@@ -225,11 +206,6 @@ public class Player extends AbstractCharacter {
 		return getNick() != null && !getNick().isEmpty();
 	}
 
-	/**
-	 * Gives the user character class.
-	 * 
-	 * @return the character's class
-	 */
 	public CharClass getClase() {
 		return m_clase;
 	}
@@ -243,171 +219,81 @@ public class Player extends AbstractCharacter {
 		m_quest.m_enQuest = true;
 	}
 
-	/**
-	 * Returns true if the character is criminal.
-	 * 
-	 * @return true if character is criminal.
-	 */
 	public boolean esCriminal() {
 		return m_reputacion.esCriminal();
 	}
 
-	/**
-	 * Returns true if the character is alive (not a ghost).
-	 * 
-	 * @return true if character is alive (not a ghost).
-	 */
 	public boolean isAlive() {
 		return !m_flags.Muerto;
 	}
 
-	/**
-	 * Returns true if the character is not visible.
-	 * 
-	 * @return true if the character is not visible.
-	 */
 	public boolean estaInvisible() {
 		return m_flags.Invisible;
 	}
 
-	/**
-	 * Returns true if the character is hidden.
-	 * 
-	 * @return true if the character is hidden.
-	 */
 	public boolean estaOculto() {
 		return m_flags.Oculto;
 	}
 
-	/**
-	 * Returns true if the character is sailing.
-	 * 
-	 * @return true if the character is sailing.
-	 */
 	public boolean estaNavegando() {
 		return m_flags.Navegando;
 	}
 
-	/**
-	 * Returns true if the character is a god.
-	 * 
-	 * @return true if the character is a god.
-	 */
 	public boolean esDios() {
 		return m_flags.Privilegios == 3;
 	}
 
-	/**
-	 * Returns true if the character is a half-god.
-	 * 
-	 * @return true if the character is a half-god.
-	 */
 	public boolean esSemiDios() {
 		return m_flags.Privilegios == 2;
 	}
 
-	/**
-	 * Returns true if the character is an adviser.
-	 * 
-	 * @return true if the character is an adviser.
-	 */
 	public boolean esConsejero() {
 		return m_flags.Privilegios == 1;
 	}
 
-	/**
-	 * Returns true if the character is a game master.
-	 * 
-	 * @return true if the character is a game master.
-	 */
 	public boolean esGM() {
 		return m_flags.Privilegios > 0;
 	}
 
-	/**
-	 * Returns true if the character is working.
-	 * 
-	 * @return true if the character is working.
-	 */
 	public boolean estaTrabajando() {
 		return m_flags.Trabajando;
 	}
 
-	/**
-	 * Gives the user's stats.
-	 * 
-	 * @return the user's stats.
-	 */
 	public UserStats getEstads() {
 		return m_estads;
 	}
 
-	/**
-	 * Gives the user's reputation.
-	 * 
-	 * @return the user's reputation.
-	 */
 	public Reputation getReputacion() {
 		return m_reputacion;
 	}
 
-	/**
-	 * Gives the user's flags.
-	 * 
-	 * @return user's flags
-	 */
 	public UserFlags getFlags() {
 		return m_flags;
 	}
 
-	/**
-	 * Gives the user's counters.
-	 * 
-	 * @return user's counters.
-	 */
 	public UserCounters getCounters() {
 		return m_counters;
 	}
 
-	/**
-	 * Gives a string representation of the user.
-	 * 
-	 * @return string representation of the user.
-	 */
 	@Override
 	public String toString() {
-		return "Cliente(id=" + getId() + " nick=" + m_nick + ")";
+		return "Player(id=" + getId() + ",nick=" + m_nick + ")";
 	}
 
-	/**
-	 * Gives the user's faction.
-	 * 
-	 * @return user's faction.
-	 */
 	public Factions getFaccion() {
 		return m_faccion;
 	}
 
-	/**
-	 * Gives the user's inventory.
-	 * 
-	 * @return user's inventory.
-	 */
 	public UserInventory getInv() {
 		return m_inv;
 	}
 
-	/**
-	 * Returns true if the user has the attack lock.
-	 * 
-	 * @return true if the user has the attack lock.
-	 */
 	public boolean tieneSeguro() {
 		return m_flags.Seguro;
 	}
 
 	/**
-	 * Sends a message to the user.
+	 * Sends a network packet to the player.
 	 * 
 	 * @param msg    is the message type to send.
 	 * @param params is the parameters of the message (optional).
@@ -1674,16 +1560,6 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void doWLC(short x, short y, short tLong) {
-		// Comando WLC
-		// Clic izquierdo en modo trabajo
-		// StringTokenizer st = new StringTokenizer(s, ",");
-		// short x = Short.parseShort(st.nextToken());
-		// short y = Short.parseShort(st.nextToken());
-		// short tLong = Short.parseShort(st.nextToken());
-		// Log.serverLogger().fine("x=" + x);
-		// Log.serverLogger().fine("y=" + y);
-		// Log.serverLogger().fine("tLong=" + tLong);
-
 		Pos pos = new Pos(x, y);
 		if (!isAlive() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
@@ -2099,11 +1975,6 @@ public class Player extends AbstractCharacter {
 		enviarMensaje("La descripcion a cambiado.", FontType.INFO);
 	}
 
-	/**
-	 * Change user look direction
-	 * 
-	 * @param heading is new direction
-	 */
 	public void changeHeading(short heading) {
 		m_infoChar.m_dir = heading;
 		sendCharacterChange();
@@ -2121,13 +1992,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarValCode() {
-		// //// fixme
-		// <<<<<<<<<<< MODULO PRIVADO DE CADA IMPLEMENTACION >>>>>>
-		// UserList(UserIndex).flags.ValCoDe = CInt(RandomNumber(20000, 32000))
-		// UserList(UserIndex).RandKey = CLng(RandomNumber(0, 99999))
-		// UserList(UserIndex).PrevCRC = UserList(UserIndex).RandKey
-		// UserList(UserIndex).PacketNumber = 100
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+		// FIXME
 		// enviar(MSG_VAL, (short) 345, (short) 343);
 	}
 
@@ -2580,8 +2445,8 @@ public class Player extends AbstractCharacter {
 				m_estads.Exp); // expteriencia
 	}
 
-	// FIXME
 	public void enviarEstadsHambreSed() {
+		// FIXME
 		// Ejemplo: EHYS100,100,100,100
 		// "EHYS" MaxAGU MinAGU MaxHam MinHam
 		// enviar(MSG_EHYS, m_estads.MaxAGU, m_estads.MinAGU,
@@ -2863,6 +2728,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void volverseOculto() {
+		// FIXME
 		m_flags.Oculto = true;
 		m_flags.Invisible = true;
 		Map mapa = server.getMapa(m_pos.map);
@@ -2902,20 +2768,12 @@ public class Player extends AbstractCharacter {
 			texto = texto.substring(0, MAX_TEXTO_HABLAR);
 		}
 
-		short id = (short) quienId;
-
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.ChatOverHead, color, texto, (short) quienId);
+			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.ChatOverHead, color, texto, (short)quienId);
 		}
 	}
 
-	/**
-	 * Crea mascotas temporales invocadas por hechizos del usuario
-	 * @param npcId
-	 * @param targetPos
-	 * @return
-	 */
 	public Npc crearMascotaInvocacion(int npcId, MapPos targetPos) {
 		if (getUserPets().isFullPets()) {
 			return null;
@@ -2999,11 +2857,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	/*
+	 * FIXME
 	 * private void enviarATodosCC() { Mapa m = server.getMapa(m_pos.mapa); if (m ==
 	 * null) return; m.enviarATodos(getCC()); }
 	 */
 
 	private void enviarIP() {
+		// FIXME
 		// enviar(MSG_IP, getId());
 	}
 
@@ -3012,6 +2872,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void enviarCambioMapa(short mapa) {
+		// FIXME
 		// enviar(MSG_CM, (short) mapa);
 		// enviarMidi(13);
 	}
@@ -3021,6 +2882,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void enviarMidi(String midi) {
+		// FIXME
 		// enviar(MSG_TM, midi);
 	}
 
@@ -3055,7 +2917,6 @@ public class Player extends AbstractCharacter {
 		Map mapa = server.getMapa(m_pos.map);
 		// Sonido
 		if (mapa != null) {
-			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TW, sonido);
 			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.PlayWave, (byte) sonido, m_pos.x, m_pos.y);
 		}
 	}
@@ -3253,6 +3114,7 @@ public class Player extends AbstractCharacter {
 			int aumenta = Util.Azar(1, prob);
 
 			int lvl = m_estads.ELV;
+			// FIXME
 			// if (lvl > MAX_SKILLS)
 			// return;
 
@@ -3300,6 +3162,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarSubirNivel(int pts) {
+		// FIXME
 		// enviar(MSG_SUNI, pts);
 	}
 
@@ -3878,6 +3741,7 @@ public class Player extends AbstractCharacter {
 			userDañoUser(victima);
 		} else {
 			enviarSonido(SOUND_SWING);
+			// FIXME
 			// enviar(MSG_U1);
 			// victima.enviar(MSG_U3, m_nick);
 		}
@@ -4164,8 +4028,7 @@ public class Player extends AbstractCharacter {
 		return false;
 	}
 
-	public void connectNewUser(String nick, String clave, short raza, short genero, CharClass clase, String email,
-			short hogar) {
+	public void connectNewUser(String nick, String clave, short raza, short genero, CharClass clase, String email, short hogar) {
 		// Validar los datos recibidos :-)
 		m_nick = nick;
 		if (!server.getAdmins().nombrePermitido(m_nick)) {
@@ -4244,18 +4107,18 @@ public class Player extends AbstractCharacter {
 		connectUser(nick, clave);
 	}
 
-	// FIXME
 	static String getPjFile(String nick) {
+		// FIXME
 		return Constants.CHARFILES_FOLDER + java.io.File.separator + nick.toLowerCase() + ".chr";
 	}
 
-	// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
 	public boolean existePersonaje() {
+		// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
 		return Util.existeArchivo(getPjFile(m_nick));
 	}
 
-	// FIXME esto no tiene porque estar en esta clase...
 	public short indiceRaza(String nombreRaza) {
+		// TODO esto no tiene porque estar en esta clase...
 		if (nombreRaza.equalsIgnoreCase("HUMANO")) {
 			return RAZA_HUMANO;
 		} else if (nombreRaza.equalsIgnoreCase("ELFO")) {
@@ -4272,8 +4135,8 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	// FIXME esto no tiene porque estar en esta clase...
 	public short indiceCiudad(String ciudad) {
+		// TODO esto no tiene porque estar en esta clase...
 		for (short i = 0; i < Constants.CIUDADES_NOMBRES.length; i++) {
 			if (Constants.CIUDADES_NOMBRES[i].equalsIgnoreCase(ciudad)) {
 				return i;
@@ -4432,6 +4295,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void efectoCegueEstu() {
+		// FIXME
 		if (m_counters.Ceguera > 0) {
 			m_counters.Ceguera--;
 		} else {
@@ -4625,6 +4489,7 @@ public class Player extends AbstractCharacter {
 				int massta = Util.Azar(1, Util.porcentaje(m_estads.maxStamina, 5));
 				m_estads.aumentarStamina(massta);
 				sendUpdateUserStats();
+				// FIXME
 				// enviarMensaje("Te sientes menos cansado.", FontType.INFO);
 				return true;
 			}
@@ -4693,6 +4558,7 @@ public class Player extends AbstractCharacter {
 
 						// termina de descansar automaticamente
 						if (m_estads.MaxHP == m_estads.MinHP && m_estads.maxStamina == m_estads.stamina) {
+							// FIXME
 							// enviar(MSG_DOK);
 							enviarMensaje("Has terminado de descansar.", FontType.INFO);
 							m_flags.Descansar = false;
@@ -4948,8 +4814,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	// //################################# FIN TRABAJO
-	// ###################################
+	// ################################# FIN TRABAJO ###################################
 
 	public void volverCiudadano() {
 		Map mapa = server.getMapa(m_pos.map);
@@ -4967,6 +4832,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void actualizarUserChar() {
+		// FIXME
 		Map mapa = server.getMapa(m_pos.map);
 		// mapa.enviarATodos(MSG_BP, getId());
 		// mapa.enviarATodos(MSG_CC, ccParams());
@@ -5032,7 +4898,7 @@ public class Player extends AbstractCharacter {
 					}
 				}
 			} catch (java.io.IOException e) {
-				// / fixme
+				// FIXME
 			}
 		} else {
 			enviarMensaje("Usuario inexistente: " + pj, FontType.INFO);
@@ -5063,8 +4929,6 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void sendUserMiniStatsTxtFromChar(String pj) {
-		// BanDetailPath = App.Path & "\logs\" & "BanDetail.dat"
-		// CharFile = CharPath & CharName & ".chr"
 		if (Util.existeArchivo(getPjFile(pj))) {
 			try {
 				IniFile ini = new IniFile(getPjFile(pj));
@@ -5081,7 +4945,7 @@ public class Player extends AbstractCharacter {
 							+ ini.getString("BAN", "Reason"), FontType.FIGHT);
 				}
 			} catch (java.io.IOException e) {
-				// fixme
+				// FIXME
 			}
 		} else {
 			enviarMensaje("El pj no existe: " + pj, FontType.INFO);
@@ -5106,7 +4970,7 @@ public class Player extends AbstractCharacter {
 					}
 				}
 			} catch (java.io.IOException e) {
-				// fixme
+				// FIXME
 			}
 		} else {
 			enviarMensaje("El pj no existe: " + pj, FontType.INFO);
@@ -5174,7 +5038,7 @@ public class Player extends AbstractCharacter {
 					.append(ini.getString("FACCIONES", "CiudMatados")).append(",");
 			return sb.toString();
 		} catch (java.io.IOException e) {
-			// fixme
+			// FIXME
 		}
 		return null;
 	}
