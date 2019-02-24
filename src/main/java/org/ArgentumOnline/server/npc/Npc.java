@@ -42,6 +42,7 @@ import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Direction;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
+import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
@@ -261,8 +262,8 @@ public class Npc extends AbstractCharacter implements Constants {
         int i = 0;
         while (!hayPosValida && i < MAXSPAWNATTEMPS) {
             if (!orig.isValid()) {
-                orig.x = (short) Util.Azar(1, MAPA_ANCHO);
-                orig.y = (short) Util.Azar(1, MAPA_ALTO);
+                orig.x = (byte) Util.Azar(1, MAPA_ANCHO);
+                orig.y = (byte) Util.Azar(1, MAPA_ALTO);
             }
             tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), false);
             if (tmp != null) {
@@ -1001,7 +1002,7 @@ public class Npc extends AbstractCharacter implements Constants {
             int azar = Util.Azar(0, this.m_nroExpresiones - 1);
             Map mapa = this.server.getMapa(this.m_pos.map);
             if (mapa != null) {            
-                hablarAlArea(COLOR_BLANCO, this.m_expresiones[azar]);
+                hablarAlArea(Color.COLOR_BLANCO, this.m_expresiones[azar]);
             }
         }
     }
@@ -1010,7 +1011,9 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.ChatOverHead, color, texto, this.getId());
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, 
+        			ServerPacketID.ChatOverHead, texto, this.getId(), 
+        			Color.r(color), Color.g(color), Color.b(color));
         }
     }
     

@@ -27,12 +27,14 @@ public class UserPets {
 		this.pets.add(pet);
 	}
 	
-	public void removeAll() {
+	public int removeAll() {
+		int count = pets.size();
 		pets.forEach(pet -> {
 			pet.releasePet();
 			pet.quitarNPC();
 		});
 		pets.clear();
+		return count;
 	}
 	
 	/** Ordenar a las mascotas del usuario atacar a un Npc */

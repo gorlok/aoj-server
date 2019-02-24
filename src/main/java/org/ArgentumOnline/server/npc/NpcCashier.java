@@ -1,5 +1,7 @@
 package org.ArgentumOnline.server.npc;
 
+import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
+
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.util.FontType;

@@ -361,7 +361,7 @@ public class GameServer implements Constants {
         }
     }
     
-    public void dropClient(Player client) {
+    public synchronized void dropClient(Player client) {
     	this.m_clientes_eliminar.add(client);
     	this.networkServer.closeConnection(client);
     }

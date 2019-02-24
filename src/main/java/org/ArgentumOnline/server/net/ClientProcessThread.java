@@ -56,7 +56,7 @@ public class ClientProcessThread extends Thread {
 					break;
 
 				case Walk: // move
-					short dir = r.readShort();
+					byte dir = (byte)r.readByte();
 					cliente.mover(Direction.value(dir));
 					break;
 
@@ -66,45 +66,44 @@ public class ClientProcessThread extends Thread {
 					break;
 
 				case LeftClick: // Left click
-					short x = r.readShort();
-					short y = r.readShort();
+					byte x = (byte)r.readByte();
+					byte y = (byte)r.readByte();
 					cliente.clicIzquierdoMapa(x, y);
 					break;
 
 				case DoubleClick: // Right click / Doble clic ?
-					x = r.readShort();
-					y = r.readShort();
+					x = (byte)r.readByte();
+					y = (byte)r.readByte();
 					cliente.clicDerechoMapa(x, y);
 					break;
 
 				case WorkLeftClick:// WLC
-					x = r.readShort();
-					y = r.readShort();
+					x = (byte)r.readByte();
+					y = (byte)r.readByte();
 					short usingskill = r.readShort();
 					cliente.doWLC(x, y, usingskill);
 					break;
 
 				case ChangeHeading: // change heading
-					dir = r.readShort();
+					dir = (byte)r.readByte();
 					if (dir > 0)
 						cliente.changeHeading(dir);
 					break;
 
 				case MoveSpell:
-					dir = r.readShort();
+					dir = (byte)r.readByte();
 					short nroSpell = r.readShort();
 					cliente.moveSpell(dir, nroSpell);
 					break;
 
 				case CastSpell:
-					nroSpell = r.readShort();
-					// dir = r.readShort();
+					nroSpell = (byte)r.readByte();
 					cliente.doLanzarHechizo(nroSpell);
 					cliente.doUK(Skill.SKILL_Magia);
 					break;
 
 				case Work:
-					short skill = r.readShort();
+					byte skill = (byte)r.readByte();
 					cliente.doUK(skill);
 					break;
 
@@ -228,7 +227,7 @@ public class ClientProcessThread extends Thread {
 
 		while (actived) {
 			try {
-				Thread.sleep(1); // pausa de unos ms...
+				Thread.sleep(1000); // 1 sec
 			} catch (Exception e) {}
 
 			if (this.clientQueue.size() > 0) { 

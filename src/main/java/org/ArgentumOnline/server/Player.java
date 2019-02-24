@@ -57,12 +57,14 @@ import org.ArgentumOnline.server.npc.NpcTrainer;
 import org.ArgentumOnline.server.protocol.BufferWriter;
 import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.UserQuest;
+import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import static org.ArgentumOnline.server.util.Color.*;
 
 /**
  * @author gorlok
@@ -370,19 +372,19 @@ public class Player extends AbstractCharacter {
 			m_estads.addGold( cant );
 			hablar(COLOR_BLANCO, "Felicidades! Has ganado " + cant + " monedas de oro!", npc.getId());
 			/*
-			 * fixme Apuestas.Perdidas += cant; Call WriteVar(DatPath & "apuestas.dat",
+			 * FIXME Apuestas.Perdidas += cant; Call WriteVar(DatPath & "apuestas.dat",
 			 * "Main", "Perdidas", CStr(Apuestas.Perdidas))
 			 */
 		} else {
 			m_estads.addGold( -cant );
 			hablar(COLOR_BLANCO, "Lo siento, has perdido " + cant + " monedas de oro.", npc.getId());
 			/*
-			 * fixme Apuestas.Ganancias = Apuestas.Ganancias + N Call WriteVar(DatPath &
+			 * FIXME Apuestas.Ganancias = Apuestas.Ganancias + N Call WriteVar(DatPath &
 			 * "apuestas.dat", "Main", "Ganancias", CStr(Apuestas.Ganancias))
 			 */
 		}
 		/*
-		 * fixme Apuestas.Jugadas = Apuestas.Jugadas + 1 Call WriteVar(DatPath &
+		 * FIXME Apuestas.Jugadas = Apuestas.Jugadas + 1 Call WriteVar(DatPath &
 		 * "apuestas.dat", "Main", "Jugadas", CStr(Apuestas.Jugadas))
 		 */
 		sendUpdateUserStats();
@@ -2153,7 +2155,9 @@ public class Player extends AbstractCharacter {
 		}
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.ChatOverHead, COLOR_BLANCO, s, getId());
+			mapa.enviarAlArea(m_pos.x, m_pos.y, 
+				ServerPacketID.ChatOverHead, s, getId(), 
+				Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO));
 		}
 		if (esConsejero()) {
 			Log.logGM(m_nick, "El consejero dijo: " + s);
@@ -2427,11 +2431,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarMensaje(String msg, FontType fuente) {
-		enviar(ServerPacketID.ChatOverHead, msg, fuente.toString());
+		enviar(ServerPacketID.ConsoleMsg, msg, fuente.toString());
 	}
 
 	public void enviarHabla(int color, String msg, short id) {
-		enviar(ServerPacketID.ConsoleMsg, color, msg, id);
+		enviar(ServerPacketID.ChatOverHead, msg, id,
+				Color.r(color), Color.g(color), Color.b(color));
+		
 	}
 
 	public void sendUpdateUserStats() {
@@ -2454,8 +2460,9 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void petDelete() {
-		getUserPets().removeAll();
-		enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
+		if (getUserPets().removeAll() > 0) { 
+			enviarMensaje("Pierdes el control de tus mascotas.", FontType.INFO);
+		}
 	}
 
 	private void cambiarMapa(short mapa, short x, short y) {
@@ -2500,7 +2507,7 @@ public class Player extends AbstractCharacter {
 				petDelete();
 
 			if (enviarData) {
-				enviar(ServerPacketID.ChangeMap, nroMapa, (byte)mapa.getVersion());
+				enviar(ServerPacketID.ChangeMap, (short)nroMapa, (short)mapa.getVersion());
 			}
 
 			short crimi = 0;
@@ -2770,7 +2777,9 @@ public class Player extends AbstractCharacter {
 
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.ChatOverHead, color, texto, (short)quienId);
+			mapa.enviarAlArea(pos().x, pos().y, 
+					ServerPacketID.ChatOverHead, texto, (short)quienId,
+					Color.r(color), Color.g(color), Color.b(color));
 		}
 	}
 

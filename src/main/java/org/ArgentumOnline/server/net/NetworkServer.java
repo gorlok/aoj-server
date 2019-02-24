@@ -140,6 +140,7 @@ public class NetworkServer extends Thread {
             	cliente.readBuffer.put(this.serverBuffer.array());
                 
                 this.processThread.addClientQueue(cliente);
+                this.processThread.interrupt(); // wake up thread
             }else {
             	cliente.doSALIR();
             }

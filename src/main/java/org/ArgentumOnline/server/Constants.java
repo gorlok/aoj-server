@@ -192,16 +192,6 @@ public interface Constants {
     final static short MinYBorder = YMinMapSize + (YWindow / 2);  // 1 + (13/2) = 7 
     final static short MaxYBorder = YMaxMapSize - (YWindow / 2);
     
-    final static int COLOR_NEGRO    = 0x000000;
-    final static int COLOR_BLANCO   = 0xffffff;
-    final static int COLOR_ROJO     = 0x0000ff;
-    final static int COLOR_AZUL     = 0xff0000;
-    final static int COLOR_AZUL2    = 0xff0a0a;
-    final static int COLOR_VERDE    = 0x00ff00;
-    final static int COLOR_MAGENTA  = 0xff00ff;
-    final static int COLOR_CYAN     = 0xffff00;
-    final static int COLOR_AMARILLO = 0x00ffff;
-    
     final static int MAX_HECHIZOS = 35;
     
     final static int MAX_OBJS_X_SLOT = 10000;

@@ -151,7 +151,7 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(ServerPacketID.AreaChanged, user.pos().x, user.pos().y);
+    	user.enviar(ServerPacketID.AreaChanged, (byte)user.pos().x, (byte)user.pos().y);
     	
     	for(short x = (short) minX; x < maxX;x++) {
     		for(short y = (short) minY; y < maxY; y++) {

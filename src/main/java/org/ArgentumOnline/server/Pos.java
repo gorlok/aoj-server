@@ -31,16 +31,16 @@ package org.ArgentumOnline.server;
  */
 public class Pos implements Constants {
 
-	public short x;
-	public short y;
+	public byte x;
+	public byte y;
 	
 	public static Pos xy(int x, int y) {
-		return new Pos((short)x, (short)y);
+		return new Pos((byte)x, (byte)y);
 	}
 
-	public Pos(short x, short y) {
-		this.x = x;
-		this.y = y;
+	public Pos(int x, int y) {
+		this.x = (byte)x;
+		this.y = (byte)y;
 	}
 
 	public boolean isValid() {

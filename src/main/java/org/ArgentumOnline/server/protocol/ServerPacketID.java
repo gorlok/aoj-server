@@ -59,7 +59,7 @@ public enum ServerPacketID {
     BlockPosition           ,// BQ
     PlayMIDI                ,// TM
     PlayWave                ,// TW
-    guildList               ,// GL
+    GuildList               ,// GL
     AreaChanged             ,// CA
     PauseToggle             ,// BKW
     RainToggle              ,// LLU
@@ -92,7 +92,7 @@ public enum ServerPacketID {
     DumbNoMore              ,// NESTUP
     SendSkills              ,// SKILLS
     TrainerCreatureList     ,// LSTCRI
-    guildNews               ,// GUILDNE
+    GuildNews               ,// GUILDNE
     OfferDetails            ,// PEACEDE & ALLIEDE
     AlianceProposalsList    ,// ALLIEPR
     PeaceProposalsList      ,// PEACEPR

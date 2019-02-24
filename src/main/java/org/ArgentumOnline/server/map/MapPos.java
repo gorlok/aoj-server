@@ -61,8 +61,8 @@ public class MapPos extends Pos {
 	
 	public void set(int map, int x, int y) {
 		this.map = (short) map;
-		this.x = (short) x;
-		this.y = (short) y;
+		this.x = (byte)x;
+		this.y = (byte)y;
 	}
 
 	private MapPos(short mapa, short x, short y) {

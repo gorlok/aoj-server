@@ -25,6 +25,8 @@
  */
 package org.ArgentumOnline.server.map;
 
+import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
+
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -35,10 +37,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Vector;
 
-import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
@@ -303,8 +305,8 @@ public class Map implements Constants {
             String x = startPos.substring(startPos.indexOf('-')+1, startPos.lastIndexOf('-'));
             String y = startPos.substring(startPos.lastIndexOf('-')+1);
             this.m_startPos.map = Short.parseShort(mapa);
-            this.m_startPos.x = Short.parseShort(x);
-            this.m_startPos.y = Short.parseShort(y);
+            this.m_startPos.x = Byte.parseByte(x);
+            this.m_startPos.y = Byte.parseByte(y);
         }
         if (this.m_startPos.map == 0) {
 			this.m_startPos.map = 45;
@@ -431,15 +433,15 @@ public class Map implements Constants {
 	                        npc = this.m_cells[x][y].getNpc();
 	                        this.m_npcs.add(npc);
 	                        npc.pos().map = this.nroMapa;
-	                        npc.pos().x = (short) (x+1);
-	                        npc.pos().y = (short) (y+1);
+	                        npc.pos().x = (byte) (x+1);
+	                        npc.pos().y = (byte) (y+1);
 	                        npc.getOrig().map = this.nroMapa;
 	                        if (npc.respawnOrigPos()) {
-		                        npc.getOrig().x = (short) (x+1);
-		                        npc.getOrig().y = (short) (y+1);
+		                        npc.getOrig().x = (byte) (x+1);
+		                        npc.getOrig().y = (byte) (y+1);
 	                        } else {
-		                        npc.getOrig().x = (short)0;
-		                        npc.getOrig().y = (short)0;                        
+		                        npc.getOrig().x = (byte)0;
+		                        npc.getOrig().y = (byte)0;                        
 	                        }
 	                        npc.activar();
 	                        // JAO: Sistema de areas!!

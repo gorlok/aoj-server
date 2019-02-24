@@ -25,11 +25,13 @@
  */
 package org.ArgentumOnline.server.quest;
 
+import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
+
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
-import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
