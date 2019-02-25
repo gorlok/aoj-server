@@ -8,7 +8,6 @@ import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.map.MapPos.Direction;
-import org.ArgentumOnline.server.protocol.ClientPacketID;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.NotEnoughDataException;
 

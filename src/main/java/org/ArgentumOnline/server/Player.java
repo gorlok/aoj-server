@@ -50,12 +50,12 @@ import org.ArgentumOnline.server.map.MapCell;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.net.BufferWriter;
+import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcCashier;
 import org.ArgentumOnline.server.npc.NpcMerchant;
 import org.ArgentumOnline.server.npc.NpcTrainer;
-import org.ArgentumOnline.server.protocol.BufferWriter;
-import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.quest.UserQuest;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
@@ -2877,7 +2877,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void enviarLogged() {
-		enviar(ServerPacketID.Logged);
+		enviar(ServerPacketID.LoggedMessage);
 	}
 
 	private void enviarCambioMapa(short mapa) {
@@ -4443,7 +4443,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendUserAtributos() {
-		enviar(ServerPacketID.Atributes, 
+		enviar(ServerPacketID.Attributes, 
 				m_estads.userAtributos[0], 
 				m_estads.userAtributos[1], 
 				m_estads.userAtributos[2],

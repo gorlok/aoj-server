@@ -27,8 +27,8 @@ package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
-import org.ArgentumOnline.server.protocol.ServerPacketID;
 
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_CEGU;
 //import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_DUMB;

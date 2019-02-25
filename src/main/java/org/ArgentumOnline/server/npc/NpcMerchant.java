@@ -5,7 +5,7 @@ import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.inventory.InventoryObject;
-import org.ArgentumOnline.server.protocol.ServerPacketID;
+import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 

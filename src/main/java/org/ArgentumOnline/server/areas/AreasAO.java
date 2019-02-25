@@ -6,8 +6,8 @@ import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
+import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
-import org.ArgentumOnline.server.protocol.ServerPacketID;
 import org.ArgentumOnline.server.Constants;
 
 

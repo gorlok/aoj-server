@@ -27,7 +27,7 @@ package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.protocol.ServerPacketID;
+import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.util.FontType;
 
 /**
