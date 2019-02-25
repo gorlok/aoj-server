@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class LoginExistingCharRequest extends ClientPacket {
 	// LoginExistingChar,s:userName,s:password,b:version1,b:version2,b:version3,i:versionGrafs,i:versionWavs,i:versionMidis,i:versionInits,i:versionMapas,i:versionAoExe,i:versionExtras
@@ -34,5 +35,24 @@ public class LoginExistingCharRequest extends ClientPacket {
 		this.versionAoExe = versionAoExe;
 		this.versionExtras = versionExtras;
 	}
+	public static LoginExistingCharRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String password = readStr(in);
+			byte version1 = readByte(in);
+			byte version2 = readByte(in);
+			byte version3 = readByte(in);
+			short versionGrafs = readShort(in);
+			short versionWavs = readShort(in);
+			short versionMidis = readShort(in);
+			short versionInits = readShort(in);
+			short versionMapas = readShort(in);
+			short versionAoExe = readShort(in);
+			short versionExtras = readShort(in);
+			return new LoginExistingCharRequest(userName,password,version1,version2,version3,versionGrafs,versionWavs,versionMidis,versionInits,versionMapas,versionAoExe,versionExtras);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -256,10 +256,18 @@ public enum ClientPacketID {
     SetIniVar               ,//   /SETINIVAR LLAVE CLAVE VALOR
     BanIPUser               ;//  /BANIPUSER
 	
+	// cache values() because performance
+	private final static ClientPacketID[] values = ClientPacketID.values();
+	
+	public static ClientPacketID value(int index) {
+		return values[index];
+	}
+	
+	/*
     public static void main(String[] args) {
 		for (ClientPacketID e : ClientPacketID.values()) {
 			System.out.println(e.ordinal() + " - " + e.name());
 		}
 	}
-	
+	*/
 }

@@ -7,7 +7,7 @@ import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.classes.CharClass;
 import org.ArgentumOnline.server.classes.CharClassManager;
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.NotEnoughDataException;
 
@@ -39,7 +39,7 @@ public class ClientProcessThread extends Thread {
 		try {
 			while (r.getPos() < length) {
 				r.mark();
-				ClientPacketID packet = ClientPacketID.values()[r.readByte()];
+				ClientPacketID packet = ClientPacketID.value(r.readByte());
 				switch (packet) {
 
 				case LoginExistingChar: // logged
@@ -56,7 +56,7 @@ public class ClientProcessThread extends Thread {
 
 				case Walk: // move
 					byte dir = (byte)r.readByte();
-					cliente.mover(Direction.value(dir));
+					cliente.mover(Heading.value(dir));
 					break;
 
 				case Talk: // talk

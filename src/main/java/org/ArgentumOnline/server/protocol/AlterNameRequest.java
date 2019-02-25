@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class AlterNameRequest extends ClientPacket {
 	// AlterName,s:userName,s:newName
@@ -14,5 +15,14 @@ public class AlterNameRequest extends ClientPacket {
 		this.userName = userName;
 		this.newName = newName;
 	}
+	public static AlterNameRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String newName = readStr(in);
+			return new AlterNameRequest(userName,newName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

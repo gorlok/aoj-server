@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ServerTimeRequest extends ClientPacket {
 	// ServerTime
@@ -10,5 +11,12 @@ public class ServerTimeRequest extends ClientPacket {
 	}
 	public ServerTimeRequest(){
 	}
+	public static ServerTimeRequest decode(ByteBuf in) {    
+		try {                                   
+			return new ServerTimeRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

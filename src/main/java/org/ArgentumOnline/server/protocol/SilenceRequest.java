@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SilenceRequest extends ClientPacket {
 	// Silence,s:userName
@@ -12,5 +13,13 @@ public class SilenceRequest extends ClientPacket {
 	public SilenceRequest(String userName){
 		this.userName = userName;
 	}
+	public static SilenceRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new SilenceRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

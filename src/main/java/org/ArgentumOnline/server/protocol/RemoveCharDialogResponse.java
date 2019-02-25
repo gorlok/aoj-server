@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RemoveCharDialogResponse extends ServerPacket {
 	// RemoveCharDialog,i:charIndex
@@ -12,5 +13,13 @@ public class RemoveCharDialogResponse extends ServerPacket {
 	public RemoveCharDialogResponse(short charIndex){
 		this.charIndex = charIndex;
 	}
+	public static RemoveCharDialogResponse decode(ByteBuf in) {    
+		try {                                   
+			short charIndex = readShort(in);
+			return new RemoveCharDialogResponse(charIndex);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

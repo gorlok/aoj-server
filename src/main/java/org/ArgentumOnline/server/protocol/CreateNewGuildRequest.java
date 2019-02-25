@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CreateNewGuildRequest extends ClientPacket {
 	// CreateNewGuild,s:desc,s:guildName,s:site,s:codex
@@ -18,5 +19,16 @@ public class CreateNewGuildRequest extends ClientPacket {
 		this.site = site;
 		this.codex = codex;
 	}
+	public static CreateNewGuildRequest decode(ByteBuf in) {    
+		try {                                   
+			String desc = readStr(in);
+			String guildName = readStr(in);
+			String site = readStr(in);
+			String codex = readStr(in);
+			return new CreateNewGuildRequest(desc,guildName,site,codex);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

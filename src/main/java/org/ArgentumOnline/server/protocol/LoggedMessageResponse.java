@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class LoggedMessageResponse extends ServerPacket {
 	// LoggedMessage
@@ -10,5 +11,12 @@ public class LoggedMessageResponse extends ServerPacket {
 	}
 	public LoggedMessageResponse(){
 	}
+	public static LoggedMessageResponse decode(ByteBuf in) {    
+		try {                                   
+			return new LoggedMessageResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class NavigateToggleRequest extends ClientPacket {
 	// NavigateToggle
@@ -10,5 +11,12 @@ public class NavigateToggleRequest extends ClientPacket {
 	}
 	public NavigateToggleRequest(){
 	}
+	public static NavigateToggleRequest decode(ByteBuf in) {    
+		try {                                   
+			return new NavigateToggleRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

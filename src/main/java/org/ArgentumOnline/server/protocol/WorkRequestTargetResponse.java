@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class WorkRequestTargetResponse extends ServerPacket {
 	// WorkRequestTarget,b:skill
@@ -12,5 +13,13 @@ public class WorkRequestTargetResponse extends ServerPacket {
 	public WorkRequestTargetResponse(byte skill){
 		this.skill = skill;
 	}
+	public static WorkRequestTargetResponse decode(ByteBuf in) {    
+		try {                                   
+			byte skill = readByte(in);
+			return new WorkRequestTargetResponse(skill);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

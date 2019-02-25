@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PetStandRequest extends ClientPacket {
 	// PetStand
@@ -10,5 +11,12 @@ public class PetStandRequest extends ClientPacket {
 	}
 	public PetStandRequest(){
 	}
+	public static PetStandRequest decode(ByteBuf in) {    
+		try {                                   
+			return new PetStandRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

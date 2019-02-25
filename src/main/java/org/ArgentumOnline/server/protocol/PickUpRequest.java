@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PickUpRequest extends ClientPacket {
 	// PickUp
@@ -10,5 +11,12 @@ public class PickUpRequest extends ClientPacket {
 	}
 	public PickUpRequest(){
 	}
+	public static PickUpRequest decode(ByteBuf in) {    
+		try {                                   
+			return new PickUpRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

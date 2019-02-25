@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ChangeUserTradeSlotResponse extends ServerPacket {
 	// ChangeUserTradeSlot,i:objIndex,s:name,l:amount,i:grhIndex,b:objType,i:maxHIT,i:minHIT,i:def,l:valor
@@ -28,5 +29,21 @@ public class ChangeUserTradeSlotResponse extends ServerPacket {
 		this.def = def;
 		this.valor = valor;
 	}
+	public static ChangeUserTradeSlotResponse decode(ByteBuf in) {    
+		try {                                   
+			short objIndex = readShort(in);
+			String name = readStr(in);
+			int amount = readInt(in);
+			short grhIndex = readShort(in);
+			byte objType = readByte(in);
+			short maxHIT = readShort(in);
+			short minHIT = readShort(in);
+			short def = readShort(in);
+			int valor = readInt(in);
+			return new ChangeUserTradeSlotResponse(objIndex,name,amount,grhIndex,objType,maxHIT,minHIT,def,valor);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

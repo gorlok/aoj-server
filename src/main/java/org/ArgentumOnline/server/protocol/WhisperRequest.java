@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class WhisperRequest extends ClientPacket {
 	// Whisper,i:targetCharIndex,s:chat
@@ -14,5 +15,14 @@ public class WhisperRequest extends ClientPacket {
 		this.targetCharIndex = targetCharIndex;
 		this.chat = chat;
 	}
+	public static WhisperRequest decode(ByteBuf in) {    
+		try {                                   
+			short targetCharIndex = readShort(in);
+			String chat = readStr(in);
+			return new WhisperRequest(targetCharIndex,chat);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

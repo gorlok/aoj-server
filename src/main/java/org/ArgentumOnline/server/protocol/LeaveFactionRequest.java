@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class LeaveFactionRequest extends ClientPacket {
 	// LeaveFaction
@@ -10,5 +11,12 @@ public class LeaveFactionRequest extends ClientPacket {
 	}
 	public LeaveFactionRequest(){
 	}
+	public static LeaveFactionRequest decode(ByteBuf in) {    
+		try {                                   
+			return new LeaveFactionRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

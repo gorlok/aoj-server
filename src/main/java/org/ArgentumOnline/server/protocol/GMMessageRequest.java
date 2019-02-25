@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GMMessageRequest extends ClientPacket {
 	// GMMessage,s:message
@@ -12,5 +13,13 @@ public class GMMessageRequest extends ClientPacket {
 	public GMMessageRequest(String message){
 		this.message = message;
 	}
+	public static GMMessageRequest decode(ByteBuf in) {    
+		try {                                   
+			String message = readStr(in);
+			return new GMMessageRequest(message);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

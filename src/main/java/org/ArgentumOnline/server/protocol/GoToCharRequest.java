@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GoToCharRequest extends ClientPacket {
 	// GoToChar,s:userName
@@ -12,5 +13,13 @@ public class GoToCharRequest extends ClientPacket {
 	public GoToCharRequest(String userName){
 		this.userName = userName;
 	}
+	public static GoToCharRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new GoToCharRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

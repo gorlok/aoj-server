@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UserAttackedSwingResponse extends ServerPacket {
 	// UserAttackedSwing,i:charIndex
@@ -12,5 +13,13 @@ public class UserAttackedSwingResponse extends ServerPacket {
 	public UserAttackedSwingResponse(short charIndex){
 		this.charIndex = charIndex;
 	}
+	public static UserAttackedSwingResponse decode(ByteBuf in) {    
+		try {                                   
+			short charIndex = readShort(in);
+			return new UserAttackedSwingResponse(charIndex);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

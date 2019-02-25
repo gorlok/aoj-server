@@ -49,7 +49,7 @@ import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapCell;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.net.BufferWriter;
 import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
@@ -2221,7 +2221,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void mover(Direction dir) {
+	public void mover(Heading dir) {
 		try {
 			speedHackMover.check();
 		} catch (SpeedHackException e) {
@@ -2272,7 +2272,7 @@ public class Player extends AbstractCharacter {
 		// m.enviarATodos(MSG_NOVER, m_id, 0);
 	}
 
-	private void moverUsuario(Direction dir) {
+	private void moverUsuario(Heading dir) {
 		MapPos new_pos = m_pos.copy();
 		new_pos.moveToDir(dir);
 
@@ -3639,7 +3639,7 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			MapPos attackPos = m_pos.copy();
-			attackPos.moveToDir(Direction.value(m_infoChar.getDir()));
+			attackPos.moveToDir(Heading.value(m_infoChar.getDir()));
 			// Exit if not legal
 			if (!attackPos.isValid()) {
 				enviarSonido(SOUND_SWING);
@@ -4077,7 +4077,7 @@ public class Player extends AbstractCharacter {
 		m_estads.SkillPts = 10;
 
 		m_password = clave;
-		m_infoChar.setDir(Direction.SOUTH);
+		m_infoChar.setDir(Heading.SOUTH);
 		m_infoChar.cuerpoYCabeza(raza, genero);
 		m_infoChar.m_arma = NingunArma;
 		m_infoChar.m_escudo = NingunEscudo;

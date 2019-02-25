@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ChangeMapInfoNoMagicRequest extends ClientPacket {
 	// ChangeMapInfoNoMagic,b:noMagic
@@ -12,5 +13,13 @@ public class ChangeMapInfoNoMagicRequest extends ClientPacket {
 	public ChangeMapInfoNoMagicRequest(byte noMagic){
 		this.noMagic = noMagic;
 	}
+	public static ChangeMapInfoNoMagicRequest decode(ByteBuf in) {    
+		try {                                   
+			byte noMagic = readByte(in);
+			return new ChangeMapInfoNoMagicRequest(noMagic);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

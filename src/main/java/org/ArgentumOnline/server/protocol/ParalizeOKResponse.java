@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ParalizeOKResponse extends ServerPacket {
 	// ParalizeOK
@@ -10,5 +11,12 @@ public class ParalizeOKResponse extends ServerPacket {
 	}
 	public ParalizeOKResponse(){
 	}
+	public static ParalizeOKResponse decode(ByteBuf in) {    
+		try {                                   
+			return new ParalizeOKResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

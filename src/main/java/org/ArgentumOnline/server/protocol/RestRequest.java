@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RestRequest extends ClientPacket {
 	// Rest
@@ -10,5 +11,12 @@ public class RestRequest extends ClientPacket {
 	}
 	public RestRequest(){
 	}
+	public static RestRequest decode(ByteBuf in) {    
+		try {                                   
+			return new RestRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

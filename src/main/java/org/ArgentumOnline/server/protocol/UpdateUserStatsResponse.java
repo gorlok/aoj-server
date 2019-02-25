@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UpdateUserStatsResponse extends ServerPacket {
 	// UpdateUserStats,i:maxHP,i:minHP,i:maxMAN,i:minMAN,i:maxSTA,i:minSTA,l:gold,b:elv,l:elu,l:exp
@@ -30,5 +31,22 @@ public class UpdateUserStatsResponse extends ServerPacket {
 		this.elu = elu;
 		this.exp = exp;
 	}
+	public static UpdateUserStatsResponse decode(ByteBuf in) {    
+		try {                                   
+			short maxHP = readShort(in);
+			short minHP = readShort(in);
+			short maxMAN = readShort(in);
+			short minMAN = readShort(in);
+			short maxSTA = readShort(in);
+			short minSTA = readShort(in);
+			int gold = readInt(in);
+			byte elv = readByte(in);
+			int elu = readInt(in);
+			int exp = readInt(in);
+			return new UpdateUserStatsResponse(maxHP,minHP,maxMAN,minMAN,maxSTA,minSTA,gold,elv,elu,exp);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

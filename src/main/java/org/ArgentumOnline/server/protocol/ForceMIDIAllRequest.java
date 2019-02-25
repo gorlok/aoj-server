@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ForceMIDIAllRequest extends ClientPacket {
 	// ForceMIDIAll,b:midiId
@@ -12,5 +13,13 @@ public class ForceMIDIAllRequest extends ClientPacket {
 	public ForceMIDIAllRequest(byte midiId){
 		this.midiId = midiId;
 	}
+	public static ForceMIDIAllRequest decode(ByteBuf in) {    
+		try {                                   
+			byte midiId = readByte(in);
+			return new ForceMIDIAllRequest(midiId);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

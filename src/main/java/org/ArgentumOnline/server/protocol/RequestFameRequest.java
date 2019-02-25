@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RequestFameRequest extends ClientPacket {
 	// RequestFame
@@ -10,5 +11,12 @@ public class RequestFameRequest extends ClientPacket {
 	}
 	public RequestFameRequest(){
 	}
+	public static RequestFameRequest decode(ByteBuf in) {    
+		try {                                   
+			return new RequestFameRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

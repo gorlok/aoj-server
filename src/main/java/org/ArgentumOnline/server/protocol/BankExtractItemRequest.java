@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BankExtractItemRequest extends ClientPacket {
 	// BankExtractItem,b:slot,i:amount
@@ -14,5 +15,14 @@ public class BankExtractItemRequest extends ClientPacket {
 		this.slot = slot;
 		this.amount = amount;
 	}
+	public static BankExtractItemRequest decode(ByteBuf in) {    
+		try {                                   
+			byte slot = readByte(in);
+			short amount = readShort(in);
+			return new BankExtractItemRequest(slot,amount);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ForceWAVEToMapRequest extends ClientPacket {
 	// ForceWAVEToMap,b:waveId,i:map,b:x,b:y
@@ -18,5 +19,16 @@ public class ForceWAVEToMapRequest extends ClientPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static ForceWAVEToMapRequest decode(ByteBuf in) {    
+		try {                                   
+			byte waveId = readByte(in);
+			short map = readShort(in);
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new ForceWAVEToMapRequest(waveId,map,x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

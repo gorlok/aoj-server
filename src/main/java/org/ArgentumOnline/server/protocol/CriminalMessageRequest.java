@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CriminalMessageRequest extends ClientPacket {
 	// CriminalMessage,s:message
@@ -12,5 +13,13 @@ public class CriminalMessageRequest extends ClientPacket {
 	public CriminalMessageRequest(String message){
 		this.message = message;
 	}
+	public static CriminalMessageRequest decode(ByteBuf in) {    
+		try {                                   
+			String message = readStr(in);
+			return new CriminalMessageRequest(message);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

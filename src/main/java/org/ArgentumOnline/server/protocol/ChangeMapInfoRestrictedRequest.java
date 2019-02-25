@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ChangeMapInfoRestrictedRequest extends ClientPacket {
 	// ChangeMapInfoRestricted,s:status
@@ -12,5 +13,13 @@ public class ChangeMapInfoRestrictedRequest extends ClientPacket {
 	public ChangeMapInfoRestrictedRequest(String status){
 		this.status = status;
 	}
+	public static ChangeMapInfoRestrictedRequest decode(ByteBuf in) {    
+		try {                                   
+			String status = readStr(in);
+			return new ChangeMapInfoRestrictedRequest(status);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

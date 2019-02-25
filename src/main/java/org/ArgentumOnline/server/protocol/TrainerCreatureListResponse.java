@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class TrainerCreatureListResponse extends ServerPacket {
 	// TrainerCreatureList,s:npcList
@@ -12,5 +13,13 @@ public class TrainerCreatureListResponse extends ServerPacket {
 	public TrainerCreatureListResponse(String npcList){
 		this.npcList = npcList;
 	}
+	public static TrainerCreatureListResponse decode(ByteBuf in) {    
+		try {                                   
+			String npcList = readStr(in);
+			return new TrainerCreatureListResponse(npcList);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

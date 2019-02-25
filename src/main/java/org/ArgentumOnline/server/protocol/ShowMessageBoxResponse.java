@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowMessageBoxResponse extends ServerPacket {
 	// ShowMessageBox,s:message
@@ -12,5 +13,13 @@ public class ShowMessageBoxResponse extends ServerPacket {
 	public ShowMessageBoxResponse(String message){
 		this.message = message;
 	}
+	public static ShowMessageBoxResponse decode(ByteBuf in) {    
+		try {                                   
+			String message = readStr(in);
+			return new ShowMessageBoxResponse(message);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

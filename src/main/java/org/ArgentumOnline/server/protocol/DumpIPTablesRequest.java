@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class DumpIPTablesRequest extends ClientPacket {
 	// DumpIPTables
@@ -10,5 +11,12 @@ public class DumpIPTablesRequest extends ClientPacket {
 	}
 	public DumpIPTablesRequest(){
 	}
+	public static DumpIPTablesRequest decode(ByteBuf in) {    
+		try {                                   
+			return new DumpIPTablesRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

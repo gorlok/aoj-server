@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class HidingRequest extends ClientPacket {
 	// Hiding
@@ -10,5 +11,12 @@ public class HidingRequest extends ClientPacket {
 	}
 	public HidingRequest(){
 	}
+	public static HidingRequest decode(ByteBuf in) {    
+		try {                                   
+			return new HidingRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

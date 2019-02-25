@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class KillAllNearbyNPCsRequest extends ClientPacket {
 	// KillAllNearbyNPCs
@@ -10,5 +11,12 @@ public class KillAllNearbyNPCsRequest extends ClientPacket {
 	}
 	public KillAllNearbyNPCsRequest(){
 	}
+	public static KillAllNearbyNPCsRequest decode(ByteBuf in) {    
+		try {                                   
+			return new KillAllNearbyNPCsRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

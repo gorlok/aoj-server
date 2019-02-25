@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BanIPRequest extends ClientPacket {
 	// BanIP,b:ip1,b:ip2,b:ip3,b:ip4,s:reason
@@ -20,5 +21,17 @@ public class BanIPRequest extends ClientPacket {
 		this.ip4 = ip4;
 		this.reason = reason;
 	}
+	public static BanIPRequest decode(ByteBuf in) {    
+		try {                                   
+			byte ip1 = readByte(in);
+			byte ip2 = readByte(in);
+			byte ip3 = readByte(in);
+			byte ip4 = readByte(in);
+			String reason = readStr(in);
+			return new BanIPRequest(ip1,ip2,ip3,ip4,reason);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

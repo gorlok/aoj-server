@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildDetailsResponse extends ServerPacket {
 	// GuildDetails,s:guildName,s:founder,s:foundationDate,s:leader,s:url,i:memberCount,b:electionsOpen,s:alignment,i:enemiesCount,i:alliesCount,s:antifactionPoints,s:codex,s:guildDesc
@@ -36,5 +37,25 @@ public class GuildDetailsResponse extends ServerPacket {
 		this.codex = codex;
 		this.guildDesc = guildDesc;
 	}
+	public static GuildDetailsResponse decode(ByteBuf in) {    
+		try {                                   
+			String guildName = readStr(in);
+			String founder = readStr(in);
+			String foundationDate = readStr(in);
+			String leader = readStr(in);
+			String url = readStr(in);
+			short memberCount = readShort(in);
+			byte electionsOpen = readByte(in);
+			String alignment = readStr(in);
+			short enemiesCount = readShort(in);
+			short alliesCount = readShort(in);
+			String antifactionPoints = readStr(in);
+			String codex = readStr(in);
+			String guildDesc = readStr(in);
+			return new GuildDetailsResponse(guildName,founder,foundationDate,leader,url,memberCount,electionsOpen,alignment,enemiesCount,alliesCount,antifactionPoints,codex,guildDesc);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UpdateHungerAndThirstResponse extends ServerPacket {
 	// UpdateHungerAndThirst,b:maxAGU,b:minAGU,b:maxHAM,b:minHAM
@@ -18,5 +19,16 @@ public class UpdateHungerAndThirstResponse extends ServerPacket {
 		this.maxHAM = maxHAM;
 		this.minHAM = minHAM;
 	}
+	public static UpdateHungerAndThirstResponse decode(ByteBuf in) {    
+		try {                                   
+			byte maxAGU = readByte(in);
+			byte minAGU = readByte(in);
+			byte maxHAM = readByte(in);
+			byte minHAM = readByte(in);
+			return new UpdateHungerAndThirstResponse(maxAGU,minAGU,maxHAM,minHAM);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

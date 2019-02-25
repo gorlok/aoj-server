@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RequestAccountStateRequest extends ClientPacket {
 	// RequestAccountState
@@ -10,5 +11,12 @@ public class RequestAccountStateRequest extends ClientPacket {
 	}
 	public RequestAccountStateRequest(){
 	}
+	public static RequestAccountStateRequest decode(ByteBuf in) {    
+		try {                                   
+			return new RequestAccountStateRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

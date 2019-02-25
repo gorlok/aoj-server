@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.util.*;
 
 /**
@@ -102,7 +102,7 @@ public class CharInfo implements Constants {
 		return this.m_dir;
 	}
 
-	public void setDir(Direction dir) {
+	public void setDir(Heading dir) {
 		this.m_dir = (short) dir.ordinal();
 	}
 

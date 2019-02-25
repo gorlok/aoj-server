@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CharacterCreateResponse extends ServerPacket {
 	// CharacterCreate,i:charIndex,i:body,i:head,b:heading,b:x,b:y,i:weapon,i:shield,i:helmet,i:fx,i:fxLoops,s:name,b:criminal,b:privileges
@@ -38,5 +39,26 @@ public class CharacterCreateResponse extends ServerPacket {
 		this.criminal = criminal;
 		this.privileges = privileges;
 	}
+	public static CharacterCreateResponse decode(ByteBuf in) {    
+		try {                                   
+			short charIndex = readShort(in);
+			short body = readShort(in);
+			short head = readShort(in);
+			byte heading = readByte(in);
+			byte x = readByte(in);
+			byte y = readByte(in);
+			short weapon = readShort(in);
+			short shield = readShort(in);
+			short helmet = readShort(in);
+			short fx = readShort(in);
+			short fxLoops = readShort(in);
+			String name = readStr(in);
+			byte criminal = readByte(in);
+			byte privileges = readByte(in);
+			return new CharacterCreateResponse(charIndex,body,head,heading,x,y,weapon,shield,helmet,fx,fxLoops,name,criminal,privileges);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

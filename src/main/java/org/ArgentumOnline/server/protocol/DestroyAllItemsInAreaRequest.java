@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class DestroyAllItemsInAreaRequest extends ClientPacket {
 	// DestroyAllItemsInArea
@@ -10,5 +11,12 @@ public class DestroyAllItemsInAreaRequest extends ClientPacket {
 	}
 	public DestroyAllItemsInAreaRequest(){
 	}
+	public static DestroyAllItemsInAreaRequest decode(ByteBuf in) {    
+		try {                                   
+			return new DestroyAllItemsInAreaRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

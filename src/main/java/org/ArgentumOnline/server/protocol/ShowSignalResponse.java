@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowSignalResponse extends ServerPacket {
 	// ShowSignal,s:texto,i:grhSecundario
@@ -14,5 +15,14 @@ public class ShowSignalResponse extends ServerPacket {
 		this.texto = texto;
 		this.grhSecundario = grhSecundario;
 	}
+	public static ShowSignalResponse decode(ByteBuf in) {    
+		try {                                   
+			String texto = readStr(in);
+			short grhSecundario = readShort(in);
+			return new ShowSignalResponse(texto,grhSecundario);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

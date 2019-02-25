@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class TeleportCreateRequest extends ClientPacket {
 	// TeleportCreate,i:mapa,b:x,b:y
@@ -16,5 +17,15 @@ public class TeleportCreateRequest extends ClientPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static TeleportCreateRequest decode(ByteBuf in) {    
+		try {                                   
+			short mapa = readShort(in);
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new TeleportCreateRequest(mapa,x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

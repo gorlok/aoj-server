@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class NPCKillUserResponse extends ServerPacket {
 	// NPCKillUser
@@ -10,5 +11,12 @@ public class NPCKillUserResponse extends ServerPacket {
 	}
 	public NPCKillUserResponse(){
 	}
+	public static NPCKillUserResponse decode(ByteBuf in) {    
+		try {                                   
+			return new NPCKillUserResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RainToggleResponse extends ServerPacket {
 	// RainToggle
@@ -10,5 +11,12 @@ public class RainToggleResponse extends ServerPacket {
 	}
 	public RainToggleResponse(){
 	}
+	public static RainToggleResponse decode(ByteBuf in) {    
+		try {                                   
+			return new RainToggleResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RemoveAllDialogsResponse extends ServerPacket {
 	// RemoveAllDialogs
@@ -10,5 +11,12 @@ public class RemoveAllDialogsResponse extends ServerPacket {
 	}
 	public RemoveAllDialogsResponse(){
 	}
+	public static RemoveAllDialogsResponse decode(ByteBuf in) {    
+		try {                                   
+			return new RemoveAllDialogsResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ResetNPCInventoryRequest extends ClientPacket {
 	// ResetNPCInventory
@@ -10,5 +11,12 @@ public class ResetNPCInventoryRequest extends ClientPacket {
 	}
 	public ResetNPCInventoryRequest(){
 	}
+	public static ResetNPCInventoryRequest decode(ByteBuf in) {    
+		try {                                   
+			return new ResetNPCInventoryRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ReloadServerIniRequest extends ClientPacket {
 	// ReloadServerIni
@@ -10,5 +11,12 @@ public class ReloadServerIniRequest extends ClientPacket {
 	}
 	public ReloadServerIniRequest(){
 	}
+	public static ReloadServerIniRequest decode(ByteBuf in) {    
+		try {                                   
+			return new ReloadServerIniRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

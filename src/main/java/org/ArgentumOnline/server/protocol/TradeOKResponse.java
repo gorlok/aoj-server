@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class TradeOKResponse extends ServerPacket {
 	// TradeOK
@@ -10,5 +11,12 @@ public class TradeOKResponse extends ServerPacket {
 	}
 	public TradeOKResponse(){
 	}
+	public static TradeOKResponse decode(ByteBuf in) {    
+		try {                                   
+			return new TradeOKResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

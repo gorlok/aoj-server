@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PongResponse extends ServerPacket {
 	// Pong
@@ -10,5 +11,12 @@ public class PongResponse extends ServerPacket {
 	}
 	public PongResponse(){
 	}
+	public static PongResponse decode(ByteBuf in) {    
+		try {                                   
+			return new PongResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

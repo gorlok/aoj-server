@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class WorkLeftClickRequest extends ClientPacket {
 	// WorkLeftClick,b:x,b:y,b:skill
@@ -16,5 +17,15 @@ public class WorkLeftClickRequest extends ClientPacket {
 		this.y = y;
 		this.skill = skill;
 	}
+	public static WorkLeftClickRequest decode(ByteBuf in) {    
+		try {                                   
+			byte x = readByte(in);
+			byte y = readByte(in);
+			byte skill = readByte(in);
+			return new WorkLeftClickRequest(x,y,skill);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

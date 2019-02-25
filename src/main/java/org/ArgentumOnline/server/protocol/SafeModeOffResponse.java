@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SafeModeOffResponse extends ServerPacket {
 	// SafeModeOff
@@ -10,5 +11,12 @@ public class SafeModeOffResponse extends ServerPacket {
 	}
 	public SafeModeOffResponse(){
 	}
+	public static SafeModeOffResponse decode(ByteBuf in) {    
+		try {                                   
+			return new SafeModeOffResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class InquiryVoteRequest extends ClientPacket {
 	// InquiryVote,b:opt
@@ -12,5 +13,13 @@ public class InquiryVoteRequest extends ClientPacket {
 	public InquiryVoteRequest(byte opt){
 		this.opt = opt;
 	}
+	public static InquiryVoteRequest decode(ByteBuf in) {    
+		try {                                   
+			byte opt = readByte(in);
+			return new InquiryVoteRequest(opt);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

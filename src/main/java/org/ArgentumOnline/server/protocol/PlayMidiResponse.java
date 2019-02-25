@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PlayMidiResponse extends ServerPacket {
 	// PlayMidi,b:midi,i:loops
@@ -14,5 +15,14 @@ public class PlayMidiResponse extends ServerPacket {
 		this.midi = midi;
 		this.loops = loops;
 	}
+	public static PlayMidiResponse decode(ByteBuf in) {    
+		try {                                   
+			byte midi = readByte(in);
+			short loops = readShort(in);
+			return new PlayMidiResponse(midi,loops);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

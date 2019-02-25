@@ -1,6 +1,8 @@
 package org.ArgentumOnline.server.protocol;
 
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ModifySkillsRequest extends ClientPacket {
 	// ModifySkills,b[NUMSKILLS]:skills
@@ -12,5 +14,13 @@ public class ModifySkillsRequest extends ClientPacket {
 	public ModifySkillsRequest(byte[] skills){
 		this.skills = skills;
 	}
+	public static ModifySkillsRequest decode(ByteBuf in) {    
+		try {                                   
+			byte[] skills = readBytes(in, Skill.MAX_SKILLS);
+			return new ModifySkillsRequest(skills);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

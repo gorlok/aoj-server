@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildOnlineRequest extends ClientPacket {
 	// GuildOnline
@@ -10,5 +11,12 @@ public class GuildOnlineRequest extends ClientPacket {
 	}
 	public GuildOnlineRequest(){
 	}
+	public static GuildOnlineRequest decode(ByteBuf in) {    
+		try {                                   
+			return new GuildOnlineRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

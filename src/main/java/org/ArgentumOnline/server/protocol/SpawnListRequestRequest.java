@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SpawnListRequestRequest extends ClientPacket {
 	// SpawnListRequest
@@ -10,5 +11,12 @@ public class SpawnListRequestRequest extends ClientPacket {
 	}
 	public SpawnListRequestRequest(){
 	}
+	public static SpawnListRequestRequest decode(ByteBuf in) {    
+		try {                                   
+			return new SpawnListRequestRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

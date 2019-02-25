@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SafeToggleRequest extends ClientPacket {
 	// SafeToggle
@@ -10,5 +11,12 @@ public class SafeToggleRequest extends ClientPacket {
 	}
 	public SafeToggleRequest(){
 	}
+	public static SafeToggleRequest decode(ByteBuf in) {    
+		try {                                   
+			return new SafeToggleRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

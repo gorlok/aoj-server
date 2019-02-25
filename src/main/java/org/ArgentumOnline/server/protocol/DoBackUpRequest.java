@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class DoBackUpRequest extends ClientPacket {
 	// DoBackUp
@@ -10,5 +11,12 @@ public class DoBackUpRequest extends ClientPacket {
 	}
 	public DoBackUpRequest(){
 	}
+	public static DoBackUpRequest decode(ByteBuf in) {    
+		try {                                   
+			return new DoBackUpRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

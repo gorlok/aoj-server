@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UpdateStaResponse extends ServerPacket {
 	// UpdateSta,i:minSta
@@ -12,5 +13,13 @@ public class UpdateStaResponse extends ServerPacket {
 	public UpdateStaResponse(short minSta){
 		this.minSta = minSta;
 	}
+	public static UpdateStaResponse decode(ByteBuf in) {    
+		try {                                   
+			short minSta = readShort(in);
+			return new UpdateStaResponse(minSta);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

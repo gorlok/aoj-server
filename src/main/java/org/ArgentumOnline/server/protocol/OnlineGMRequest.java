@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class OnlineGMRequest extends ClientPacket {
 	// OnlineGM
@@ -10,5 +11,12 @@ public class OnlineGMRequest extends ClientPacket {
 	}
 	public OnlineGMRequest(){
 	}
+	public static OnlineGMRequest decode(ByteBuf in) {    
+		try {                                   
+			return new OnlineGMRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

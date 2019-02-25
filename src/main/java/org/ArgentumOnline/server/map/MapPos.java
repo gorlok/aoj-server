@@ -33,15 +33,18 @@ import org.ArgentumOnline.server.Pos;
  */
 public class MapPos extends Pos {
 	
-	public enum Direction {
+	public enum Heading {
 	    NONE,
 	    NORTH,
 	    EAST,
 	    SOUTH,
 	    WEST;
 	    
-	    public static Direction value(int dir) {
-	    	return Direction.values()[dir];
+		// cache values() because performance
+		private static final Heading[] values = Heading.values();
+		
+	    public static Heading value(int heading) {
+	    	return values[heading];
 	    }
 	}
 
@@ -81,7 +84,7 @@ public class MapPos extends Pos {
 	 * @param dir dirección del movimiento
 	 * @return the same instance (fluent api)
 	 */
-	public MapPos moveToDir(Direction dir) {
+	public MapPos moveToDir(Heading dir) {
 		switch (dir) {
 		case NONE:
 			// don't move
@@ -108,56 +111,56 @@ public class MapPos extends Pos {
 	 * @param target es la posición del objetivo
 	 * @return dirección del objetivo
 	 */
-	public Direction findDirection(MapPos target) {
+	public Heading findDirection(MapPos target) {
 		int dx = this.x - target.x;
 		int dy = this.y - target.y;
 
 		// NE
 		if (dx < 0 && dy > 0) {
-			return Direction.NORTH;
+			return Heading.NORTH;
 		}
 
 		// NW
 		if (dx > 0 && dy > 0) {
-			return Direction.WEST;
+			return Heading.WEST;
 		}
 
 		// SW
 		if (dx > 0 && dy < 0) {
-			return Direction.WEST;
+			return Heading.WEST;
 		}
 
 		// SE
 		if (dx < 0 && dy < 0) {
-			return Direction.SOUTH;
+			return Heading.SOUTH;
 		}
 
 		// Sur
 		if (dx == 0 && dy < 0) {
-			return Direction.SOUTH;
+			return Heading.SOUTH;
 		}
 
 		// norte
 		if (dx == 0 && dy > 0) {
-			return Direction.NORTH;
+			return Heading.NORTH;
 		}
 
 		// oeste
 		if (dx > 0 && dy == 0) {
-			return Direction.WEST;
+			return Heading.WEST;
 		}
 
 		// este
 		if (dx < 0 && dy == 0) {
-			return Direction.EAST;
+			return Heading.EAST;
 		}
 
 		// misma
 		if (dx == 0 && dy == 0) {
-			return Direction.NONE;
+			return Heading.NONE;
 		}
 
-		return Direction.NONE;
+		return Heading.NONE;
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowGMPanelFormResponse extends ServerPacket {
 	// ShowGMPanelForm
@@ -10,5 +11,12 @@ public class ShowGMPanelFormResponse extends ServerPacket {
 	}
 	public ShowGMPanelFormResponse(){
 	}
+	public static ShowGMPanelFormResponse decode(ByteBuf in) {    
+		try {                                   
+			return new ShowGMPanelFormResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

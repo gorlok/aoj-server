@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowMOTDEditionFormResponse extends ServerPacket {
 	// ShowMOTDEditionForm,s:currentMOTD
@@ -12,5 +13,13 @@ public class ShowMOTDEditionFormResponse extends ServerPacket {
 	public ShowMOTDEditionFormResponse(String currentMOTD){
 		this.currentMOTD = currentMOTD;
 	}
+	public static ShowMOTDEditionFormResponse decode(ByteBuf in) {    
+		try {                                   
+			String currentMOTD = readStr(in);
+			return new ShowMOTDEditionFormResponse(currentMOTD);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

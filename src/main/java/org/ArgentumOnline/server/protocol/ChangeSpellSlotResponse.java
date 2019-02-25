@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ChangeSpellSlotResponse extends ServerPacket {
 	// ChangeSpellSlot,b:slot,i:spell,s:name
@@ -16,5 +17,15 @@ public class ChangeSpellSlotResponse extends ServerPacket {
 		this.spell = spell;
 		this.name = name;
 	}
+	public static ChangeSpellSlotResponse decode(ByteBuf in) {    
+		try {                                   
+			byte slot = readByte(in);
+			short spell = readShort(in);
+			String name = readStr(in);
+			return new ChangeSpellSlotResponse(slot,spell,name);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

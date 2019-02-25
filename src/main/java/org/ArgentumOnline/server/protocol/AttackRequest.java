@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class AttackRequest extends ClientPacket {
 	// Attack
@@ -10,5 +11,12 @@ public class AttackRequest extends ClientPacket {
 	}
 	public AttackRequest(){
 	}
+	public static AttackRequest decode(ByteBuf in) {    
+		try {                                   
+			return new AttackRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

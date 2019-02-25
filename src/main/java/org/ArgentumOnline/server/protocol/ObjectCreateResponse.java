@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ObjectCreateResponse extends ServerPacket {
 	// ObjectCreate,b:x,b:y,i:grhIndex
@@ -16,5 +17,15 @@ public class ObjectCreateResponse extends ServerPacket {
 		this.y = y;
 		this.grhIndex = grhIndex;
 	}
+	public static ObjectCreateResponse decode(ByteBuf in) {    
+		try {                                   
+			byte x = readByte(in);
+			byte y = readByte(in);
+			short grhIndex = readShort(in);
+			return new ObjectCreateResponse(x,y,grhIndex);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

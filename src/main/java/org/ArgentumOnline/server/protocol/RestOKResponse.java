@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RestOKResponse extends ServerPacket {
 	// RestOK
@@ -10,5 +11,12 @@ public class RestOKResponse extends ServerPacket {
 	}
 	public RestOKResponse(){
 	}
+	public static RestOKResponse decode(ByteBuf in) {    
+		try {                                   
+			return new RestOKResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

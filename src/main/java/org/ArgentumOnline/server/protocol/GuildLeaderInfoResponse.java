@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildLeaderInfoResponse extends ServerPacket {
 	// GuildLeaderInfo,s:guildList,s:memberList,s:guildNews,s:requestsList
@@ -18,5 +19,16 @@ public class GuildLeaderInfoResponse extends ServerPacket {
 		this.guildNews = guildNews;
 		this.requestsList = requestsList;
 	}
+	public static GuildLeaderInfoResponse decode(ByteBuf in) {    
+		try {                                   
+			String guildList = readStr(in);
+			String memberList = readStr(in);
+			String guildNews = readStr(in);
+			String requestsList = readStr(in);
+			return new GuildLeaderInfoResponse(guildList,memberList,guildNews,requestsList);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

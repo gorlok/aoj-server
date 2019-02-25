@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SaveMapRequest extends ClientPacket {
 	// SaveMap
@@ -10,5 +11,12 @@ public class SaveMapRequest extends ClientPacket {
 	}
 	public SaveMapRequest(){
 	}
+	public static SaveMapRequest decode(ByteBuf in) {    
+		try {                                   
+			return new SaveMapRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

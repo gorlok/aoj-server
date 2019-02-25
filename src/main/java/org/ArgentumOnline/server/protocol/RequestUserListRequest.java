@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RequestUserListRequest extends ClientPacket {
 	// RequestUserList
@@ -10,5 +11,12 @@ public class RequestUserListRequest extends ClientPacket {
 	}
 	public RequestUserListRequest(){
 	}
+	public static RequestUserListRequest decode(ByteBuf in) {    
+		try {                                   
+			return new RequestUserListRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

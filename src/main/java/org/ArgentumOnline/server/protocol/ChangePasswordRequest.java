@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ChangePasswordRequest extends ClientPacket {
 	// ChangePassword,s:oldPassword,s:newPassword
@@ -14,5 +15,14 @@ public class ChangePasswordRequest extends ClientPacket {
 		this.oldPassword = oldPassword;
 		this.newPassword = newPassword;
 	}
+	public static ChangePasswordRequest decode(ByteBuf in) {    
+		try {                                   
+			String oldPassword = readStr(in);
+			String newPassword = readStr(in);
+			return new ChangePasswordRequest(oldPassword,newPassword);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

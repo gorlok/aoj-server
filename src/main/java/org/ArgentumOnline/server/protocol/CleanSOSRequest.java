@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CleanSOSRequest extends ClientPacket {
 	// CleanSOS
@@ -10,5 +11,12 @@ public class CleanSOSRequest extends ClientPacket {
 	}
 	public CleanSOSRequest(){
 	}
+	public static CleanSOSRequest decode(ByteBuf in) {    
+		try {                                   
+			return new CleanSOSRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

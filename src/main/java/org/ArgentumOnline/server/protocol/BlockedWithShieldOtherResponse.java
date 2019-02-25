@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BlockedWithShieldOtherResponse extends ServerPacket {
 	// BlockedWithShieldOther
@@ -10,5 +11,12 @@ public class BlockedWithShieldOtherResponse extends ServerPacket {
 	}
 	public BlockedWithShieldOtherResponse(){
 	}
+	public static BlockedWithShieldOtherResponse decode(ByteBuf in) {    
+		try {                                   
+			return new BlockedWithShieldOtherResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

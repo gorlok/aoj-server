@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ServerOpenToUsersToggleRequest extends ClientPacket {
 	// ServerOpenToUsersToggle
@@ -10,5 +11,12 @@ public class ServerOpenToUsersToggleRequest extends ClientPacket {
 	}
 	public ServerOpenToUsersToggleRequest(){
 	}
+	public static ServerOpenToUsersToggleRequest decode(ByteBuf in) {    
+		try {                                   
+			return new ServerOpenToUsersToggleRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

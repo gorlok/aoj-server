@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ObjectDeleteResponse extends ServerPacket {
 	// ObjectDelete,b:x,b:y
@@ -14,5 +15,14 @@ public class ObjectDeleteResponse extends ServerPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static ObjectDeleteResponse decode(ByteBuf in) {    
+		try {                                   
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new ObjectDeleteResponse(x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CharacterMoveResponse extends ServerPacket {
 	// CharacterMove,i:charIndex,b:x,b:y
@@ -16,5 +17,15 @@ public class CharacterMoveResponse extends ServerPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static CharacterMoveResponse decode(ByteBuf in) {    
+		try {                                   
+			short charIndex = readShort(in);
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new CharacterMoveResponse(charIndex,x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

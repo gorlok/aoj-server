@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildPeacePropListRequest extends ClientPacket {
 	// GuildPeacePropList
@@ -10,5 +11,12 @@ public class GuildPeacePropListRequest extends ClientPacket {
 	}
 	public GuildPeacePropListRequest(){
 	}
+	public static GuildPeacePropListRequest decode(ByteBuf in) {    
+		try {                                   
+			return new GuildPeacePropListRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

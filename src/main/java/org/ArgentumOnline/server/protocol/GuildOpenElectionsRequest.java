@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildOpenElectionsRequest extends ClientPacket {
 	// GuildOpenElections
@@ -10,5 +11,12 @@ public class GuildOpenElectionsRequest extends ClientPacket {
 	}
 	public GuildOpenElectionsRequest(){
 	}
+	public static GuildOpenElectionsRequest decode(ByteBuf in) {    
+		try {                                   
+			return new GuildOpenElectionsRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PartyAcceptMemberRequest extends ClientPacket {
 	// PartyAcceptMember,s:userName
@@ -12,5 +13,13 @@ public class PartyAcceptMemberRequest extends ClientPacket {
 	public PartyAcceptMemberRequest(String userName){
 		this.userName = userName;
 	}
+	public static PartyAcceptMemberRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new PartyAcceptMemberRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

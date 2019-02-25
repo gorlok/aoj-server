@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class WarnUserRequest extends ClientPacket {
 	// WarnUser,s:userName,s:reason
@@ -14,5 +15,14 @@ public class WarnUserRequest extends ClientPacket {
 		this.userName = userName;
 		this.reason = reason;
 	}
+	public static WarnUserRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String reason = readStr(in);
+			return new WarnUserRequest(userName,reason);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

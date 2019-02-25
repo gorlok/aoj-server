@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ForgiveRequest extends ClientPacket {
 	// Forgive,s:userName
@@ -12,5 +13,13 @@ public class ForgiveRequest extends ClientPacket {
 	public ForgiveRequest(String userName){
 		this.userName = userName;
 	}
+	public static ForgiveRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new ForgiveRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

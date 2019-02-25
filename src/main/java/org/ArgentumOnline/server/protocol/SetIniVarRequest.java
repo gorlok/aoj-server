@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SetIniVarRequest extends ClientPacket {
 	// SetIniVar,s:section,s:key,s:value
@@ -16,5 +17,15 @@ public class SetIniVarRequest extends ClientPacket {
 		this.key = key;
 		this.value = value;
 	}
+	public static SetIniVarRequest decode(ByteBuf in) {    
+		try {                                   
+			String section = readStr(in);
+			String key = readStr(in);
+			String value = readStr(in);
+			return new SetIniVarRequest(section,key,value);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

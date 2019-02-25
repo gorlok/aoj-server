@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class EnlistRequest extends ClientPacket {
 	// Enlist
@@ -10,5 +11,12 @@ public class EnlistRequest extends ClientPacket {
 	}
 	public EnlistRequest(){
 	}
+	public static EnlistRequest decode(ByteBuf in) {    
+		try {                                   
+			return new EnlistRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

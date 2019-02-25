@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildAcceptNewMemberRequest extends ClientPacket {
 	// GuildAcceptNewMember,s:userName
@@ -12,5 +13,13 @@ public class GuildAcceptNewMemberRequest extends ClientPacket {
 	public GuildAcceptNewMemberRequest(String userName){
 		this.userName = userName;
 	}
+	public static GuildAcceptNewMemberRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new GuildAcceptNewMemberRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

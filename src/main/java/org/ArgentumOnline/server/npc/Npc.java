@@ -40,7 +40,7 @@ import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
@@ -867,7 +867,7 @@ public class Npc extends AbstractCharacter implements Constants {
         }
     }
     
-    public void mover(Direction dir) {
+    public void mover(Heading dir) {
         long now = (new java.util.Date()).getTime();
         if ((now - this.m_lastMove) < 250) {
 			return;
@@ -1022,7 +1022,7 @@ public class Npc extends AbstractCharacter implements Constants {
         this.m_flags.set(FLAG_HOSTIL, true);
     }
     
-    public void cambiarDir(Direction dir) {
+    public void cambiarDir(Heading dir) {
         // ChangeNPCChar
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {
@@ -1057,8 +1057,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (Direction dir : Direction.values()) {
-        	if (dir == Direction.NONE)
+        for (Heading dir : Heading.values()) {
+        	if (dir == Heading.NONE)
         		continue;
         	
             MapPos pos = this.m_pos.copy();
@@ -1113,8 +1113,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (Direction dir : Direction.values()) {
-        	if (dir == Direction.NONE)
+        for (Heading dir : Heading.values()) {
+        	if (dir == Heading.NONE)
         		continue;
             MapPos pos = this.m_pos.copy();
             pos.moveToDir(dir);
@@ -1140,8 +1140,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (Direction dir : Direction.values()) {
-        	if (dir == Direction.NONE)
+        for (Heading dir : Heading.values()) {
+        	if (dir == Heading.NONE)
         		continue;
             MapPos pos = this.m_pos.copy();
             pos.moveToDir(dir);
@@ -1180,7 +1180,7 @@ public class Npc extends AbstractCharacter implements Constants {
                                 if (lanzaSpells()) {
                                    npcLanzaUnSpell(cliente);
                                 }
-                                Direction dir = this.m_pos.findDirection(cliente.pos());
+                                Heading dir = this.m_pos.findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1217,7 +1217,7 @@ public class Npc extends AbstractCharacter implements Constants {
                                 if (lanzaSpells()) {
                                     npcLanzaUnSpell(cliente);
                                 }
-                                Direction dir = this.m_pos.findDirection(cliente.pos());
+                                Heading dir = this.m_pos.findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1259,7 +1259,7 @@ public class Npc extends AbstractCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Direction dir = this.m_pos.findDirection(cliente.pos());
+                            Heading dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1285,7 +1285,7 @@ public class Npc extends AbstractCharacter implements Constants {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Direction dir = this.m_pos.findDirection(cliente.pos());
+                            Heading dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1316,7 +1316,7 @@ public class Npc extends AbstractCharacter implements Constants {
                         Player cliente = mapa.getCliente(x, y);
                         if (cliente.isAlive() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
                         		getPetUserOwner().pos().distance(this.m_pos) > 3) {
-                            Direction dir = this.m_pos.findDirection(cliente.pos());
+                            Heading dir = this.m_pos.findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1341,7 +1341,7 @@ public class Npc extends AbstractCharacter implements Constants {
                     Npc npc = mapa.getNPC(x, y);
                     if (npc != null) {
                         if (this.m_targetNpc == npc) {
-                            Direction dir = this.m_pos.findDirection(pos);
+                            Heading dir = this.m_pos.findDirection(pos);
                             mover(dir);
                             npcAtacaNpc(npc);
                             return;
@@ -1360,7 +1360,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void moverAlAzar() {
-        mover(Direction.value(Util.Azar(1, 4)));
+        mover(Heading.value(Util.Azar(1, 4)));
     }
     
     public void doAI() {
@@ -1638,7 +1638,7 @@ public class Npc extends AbstractCharacter implements Constants {
         org.ArgentumOnline.server.aStar.Node node = this.current_path.get(this.current_step);
         org.ArgentumOnline.server.aStar.Location loc = node.location;
         MapPos pos = MapPos.mxy(this.m_pos.map, (short)loc.x, (short)loc.y);
-        Direction dir = this.m_pos.findDirection(pos);
+        Heading dir = this.m_pos.findDirection(pos);
         
         if (DEBUG)
         	System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + this.m_pos + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);

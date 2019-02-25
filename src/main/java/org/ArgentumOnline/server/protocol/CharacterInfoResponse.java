@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CharacterInfoResponse extends ServerPacket {
 	// CharacterInfo,s:charName,b:race,b:clazz,b:gender,b:level,l:gold,l:bank,l:reputation,s:previousPetitions,s:currentGuild,s:previousGuilds,b:royalArmy,b:caosLegion,l:citizensKilled,l:criminalsKilled
@@ -40,5 +41,27 @@ public class CharacterInfoResponse extends ServerPacket {
 		this.citizensKilled = citizensKilled;
 		this.criminalsKilled = criminalsKilled;
 	}
+	public static CharacterInfoResponse decode(ByteBuf in) {    
+		try {                                   
+			String charName = readStr(in);
+			byte race = readByte(in);
+			byte clazz = readByte(in);
+			byte gender = readByte(in);
+			byte level = readByte(in);
+			int gold = readInt(in);
+			int bank = readInt(in);
+			int reputation = readInt(in);
+			String previousPetitions = readStr(in);
+			String currentGuild = readStr(in);
+			String previousGuilds = readStr(in);
+			byte royalArmy = readByte(in);
+			byte caosLegion = readByte(in);
+			int citizensKilled = readInt(in);
+			int criminalsKilled = readInt(in);
+			return new CharacterInfoResponse(charName,race,clazz,gender,level,gold,bank,reputation,previousPetitions,currentGuild,previousGuilds,royalArmy,caosLegion,citizensKilled,criminalsKilled);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class NightRequest extends ClientPacket {
 	// Night
@@ -10,5 +11,12 @@ public class NightRequest extends ClientPacket {
 	}
 	public NightRequest(){
 	}
+	public static NightRequest decode(ByteBuf in) {    
+		try {                                   
+			return new NightRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

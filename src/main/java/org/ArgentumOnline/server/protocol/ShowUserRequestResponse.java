@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowUserRequestResponse extends ServerPacket {
 	// ShowUserRequest,s:details
@@ -12,5 +13,13 @@ public class ShowUserRequestResponse extends ServerPacket {
 	public ShowUserRequestResponse(String details){
 		this.details = details;
 	}
+	public static ShowUserRequestResponse decode(ByteBuf in) {    
+		try {                                   
+			String details = readStr(in);
+			return new ShowUserRequestResponse(details);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

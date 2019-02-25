@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class AlianceProposalsListResponse extends ServerPacket {
 	// AlianceProposalsList,s:guildsList
@@ -12,5 +13,13 @@ public class AlianceProposalsListResponse extends ServerPacket {
 	public AlianceProposalsListResponse(String guildsList){
 		this.guildsList = guildsList;
 	}
+	public static AlianceProposalsListResponse decode(ByteBuf in) {    
+		try {                                   
+			String guildsList = readStr(in);
+			return new AlianceProposalsListResponse(guildsList);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

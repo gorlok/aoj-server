@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class MoveBankRequest extends ClientPacket {
 	// MoveBank,b:dir,b:slot
@@ -14,5 +15,14 @@ public class MoveBankRequest extends ClientPacket {
 		this.dir = dir;
 		this.slot = slot;
 	}
+	public static MoveBankRequest decode(ByteBuf in) {    
+		try {                                   
+			byte dir = readByte(in);
+			byte slot = readByte(in);
+			return new MoveBankRequest(dir,slot);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

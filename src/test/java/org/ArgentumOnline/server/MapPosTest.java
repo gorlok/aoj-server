@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.junit.jupiter.api.Test;
 
 public class MapPosTest {
@@ -77,12 +77,12 @@ public class MapPosTest {
 	void mapPosMirarDir() {
 		MapPos origin = MapPos.mxy(10, 10, 10);
 		
-		MapPos mp_north = origin.copy().moveToDir(Direction.NORTH);
-		MapPos mp_south = origin.copy().moveToDir(Direction.SOUTH);
-		MapPos mp_west = origin.copy().moveToDir(Direction.WEST);
-		MapPos mp_east = origin.copy().moveToDir(Direction.EAST);
+		MapPos mp_north = origin.copy().moveToDir(Heading.NORTH);
+		MapPos mp_south = origin.copy().moveToDir(Heading.SOUTH);
+		MapPos mp_west = origin.copy().moveToDir(Heading.WEST);
+		MapPos mp_east = origin.copy().moveToDir(Heading.EAST);
 		
-		MapPos same = origin.copy().moveToDir(Direction.NONE);
+		MapPos same = origin.copy().moveToDir(Heading.NONE);
 		
 		assertEquals(MapPos.mxy(10, 10, 9), mp_north);
 		assertEquals(MapPos.mxy(10, 10, 11), mp_south);
@@ -109,23 +109,23 @@ public class MapPosTest {
 		
 		MapPos same = 	MapPos.mxy(1, 50, 50);
 		
-		assertEquals(Direction.NORTH, origin.findDirection(north));
-		assertEquals(Direction.SOUTH, origin.findDirection(south));
-		assertEquals(Direction.WEST, origin.findDirection(west));
-		assertEquals(Direction.EAST, origin.findDirection(east));
+		assertEquals(Heading.NORTH, origin.findDirection(north));
+		assertEquals(Heading.SOUTH, origin.findDirection(south));
+		assertEquals(Heading.WEST, origin.findDirection(west));
+		assertEquals(Heading.EAST, origin.findDirection(east));
 		
-		assertEquals(Direction.NORTH, origin.findDirection(north_east));
-		assertEquals(Direction.WEST, origin.findDirection(north_west));
-		assertEquals(Direction.SOUTH, origin.findDirection(south_east));
-		assertEquals(Direction.WEST, origin.findDirection(south_west));
+		assertEquals(Heading.NORTH, origin.findDirection(north_east));
+		assertEquals(Heading.WEST, origin.findDirection(north_west));
+		assertEquals(Heading.SOUTH, origin.findDirection(south_east));
+		assertEquals(Heading.WEST, origin.findDirection(south_west));
 		
-		assertEquals(Direction.NONE, origin.findDirection(same));
+		assertEquals(Heading.NONE, origin.findDirection(same));
 	}
 	
 	@Test
 	void directionValue() {
-		assertEquals(Direction.NORTH, Direction.value(1));
-		assertEquals(Direction.WEST, Direction.value(4));
+		assertEquals(Heading.NORTH, Heading.value(1));
+		assertEquals(Heading.WEST, Heading.value(4));
 	}
 	
 	@Test

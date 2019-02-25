@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class DoubleClickRequest extends ClientPacket {
 	// DoubleClick,b:x,b:y
@@ -14,5 +15,14 @@ public class DoubleClickRequest extends ClientPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static DoubleClickRequest decode(ByteBuf in) {    
+		try {                                   
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new DoubleClickRequest(x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

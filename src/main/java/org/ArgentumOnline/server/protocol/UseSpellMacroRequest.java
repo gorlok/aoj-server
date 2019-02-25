@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UseSpellMacroRequest extends ClientPacket {
 	// UseSpellMacro
@@ -10,5 +11,12 @@ public class UseSpellMacroRequest extends ClientPacket {
 	}
 	public UseSpellMacroRequest(){
 	}
+	public static UseSpellMacroRequest decode(ByteBuf in) {    
+		try {                                   
+			return new UseSpellMacroRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

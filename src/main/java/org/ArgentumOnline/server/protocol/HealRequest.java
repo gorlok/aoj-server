@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class HealRequest extends ClientPacket {
 	// Heal
@@ -10,5 +11,12 @@ public class HealRequest extends ClientPacket {
 	}
 	public HealRequest(){
 	}
+	public static HealRequest decode(ByteBuf in) {    
+		try {                                   
+			return new HealRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

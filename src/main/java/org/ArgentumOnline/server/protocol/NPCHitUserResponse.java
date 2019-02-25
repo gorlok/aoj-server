@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class NPCHitUserResponse extends ServerPacket {
 	// NPCHitUser,b:target,i:damage
@@ -14,5 +15,14 @@ public class NPCHitUserResponse extends ServerPacket {
 		this.target = target;
 		this.damage = damage;
 	}
+	public static NPCHitUserResponse decode(ByteBuf in) {    
+		try {                                   
+			byte target = readByte(in);
+			short damage = readShort(in);
+			return new NPCHitUserResponse(target,damage);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

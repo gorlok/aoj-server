@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ForceMIDIToMapRequest extends ClientPacket {
 	// ForceMIDIToMap,b:midiId,i:map
@@ -14,5 +15,14 @@ public class ForceMIDIToMapRequest extends ClientPacket {
 		this.midiId = midiId;
 		this.map = map;
 	}
+	public static ForceMIDIToMapRequest decode(ByteBuf in) {    
+		try {                                   
+			byte midiId = readByte(in);
+			short map = readShort(in);
+			return new ForceMIDIToMapRequest(midiId,map);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

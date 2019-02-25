@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PartyCreateRequest extends ClientPacket {
 	// PartyCreate
@@ -10,5 +11,12 @@ public class PartyCreateRequest extends ClientPacket {
 	}
 	public PartyCreateRequest(){
 	}
+	public static PartyCreateRequest decode(ByteBuf in) {    
+		try {                                   
+			return new PartyCreateRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

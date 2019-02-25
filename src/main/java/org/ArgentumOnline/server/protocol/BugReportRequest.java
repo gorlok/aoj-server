@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BugReportRequest extends ClientPacket {
 	// BugReport,s:bugReport
@@ -12,5 +13,13 @@ public class BugReportRequest extends ClientPacket {
 	public BugReportRequest(String bugReport){
 		this.bugReport = bugReport;
 	}
+	public static BugReportRequest decode(ByteBuf in) {    
+		try {                                   
+			String bugReport = readStr(in);
+			return new BugReportRequest(bugReport);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

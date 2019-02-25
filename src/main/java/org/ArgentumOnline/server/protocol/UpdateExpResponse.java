@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UpdateExpResponse extends ServerPacket {
 	// UpdateExp,l:exp
@@ -12,5 +13,13 @@ public class UpdateExpResponse extends ServerPacket {
 	public UpdateExpResponse(int exp){
 		this.exp = exp;
 	}
+	public static UpdateExpResponse decode(ByteBuf in) {    
+		try {                                   
+			int exp = readInt(in);
+			return new UpdateExpResponse(exp);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

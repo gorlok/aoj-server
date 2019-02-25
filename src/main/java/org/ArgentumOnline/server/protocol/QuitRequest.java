@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class QuitRequest extends ClientPacket {
 	// Quit
@@ -10,5 +11,12 @@ public class QuitRequest extends ClientPacket {
 	}
 	public QuitRequest(){
 	}
+	public static QuitRequest decode(ByteBuf in) {    
+		try {                                   
+			return new QuitRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

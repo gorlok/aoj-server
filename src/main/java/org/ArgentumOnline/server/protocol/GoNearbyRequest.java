@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GoNearbyRequest extends ClientPacket {
 	// GoNearby,s:userName
@@ -12,5 +13,13 @@ public class GoNearbyRequest extends ClientPacket {
 	public GoNearbyRequest(String userName){
 		this.userName = userName;
 	}
+	public static GoNearbyRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new GoNearbyRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

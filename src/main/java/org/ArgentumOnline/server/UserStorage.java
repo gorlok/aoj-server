@@ -14,7 +14,7 @@ import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.classes.CharClassManager;
 import org.ArgentumOnline.server.inventory.InventoryObject;
-import org.ArgentumOnline.server.map.MapPos.Direction;
+import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
@@ -101,7 +101,7 @@ public class UserStorage {
 		user.getOrigChar().m_arma = ini.getShort("INIT", "Arma");
 		user.getOrigChar().m_escudo = ini.getShort("INIT", "Escudo");
 		user.getOrigChar().m_casco = ini.getShort("INIT", "Casco");
-		user.getOrigChar().m_dir = (short)Direction.SOUTH.ordinal();
+		user.getOrigChar().m_dir = (short)Heading.SOUTH.ordinal();
 
 		user.m_banned_by = ini.getString("BAN", "BannedBy");
 		user.m_banned_reason = ini.getString("BAN", "Reason");

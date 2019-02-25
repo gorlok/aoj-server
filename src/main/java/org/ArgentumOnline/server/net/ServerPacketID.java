@@ -120,11 +120,20 @@ public enum ServerPacketID {
     	return (byte)this.ordinal();
     }
     
+	// cache values() because performance
+	private final static ServerPacketID[] values = ServerPacketID.values();
+	
+	public static ServerPacketID value(int index) {
+		return values[index];
+	}
+
+    /*
     public static void main(String[] args) {
 		for (ServerPacketID e : ServerPacketID.values()) {
 			System.out.println(e.ordinal() + " - " + e.name());
 		}
 	}
+	*/
 }
 
 

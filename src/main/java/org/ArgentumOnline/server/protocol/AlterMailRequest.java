@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class AlterMailRequest extends ClientPacket {
 	// AlterMail,s:userName,s:newEmail
@@ -14,5 +15,14 @@ public class AlterMailRequest extends ClientPacket {
 		this.userName = userName;
 		this.newEmail = newEmail;
 	}
+	public static AlterMailRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String newEmail = readStr(in);
+			return new AlterMailRequest(userName,newEmail);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

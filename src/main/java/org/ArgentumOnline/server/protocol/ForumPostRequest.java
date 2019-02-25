@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ForumPostRequest extends ClientPacket {
 	// ForumPost,s:title,s:msg
@@ -14,5 +15,14 @@ public class ForumPostRequest extends ClientPacket {
 		this.title = title;
 		this.msg = msg;
 	}
+	public static ForumPostRequest decode(ByteBuf in) {    
+		try {                                   
+			String title = readStr(in);
+			String msg = readStr(in);
+			return new ForumPostRequest(title,msg);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ErrorMsgResponse extends ServerPacket {
 	// ErrorMsg,s:msg
@@ -12,5 +13,13 @@ public class ErrorMsgResponse extends ServerPacket {
 	public ErrorMsgResponse(String msg){
 		this.msg = msg;
 	}
+	public static ErrorMsgResponse decode(ByteBuf in) {    
+		try {                                   
+			String msg = readStr(in);
+			return new ErrorMsgResponse(msg);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

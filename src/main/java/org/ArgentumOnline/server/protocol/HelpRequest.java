@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class HelpRequest extends ClientPacket {
 	// Help
@@ -10,5 +11,12 @@ public class HelpRequest extends ClientPacket {
 	}
 	public HelpRequest(){
 	}
+	public static HelpRequest decode(ByteBuf in) {    
+		try {                                   
+			return new HelpRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

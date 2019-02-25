@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class GuildOfferPeaceRequest extends ClientPacket {
 	// GuildOfferPeace,s:guild,s:proposal
@@ -14,5 +15,14 @@ public class GuildOfferPeaceRequest extends ClientPacket {
 		this.guild = guild;
 		this.proposal = proposal;
 	}
+	public static GuildOfferPeaceRequest decode(ByteBuf in) {    
+		try {                                   
+			String guild = readStr(in);
+			String proposal = readStr(in);
+			return new GuildOfferPeaceRequest(guild,proposal);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

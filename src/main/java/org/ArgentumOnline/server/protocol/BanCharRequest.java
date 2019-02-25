@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BanCharRequest extends ClientPacket {
 	// BanChar,s:userName,s:reason
@@ -14,5 +15,14 @@ public class BanCharRequest extends ClientPacket {
 		this.userName = userName;
 		this.reason = reason;
 	}
+	public static BanCharRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String reason = readStr(in);
+			return new BanCharRequest(userName,reason);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

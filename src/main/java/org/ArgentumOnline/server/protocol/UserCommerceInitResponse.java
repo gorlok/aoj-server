@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UserCommerceInitResponse extends ServerPacket {
 	// UserCommerceInit
@@ -10,5 +11,12 @@ public class UserCommerceInitResponse extends ServerPacket {
 	}
 	public UserCommerceInitResponse(){
 	}
+	public static UserCommerceInitResponse decode(ByteBuf in) {    
+		try {                                   
+			return new UserCommerceInitResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

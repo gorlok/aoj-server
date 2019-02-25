@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class UserHittedUserResponse extends ServerPacket {
 	// UserHittedUser,i:attackedChar,b:target,i:damage
@@ -16,5 +17,15 @@ public class UserHittedUserResponse extends ServerPacket {
 		this.target = target;
 		this.damage = damage;
 	}
+	public static UserHittedUserResponse decode(ByteBuf in) {    
+		try {                                   
+			short attackedChar = readShort(in);
+			byte target = readByte(in);
+			short damage = readShort(in);
+			return new UserHittedUserResponse(attackedChar,target,damage);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BlockPositionResponse extends ServerPacket {
 	// BlockPosition,b:x,b:y,b:blocked
@@ -16,5 +17,15 @@ public class BlockPositionResponse extends ServerPacket {
 		this.y = y;
 		this.blocked = blocked;
 	}
+	public static BlockPositionResponse decode(ByteBuf in) {    
+		try {                                   
+			byte x = readByte(in);
+			byte y = readByte(in);
+			byte blocked = readByte(in);
+			return new BlockPositionResponse(x,y,blocked);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

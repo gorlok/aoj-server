@@ -1,6 +1,8 @@
 package org.ArgentumOnline.server.protocol;
 
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class LoginNewCharRequest extends ClientPacket {
 	// LoginNewChar,s:userName,s:password,b:version1,b:version2,b:version3,i:versionGrafs,i:versionWavs,i:versionMidis,i:versionInits,i:versionMapas,i:versionAoExe,i:versionExtras,b:race,b:gender,b:clazz,b[NUMSKILLS]:skills,s:email,b:homeland
@@ -46,5 +48,30 @@ public class LoginNewCharRequest extends ClientPacket {
 		this.email = email;
 		this.homeland = homeland;
 	}
+	public static LoginNewCharRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String password = readStr(in);
+			byte version1 = readByte(in);
+			byte version2 = readByte(in);
+			byte version3 = readByte(in);
+			short versionGrafs = readShort(in);
+			short versionWavs = readShort(in);
+			short versionMidis = readShort(in);
+			short versionInits = readShort(in);
+			short versionMapas = readShort(in);
+			short versionAoExe = readShort(in);
+			short versionExtras = readShort(in);
+			byte race = readByte(in);
+			byte gender = readByte(in);
+			byte clazz = readByte(in);
+			byte[] skills = readBytes(in, Skill.MAX_SKILLS);
+			String email = readStr(in);
+			byte homeland = readByte(in);
+			return new LoginNewCharRequest(userName,password,version1,version2,version3,versionGrafs,versionWavs,versionMidis,versionInits,versionMapas,versionAoExe,versionExtras,race,gender,clazz,skills,email,homeland);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

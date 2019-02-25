@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class DumbNoMoreResponse extends ServerPacket {
 	// DumbNoMore
@@ -10,5 +11,12 @@ public class DumbNoMoreResponse extends ServerPacket {
 	}
 	public DumbNoMoreResponse(){
 	}
+	public static DumbNoMoreResponse decode(ByteBuf in) {    
+		try {                                   
+			return new DumbNoMoreResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SetInvisibleResponse extends ServerPacket {
 	// SetInvisible,i:charIndex,b:invisible
@@ -14,5 +15,14 @@ public class SetInvisibleResponse extends ServerPacket {
 		this.charIndex = charIndex;
 		this.invisible = invisible;
 	}
+	public static SetInvisibleResponse decode(ByteBuf in) {    
+		try {                                   
+			short charIndex = readShort(in);
+			byte invisible = readByte(in);
+			return new SetInvisibleResponse(charIndex,invisible);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PunishmentsRequest extends ClientPacket {
 	// Punishments,s:name
@@ -12,5 +13,13 @@ public class PunishmentsRequest extends ClientPacket {
 	public PunishmentsRequest(String name){
 		this.name = name;
 	}
+	public static PunishmentsRequest decode(ByteBuf in) {    
+		try {                                   
+			String name = readStr(in);
+			return new PunishmentsRequest(name);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

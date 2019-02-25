@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class IPToNickRequest extends ClientPacket {
 	// IPToNick,b:ip1,b:ip2,b:ip3,b:ip4
@@ -18,5 +19,16 @@ public class IPToNickRequest extends ClientPacket {
 		this.ip3 = ip3;
 		this.ip4 = ip4;
 	}
+	public static IPToNickRequest decode(ByteBuf in) {    
+		try {                                   
+			byte ip1 = readByte(in);
+			byte ip2 = readByte(in);
+			byte ip3 = readByte(in);
+			byte ip4 = readByte(in);
+			return new IPToNickRequest(ip1,ip2,ip3,ip4);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

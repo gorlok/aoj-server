@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RequestMOTDRequest extends ClientPacket {
 	// RequestMOTD
@@ -10,5 +11,12 @@ public class RequestMOTDRequest extends ClientPacket {
 	}
 	public RequestMOTDRequest(){
 	}
+	public static RequestMOTDRequest decode(ByteBuf in) {    
+		try {                                   
+			return new RequestMOTDRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

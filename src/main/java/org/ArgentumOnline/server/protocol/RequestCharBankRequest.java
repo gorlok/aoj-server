@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class RequestCharBankRequest extends ClientPacket {
 	// RequestCharBank,s:userName
@@ -12,5 +13,13 @@ public class RequestCharBankRequest extends ClientPacket {
 	public RequestCharBankRequest(String userName){
 		this.userName = userName;
 	}
+	public static RequestCharBankRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new RequestCharBankRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

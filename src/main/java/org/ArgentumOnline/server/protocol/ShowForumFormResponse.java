@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ShowForumFormResponse extends ServerPacket {
 	// ShowForumForm
@@ -10,5 +11,12 @@ public class ShowForumFormResponse extends ServerPacket {
 	}
 	public ShowForumFormResponse(){
 	}
+	public static ShowForumFormResponse decode(ByteBuf in) {    
+		try {                                   
+			return new ShowForumFormResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

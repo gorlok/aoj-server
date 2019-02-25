@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class PlayWaveResponse extends ServerPacket {
 	// PlayWave,b:wave,b:x,b:y
@@ -16,5 +17,15 @@ public class PlayWaveResponse extends ServerPacket {
 		this.x = x;
 		this.y = y;
 	}
+	public static PlayWaveResponse decode(ByteBuf in) {    
+		try {                                   
+			byte wave = readByte(in);
+			byte x = readByte(in);
+			byte y = readByte(in);
+			return new PlayWaveResponse(wave,x,y);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

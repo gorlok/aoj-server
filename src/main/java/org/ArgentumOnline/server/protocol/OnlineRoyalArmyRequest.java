@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class OnlineRoyalArmyRequest extends ClientPacket {
 	// OnlineRoyalArmy
@@ -10,5 +11,12 @@ public class OnlineRoyalArmyRequest extends ClientPacket {
 	}
 	public OnlineRoyalArmyRequest(){
 	}
+	public static OnlineRoyalArmyRequest decode(ByteBuf in) {    
+		try {                                   
+			return new OnlineRoyalArmyRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

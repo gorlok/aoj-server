@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class ResuscitationSafeOffResponse extends ServerPacket {
 	// ResuscitationSafeOff
@@ -10,5 +11,12 @@ public class ResuscitationSafeOffResponse extends ServerPacket {
 	}
 	public ResuscitationSafeOffResponse(){
 	}
+	public static ResuscitationSafeOffResponse decode(ByteBuf in) {    
+		try {                                   
+			return new ResuscitationSafeOffResponse();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

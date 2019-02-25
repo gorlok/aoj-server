@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CleanWorldRequest extends ClientPacket {
 	// CleanWorld
@@ -10,5 +11,12 @@ public class CleanWorldRequest extends ClientPacket {
 	}
 	public CleanWorldRequest(){
 	}
+	public static CleanWorldRequest decode(ByteBuf in) {    
+		try {                                   
+			return new CleanWorldRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

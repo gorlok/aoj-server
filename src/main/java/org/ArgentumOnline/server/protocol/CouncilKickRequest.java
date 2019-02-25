@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CouncilKickRequest extends ClientPacket {
 	// CouncilKick,s:userName
@@ -12,5 +13,13 @@ public class CouncilKickRequest extends ClientPacket {
 	public CouncilKickRequest(String userName){
 		this.userName = userName;
 	}
+	public static CouncilKickRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			return new CouncilKickRequest(userName);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

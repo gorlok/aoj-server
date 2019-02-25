@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class CommerceBuyRequest extends ClientPacket {
 	// CommerceBuy,b:slot,i:amount
@@ -14,5 +15,14 @@ public class CommerceBuyRequest extends ClientPacket {
 		this.slot = slot;
 		this.amount = amount;
 	}
+	public static CommerceBuyRequest decode(ByteBuf in) {    
+		try {                                   
+			byte slot = readByte(in);
+			short amount = readShort(in);
+			return new CommerceBuyRequest(slot,amount);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class TeleportDestroyRequest extends ClientPacket {
 	// TeleportDestroy
@@ -10,5 +11,12 @@ public class TeleportDestroyRequest extends ClientPacket {
 	}
 	public TeleportDestroyRequest(){
 	}
+	public static TeleportDestroyRequest decode(ByteBuf in) {    
+		try {                                   
+			return new TeleportDestroyRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

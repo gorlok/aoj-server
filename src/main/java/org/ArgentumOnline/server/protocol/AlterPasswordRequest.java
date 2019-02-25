@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class AlterPasswordRequest extends ClientPacket {
 	// AlterPassword,s:userName,s:copyFrom
@@ -14,5 +15,14 @@ public class AlterPasswordRequest extends ClientPacket {
 		this.userName = userName;
 		this.copyFrom = copyFrom;
 	}
+	public static AlterPasswordRequest decode(ByteBuf in) {    
+		try {                                   
+			String userName = readStr(in);
+			String copyFrom = readStr(in);
+			return new AlterPasswordRequest(userName,copyFrom);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

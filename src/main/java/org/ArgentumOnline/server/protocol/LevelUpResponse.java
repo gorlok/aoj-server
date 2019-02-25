@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class LevelUpResponse extends ServerPacket {
 	// LevelUp,i:skillPoints
@@ -12,5 +13,13 @@ public class LevelUpResponse extends ServerPacket {
 	public LevelUpResponse(short skillPoints){
 		this.skillPoints = skillPoints;
 	}
+	public static LevelUpResponse decode(ByteBuf in) {    
+		try {                                   
+			short skillPoints = readShort(in);
+			return new LevelUpResponse(skillPoints);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class BankStartRequest extends ClientPacket {
 	// BankStart
@@ -10,5 +11,12 @@ public class BankStartRequest extends ClientPacket {
 	}
 	public BankStartRequest(){
 	}
+	public static BankStartRequest decode(ByteBuf in) {    
+		try {                                   
+			return new BankStartRequest();                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 

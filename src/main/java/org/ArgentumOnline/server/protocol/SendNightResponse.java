@@ -1,6 +1,7 @@
 package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.net.*;
+import io.netty.buffer.ByteBuf;
 
 public class SendNightResponse extends ServerPacket {
 	// SendNight,b:night
@@ -12,5 +13,13 @@ public class SendNightResponse extends ServerPacket {
 	public SendNightResponse(byte night){
 		this.night = night;
 	}
+	public static SendNightResponse decode(ByteBuf in) {    
+		try {                                   
+			byte night = readByte(in);
+			return new SendNightResponse(night);                  
+		} catch (IndexOutOfBoundsException e) { 
+			return null;                        
+		}                                       
+	}                                        
 };
 
