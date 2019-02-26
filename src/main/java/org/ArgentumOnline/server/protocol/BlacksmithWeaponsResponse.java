@@ -18,7 +18,16 @@ public class BlacksmithWeaponsResponse extends ServerPacket {
 	public static BlacksmithWeaponsResponse decode(ByteBuf in) {    
 		try {                                   
 			short count = readShort(in);
-			BlacksmithWeapons_DATA[] weapons = readBlacksmithWeapons_DATA[](in);
+
+			BlacksmithWeapons_DATA[] weapons = new BlacksmithWeapons_DATA[count];
+			for (int i = 0; i < count; i++) {
+				weapons[i].name = readStr(in);
+				weapons[i].lingH = readShort(in);
+				weapons[i].lingP = readShort(in);
+				weapons[i].lingO = readShort(in);
+				weapons[i].index = readShort(in);
+			}
+			
 			return new BlacksmithWeaponsResponse(count,weapons);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        

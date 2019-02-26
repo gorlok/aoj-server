@@ -18,7 +18,14 @@ public class CarpenterObjectsResponse extends ServerPacket {
 	public static CarpenterObjectsResponse decode(ByteBuf in) {    
 		try {                                   
 			short count = readShort(in);
-			CarpenterObjects_DATA[] objects = readCarpenterObjects_DATA[](in);
+			
+			CarpenterObjects_DATA[] objects = new CarpenterObjects_DATA[count]; 
+			for (int i = 0; i < count; i++) {
+				objects[i].name = readStr(in);
+				objects[i].madera = readShort(in);
+				objects[i].index = readShort(in);
+			}
+			
 			return new CarpenterObjectsResponse(count,objects);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        
