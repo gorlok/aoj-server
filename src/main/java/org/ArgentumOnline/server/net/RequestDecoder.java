@@ -3,12 +3,32 @@ package org.ArgentumOnline.server.net;
 import java.util.List;
 
 import org.ArgentumOnline.server.protocol.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.ReplayingDecoder;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
 class RequestDecoder extends ReplayingDecoder<ClientPacket> {
+	private static Logger log = LogManager.getLogger();
+	
+	ChannelGroup clients = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+	
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		log.debug("=> opened client connection");
+		clients.add(ctx.channel());
+	}
+	
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		log.debug("=> closed client connection");
+		clients.remove(ctx.channel()); 
+	}
 
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {

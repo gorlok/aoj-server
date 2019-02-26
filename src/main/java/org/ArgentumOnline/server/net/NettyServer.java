@@ -15,8 +15,8 @@ public class NettyServer {
 
 	private int port;
 
-	NioEventLoopGroup acceptorGroup = new NioEventLoopGroup(2); // 2 threads
-	NioEventLoopGroup handlerGroup = new NioEventLoopGroup(10); // 10 threads
+	NioEventLoopGroup acceptorGroup = new NioEventLoopGroup(1); // 1 threads
+	NioEventLoopGroup handlerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()); // 1 thread per cpu thread/core
 
 	private NettyServer(int port) {
 		this.port = port;
