@@ -9,7 +9,7 @@ public class Packet {
 	static Charset charset = Charset.forName("ISO-8859-1");
 
 	protected static String readStr(ByteBuf in) {
-		short len = in.readShort();
+		short len = in.readShortLE();
 		return in.readCharSequence(len, charset).toString();			
 	}
 
@@ -18,15 +18,15 @@ public class Packet {
 	}
 
 	protected static short readShort(ByteBuf in) {
-		return in.readShort();
+		return in.readShortLE();
 	}
 
 	protected static int readInt(ByteBuf in) {
-		return in.readInt();
+		return in.readIntLE();
 	}
 
 	protected static float readFloat(ByteBuf in) {
-		return in.readFloat();
+		return in.readFloatLE();
 	}
 	
 	protected static byte[] readBytes(ByteBuf in, int len) {
@@ -35,4 +35,29 @@ public class Packet {
 		return bytes;
 	}
 
+	protected void writeStr(ByteBuf out, String s) {
+		out.writeShortLE(s.length());
+		out.writeCharSequence(s, charset);
+	}
+
+	protected void writeByte(ByteBuf out, int b) {
+		out.writeByte(b);
+	}
+
+	protected void writeShort(ByteBuf out, short s) {
+		out.writeShortLE(s);
+	}
+
+	protected void writeInt(ByteBuf out, int i) {
+		out.writeIntLE(i);
+	}
+
+	protected void writeFloat(ByteBuf out, float f) {
+		out.writeFloatLE(f);
+	}
+	
+	protected void writeBytes(ByteBuf out, byte[] bytes) {
+		out.writeBytes(bytes);
+	}
+	
 }

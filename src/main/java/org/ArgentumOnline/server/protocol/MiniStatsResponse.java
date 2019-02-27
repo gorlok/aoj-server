@@ -36,5 +36,15 @@ public class MiniStatsResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeInt(out,ciudadanosMatados);
+		writeInt(out,criminalesMatados);
+		writeInt(out,usuariosMatados);
+		writeShort(out,npcsMatados);
+		writeByte(out,clase);
+		writeInt(out,pena);
+	}
 };
 

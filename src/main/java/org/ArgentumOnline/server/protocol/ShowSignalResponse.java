@@ -24,5 +24,11 @@ public class ShowSignalResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeStr(out,texto);
+		writeShort(out,grhSecundario);
+	}
 };
 

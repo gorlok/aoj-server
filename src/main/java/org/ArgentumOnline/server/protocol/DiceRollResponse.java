@@ -33,5 +33,14 @@ public class DiceRollResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeByte(out,fuerza);
+		writeByte(out,agilidad);
+		writeByte(out,inteligencia);
+		writeByte(out,carisma);
+		writeByte(out,constitucion);
+	}
 };
 

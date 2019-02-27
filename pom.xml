@@ -4,14 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>aoj-server</groupId>
 	<artifactId>aoserver</artifactId>
-	<version>0.0.1</version>
+	<version>0.10.0</version>
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<release>10</release>
+					<release>11</release>
 				</configuration>
 			</plugin>
 			<plugin>

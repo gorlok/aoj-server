@@ -9,7 +9,7 @@ public class Skill {
 	public final static int MAX_SKILLS = 21;
 	public final static int MAX_SKILL_POINTS = 100;
     
-	public final static int SKILL_ZERO = 0;
+	public final static int SKILL_ZERO = 0; // En la posición cero del array de skills, se guardaban los skills points libres
 	public final static int SKILL_Suerte = 1;
 	public final static int SKILL_Magia = 2;
 	public final static int SKILL_Robar = 3;
@@ -60,6 +60,7 @@ public class Skill {
 	    "Wresterling",
 	    "Navegacion"
 	};
+	
 	public final static byte levelSkill[] = {
 	    0, 3, 5, 7, 10, 13, 15, 17, 20, 23, 25,
 	    27, 30, 33, 35, 37, 40, 43, 45, 47, 50,

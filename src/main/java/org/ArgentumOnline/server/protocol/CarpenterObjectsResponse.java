@@ -31,5 +31,16 @@ public class CarpenterObjectsResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,count);
+		
+		for (int i = 0; i < count; i++) {
+			writeStr(out, objects[i].name);
+			writeShort(out, objects[i].madera);
+			writeShort(out, objects[i].index);
+		}
+	}
 };
 

@@ -30,5 +30,13 @@ public class UpdateHungerAndThirstResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeByte(out,maxAGU);
+		writeByte(out,minAGU);
+		writeByte(out,maxHAM);
+		writeByte(out,minHAM);
+	}
 };
 

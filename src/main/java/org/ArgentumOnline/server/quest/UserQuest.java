@@ -57,7 +57,7 @@ public class UserQuest {
             Quest quest  = this.server.getQuest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;
-                cliente.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FIGHT);
+                cliente.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FONTTYPE_FIGHT);
             }
         }
     }
@@ -73,7 +73,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
-			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().hacerQuest(client, npc);
@@ -90,7 +90,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
-			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().recibirRecompensaQuest(client);
@@ -107,7 +107,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
-			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().sendInfoQuest(client);
@@ -124,7 +124,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
-			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().userSeRinde(client);
@@ -141,7 +141,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.getNPCtype() != Npc.NPCTYPE_QUEST) {
-			client.enviarMensaje("Busca aventuras en otro lado.", FontType.INFO);
+			client.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().checkNpcAmigo(client);

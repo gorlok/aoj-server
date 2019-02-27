@@ -45,5 +45,18 @@ public class CharacterChangeResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,charIndex);
+		writeShort(out,body);
+		writeShort(out,head);
+		writeByte(out,heading);
+		writeShort(out,weapon);
+		writeShort(out,shield);
+		writeShort(out,helmet);
+		writeShort(out,fx);
+		writeShort(out,fxLoops);
+	}
 };
 

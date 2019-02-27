@@ -44,8 +44,10 @@ import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -671,19 +673,15 @@ public class Map implements Constants {
     	enviarAlArea(x,y,ServerPacketID.CreateFX, (short) id, (short) fx, (short) val);
     }
     
-    public void enviarATodos(ServerPacketID msg, Object... params) {
-        enviarATodosExc(-1, msg, params);
+    public void enviarATodos(ServerPacket packet) {
+        enviarATodosExc(-1, packet);
     }
     
-    public void enviarATodosExc(int excepto, ServerPacketID msg, Object... params) {
+    public void enviarATodosExc(int excepto, ServerPacket packet) {
         for (Object element : this.m_clients) {
             Player cliente = (Player) element;
             if (cliente.getId() != excepto) {
-            	try {
-            		cliente.enviar(msg, params); // FIXME: acceso concurrente, ojo.
-            	} catch (Exception e) {
-            		//
-            	}
+        		cliente.enviar(packet);
             }
         }
     }
@@ -697,7 +695,7 @@ public class Map implements Constants {
     	areasData.sendToAreaButIndex(this, pos_x, pos_y, excepto, msg, params);
     }
     
-    public void enviarAlAreaAdminsNoConsejeros(short pos_x, short pos_y, ServerPacketID msg, Object... params) {
+    public void enviarAlAreaAdminsNoConsejeros(short pos_x, short pos_y, ServerPacket packet) {
         short x1 = (short) (pos_x - MinXBorder + 1);
         short x2 = (short) (pos_x + MaxXBorder + 1);
         short y1 = (short) (pos_y - MinYBorder + 1);
@@ -720,7 +718,7 @@ public class Map implements Constants {
                 if (this.m_cells[x-1][y-1].getClienteId() > 0) {
                     cliente = this.server.getClientById(this.m_cells[x-1][y-1].getClienteId());
                     if (cliente != null && (cliente.esDios() || cliente.esSemiDios())) {
-						cliente.enviar(msg, params);
+						cliente.enviar(packet);
 					}
                 }
             }
@@ -777,7 +775,7 @@ public class Map implements Constants {
     public void enviarNPCs(Player cliente) {
         for (Object element : this.m_npcs) {
             Npc npc = (Npc) element;
-            cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
+            cliente.enviar(npc.createCC());
         }
     }
     
@@ -890,7 +888,7 @@ public class Map implements Constants {
         // Ver si hay un objeto en los alrededores...
         MapObject obj = buscarObjeto(x, y);
         if (obj != null) {
-            cliente.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.INFO);
+            cliente.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
             cliente.getFlags().TargetObj = obj.getInfo().ObjIndex;
             cliente.getFlags().TargetObjMap = this.nroMapa;
             cliente.getFlags().TargetObjX = obj.x;
@@ -907,11 +905,11 @@ public class Map implements Constants {
             	/*
                 cliente.enviarMensaje(npc.m_name + " id=" + npc.getId() + 
                 " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
-                " mov=" + npc.m_movement, FontType.DEBUG);
+                " mov=" + npc.m_movement, FontType.FONTTYPE_SERVER);
                 cliente.enviarMensaje("AI NPC: " + npc.m_name + " id=" + npc.getId() + 
                 " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
                 " mov=" + npc.m_movement + " atby=" + npc.m_attackedBy +
-				" oldmov=" + npc.m_oldMovement + " hostil=" + npc.esHostil(), FontType.DEBUG);
+				" oldmov=" + npc.m_oldMovement + " hostil=" + npc.esHostil(), FontType.FONTTYPE_SERVER);
 				*/
             }
             if (npc.m_desc.length() > 0) {
@@ -924,7 +922,7 @@ public class Map implements Constants {
                 msg = npc.m_name;
             }
             msg = msg + " " + npc.estadoVida(cliente);
-            cliente.enviarMensaje(msg, FontType.INFO);
+            cliente.enviarMensaje(msg, FontType.FONTTYPE_INFO);
             cliente.getFlags().TargetNpc = npc.getId();
             cliente.getFlags().TargetMap = this.nroMapa;
             cliente.getFlags().TargetX = x;
@@ -960,7 +958,7 @@ public class Map implements Constants {
             cliente.getFlags().TargetMap = this.nroMapa;
             cliente.getFlags().TargetX = x;
             cliente.getFlags().TargetY = y;
-            //cliente.enviarMensaje("No ves nada interesante.", FontType.INFO);
+            //cliente.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
         // FIXME: REVISAR SI ESTO VA...
         cliente.getFlags().TargetX = x;
@@ -975,7 +973,7 @@ public class Map implements Constants {
     
     public void accionParaRamita(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
+            cliente.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         int suerte = 0;
@@ -992,10 +990,10 @@ public class Map implements Constants {
         if (Util.Azar(1, suerte) == 1) {
         	quitarObjeto(x, y);
             agregarObjeto(FOGATA, (short)1, x, y);
-            cliente.enviarMensaje("Has prendido la fogata.", FontType.INFO);
+            cliente.enviarMensaje("Has prendido la fogata.", FontType.FONTTYPE_INFO);
          //   enviarAlArea(x, y, MSG_FO);
         } else {
-            cliente.enviarMensaje("No has podido hacer fuego.", FontType.INFO);
+            cliente.enviarMensaje("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
         // Si no tiene hambre o sed quizas suba el skill supervivencia
         if (!cliente.getFlags().Hambre && !cliente.getFlags().Sed) {
@@ -1005,7 +1003,7 @@ public class Map implements Constants {
     
     public void accionParaForo(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
+            cliente.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         // ¿Hay mensajes?
@@ -1019,7 +1017,7 @@ public class Map implements Constants {
     
     public void accionParaPuerta(short x, short y, Player cliente) {
         if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estas demasiado lejos.", FontType.INFO);
+            cliente.enviarMensaje("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         MapObject obj = getObjeto(x, y);
@@ -1030,7 +1028,7 @@ public class Map implements Constants {
             abrirCerrarPuerta(obj);
             cliente.getFlags().TargetObj = obj.getInfo().ObjIndex;
         } else {
-            cliente.enviarMensaje("La puerta esta cerrada con llave.", FontType.INFO);
+            cliente.enviarMensaje("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
     }
     
@@ -1518,11 +1516,11 @@ public class Map implements Constants {
     
     public void construirAreaObj(Player cliente, short x, short y) {
     	MapObject obj = getObjeto(x,y);
-    	if (obj != null) cliente.enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)obj.getInfo().GrhIndex);
+    	if (obj != null) cliente.enviar(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
     }
     
     public void construirAreaNpc(Player cliente, Npc npc) {
-    	cliente.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
+    	cliente.enviar(npc.createCC());
     }
     
 }

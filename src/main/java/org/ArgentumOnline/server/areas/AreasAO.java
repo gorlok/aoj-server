@@ -2,13 +2,15 @@ package org.ArgentumOnline.server.areas;
 
 import java.util.BitSet;
 
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
-import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
-import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.protocol.AreaChangedResponse;
+import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 
 
 /** 
@@ -151,7 +153,7 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(ServerPacketID.AreaChanged, (byte)user.pos().x, (byte)user.pos().y);
+    	user.enviar(new AreaChangedResponse((byte)user.pos().x, (byte)user.pos().y));
     	
     	for(short x = (short) minX; x < maxX;x++) {
     		for(short y = (short) minY; y < maxY; y++) {
@@ -162,23 +164,23 @@ public class AreasAO implements Constants {
     			
     			if (user.getId() != tempInt && tempInt > 0) {
     				Player other = this.server.getClientById(tempInt);
-    				user.enviar(ServerPacketID.CharacterCreate, other.ccParams());
-    				other.enviar(ServerPacketID.CharacterCreate, user.ccParams());
+    				user.enviar(other.createCC());
+    				other.enviar(user.createCC());
     				
     			} else if (dir == USER_NUEVO) {
-    				user.enviar(ServerPacketID.CharacterCreate, user.ccParams());
+    				user.enviar(user.createCC());
     			}
     			
     			}
     			
     			if (map.hayNpc(x, y)) {
-    				user.enviar(ServerPacketID.CharacterCreate, map.getNpc(x, y).ccParams());
+    				user.enviar(map.getNpc(x, y).createCC());
     			}
     			
     			if (map.hayObjeto(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
-    				user.enviar(ServerPacketID.ObjectCreate, (byte)x, (byte)y, (short)obj.getInfo().GrhIndex);
+    				user.enviar(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
     				
     				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
@@ -273,7 +275,7 @@ public class AreasAO implements Constants {
         			if (map.hayCliente(x, y)) {
         				Player jao = map.getCliente(x, y);
         				
-        				jao.enviar(ServerPacketID.CharacterCreate, npc.ccParams());
+        				jao.enviar(npc.createCC());
         				
         			}
         		}
@@ -327,7 +329,7 @@ public class AreasAO implements Constants {
 	 * JAO: Enviamos la área según la posición que se pase por el parámetro. Este método se utiliza frecuentemente
 	 * para enviar al cliente los objetos en el piso
 	 */
-	public void sendToAreaByPos(Map map, int areaX, int areaY, ServerPacketID msg, Object... params) {
+	public void sendToAreaByPos(Map map, int areaX, int areaY, ServerPacket packet) {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
@@ -345,7 +347,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					user.enviar(msg, params);
+					user.enviar(packet);
 				}
 			}
 		}
@@ -354,7 +356,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío al área, y adyacentes, de los parámetros especificados, pero no al index 'id'
 	 */
-	public void sendToAreaButIndex(Map map, int areaX, int areaY, int id, ServerPacketID msg, Object... params) {
+	public void sendToAreaButIndex(Map map, int areaX, int areaY, int id, ServerPacket packet) {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
@@ -373,7 +375,9 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (user.getId() != id) user.enviar(msg, params);
+					if (user.getId() != id) {
+						user.enviar(packet);
+					}
 				}
 			}
 		}
@@ -382,7 +386,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del user, y adyacentes
 	 */
-	public void sendToUserArea(Player user, ServerPacketID msg, Object... params) {
+	public void sendToUserArea(Player user, ServerPacket packet) {
 		var userArea = user.getUserArea();
 		
 		int areaX = userArea.areaPerteneceX;
@@ -401,7 +405,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					tempIndex.enviar(msg, params);
+					tempIndex.enviar(packet);
 				}
 			}
 		}
@@ -410,7 +414,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
-	public void sendToUserAreaButIndex(Player user, ServerPacketID msg, Object... params) {
+	public void sendToUserAreaButIndex(Player user, ServerPacket packet) {
 		var userArea = user.getUserArea();
 
 		int areaX = userArea.areaPerteneceX;
@@ -429,7 +433,9 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (tempIndex.getId() != user.getId()) tempIndex.enviar(msg, params);
+					if (tempIndex.getId() != user.getId()) {
+						tempIndex.enviar(packet);
+					}
 				}
 			}
 		}
@@ -438,7 +444,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del NPC, y adyacentes
 	 */
-	public void sendToNPCArea(Npc npc, ServerPacketID msg, Object... params) {
+	public void sendToNPCArea(Npc npc, ServerPacket packet) {
 
 		int areaX = npc.areaPerteneceX;
 		int areaY = npc.areaPerteneceY;
@@ -456,7 +462,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
 					
-					tempIndex.enviar(msg, params);
+					tempIndex.enviar(packet);
 				}
 			}
 		}

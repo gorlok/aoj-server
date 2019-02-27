@@ -91,7 +91,7 @@ public class Motd {
 		}
 		setMOTD(motd);
 		guardarMotd();
-		client.enviarMensaje("MOTD actualizado.", FontType.INFO);
+		client.enviarMensaje("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doEnviarMOTD(Player client) {
@@ -101,7 +101,7 @@ public class Motd {
 		if (motd.isEmpty()) {
 			return;
 		}
-		client.enviarMensaje("Mensaje del dia:", FontType.INFO);
+		client.enviarMensaje("Mensaje del dia:", FontType.FONTTYPE_INFO);
 		for (String line : motd) {
 			// enviar(MSG_MOTD, line);
 			// FIXME

@@ -24,5 +24,11 @@ public class ChangeMapResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,map);
+		writeShort(out,version);
+	}
 };
 

@@ -33,5 +33,18 @@ public class BlacksmithArmorsResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,count);
+		
+		for (int i = 0; i < count; i++) {
+			writeStr(out, armors[i].name);
+			writeShort(out, armors[i].lingH);
+			writeShort(out, armors[i].lingP);
+			writeShort(out, armors[i].lingO);
+			writeShort(out, armors[i].index);
+		}
+	}
 };
 

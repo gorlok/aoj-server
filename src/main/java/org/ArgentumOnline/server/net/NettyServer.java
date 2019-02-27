@@ -15,10 +15,12 @@ public class NettyServer {
 
 	private int port;
 
-	NioEventLoopGroup acceptorGroup = new NioEventLoopGroup(1); // 1 threads
-	NioEventLoopGroup handlerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()); // 1 thread per cpu thread/core
+	// 1 threads for accept new connections
+	NioEventLoopGroup acceptorGroup = new NioEventLoopGroup(1);
+	// threads for clients, 1 per cpu thread/core
+	NioEventLoopGroup handlerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
-	private NettyServer(int port) {
+	public NettyServer(int port) {
 		this.port = port;
 
 		ServerBootstrap b = new ServerBootstrap();
@@ -31,8 +33,8 @@ public class NettyServer {
 						ch.pipeline()
 								.addLast(
 										new RequestDecoder(),
-										new ResponseDataEncoder(),
-										new ProcessingHandler());
+										new ProcessingHandler(),
+										new ResponseDataEncoder());
 					}
 				})
 				.option(ChannelOption.SO_BACKLOG, 128)
@@ -44,12 +46,6 @@ public class NettyServer {
 		} catch (InterruptedException e) {
 			log.fatal("Can't start server", e);
 		}
-	}
-
-	public static NettyServer start(int port) throws Exception {
-		var ns = new NettyServer(port);
-
-		return ns;
 	}
 
 	public void shutdown() {

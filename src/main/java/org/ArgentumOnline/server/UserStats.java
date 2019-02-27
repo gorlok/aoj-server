@@ -88,6 +88,10 @@ public class UserStats extends AbstractCharStats {
 		this.SkillPts = val;
 	}
 
+	/**
+	 * Esto se guardaba en el array de skills, en la posición cero.
+	 * @return
+	 */
 	public int getSkillPoints() {
 		return this.SkillPts;
 	}

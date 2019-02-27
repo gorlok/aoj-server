@@ -39,5 +39,16 @@ public class FameResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeInt(out,asesinoRep);
+		writeInt(out,bandidoRep);
+		writeInt(out,burguesRep);
+		writeInt(out,ladronRep);
+		writeInt(out,nobleRep);
+		writeInt(out,pebleRep);
+		writeInt(out,promedio);
+	}
 };
 

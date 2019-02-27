@@ -30,5 +30,13 @@ public class GuildLeaderInfoResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeStr(out,guildList);
+		writeStr(out,memberList);
+		writeStr(out,guildNews);
+		writeStr(out,requestsList);
+	}
 };
 

@@ -284,7 +284,7 @@ public class UserInventory extends Inventory implements Constants {
 					Log.logGM(this.dueño.getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
-                this.dueño.enviarMensaje("No hay espacio en el piso.", FontType.INFO);
+                this.dueño.enviarMensaje("No hay espacio en el piso.", FontType.FONTTYPE_INFO);
             }
         }
     }
@@ -363,7 +363,7 @@ public class UserInventory extends Inventory implements Constants {
         short objid = this.objs[slot-1].objid;
         log.debug("equipar slot " + slot);
         if (infoObj.esNewbie() && !this.dueño.esNewbie()) {
-            this.dueño.enviarMensaje("Solo los newbies pueden usar este objeto.", FontType.INFO);
+            this.dueño.enviarMensaje("Solo los newbies pueden usar este objeto.", FontType.FONTTYPE_INFO);
             return;
         }
         InventoryObject obj_inv = getObjeto(slot);
@@ -393,7 +393,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.getInfoChar().m_arma = infoObj.WeaponAnim;
                     this.dueño.sendCharacterChange();
                 } else {
-                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
@@ -414,7 +414,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.herramientaEquipada = true;
                     this.herramientaSlot = slot;
                 } else {
-                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
@@ -435,7 +435,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.municionEquipada = true;
                     this.municionSlot = slot;
                 } else {
-                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
@@ -471,7 +471,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.dueño.getFlags().Desnudo = false;
                             this.dueño.sendCharacterChange();
                         } else {
-                            this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.INFO);
+                            this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
                         }
                         break;
                         
@@ -497,7 +497,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.dueño.getInfoChar().m_casco = infoObj.CascoAnim;
                             this.dueño.sendCharacterChange();
                         } else {
-                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
+                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                         }
                         break;
                         
@@ -523,7 +523,7 @@ public class UserInventory extends Inventory implements Constants {
                             this.dueño.getInfoChar().m_escudo = infoObj.ShieldAnim;
                             this.dueño.sendCharacterChange();
                         } else {
-                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.INFO);
+                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                         }
                         break;
                 }
@@ -614,11 +614,11 @@ public class UserInventory extends Inventory implements Constants {
     	}
     	// Si no se pudo agregar nada.
     	if (agregar == cant) {
-            this.dueño.enviarMensaje("No podes cargar mas objetos.", FontType.INFO);
+            this.dueño.enviarMensaje("No podes cargar mas objetos.", FontType.FONTTYPE_INFO);
             return 0; // Devuelvo cuantos items se agregaron, que es ninguno.
     	}
     	// Se pudo agregar algo, pero no había suficiente lugar en el inventario para todo.
-        this.dueño.enviarMensaje("Solo puedes cargar parte de los objetos.", FontType.INFO);
+        this.dueño.enviarMensaje("Solo puedes cargar parte de los objetos.", FontType.FONTTYPE_INFO);
         return cant - agregar; // Devuelvo cuantos items se agregaron, que no son todos.
     }
     
@@ -698,7 +698,7 @@ public class UserInventory extends Inventory implements Constants {
 		}
         ObjectInfo info = findObj(obj.objid);
         if (info.esNewbie() && !this.dueño.esNewbie()) {
-            this.dueño.enviarMensaje("Solo los newbies pueden usar estos objetos.", FontType.INFO);
+            this.dueño.enviarMensaje("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
         if (!this.dueño.intervaloPermiteUsar()) {
@@ -753,7 +753,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 if (!this.dueño.intervaloPermiteAtacar()) {
-                    this.dueño.enviarMensaje("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.INFO);
+                    this.dueño.enviarMensaje("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
                     return;
                 }
                 this.dueño.getFlags().TomoPocion = true;
@@ -782,7 +782,7 @@ public class UserInventory extends Inventory implements Constants {
                     case 5: // Pocion violeta
                         if (this.dueño.getFlags().Envenenado) {
                             this.dueño.getFlags().Envenenado = false;
-                            this.dueño.enviarMensaje("Te has curado del envenenamiento.", FontType.INFO);
+                            this.dueño.enviarMensaje("Te has curado del envenenamiento.", FontType.FONTTYPE_INFO);
                         }
                         break;
                 }
@@ -821,22 +821,22 @@ public class UserInventory extends Inventory implements Constants {
                             if (targetInfo.Clave == info.Clave) {
                                 mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
                                 this.dueño.getFlags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
-                                this.dueño.enviarMensaje("Has abierto la puerta.", FontType.INFO);
+                                this.dueño.enviarMensaje("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
-                            this.dueño.enviarMensaje("La llave no sirve.", FontType.INFO);
+                            this.dueño.enviarMensaje("La llave no sirve.", FontType.FONTTYPE_INFO);
                             return;
                         }
                         if (targetInfo.Clave == info.Clave) {
                             mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
                             this.dueño.getFlags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
-                            this.dueño.enviarMensaje("Has cerrado con llave la puerta.", FontType.INFO);
+                            this.dueño.enviarMensaje("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 
-                        this.dueño.enviarMensaje("La llave no sirve.", FontType.INFO);
+                        this.dueño.enviarMensaje("La llave no sirve.", FontType.FONTTYPE_INFO);
                         return;
                     }
-                    this.dueño.enviarMensaje("No esta cerrada.", FontType.INFO);
+                    this.dueño.enviarMensaje("No esta cerrada.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 break;
@@ -846,7 +846,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 Pos lugar = new Pos(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY);
                 if (!lugar.isValid() || !mapa.hayAgua(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY)) {
-                    this.dueño.enviarMensaje("No hay agua allí.", FontType.INFO);
+                    this.dueño.enviarMensaje("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 quitarUserInvItem(slot, 1);
@@ -856,7 +856,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
             case OBJTYPE_BOTELLALLENA:
                 if (!this.dueño.isAlive()) {
-                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.INFO);
+                    this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 this.dueño.getEstads().aumentarSed(info.MinSed);
@@ -872,11 +872,11 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 if (this.dueño.getEstads().stamina <= 0) {
-                    this.dueño.enviarMensaje("Estas muy cansado", FontType.INFO);
+                    this.dueño.enviarMensaje("Estas muy cansado", FontType.FONTTYPE_INFO);
                     return;
                 }
                 if (!obj.equipado) {
-                    this.dueño.enviarMensaje("Antes de usar la herramienta deberias equipartela.", FontType.INFO);
+                    this.dueño.enviarMensaje("Antes de usar la herramienta deberias equipartela.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 this.dueño.getReputacion().incPlebe(vlProleta);
@@ -910,7 +910,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.agregarHechizo(slot);
                     this.dueño.enviarInventario();
                 } else {
-                    this.dueño.enviarMensaje("Estas demasiado hambriento y sediento.", FontType.INFO);
+                    this.dueño.enviarMensaje("Estas demasiado hambriento y sediento.", FontType.FONTTYPE_INFO);
                 }
                 break;
             case OBJTYPE_MINERALES:
@@ -937,7 +937,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.barcoSlot = slot;
                     this.dueño.doNavega();
                 } else {
-                    this.dueño.enviarMensaje("¡Debes aproximarte al agua para usar el barco!", FontType.INFO);
+                    this.dueño.enviarMensaje("¡Debes aproximarte al agua para usar el barco!", FontType.FONTTYPE_INFO);
                 }
                 break;
             default:

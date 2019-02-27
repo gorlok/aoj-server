@@ -57,5 +57,22 @@ public class GuildDetailsResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeStr(out,guildName);
+		writeStr(out,founder);
+		writeStr(out,foundationDate);
+		writeStr(out,leader);
+		writeStr(out,url);
+		writeShort(out,memberCount);
+		writeByte(out,electionsOpen);
+		writeStr(out,alignment);
+		writeShort(out,enemiesCount);
+		writeShort(out,alliesCount);
+		writeStr(out,antifactionPoints);
+		writeStr(out,codex);
+		writeStr(out,guildDesc);
+	}
 };
 

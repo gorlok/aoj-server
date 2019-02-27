@@ -103,21 +103,21 @@ public class UserSpells implements Constants {
 
 	public void sendMeSpellInfo(short slot) {
 		if (slot < 1 || slot > MAX_HECHIZOS) {
-			client.enviarMensaje("¡Primero selecciona el hechizo.!", FontType.INFO);
+			client.enviarMensaje("¡Primero selecciona el hechizo.!", FontType.FONTTYPE_INFO);
 		} else {
 			int numHechizo = m_hechizos[slot - 1];
 			if (numHechizo > 0) {
 				Spell hechizo = server.getHechizo(numHechizo);
 				client.enviarMensaje("||%%%%%%%%%%%% INFO DEL HECHIZO %%%%%%%%%%%%",
-					FontType.INFO);
-				client.enviarMensaje("||Nombre: " + hechizo.Nombre, FontType.INFO);
-				client.enviarMensaje("||Descripcion: " + hechizo.Desc, FontType.INFO);
+					FontType.FONTTYPE_INFO);
+				client.enviarMensaje("||Nombre: " + hechizo.Nombre, FontType.FONTTYPE_INFO);
+				client.enviarMensaje("||Descripcion: " + hechizo.Desc, FontType.FONTTYPE_INFO);
 				client.enviarMensaje("||Skill requerido: " + hechizo.MinSkill
-						+ " de magia.", FontType.INFO);
+						+ " de magia.", FontType.FONTTYPE_INFO);
 				client.enviarMensaje("||Mana necesario: " + hechizo.ManaRequerido,
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 				client.enviarMensaje("||%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 			}
 		}
 	}
@@ -162,7 +162,7 @@ public class UserSpells implements Constants {
 			int slotLibre = slotLibreHechizos();
 			if (slotLibre == 0) {
 				client.enviarMensaje("No tienes espacio para más hechizos.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 			} else {
 				// Actualizamos la lista de hechizos,
 				changeUserHechizo(slotLibre, numHechizo);
@@ -170,7 +170,7 @@ public class UserSpells implements Constants {
 				client.getInv().quitarUserInvItem(slot, 1);
 			}
 		} else {
-			client.enviarMensaje("Ya tienes ese hechizo.", FontType.INFO);
+			client.enviarMensaje("Ya tienes ese hechizo.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -179,7 +179,7 @@ public class UserSpells implements Constants {
 			// Move spell upward
 			if (slot == 1) {
 				client.enviarMensaje("No puedes mover el hechizo en esa direccion.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 				return;
 			}
 			short spell = getSpell(slot);
@@ -191,7 +191,7 @@ public class UserSpells implements Constants {
 			// Move spell downward
 			if (slot == MAX_HECHIZOS) {
 				client.enviarMensaje("No puedes mover el hechizo en esa direccion.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 				return;
 			}
 			short spell = getSpell(slot);
@@ -210,7 +210,7 @@ public class UserSpells implements Constants {
 					handleHechizoUsuario(hechizo);
 				} else {
 					client.enviarMensaje("Este hechizo actua solo sobre usuarios.",
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uNPC:
@@ -218,7 +218,7 @@ public class UserSpells implements Constants {
 					handleHechizoNPC(hechizo);
 				} else {
 					client.enviarMensaje("Este hechizo solo afecta a los npcs.",
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uUsuariosYnpc:
@@ -227,7 +227,7 @@ public class UserSpells implements Constants {
 				} else if (client.getFlags().TargetNpc > 0) {
 					handleHechizoNPC(hechizo);
 				} else {
-					client.enviarMensaje("Target inválido.", FontType.INFO);
+					client.enviarMensaje("Target inválido.", FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uTerreno:
@@ -314,7 +314,7 @@ public class UserSpells implements Constants {
 						client.m_reputacion.incNoble(500);
 						client.enviarMensaje(
 								"¡Los Dioses te sonrien, has ganado 500 puntos de nobleza!.",
-								FontType.INFO);
+								FontType.FONTTYPE_INFO);
 					}
 				}
 				targetUser.revivirUsuario();
@@ -359,7 +359,7 @@ public class UserSpells implements Constants {
 		}
 		if (hechizo.Envenena == 1) {
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.INFO);
+				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			infoHechizo();
@@ -373,7 +373,7 @@ public class UserSpells implements Constants {
 		}
 		if (hechizo.Maldicion == 1) {
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.INFO);
+				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			infoHechizo();
@@ -398,7 +398,7 @@ public class UserSpells implements Constants {
 				return true;
 			}
 			client.enviarMensaje("El npc es inmune a este hechizo.",
-				FontType.FIGHT);
+				FONTTYPE_FIGHT);
 		}
 		if (hechizo.RemoverParalisis == 1) {
 			if (npc.estaParalizado()) {
@@ -406,7 +406,7 @@ public class UserSpells implements Constants {
 				npc.desparalizar();
 				return true;
 			}
-			client.enviarMensaje("El npc no está paralizado.", FontType.FIGHT);
+			client.enviarMensaje("El npc no está paralizado.", FONTTYPE_FIGHT);
 		}
 		return false;
 	}
@@ -420,12 +420,12 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			npc.m_estads.addMinHP(cura);
 			client.enviarMensaje("Has curado " + cura
-					+ " puntos de salud a la criatura.", FontType.FIGHT);
+					+ " puntos de salud a la criatura.", FONTTYPE_FIGHT);
 			return true;
 		} else if (hechizo.SubeHP == 2) {
 			// Dañar la salud
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.INFO);
+				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			if (npc.getPetUserOwner() != null
@@ -433,10 +433,10 @@ public class UserSpells implements Constants {
 				if (!npc.getPetUserOwner().esCriminal()) {
 					if (client.getFaccion().ArmadaReal) {
 						client.enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
-							FontType.WARNING);
+							FontType.FONTTYPE_WARNING);
 					} else {
 						client.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
-							FontType.WARNING);
+							FontType.FONTTYPE_WARNING);
 					}
 					return false;
 				}
@@ -445,7 +445,7 @@ public class UserSpells implements Constants {
 			//FIX by AGUSH: we check if user can attack to guardians
 			if (npc.isNpcGuard() && client.tieneSeguro()) {
 				client.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 				return false;
 			}
 			
@@ -458,7 +458,7 @@ public class UserSpells implements Constants {
 			}
 			npc.m_estads.quitarHP(daño);
 			client.enviarMensaje("Le has causado " + daño
-					+ " puntos de daño a la criatura!", FontType.FIGHT);
+					+ " puntos de daño a la criatura!", FONTTYPE_FIGHT);
 			npc.calcularDarExp(client, daño);
 			if (npc.m_estads.MinHP < 1) {
 				npc.muereNpc(client);
@@ -480,12 +480,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de hambre a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
-						+ daño + " puntos de hambre.", FontType.FIGHT);
+						+ daño + " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has restaurado " + daño
-						+ " puntos de hambre.", FontType.FIGHT);
+						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			targetUser.enviarEstadsHambreSed();
 			return true;
@@ -503,12 +503,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has quitado " + daño
 						+ " puntos de hambre a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
-						+ " puntos de hambre.", FontType.FIGHT);
+						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has quitado " + daño
-						+ " puntos de hambre.", FontType.FIGHT);
+						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			targetUser.enviarEstadsHambreSed();
 			if (targetUser.m_estads.eaten < 1) {
@@ -525,12 +525,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de sed a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
-						+ daño + " puntos de sed.", FontType.FIGHT);
+						+ daño + " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has restaurado " + daño
-						+ " puntos de sed.", FontType.FIGHT);
+						+ " puntos de sed.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeSed == 2) {
@@ -546,13 +546,13 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has quitado " + daño
 						+ " puntos de sed a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
-						+ " puntos de sed.", FontType.FIGHT);
+						+ " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje(
 					"Te has quitado " + daño + " puntos de sed.",
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 			}
 			if (targetUser.m_estads.drinked < 1) {
 				targetUser.m_estads.drinked = 0;
@@ -613,18 +613,18 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de vida a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
-						+ daño + " puntos de vida.", FontType.FIGHT);
+						+ daño + " puntos de vida.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has restaurado " + daño
-						+ " puntos de vida.", FontType.FIGHT);
+						+ " puntos de vida.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeHP == 2) {
 			if (client == targetUser) {
 				client.enviarMensaje("No puedes atacarte a ti mismo.",
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				return false;
 			}
 			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
@@ -638,9 +638,9 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			targetUser.m_estads.quitarHP(daño);
 			client.enviarMensaje("Le has quitado " + daño + " puntos de vida a "
-					+ targetUser.m_nick, FontType.FIGHT);
+					+ targetUser.m_nick, FONTTYPE_FIGHT);
 			targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
-					+ " puntos de vida.", FontType.FIGHT);
+					+ " puntos de vida.", FONTTYPE_FIGHT);
 			// Muere
 			if (targetUser.m_estads.MinHP < 1) {
 				client.contarMuerte(targetUser);
@@ -658,12 +658,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de mana a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
-						+ daño + " puntos de mana.", FontType.FIGHT);
+						+ daño + " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has restaurado " + daño
-						+ " puntos de mana.", FontType.FIGHT);
+						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeMana == 2) {
@@ -678,12 +678,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has quitado " + daño
 						+ " puntos de mana a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
-						+ " puntos de mana.", FontType.FIGHT);
+						+ " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has quitado " + daño
-						+ " puntos de mana.", FontType.FIGHT);
+						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			targetUser.m_estads.quitarMana(daño);
 			return true;
@@ -696,12 +696,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de energia a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
-						+ daño + " puntos de energia.", FontType.FIGHT);
+						+ daño + " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has restaurado " + daño
-						+ " puntos de energia.", FontType.FIGHT);
+						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeSta == 2) {
@@ -716,12 +716,12 @@ public class UserSpells implements Constants {
 			if (client != targetUser) {
 				client.enviarMensaje("Le has quitado " + daño
 						+ " puntos de energia a " + targetUser.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
-						+ " puntos de energia.", FontType.FIGHT);
+						+ " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
 				client.enviarMensaje("Te has quitado " + daño
-						+ " puntos de energia.", FontType.FIGHT);
+						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			targetUser.m_estads.quitarStamina(daño);
 			return true;
@@ -736,23 +736,23 @@ public class UserSpells implements Constants {
 		MapPos targetPos = MapPos.mxy(client.getFlags().TargetMap,
 			client.getFlags().TargetX, client.getFlags().TargetY);
 		if (client.pos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
-			client.enviarMensaje("Estás demasiado lejos.", FontType.INFO);
+			client.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		if (client.getEstads().mana < hechizo.ManaRequerido) {
-			client.enviarMensaje("No tienes suficiente mana.", FontType.INFO);
+			client.enviarMensaje("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		if (client.getEstads().userSkills[Skill.SKILL_Magia] < hechizo.MinSkill) {
 			client.enviarMensaje(
 					"No tienes suficientes puntos de magia para lanzar este hechizo.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 			return false;
 		}
 		if (client.getEstads().stamina == 0
 				|| client.getEstads().stamina < hechizo.StaRequerida) {
 			client.enviarMensaje("Estas muy cansado para lanzar este hechizo.",
-				FontType.INFO);
+				FontType.FONTTYPE_INFO);
 			return false;
 		}
 		return true;
@@ -760,14 +760,14 @@ public class UserSpells implements Constants {
 
 	private boolean hechizoInvocacion() {
 		if (client.getUserPets().isFullPets()) {
-			client.enviarMensaje("No puedes invocar más mascotas!", FontType.INFO);
+			client.enviarMensaje("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		
 		Map mapa = server.getMapa(client.pos().map);
 		
 		if (mapa.esZonaSegura()) {
-			client.enviarMensaje("¡Estás en una zona segura!", FontType.INFO);
+			client.enviarMensaje("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		
@@ -857,15 +857,15 @@ public class UserSpells implements Constants {
 			if (client.getId() != client.getFlags().TargetUser) {
 				Player target = server.getClientById(client.getFlags().TargetUser);
 				client.enviarMensaje(hechizo.HechiceroMsg + " " + target.m_nick,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 				target.enviarMensaje(client.getNick() + " " + hechizo.TargetMsg,
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje(hechizo.PropioMsg, FontType.FIGHT);
+				client.enviarMensaje(hechizo.PropioMsg, FONTTYPE_FIGHT);
 			}
 		} else if (client.getFlags().TargetNpc > 0) {
 			client.enviarMensaje(hechizo.HechiceroMsg + "la criatura.",
-				FontType.FIGHT);
+				FONTTYPE_FIGHT);
 		}
 	}
 

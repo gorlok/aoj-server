@@ -63,5 +63,24 @@ public class CharacterInfoResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeStr(out,charName);
+		writeByte(out,race);
+		writeByte(out,clazz);
+		writeByte(out,gender);
+		writeByte(out,level);
+		writeInt(out,gold);
+		writeInt(out,bank);
+		writeInt(out,reputation);
+		writeStr(out,previousPetitions);
+		writeStr(out,currentGuild);
+		writeStr(out,previousGuilds);
+		writeByte(out,royalArmy);
+		writeByte(out,caosLegion);
+		writeInt(out,citizensKilled);
+		writeInt(out,criminalsKilled);
+	}
 };
 

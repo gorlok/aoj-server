@@ -48,5 +48,19 @@ public class UpdateUserStatsResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,maxHP);
+		writeShort(out,minHP);
+		writeShort(out,maxMAN);
+		writeShort(out,minMAN);
+		writeShort(out,maxSTA);
+		writeShort(out,minSTA);
+		writeInt(out,gold);
+		writeByte(out,elv);
+		writeInt(out,elu);
+		writeInt(out,exp);
+	}
 };
 

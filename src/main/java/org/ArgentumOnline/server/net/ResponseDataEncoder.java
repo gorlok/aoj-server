@@ -12,8 +12,7 @@ class ResponseDataEncoder extends MessageToByteEncoder<ServerPacket> {
 
 	@Override
 	protected void encode(ChannelHandlerContext ctx, ServerPacket packet, ByteBuf out) throws Exception {
-		// TODO
-		// out.writeInt(msg.getIntValue());
-		log.debug("response data encoder " + packet.getClass().getName());
+		log.debug("response data encoder " + packet.getClass().getCanonicalName());
+		packet.encode(out);
 	}
 }

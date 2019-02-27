@@ -23,19 +23,19 @@ public class NpcCashier extends Npc {
 		}
 		// Se asegura que el target es un npc
 		if (client.getFlags().TargetNpc == 0) {
-			client.enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.INFO);
+			client.enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Npc npc = server.getNpcById(client.getFlags().TargetNpc);
 		if (npc.pos().distance(m_pos) > 3) {
-			client.enviarMensaje("Estas demasiado lejos del vendedor.", FontType.INFO);
+			client.enviarMensaje("Estas demasiado lejos del vendedor.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (!npc.isBankCashier() || !client.isAlive()) {
 			return;
 		}
 		if (!client.existePersonaje()) {
-			client.enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.INFO);
+			client.enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.FONTTYPE_INFO);
 			client.doSALIR();
 			return;
 		}
@@ -44,13 +44,13 @@ public class NpcCashier extends Npc {
 
 	public void retirarOroBanco(Player client, int cant) {
 		if (this.pos().distance(m_pos) > 10) {
-			client.enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
+			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		
 		if (!client.existePersonaje()) {
 			log.error("ERROR, no existe el personaje " + client.getNick());
-			client.enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.WARNING);
+			client.enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
 			client.doSALIR();
 			return;
 		}
@@ -66,7 +66,7 @@ public class NpcCashier extends Npc {
 
 	public void depositarOroBanco(Player client, int cant) {
 		if (this.pos().distance(m_pos) > 10) {
-			client.enviarMensaje("||Estas demasiado lejos.", FontType.INFO);
+			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// ¿Se tiene dicha cantidad realmente?

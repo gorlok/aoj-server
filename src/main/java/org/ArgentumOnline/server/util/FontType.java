@@ -27,50 +27,63 @@
 package org.ArgentumOnline.server.util;
 
 /**
- * @author Pablo F. Lillia
+ * @author gorlok
  */
-public class FontType {
-    
-	public int ind;
-    public int r;
-    public int g;
-    public int b;
-    public int bold;
-    public int italic;
-    
-    /** Creates a new instance of FontType */
-    public FontType(int r, int g, int b, int bold, int italic) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.bold = bold;
-        this.italic = italic;
-    }
-    
-    public final static FontType TALK       = new FontType(255, 255, 255, 0, 0);
-    public final static FontType FIGHT      = new FontType(255, 0, 0, 1, 0);
-    public final static FontType WARNING    = new FontType(32, 51, 223, 1, 1);
-    public final static FontType INFO       = new FontType(65, 190, 156, 0, 0);
-    public final static FontType INFO_B     = new FontType(65, 190, 156, 1, 0);
-    public final static FontType VENENO     = new FontType(0, 255, 0, 0, 0);
-    public final static FontType GUILD      = new FontType(255, 255, 255, 1, 0);
-    public final static FontType WELLCOME   = new FontType(89, 43, 213, 1, 0);
-    public final static FontType USUARIO    = new FontType(0, 0, 255, 1, 0);
-    public final static FontType DEBUG      = new FontType(240, 255, 0, 0, 0);    
-    public final static FontType TALKGM     = new FontType(255, 255, 255, 0, 1);
-    //public final static FontType SERVERINFO = new FontType(255, 255, 255, 1, 0);
-    // Mejoramos los mensajes del servidor
-    public final static FontType SERVER = new FontType(0, 185, 0, 0, 0);
-    public final static FontType GUILDMSG = new FontType(228, 199, 27, 0, 0);
-    
-    public final static FontType TAG_GOD = new FontType(255, 255, 255, 1, 0);
-    public final static FontType TAG_SEMIGOD = new FontType(0, 185, 0, 1, 0);
-    public final static FontType TAG_CONSEJERO = new FontType(0, 185, 0, 1, 0);
-    public final static FontType TAG_CRIMINAL = new FontType(255, 0, 0, 1, 0);
-    public final static FontType TAG_CIUDADANO = new FontType(0, 0, 200, 1, 0);
-    
-    @Override
+public enum FontType {
+	FONTTYPE_TALK(255, 255, 255),
+	FONTTYPE_FIGHT(255, 0, 0, true, false),
+	FONTTYPE_WARNING(32, 51, 223, true, true),
+	FONTTYPE_INFO(65, 190, 156),
+	FONTTYPE_INFOBOLD(65, 190, 156, true, false),
+	FONTTYPE_EJECUCION(130, 130, 130, true, false),
+	FONTTYPE_PARTY(255, 180, 250),
+	FONTTYPE_VENENO(0, 255, 0),
+	FONTTYPE_GUILD(255, 255, 255, true, false),
+	FONTTYPE_SERVER(0, 185, 0),
+	FONTTYPE_GUILDMSG(228, 199, 27),
+	FONTTYPE_CONSEJO(130, 130, 255, true, false),
+	FONTTYPE_CONSEJOCAOS(255, 60, 0, true, false),
+	FONTTYPE_CONSEJOVesA(0, 200, 255, true, false),
+	FONTTYPE_CONSEJOCAOSVesA(255, 50, 0, true, false),
+	FONTTYPE_CENTINELA(0, 255, 0, true, false),
+	FONTTYPE_GMMSG(255, 255, 255, false, true),
+	FONTTYPE_GM(30, 255, 30, true, false),
+	FONTTYPE_CITIZEN(0, 0, 200, true, false),
+	FONTTYPE_CONSE(30, 150, 30, true, false),
+	FONTTYPE_DIOS(250, 250, 150, true, false);
+
+	public byte r;
+	public byte g;
+	public byte b;
+	public boolean bold;
+	public boolean italic;
+
+	private FontType(int r, int g, int b) {
+		this.r = (byte) r;
+		this.g = (byte) g;
+		this.b = (byte) b;
+	}
+
+	private FontType(int r, int g, int b, boolean bold, boolean italic) {
+		this.r = (byte) r;
+		this.g = (byte) g;
+		this.b = (byte) b;
+		this.bold = bold;
+		this.italic = italic;
+	}
+
+	@Override
 	public String toString() {
-        return "~" + this.r + "~" + this.g + "~" + this.b + "~" + this.bold + "~" + this.italic;
-    }
+		return "~" + this.r + "~" + this.g + "~" + this.b + "~" + this.bold + "~" + this.italic;
+	}
+
+	private static FontType[] values = FontType.values();
+
+	public static FontType value(int index) {
+		return values[index];
+	}
+
+	public byte id() {
+		return (byte) this.ordinal();
+	}
 }

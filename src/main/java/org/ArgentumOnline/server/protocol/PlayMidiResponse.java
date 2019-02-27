@@ -24,5 +24,11 @@ public class PlayMidiResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeByte(out,midi);
+		writeShort(out,loops);
+	}
 };
 

@@ -25,6 +25,8 @@
  */
 package org.ArgentumOnline.server.npc;
 
+import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
+
 import java.util.BitSet;
 import java.util.List;
 
@@ -42,6 +44,8 @@ import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
+import org.ArgentumOnline.server.protocol.NPCSwingResponse;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -656,10 +660,8 @@ public class Npc extends AbstractCharacter implements Constants {
         return this.m_domable;
     }
     
-    public Object[] ccParams() {
-        
-        
-    	Object[] params = { 
+    public CharacterCreateResponse createCC() {
+    	return new CharacterCreateResponse(
 			(short)getId(), 
 			(short)m_infoChar.getCuerpo(), 
 			(short)m_infoChar.getCabeza(),
@@ -677,9 +679,7 @@ public class Npc extends AbstractCharacter implements Constants {
 			
 			(String)"", 
 			(byte)0, 
-			(byte)0 };
-    	
-    	return params;
+			(byte)0);
     }
 
     private void loadInfoNPC(int npc_ind, boolean loadBackup) {
@@ -732,7 +732,7 @@ public class Npc extends AbstractCharacter implements Constants {
         if (expADar > 0) {
         	expADar = expADar * 1000;
             cliente.getEstads().addExp(expADar);
-            cliente.enviarMensaje("Has ganado " + expADar + " puntos de experiencia.", FontType.FIGHT);
+            cliente.enviarMensaje("Has ganado " + expADar + " puntos de experiencia.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
             cliente.checkUserLevel();
         }
@@ -756,12 +756,12 @@ public class Npc extends AbstractCharacter implements Constants {
             if (cliente.getUserPets().hasPets()) {
                 cliente.getUserPets().petsFollowMaster(this);
             }
-            cliente.enviarMensaje("Has matado la criatura!", FontType.FIGHT);
+            cliente.enviarMensaje("Has matado la criatura!", FONTTYPE_FIGHT);
             if (this.m_expCount > 0) {
                 cliente.getEstads().addExp(this.m_expCount);
-                cliente.enviarMensaje("Has ganado " + this.m_expCount + " puntos de experiencia.", FontType.FIGHT);
+                cliente.enviarMensaje("Has ganado " + this.m_expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
             } else {
-                cliente.enviarMensaje("No has ganado experiencia al matar la criatura.", FontType.FIGHT);
+                cliente.enviarMensaje("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
             }
             cliente.getEstads().incNPCsMuertos();
             cliente.getQuest().checkNpcEnemigo(cliente, this);
@@ -1207,7 +1207,7 @@ public class Npc extends AbstractCharacter implements Constants {
                             if (getPetUserOwner() != null) {
 		                        if (	!getPetUserOwner().esCriminal() && !cliente.esCriminal() && 
 		                        		(getPetUserOwner().tieneSeguro() || getPetUserOwner().getFaccion().ArmadaReal)) {
-		                            getPetUserOwner().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.INFO);
+		                            getPetUserOwner().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.FONTTYPE_INFO);
 		                            this.m_attackedBy = "";
 		                            followMaster();
 		                            return;
@@ -1480,14 +1480,14 @@ public class Npc extends AbstractCharacter implements Constants {
             cliente.enviarSonido(hechizo.WAV);
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
             cliente.getEstads().addMinHP(daño);
-            cliente.enviarMensaje(this.m_name + " te ha dado " + daño + " puntos de vida.", FontType.FIGHT);
+            cliente.enviarMensaje(this.m_name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
         } else if (hechizo.SubeHP == 2) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             cliente.enviarSonido(hechizo.WAV);            
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
             cliente.getEstads().quitarHP(daño);
-            cliente.enviarMensaje(this.m_name + " te ha quitado " + daño + " puntos de vida.", FontType.FIGHT);
+            cliente.enviarMensaje(this.m_name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
             // Muere
             if (cliente.getEstads().MinHP < 1) {
@@ -1533,7 +1533,7 @@ public class Npc extends AbstractCharacter implements Constants {
 				npcEnvenenarUser(cliente);
 			}
         } else {
-        	cliente.enviar(ServerPacketID.NPCSwing);//, (byte) 0);
+        	cliente.enviar(new NPCSwingResponse());
         }
         // -----Tal vez suba los skills------
         cliente.subirSkill(Skill.SKILL_Tacticas);
@@ -1752,7 +1752,7 @@ public class Npc extends AbstractCharacter implements Constants {
     
         this.m_infoChar.m_cuerpo   = ini.getShort(section, "Body");
         this.m_infoChar.m_cabeza   = ini.getShort(section, "Head");
-        this.m_infoChar.m_dir      = ini.getShort(section, "Heading");
+        this.m_infoChar.m_dir      = (byte)ini.getShort(section, "Heading");
         
         this.m_flags.set(FLAG_ENVENENA, ini.getInt(section, "Veneno") == 1);
         this.m_flags.set(FLAG_ATACABLE, ini.getInt(section, "Attackable") == 1);

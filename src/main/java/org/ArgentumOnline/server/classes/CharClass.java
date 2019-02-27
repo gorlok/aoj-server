@@ -163,20 +163,20 @@ public abstract class CharClass implements Constants {
         if (aumentoSalud > 0) {
             estads.addMaxHP(aumentoSalud);
             estads.fullHP(); // Recupera la salud al 100%.
-            cliente.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.INFO);
+            cliente.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
         }
         if (aumentoStamina > 0) {
             estads.addMaxSTA(aumentoStamina);
-            cliente.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.INFO);
+            cliente.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
         }
         if (aumentoMana > 0) {
             estads.addMaxMANA(aumentoMana);
-            cliente.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.INFO);
+            cliente.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
         }
         if (aumentoGolpe > 0) {
             estads.addMaxHIT(aumentoGolpe);
             estads.addMinHIT(aumentoGolpe);
-            cliente.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.INFO);
+            cliente.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
         }
     }
     

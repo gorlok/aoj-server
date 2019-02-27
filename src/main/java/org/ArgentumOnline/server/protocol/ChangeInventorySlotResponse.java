@@ -51,5 +51,20 @@ public class ChangeInventorySlotResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeByte(out,slot);
+		writeShort(out,objIndex);
+		writeStr(out,name);
+		writeShort(out,amount);
+		writeByte(out,equiped);
+		writeShort(out,grhIndex);
+		writeByte(out,objType);
+		writeShort(out,maxHIT);
+		writeShort(out,minHIT);
+		writeShort(out,def);
+		writeFloat(out,valor);
+	}
 };
 

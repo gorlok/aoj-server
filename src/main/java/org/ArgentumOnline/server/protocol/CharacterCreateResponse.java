@@ -60,5 +60,23 @@ public class CharacterCreateResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,charIndex);
+		writeShort(out,body);
+		writeShort(out,head);
+		writeByte(out,heading);
+		writeByte(out,x);
+		writeByte(out,y);
+		writeShort(out,weapon);
+		writeShort(out,shield);
+		writeShort(out,helmet);
+		writeShort(out,fx);
+		writeShort(out,fxLoops);
+		writeStr(out,name);
+		writeByte(out,criminal);
+		writeByte(out,privileges);
+	}
 };
 

@@ -27,5 +27,12 @@ public class UserHittedByUserResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeShort(out,attackerChar);
+		writeByte(out,target);
+		writeShort(out,damage);
+	}
 };
 

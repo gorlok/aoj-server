@@ -2,6 +2,7 @@ package org.ArgentumOnline.server.net;
 
 import java.util.List;
 
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.protocol.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,12 +17,14 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 	private static Logger log = LogManager.getLogger();
 	
+	GameServer server = GameServer.instance();
 	ChannelGroup clients = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 	
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		log.debug("=> opened client connection");
 		clients.add(ctx.channel());
+		server.createClient(ctx.channel());
 	}
 	
 	@Override
@@ -32,7 +35,6 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-
 		in.markReaderIndex();
 
 		int id = in.readByte();
@@ -787,6 +789,7 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 		}
 
 		if (packet == null) {
+			in.resetReaderIndex();
 			return;
 		}
 

@@ -173,7 +173,7 @@ public class Admins {
 		// Comando /BORRAR SOS
 		// Comando para borrar todos pedidos /GM pendientes
     	this.getPedidosAyudaGM().clear();
-		admin.enviarMensaje("Todos los /GM pendientes han sido eliminados.", FontType.INFO);
+		admin.enviarMensaje("Todos los /GM pendientes han sido eliminados.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/BORRAR SOS");
 	}
 
@@ -195,15 +195,15 @@ public class Admins {
 		}
 		var bannedIPs = getBannedIPs();
 		if (bannedIPs.contains(ip)) {
-			admin.enviarMensaje("La IP " + ip + " ya se encuentra en la lista de bans.", FontType.INFO);
+			admin.enviarMensaje("La IP " + ip + " ya se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		bannedIPs.add(ip);
-		server.enviarMensajeAAdmins(admin.getNick() + " Baneo la IP " + ip, FontType.FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " Baneo la IP " + ip, FONTTYPE_FIGHT);
 		if (usuario != null) {
 			server.logBan(usuario.getNick(), admin.getNick(), "Ban por IP desde Nick");
-			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FIGHT);
-			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FIGHT);
+			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
+			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
 			// Ponemos el flag de ban a 1
 			usuario.getFlags().Ban = true;
 			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
@@ -219,9 +219,9 @@ public class Admins {
 		var bannedIPs = getBannedIPs();
 		if (bannedIPs.contains(s)) {
 			bannedIPs.remove(s);
-			admin.enviarMensaje("La IP " + s + " se ha quitado de la lista de bans.", FontType.INFO);
+			admin.enviarMensaje("La IP " + s + " se ha quitado de la lista de bans.", FontType.FONTTYPE_INFO);
 		} else {
-			admin.enviarMensaje("La IP " + s + " NO se encuentra en la lista de bans.", FontType.INFO);
+			admin.enviarMensaje("La IP " + s + " NO se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -233,20 +233,20 @@ public class Admins {
 		if (!pedidos.contains(pedido)) {
 			pedidos.add(pedido);
 			user.enviarMensaje("El mensaje ha sido entregado, ahora solo debes esperar que se desocupe algun GM.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 		} else {
 			pedidos.remove(pedido);
 			pedidos.add(pedido);
 			user.enviarMensaje(
 					"Ya habias mandado un mensaje, tu mensaje ha sido movido al final de la cola de mensajes. Ten paciencia.",
-					FontType.INFO);
+					FontType.FONTTYPE_INFO);
 		}
 	}
 
 	public void doGuardarComentario(Player admin, String s) {
 		// Comando /REM comentario
 		Log.logGM(admin.getNick(), "Hace el comentario: " + s);
-		admin.enviarMensaje("Comentario salvado...", FontType.INFO);
+		admin.enviarMensaje("Comentario salvado...", FontType.FONTTYPE_INFO);
 	}
 
 	public void doMostrarAyuda(Player admin) {
@@ -271,12 +271,12 @@ public class Admins {
 		}
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (admin.warpUser(usuario.pos().map, usuario.pos().x, usuario.pos().y, true)) {
 			if (!admin.getFlags().AdminInvisible) {
-				usuario.enviarMensaje(admin.getNick() + " se ha trasportado hacia donde te encuentras.", FontType.INFO);
+				usuario.enviarMensaje(admin.getNick() + " se ha trasportado hacia donde te encuentras.", FontType.FONTTYPE_INFO);
 			}
 			Log.logGM(admin.getNick(), "Hizo un /IRA " + usuario.getNick() + " mapa=" + usuario.pos().map + " x=" + usuario.pos().x
 					+ " y=" + usuario.pos().y);
@@ -433,7 +433,7 @@ public class Admins {
 			cant++;
 			msg.append(usuario);
 		}
-		admin.enviarMensaje("Usuarios en el mapa: " + msg, FontType.INFO);
+		admin.enviarMensaje("Usuarios en el mapa: " + msg, FontType.FONTTYPE_INFO);
 	}
 
 	public void doUsuariosTrabajando(Player admin) {
@@ -448,7 +448,7 @@ public class Admins {
 			cant++;
 			msg.append(usuario);
 		}
-		admin.enviarMensaje("Usuarios trabajando: " + msg, FontType.INFO);
+		admin.enviarMensaje("Usuarios trabajando: " + msg, FontType.FONTTYPE_INFO);
 	}
 
 	public void doPanelGM(Player admin) {
@@ -515,10 +515,10 @@ public class Admins {
 		// Comando /NICK2IP
 		Player usuario = server.getUsuario(userName);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		admin.enviarMensaje("El ip de " + userName + " es " + usuario.getIP(), FontType.INFO);
+		admin.enviarMensaje("El ip de " + userName + " es " + usuario.getIP(), FontType.FONTTYPE_INFO);
 	}
 
 	public void doCrearTeleport(Player admin, short dest_mapa, short dest_x, short dest_y) {
@@ -533,40 +533,40 @@ public class Admins {
 		short y = (short) (admin.pos().y - 1);
 		if (mapa.hayObjeto(x, y)) {
 			admin.enviarMensaje("Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
-					FontType.WARNING);
+					FontType.FONTTYPE_WARNING);
 			return;
 		}
 		if (mapa.hayTeleport(x, y)) {
-			admin.enviarMensaje("Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.", FontType.WARNING);
+			admin.enviarMensaje("Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		Map mapaDest = server.getMapa(dest_mapa);
 		if (mapaDest == null || !Pos.isValid(dest_x, dest_y)) {
-			admin.enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.WARNING);
+			admin.enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		mapa.crearTeleport(x, y, dest_mapa, dest_x, dest_y);
 		Log.logGM(admin.getNick(), "Creó un teleport: " + admin.pos() + " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
-		admin.enviarMensaje("¡Teleport creado!", FontType.INFO);
+		admin.enviarMensaje("¡Teleport creado!", FontType.FONTTYPE_INFO);
 	}
 
 	public void doDestruirTeleport(Player admin) {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
 		if (admin.getFlags().TargetMap == 0 || admin.getFlags().TargetX == 0 || admin.getFlags().TargetY == 0) {
-			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.WARNING);
+			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		short m = admin.getFlags().TargetMap;
 		Map mapa = server.getMapa(m);
 		if (mapa == null) {
-			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.WARNING);
+			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		short x = admin.getFlags().TargetX;
 		short y = admin.getFlags().TargetY;
 		if (!mapa.hayTeleport(x, y)) {
-			admin.enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.WARNING);
+			admin.enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		Log.logGM(admin.getNick(), "Destruyó un teleport, con /DT mapa=" + m + " x=" + x + " y=" + y);
@@ -578,7 +578,7 @@ public class Admins {
 		// Comando /MATA indiceNpc
 		Npc npc = server.getNpcById(admin.getFlags().TargetNpc);
 		if (npc == null) {
-			admin.enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.INFO);
+			admin.enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		npc.quitarNPC();
@@ -591,7 +591,7 @@ public class Admins {
 		if (server.getNpcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, false);
 		} else {
-			admin.enviarMensaje("Indice de Npc invalido.", FontType.INFO);
+			admin.enviarMensaje("Indice de Npc invalido.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -601,7 +601,7 @@ public class Admins {
 		if (server.getNpcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, true);
 		} else {
-			admin.enviarMensaje("Indice de Npc invalido.", FontType.INFO);
+			admin.enviarMensaje("Indice de Npc invalido.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -616,28 +616,28 @@ public class Admins {
 			usuario = admin;
 		}
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		var pets = usuario.getUserPets().getPets();
 		
-		admin.enviarMensaje(usuario.getNick() + " tiene " + pets.size() + " mascotas.", FontType.DEBUG);
+		admin.enviarMensaje(usuario.getNick() + " tiene " + pets.size() + " mascotas.", FontType.FONTTYPE_SERVER);
 		pets.forEach(pet -> {
 			admin.enviarMensaje(" mascota " + pet.getName() + " esta en " + pet.pos() + " tiempo=" + pet.getContadores().TiempoExistencia,
-					FontType.DEBUG);
+					FontType.FONTTYPE_SERVER);
 		});
 	}
 
 	public void doUptime(Player admin) {
 		// Comando /UPTIME
-		admin.enviarMensaje("Uptime: " + server.calculateUptime(), FontType.INFO);
+		admin.enviarMensaje("Uptime: " + server.calculateUptime(), FontType.FONTTYPE_INFO);
 	}
 	
 
 	public void doModMapInfo(Player admin, String accion, int valor) {
 		// Comando /MODMAPINFO
 		if ("".equals(accion)) {
-			admin.enviarMensaje("Parámetros inválidos!", FontType.INFO);
+			admin.enviarMensaje("Parámetros inválidos!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/MODMAPINFO " + accion + " " + valor);
@@ -648,15 +648,15 @@ public class Admins {
 		if (accion.equalsIgnoreCase("PK")) {
 			if (valor == 0 || valor == 1) {
 				mapa.m_pk = (valor == 1);
-				admin.enviarMensaje("PK cambiado.", FontType.INFO);
+				admin.enviarMensaje("PK cambiado.", FontType.FONTTYPE_INFO);
 			}
-			admin.enviarMensaje("Mapa " + admin.pos().map + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.INFO);
+			admin.enviarMensaje("Mapa " + admin.pos().map + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.FONTTYPE_INFO);
 		} else if (accion.equalsIgnoreCase("BACKUP")) {
 			if (valor == 0 || valor == 1) {
 				mapa.m_backup = (valor == 1);
-				admin.enviarMensaje("BACKUP cambiado.", FontType.INFO);
+				admin.enviarMensaje("BACKUP cambiado.", FontType.FONTTYPE_INFO);
 			}
-			admin.enviarMensaje("Mapa " + admin.pos().map + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.INFO);
+			admin.enviarMensaje("Mapa " + admin.pos().map + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -665,12 +665,12 @@ public class Admins {
 		// Comando /MOD
 		Log.logGM(admin.getNick(), "/MOD " + nick + " " + accion + " " + valor);
 		if ("".equals(nick)) {
-			admin.enviarMensaje("Parámetros inválidos!", FontType.INFO);
+			admin.enviarMensaje("Parámetros inválidos!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Player usuario = server.getUsuario(nick);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (accion.equalsIgnoreCase("ORO")) {
@@ -680,7 +680,7 @@ public class Admins {
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 			}
 		} else if (accion.equalsIgnoreCase("EXP")) {
 			if (valor < 1000000) {
@@ -690,7 +690,7 @@ public class Admins {
 			} else {
 				admin.enviarMensaje(
 						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 			}
 		} else if (accion.equalsIgnoreCase("BODY")) {
 			usuario.getInfoChar().m_cuerpo = (short) valor;
@@ -705,7 +705,7 @@ public class Admins {
 		} else if (accion.equalsIgnoreCase("LEVEL")) {
 			usuario.getEstads().ELV = valor;
 		} else {
-			admin.enviarMensaje("Comando no permitido o inválido.", FontType.INFO);
+			admin.enviarMensaje("Comando no permitido o inválido.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -735,7 +735,7 @@ public class Admins {
 		Map mapa = server.getMapa(admin.pos().map);
 		if (mapa != null) {
 			mapa.saveMapData();
-			admin.enviarMensaje("Mapa guardado.", FontType.INFO);
+			admin.enviarMensaje("Mapa guardado.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -757,10 +757,10 @@ public class Admins {
 		if (mapa != null) {
 			if (mapa.estaBloqueado(admin.pos().x, admin.pos().y)) {
 				mapa.desbloquearTerreno(admin.pos().x, admin.pos().y);
-				admin.enviarMensaje("Posicion desbloqueada.", FontType.INFO);
+				admin.enviarMensaje("Posicion desbloqueada.", FontType.FONTTYPE_INFO);
 			} else {
 				mapa.bloquearTerreno(admin.pos().x, admin.pos().y);
-				admin.enviarMensaje("Posicion bloqueada.", FontType.INFO);
+				admin.enviarMensaje("Posicion bloqueada.", FontType.FONTTYPE_INFO);
 			}
 		}
 	}
@@ -782,7 +782,7 @@ public class Admins {
 		Map mapa = server.getMapa(admin.pos().map);
 		mapa.setTrigger(admin.pos().x, admin.pos().y, t);
 		admin.enviarMensaje("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y) + 
-				" en " + admin.pos(), FontType.INFO);
+				" en " + admin.pos(), FontType.FONTTYPE_INFO);
 	}
 
 	public void doMassDest(Player admin) {
@@ -800,23 +800,23 @@ public class Admins {
 		// Comando /ECHARTODOSPJS
 		// Comando para echar a todos los pjs conectados no privilegiados.
 		server.echarPjsNoPrivilegiados();
-		admin.enviarMensaje("Los PJs no privilegiados fueron echados.", FontType.INFO);
+		admin.enviarMensaje("Los PJs no privilegiados fueron echados.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/ECHARTODOSPJS");
 	}
 
 	public void doShowInt(Player admin) {
 		// Comando /SHOW INT
 		// Comando para abrir la ventana de config de intervalos en el server.
-		admin.enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.INFO);
+		admin.enviarMensaje("Comando deshabilitado o sin efecto en AOJ.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doIP2Nick(Player admin, String s) {
 		// Comando /IP2NICK
 		List<String> usuarios = server.getUsuariosConIP(s);
 		if (usuarios.isEmpty()) {
-			admin.enviarMensaje("No hay usuarios con dicha ip", FontType.INFO);
+			admin.enviarMensaje("No hay usuarios con dicha ip", FontType.FONTTYPE_INFO);
 		} else {
-			admin.enviarMensaje("Nicks: " + String.join(",", usuarios), FontType.INFO);
+			admin.enviarMensaje("Nicks: " + String.join(",", usuarios), FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -828,7 +828,7 @@ public class Admins {
 		}
 		Npc npc = server.getNpcById(admin.getFlags().TargetNpc);
 		npc.getInv().clear();
-		admin.enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.INFO);
+		admin.enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/RESETINV " + npc.toString());
 	}
 
@@ -853,13 +853,13 @@ public class Admins {
 		}
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("El usuario esta offline.", FontType.INFO);
+			admin.enviarMensaje("El usuario esta offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "Hizo /SUM " + s);
 		if (usuario.warpUser(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
-			admin.enviarMensaje(usuario.getNick() + " ha sido trasportado.", FontType.INFO);
-			usuario.enviarMensaje("Has sido trasportado.", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " ha sido trasportado.", FontType.FONTTYPE_INFO);
+			usuario.enviarMensaje("Has sido trasportado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "/SUM " + usuario.getNick() + 
 					" Map:" + admin.pos().map + " X:" + admin.pos().x + " Y:" + admin.pos().y);
 		}
@@ -869,24 +869,24 @@ public class Admins {
 		// Comando /BAN
 		Player usuario = server.getUsuario(nombre);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
-			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
+			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/BAN " + nombre + " por: " + motivo);
 		server.logBan(usuario.getNick(), admin.getNick(), motivo);
-		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FIGHT);
-		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
 		// Ponemos el flag de ban a 1
 		usuario.getFlags().Ban = true;
 		if (usuario.esGM()) {
 			admin.getFlags().Ban = true;
 			admin.doSALIR();
 			server.enviarMensajeAAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
-					FontType.FIGHT);
+					FONTTYPE_FIGHT);
 		}
 		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
 		Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
@@ -898,7 +898,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/UNBAN " + s);
 		server.unBan(s);
 		Log.logGM(admin.getNick(), "Hizo /UNBAN a " + s);
-		admin.enviarMensaje(s + " unbanned.", FontType.INFO);
+		admin.enviarMensaje(s + " unbanned.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doEchar(Player admin, String s) {
@@ -907,15 +907,15 @@ public class Admins {
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + s);
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
-			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
+			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// server.enviarATodos(MSG_TALK, getNick() + " echo a "
-		// + usuario.getNick() + ".", FontType.INFO.toString());
+		// + usuario.getNick() + ".", FontType.FONTTYPE_INFO.toString());
 		// usuario.doSALIR();
 		Log.logGM(admin.getNick(), "Echó a " + usuario.getNick());
 	}
@@ -930,25 +930,25 @@ public class Admins {
 			minutos = Short.parseShort(st.nextToken());
 			nombre = st.nextToken();
 		} catch (Exception e) {
-			admin.enviarMensaje("Error en el comando. Formato: /CARCEL minutos usuario", FontType.WARNING);
+			admin.enviarMensaje("Error en el comando. Formato: /CARCEL minutos usuario", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		Player usuario = server.getUsuario(nombre);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
-			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.INFO);
+			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.getCounters().Pena > 0) {
 			admin.enviarMensaje("El usuario ya esta en la carcel. Le quedan " + admin.getCounters().Pena + " minutos.",
-					FontType.WARNING);
+					FontType.FONTTYPE_WARNING);
 			return;
 		}
 		if (minutos > 30) {
-			admin.enviarMensaje("No puedes encarcelar por mas de 30 minutos!", FontType.INFO);
+			admin.enviarMensaje("No puedes encarcelar por mas de 30 minutos!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		usuario.encarcelar(minutos, admin.getNick());
@@ -960,20 +960,20 @@ public class Admins {
 		Log.logGM(admin.getNick(), "quizo /PERDON " + s);
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.esNewbie()) {
 			if (usuario.getReputacion().esIntachable()) {
-				admin.enviarMensaje("No hay que perdonarle a " + usuario.getNick(), FontType.INFO);
+				admin.enviarMensaje("No hay que perdonarle a " + usuario.getNick(), FontType.FONTTYPE_INFO);
 				return;
 			}
 			usuario.volverCiudadano();
-			admin.enviarMensaje(usuario.getNick() + " ha sido perdonado.", FontType.INFO);
-			usuario.enviarMensaje("Los dioses te han perdonado por esta vez.", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " ha sido perdonado.", FontType.FONTTYPE_INFO);
+			usuario.enviarMensaje("Los dioses te han perdonado por esta vez.", FontType.FONTTYPE_INFO);
 		} else {
 			Log.logGM(admin.getNick(), "Intento perdonar un personaje de nivel avanzado.");
-			admin.enviarMensaje("Solo se permite perdonar newbies.", FontType.INFO);
+			admin.enviarMensaje("Solo se permite perdonar newbies.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -983,16 +983,16 @@ public class Admins {
 		Log.logGM(admin.getNick(), "quizo /CONDEN " + s);
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.getReputacion().esCriminal()) {
-			admin.enviarMensaje(usuario.getNick() + " ya es un criminal condenado.", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " ya es un criminal condenado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		usuario.volverCriminal();
-		admin.enviarMensaje(usuario.getNick() + " ha sido condenado.", FontType.INFO);
-		usuario.enviarMensaje("Los dioses te han condenado por tus acciones.", FontType.INFO);
+		admin.enviarMensaje(usuario.getNick() + " ha sido condenado.", FontType.FONTTYPE_INFO);
+		usuario.enviarMensaje("Los dioses te han condenado por tus acciones.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doRevivir(Player admin, String s) {
@@ -1002,17 +1002,17 @@ public class Admins {
 		if (!s.equalsIgnoreCase("YO") && s.length() > 0) {
 			usuario = server.getUsuario(s);
 			if (usuario == null) {
-				admin.enviarMensaje("Usuario offline.", FontType.INFO);
+				admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
 			}
 		} else {
 			usuario = admin;
 		}
 		if (usuario.isAlive()) {
-			admin.enviarMensaje(usuario.getNick() + " no esta muerto!", FontType.INFO);
+			admin.enviarMensaje(usuario.getNick() + " no esta muerto!", FontType.FONTTYPE_INFO);
 		} else {
 			usuario.revivirUsuario();
-			usuario.enviarMensaje(admin.getNick() + " te ha resucitado.", FontType.INFO);
+			usuario.enviarMensaje(admin.getNick() + " te ha resucitado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "Resucitó a " + usuario.getNick());
 		}
 	}
@@ -1031,9 +1031,9 @@ public class Admins {
 				}
 				msg.append(usuario);
 			}
-			admin.enviarMensaje("GM online: " + msg.toString(), FontType.INFO);
+			admin.enviarMensaje("GM online: " + msg.toString(), FontType.FONTTYPE_INFO);
 		} else {
-			admin.enviarMensaje("No hay GMs online.", FontType.INFO);
+			admin.enviarMensaje("No hay GMs online.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -1042,18 +1042,18 @@ public class Admins {
 		// Comando /INV
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/INV " + s);
 
-		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
-		admin.enviarMensaje(" Tiene " + usuario.getInv().getCantObjs() + " objetos.", FontType.INFO);
+		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
+		admin.enviarMensaje(" Tiene " + usuario.getInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= usuario.getInv().size(); i++) {
 			if (usuario.getInv().getObjeto(i).objid > 0) {
 				ObjectInfo info = findObj(usuario.getInv().getObjeto(i).objid);
 				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getInv().getObjeto(i).cant,
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 			}
 		}
 	}
@@ -1063,18 +1063,18 @@ public class Admins {
 		// Comando /BOV
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/BOV " + s);
 
-		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
-		admin.enviarMensaje(" Tiene " + usuario.getBankInventory().getCantObjs() + " objetos.", FontType.INFO);
+		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
+		admin.enviarMensaje(" Tiene " + usuario.getBankInventory().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= usuario.getBankInventory().size(); i++) {
 			if (usuario.getBankInventory().getObjeto(i).objid > 0) {
 				ObjectInfo info = findObj(usuario.getBankInventory().getObjeto(i).objid);
 				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getBankInventory().getObjeto(i).cant,
-						FontType.INFO);
+						FontType.FONTTYPE_INFO);
 			}
 		}
 	}
@@ -1084,14 +1084,14 @@ public class Admins {
 		// Comando /SKILLS
 		Player usuario = server.getUsuario(s);
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Log.logGM(admin.getNick(), "/SKILLS " + s);
 
-		admin.enviarMensaje(usuario.getNick(), FontType.INFO);
+		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.getEstads().userSkills[i], FontType.INFO);
+			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.getEstads().userSkills[i], FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -1113,7 +1113,7 @@ public class Admins {
 		String fecha = df.format(ahora);
 		df = new java.text.SimpleDateFormat("HH:mm");
 		String hora = df.format(ahora);
-		admin.enviarMensaje("Hora: " + hora + " Fecha: " + fecha, FontType.INFO);
+		admin.enviarMensaje("Hora: " + hora + " Fecha: " + fecha, FontType.FONTTYPE_INFO);
 	}
 
 	public void doDonde(Player admin, String s) {
@@ -1126,18 +1126,18 @@ public class Admins {
 		} else {
 			usuario = server.getUsuario(s);
 			if (usuario == null) {
-				admin.enviarMensaje("Usuario offline.", FontType.INFO);
+				admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
 			}
 			Log.logGM(admin.getNick(), "consultó /DONDE " + usuario.getNick());
 		}
 		admin.enviarMensaje("Ubicacion de " + usuario.getNick() + ": " + usuario.pos().map + ", " + usuario.pos().x + ", "
-				+ usuario.pos().y + ".", FontType.INFO);
+				+ usuario.pos().y + ".", FontType.FONTTYPE_INFO);
 	}
 
 	public void doEnviarCantidadHostiles(Player admin, short m) {
 		if (m < 1) {
-			admin.enviarMensaje("Has ingresado un número de mapa inválido.", FontType.INFO);
+			admin.enviarMensaje("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Map mapa = server.getMapa(m);
@@ -1145,7 +1145,7 @@ public class Admins {
 			Log.logGM(admin.getNick(), "Consultó el número de enemigos en el mapa, /NENE " + m);
 			// enviar(MSG_NENE, mapa.getCantHostiles());
 		} else {
-			admin.enviarMensaje("El mapa no existe.", FontType.INFO);
+			admin.enviarMensaje("El mapa no existe.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -1161,7 +1161,7 @@ public class Admins {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {
-			admin.enviarMensaje("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.WARNING);
+			admin.enviarMensaje("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		Map mapa = server.getMapa(m);
@@ -1183,11 +1183,11 @@ public class Admins {
 			return;
 		}
 		if (usuario == null) {
-			admin.enviarMensaje("Usuario offline.", FontType.INFO);
+			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (usuario.warpUser(m, x, y, true)) {
-			usuario.enviarMensaje(usuario.getNick() + " transportado.", FontType.INFO);
+			usuario.enviarMensaje(usuario.getNick() + " transportado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "Transportó con un /TELEP a " + usuario.getNick() + 
 					" hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}

@@ -48,5 +48,19 @@ public class ChangeNPCInventorySlotResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeByte(out,slot);
+		writeStr(out,name);
+		writeShort(out,amount);
+		writeFloat(out,price);
+		writeShort(out,grhIndex);
+		writeShort(out,objIndex);
+		writeByte(out,objType);
+		writeShort(out,maxHIT);
+		writeShort(out,minHIT);
+		writeShort(out,def);
+	}
 };
 

@@ -30,7 +30,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -44,11 +43,12 @@ import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.net.NetworkServer;
-import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.net.NettyServer;
+import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
+import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.quest.Quest;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
@@ -56,6 +56,8 @@ import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.netty.channel.Channel;
 
 /** 
  * Server main class
@@ -253,8 +255,7 @@ public class GameServer implements Constants {
     
     public void shutdown() {
         this.m_corriendo = false;
-        
-        this.networkServer.shutdown();
+        // FIXME close Netty
         System.out.println("=== Goodbye. Server closed. ===");
     }
     
@@ -276,13 +277,11 @@ public class GameServer implements Constants {
 		return loadBackup;
 	}
     
-    private NetworkServer networkServer;
-    
     /** Main loop of the game. */
-    public void runGameLoop() {
+    private void runGameLoop() {
         loadAllData(loadBackup);
         
-        networkServer = NetworkServer.startServer(this);
+        //networkServer = NetworkServer.startServer(this);
         try {
         	if (this.useUPnP) {
         		NetworkUPnP.openUPnP();
@@ -363,7 +362,7 @@ public class GameServer implements Constants {
     
     public synchronized void dropClient(Player client) {
     	this.m_clientes_eliminar.add(client);
-    	this.networkServer.closeConnection(client);
+    	// FIXME netty ?
     }
     
     private synchronized void eliminarClientes() {
@@ -454,13 +453,20 @@ public class GameServer implements Constants {
         this.npcs.put(Integer.valueOf(npc.getId()), npc);
         return npc;
     }
-    
-    public Player createClient(SocketChannel clientSocket) {
-        Player cliente = new Player(clientSocket, this);
+
+    public Player createClient(Channel channel) {
+        Player cliente = new Player(channel, this);
         this.players.put(cliente.getId(), cliente);    	
         return cliente;
     }
     
+    public Player findClient(Channel channel) {
+    	return this.players.values().stream()
+		    		.filter(p -> p.channel == channel)
+		    		.findFirst()
+		    		.get();
+    }
+
     public void deleteNpc(Npc npc) {
         this.m_npcs_muertos.add(npc.getId());
     }
@@ -544,10 +550,10 @@ public class GameServer implements Constants {
                 } else {
                 	switch (cli.m_counters.SalirCounter) {
                 		case 10:
-                			cli.enviarMensaje("En " + cli.m_counters.SalirCounter +" segundos se cerrará el juego...", FontType.INFO);
+                			cli.enviarMensaje("En " + cli.m_counters.SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
                 			break;
                 		case 3:
-                			cli.enviarMensaje("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.INFO);
+                			cli.enviarMensaje("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
                 			break;
                 	}
                 }
@@ -640,18 +646,18 @@ public class GameServer implements Constants {
         }
     }
     
-    public void enviarATodos(ServerPacketID msg, Object... params) {
+    public void enviarATodos(ServerPacket packet) {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                cli.enviar(msg, params);
+                cli.enviar(packet);
             }
         }
     }
     
-    public void enviarAAdmins(ServerPacketID msg, Object... params) {
+    public void enviarAAdmins(ServerPacket packet) {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
-                cli.enviar(msg, params);
+                cli.enviar(packet);
             }
         }
     }
@@ -670,13 +676,13 @@ public class GameServer implements Constants {
     public void iniciarLluvia() {
         this.m_lloviendo = true;
         this.minutosSinLluvia = 0;
-        enviarATodos(ServerPacketID.RainToggle);
+        enviarATodos(new RainToggleResponse());
     }
     
     public void detenerLluvia() {
         this.m_lloviendo = false;
         this.minutosSinLluvia = 0;
-        enviarATodos(ServerPacketID.RainToggle);
+        enviarATodos(new RainToggleResponse());
     }
     
     private void lluviaEvent() {
@@ -709,7 +715,7 @@ public class GameServer implements Constants {
                 Map mapa = getMapa(cli.pos().map);
                 if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
                     cli.m_counters.PiqueteC++;
-                    cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.INFO);
+                    cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
                     if (cli.m_counters.PiqueteC > 23) {
                         cli.m_counters.PiqueteC = 0;
                         cli.encarcelar(3, null);
@@ -737,7 +743,7 @@ public class GameServer implements Constants {
                     if (cli.m_counters.Pena < 1) {
                         cli.m_counters.Pena = 0;
                         cli.warpUser(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
-                        cli.enviarMensaje("Has sido liberado!", FontType.INFO);
+                        cli.enviarMensaje("Has sido liberado!", FontType.FONTTYPE_INFO);
                     }
                 }
             }
@@ -939,7 +945,7 @@ public class GameServer implements Constants {
     
     private synchronized void worldSave() {
     	// FIXME
-        //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.INFO);
+        //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.FONTTYPE_INFO);
         // Hacer un respawn de los guardias en las pos originales.
         reSpawnOrigPosNpcs();
         // Ver cuantos m_mapas necesitan backup.
@@ -972,7 +978,7 @@ public class GameServer implements Constants {
         } catch (Exception e) {
             log.fatal("worldSave(): ERROR EN BACKUP NPCS", e);
         }
-        //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.INFO);
+        //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.FONTTYPE_INFO);
     }
     
     private void reSpawnOrigPosNpcs() {
@@ -1031,6 +1037,8 @@ public class GameServer implements Constants {
 
 	private static boolean loadBackup = false;
     public static void main(String[] args) {
+    	NettyServer ns = new NettyServer(Constants.SERVER_PORT);
+    	
         loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
         if (loadBackup) {
 			log.info("Arrancando usando el backup");

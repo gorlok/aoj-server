@@ -39,7 +39,7 @@ public class CharInfo implements Constants {
 	public short m_casco;
 	public short m_fx;
 	public short m_loops;
-	public short m_dir;
+	public byte m_dir;
 
 	public CharInfo() {
 	}
@@ -98,12 +98,12 @@ public class CharInfo implements Constants {
 		return this.m_loops;
 	}
 
-	public short getDir() {
+	public byte getDir() {
 		return this.m_dir;
 	}
 
 	public void setDir(Heading dir) {
-		this.m_dir = (short) dir.ordinal();
+		this.m_dir = (byte) dir.ordinal();
 	}
 
 	public void cuerpoDesnudo(int raza, int genero) {

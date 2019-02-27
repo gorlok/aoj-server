@@ -409,10 +409,10 @@ public class Quest implements Constants {
                     cliente.hablar(COLOR_BLANCO, "Yo correspondo a otra quest!", npc.getId());
                 }
             } else {
-                cliente.enviarMensaje("Este npc no es de la quest jajaja!", FontType.INFO);
+                cliente.enviarMensaje("Este npc no es de la quest jajaja!", FontType.FONTTYPE_INFO);
             }
         } else {
-            cliente.enviarMensaje("No has comenzado ninguna quest!", FontType.INFO);
+            cliente.enviarMensaje("No has comenzado ninguna quest!", FontType.FONTTYPE_INFO);
         }
     }
 

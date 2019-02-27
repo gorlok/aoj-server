@@ -105,9 +105,9 @@ public class GuildManager {
         if (this.createGuild(cliente, name)) {
             int n;
             if ((n = this.guildsCount()) == 1) {
-                cliente.enviarMensaje("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.INFO);
+                cliente.enviarMensaje("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
             } else {
-                cliente.enviarMensaje("¡Felicidades! Has creado el clan número " + n + " de Argentum!!!.", FontType.INFO);
+                cliente.enviarMensaje("¡Felicidades! Has creado el clan número " + n + " de Argentum!!!.", FontType.FONTTYPE_INFO);
             }
             this.saveGuildsDB();
         }
@@ -474,7 +474,7 @@ public class GuildManager {
             return;
         }
         guild.URL = newURL;
-        cliente.enviarMensaje("La direccion de la web ha sido actualizada", FontType.INFO);
+        cliente.enviarMensaje("La direccion de la web ha sido actualizada", FontType.FONTTYPE_INFO);
     }
 
     private void declareAllie(Player cliente, String guildName) {
@@ -677,7 +677,7 @@ public class GuildManager {
 	public void doFundarClan(Player user) {
 		// Comando /FUNDARCLAN
 		if (user.getGuildInfo().m_fundoClan) {
-			user.enviarMensaje("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.INFO);
+			user.enviarMensaje("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (canCreateGuild(user)) {
@@ -703,9 +703,9 @@ public class GuildManager {
 		// Salir del clan.
 		// Comando /SALIRCLAN
 		if (user.getGuildInfo().esGuildLeader()) {
-			user.enviarMensaje("Eres líder del clan, no puedes salir del mismo.", FontType.INFO);
+			user.enviarMensaje("Eres líder del clan, no puedes salir del mismo.", FontType.FONTTYPE_INFO);
 		} else if (!user.getGuildInfo().esMiembroClan()) {
-			user.enviarMensaje("No perteneces a ningún clan.", FontType.INFO);
+			user.enviarMensaje("No perteneces a ningún clan.", FontType.FONTTYPE_INFO);
 		} else {
 			getGuild(user).removeMember(user.getNick());
 			user.getGuildInfo().salirClan();

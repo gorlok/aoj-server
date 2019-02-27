@@ -21,5 +21,10 @@ public class ShowMessageBoxResponse extends ServerPacket {
 			return null;                        
 		}                                       
 	}                                        
+	@Override
+	public void encode(ByteBuf out) {
+		writeByte(out,this.id().id());
+		writeStr(out,message);
+	}
 };
 

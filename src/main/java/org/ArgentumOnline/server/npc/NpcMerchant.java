@@ -108,7 +108,7 @@ public class NpcMerchant extends Npc {
         double val = (info.Valor + infla) / dto;
         
         if (cliente.getEstads().getGold() < (val * cant)) {
-            cliente.enviarMensaje("No tienes suficiente oro.", FontType.INFO);
+            cliente.enviarMensaje("No tienes suficiente oro.", FontType.FONTTYPE_INFO);
             return;
         }
         
@@ -156,13 +156,13 @@ public class NpcMerchant extends Npc {
         short objid = cliente.getInv().getObjeto(slot).objid;
         ObjectInfo info = findObj(objid);
         if (info.esNewbie()) {
-            cliente.enviarMensaje("No comercio objetos para newbies.", FontType.INFO);
+            cliente.enviarMensaje("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
             return;
         }
         if (this.m_tipoItems != OBJTYPE_CUALQUIERA) {
             // ¿Son los items con los que comercia el npc?
             if (this.m_tipoItems != info.ObjType) {
-                cliente.enviarMensaje("No me interesa comprar ese objeto.", FontType.WARNING);
+                cliente.enviarMensaje("No me interesa comprar ese objeto.", FontType.FONTTYPE_WARNING);
                 return;
             }
         }
@@ -193,7 +193,7 @@ public class NpcMerchant extends Npc {
                 // tal vez suba el skill comerciar ;-)
                 cliente.subirSkill(Skill.SKILL_Comerciar);
             } else {
-                cliente.enviarMensaje("No puedo cargar tantos objetos.", FontType.INFO);
+                cliente.enviarMensaje("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
             }
         } else {
             cliente.getInv().quitarUserInvItem(slot, cant);
