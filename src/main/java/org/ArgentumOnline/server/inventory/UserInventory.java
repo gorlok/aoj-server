@@ -28,15 +28,15 @@ package org.ArgentumOnline.server.inventory;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Pos;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -262,15 +262,15 @@ public class UserInventory extends Inventory implements Constants {
        	this.dueño.enviarObjetoInventario(slot);
     }
 
-    public void dropObj(short slot, int cant) {
+    public void dropObj(byte slot, int cant) {
         if (cant > 0) {
             if (cant > this.objs[slot-1].cant) {
                 cant = this.objs[slot-1].cant;
             }
             // Check objeto en el suelo
             Map mapa = this.server.getMapa(this.dueño.pos().map);
-            short x = this.dueño.pos().x;
-            short y = this.dueño.pos().y;
+            byte x = this.dueño.pos().x;
+            byte y = this.dueño.pos().y;
             short objid = this.objs[slot-1].objid;
             if (!mapa.hayObjeto(x, y)) {
                 if (this.objs[slot-1].equipado) {
@@ -374,7 +374,7 @@ public class UserInventory extends Inventory implements Constants {
         switch (infoObj.ObjType) {
             case OBJTYPE_WEAPON:
                 log.debug("es un arma");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -399,7 +399,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case OBJTYPE_HERRAMIENTAS:
                 log.debug("es una herramienta");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -420,7 +420,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case OBJTYPE_FLECHAS:
                 log.debug("son flechas");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -447,7 +447,7 @@ public class UserInventory extends Inventory implements Constants {
                 switch (infoObj.SubTipo) {
                     case SUBTYPE_ARMADURA: // ARMADURA
                         // Nos aseguramos que puede usarla
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClase()) && 
+                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
                             this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid) &&
                             this.dueño.sexoPuedeUsarItem(objid) &&
                             this.dueño.checkRazaUsaRopa(objid)) {
@@ -477,7 +477,7 @@ public class UserInventory extends Inventory implements Constants {
                         
                     case SUBTYPE_CASCO:
                         log.debug("es un casco");
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClase())) {
+                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
                             // Si esta equipado lo quita
                             if (obj_inv.equipado) {
                                 // Quitamos del inv el item
@@ -503,7 +503,7 @@ public class UserInventory extends Inventory implements Constants {
                         
                     case SUBTYPE_ESCUDO:
                         log.debug("es un escudo");
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClase())) {
+                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
                             // Si esta equipado lo quita
                             if (obj_inv.equipado) {
                                 // Quitamos del inv el item
@@ -815,8 +815,8 @@ public class UserInventory extends Inventory implements Constants {
                     // ¿Esta cerrada?
                     if (targetInfo.estaCerrada()) {
                         // ¿Cerrada con llave?
-                        short targetX = this.dueño.getFlags().TargetObjX;
-                        short targetY = this.dueño.getFlags().TargetObjY;
+                        byte targetX = this.dueño.getFlags().TargetObjX;
+                        byte targetY = this.dueño.getFlags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == info.Clave) {
                                 mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
@@ -885,16 +885,16 @@ public class UserInventory extends Inventory implements Constants {
                     	
                     	break;
                     case OBJTYPE_RED_PESCA:
-                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Pesca);
+                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Pesca));
                         break;
                     case OBJTYPE_HACHA_LEÑADOR:
-                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Talar);
+                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Talar));
                         break;
                     case OBJTYPE_PIQUETE_MINERO:
-                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Mineria);
+                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Mineria));
                         break;
                     case OBJTYPE_MARTILLO_HERRERO:
-                        this.dueño.enviar(ServerPacketID.WorkRequestTarget, Skill.SKILL_Herreria);
+                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Herreria));
                         break;
                     case OBJTYPE_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();

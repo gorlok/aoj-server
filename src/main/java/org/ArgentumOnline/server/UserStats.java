@@ -28,7 +28,7 @@ package org.ArgentumOnline.server;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.classes.CharClass;
+import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -311,7 +311,7 @@ public class UserStats extends AbstractCharStats {
 		return atribs.toArray();
 	}
 
-	public void inicializarEstads(CharClass clase) {
+	public void inicializarEstads(Clazz clase) {
 		// Salud
 		this.MaxHP = 15 + Util.Azar(1, this.userAtributos[ATRIB_CONSTITUCION] / 3);
 		this.MinHP = this.MaxHP;
@@ -329,7 +329,7 @@ public class UserStats extends AbstractCharStats {
 		this.maxEaten = 100;
 		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.maxMana = clase.getManaInicial(this.userAtributos[ATRIB_INTELIGENCIA]);
+		this.maxMana = clase.clazz().getManaInicial(this.userAtributos[ATRIB_INTELIGENCIA]);
 		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;

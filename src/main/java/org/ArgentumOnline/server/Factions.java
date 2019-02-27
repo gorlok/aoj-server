@@ -175,7 +175,7 @@ public class Factions implements Constants {
         this.RecompensasReal = (short) (this.CriminalesMatados / 100);
         this.cliente.hablar(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
-            short armadura = this.cliente.getClase().getArmaduraImperial(this.cliente);
+            short armadura = this.cliente.getClazz().clazz().getArmaduraImperial(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMapa(this.cliente.pos().map);
                 mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
@@ -184,7 +184,7 @@ public class Factions implements Constants {
         }
         if (!this.RecibioExpInicialReal) {
             this.cliente.getEstads().addExp(EXP_AL_UNIRSE);
-            this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FONTTYPE_FIGHT);
+            this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialReal = true;
             this.cliente.checkUserLevel();
         }
@@ -222,7 +222,7 @@ public class Factions implements Constants {
         this.RecompensasCaos = (short) (this.CiudadanosMatados / 100);
         this.cliente.hablar(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
-            short armadura = this.cliente.getClase().getArmaduraCaos(this.cliente);
+            short armadura = this.cliente.getClazz().clazz().getArmaduraCaos(this.cliente);
             if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMapa(this.cliente.pos().map);
                 mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
@@ -231,7 +231,7 @@ public class Factions implements Constants {
         }
         if (!this.RecibioExpInicialCaos) {
             this.cliente.getEstads().addExp(EXP_AL_UNIRSE);
-            this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FONTTYPE_FIGHT);
+            this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialCaos = true;
             this.cliente.checkUserLevel();
         }
@@ -244,7 +244,7 @@ public class Factions implements Constants {
         } else {
             this.cliente.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.cliente.getEstads().addExp(EXP_X_100);
-            this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FONTTYPE_FIGHT);
+            this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
             this.cliente.checkUserLevel();
         }
@@ -256,7 +256,7 @@ public class Factions implements Constants {
         } else {
             this.cliente.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.cliente.getEstads().addExp(EXP_X_100);
-            this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FONTTYPE_FIGHT);
+            this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;
             this.cliente.checkUserLevel();
         }
@@ -264,12 +264,12 @@ public class Factions implements Constants {
 
     public void expulsarFaccionReal() {
         this.ArmadaReal = false;
-        this.cliente.enviarMensaje("Has sido expulsado de las tropas reales!!!.", FONTTYPE_FIGHT);
+        this.cliente.enviarMensaje("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
     }
 
     public void expulsarFaccionCaos() {
         this.FuerzasCaos = false;
-        this.cliente.enviarMensaje("Has sido expulsado de las fuerzas del caos!!!.", FONTTYPE_FIGHT);
+        this.cliente.enviarMensaje("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
     }
 
     private final static String[] titulosReales = {

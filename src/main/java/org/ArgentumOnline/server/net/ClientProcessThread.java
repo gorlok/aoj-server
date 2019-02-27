@@ -1,12 +1,8 @@
 package org.ArgentumOnline.server.net;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.classes.CharClass;
-import org.ArgentumOnline.server.classes.CharClassManager;
+import org.ArgentumOnline.server.classes.AbstractClazz;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.NotEnoughDataException;
@@ -17,21 +13,9 @@ import org.ArgentumOnline.server.util.NotEnoughDataException;
  * @userforos: Agushh, Thorkes Clase destinada a manejar cuestiones del
  *             protocolo en otro thread
  */
-public class ClientProcessThread extends Thread {
-
+public class ClientProcessThread {
+// TODO REMOVE (fue reemplazado por servidor Netty)
 	private BytesReader r;
-
-	List<Player> clientQueue = new LinkedList<Player>();
-
-	public ClientProcessThread() {
-		setName("ClientProcessThread");
-		r = new BytesReader();
-		r.setLittleEndian(true);
-	}
-
-	public void addClientQueue(Player value) {
-		this.clientQueue.add(value);
-	}
 
 	//Una vez decodificado, buscamos qué acción efectuar
 	private void handleClientData(byte[] data, Player cliente, int length) {
@@ -111,13 +95,13 @@ public class ClientProcessThread extends Thread {
 					break;
 
 				case Drop:
-					int slot = r.readByte();
+					byte slot = (byte) r.readByte();
 					short amount = r.readShort();
-					cliente.tirarObjeto((short) slot, (int) amount);
+					cliente.tirarObjeto(slot, (int) amount);
 					break;
 
 				case EquipItem:
-					slot = r.readByte();
+					slot = (byte) r.readByte();
 					cliente.equiparObjeto((short) slot);
 					break;
 
@@ -162,10 +146,10 @@ public class ClientProcessThread extends Thread {
 					String pass = r.readString();
 					short raza = cliente.indiceRaza(r.readString());
 					short genero = r.readShort();
-					CharClass clase = CharClassManager.getInstance().getClase(r.readString().toUpperCase());
+					AbstractClazz clase = null;//CharClassManager.getInstance().getClase(r.readString().toUpperCase());
 					String email = r.readString();
 					short hogar = cliente.indiceCiudad(r.readString());
-					cliente.connectNewUser(nick, pass, raza, genero, clase, email, hogar);
+					//cliente.connectNewUser(nick, pass, raza, genero, clase, email, hogar);
 					break;
 
 				case ThrowDices:
@@ -213,36 +197,6 @@ public class ClientProcessThread extends Thread {
 
 		} catch (NotEnoughDataException ex) {
 			r.reset();
-		}
-	}
-
-	boolean actived = true;
-	public void endThread() {
-		this.actived = false;
-	}
-
-	@Override
-	public void run() {
-
-		while (actived) {
-			try {
-				Thread.sleep(1000); // 1 sec
-			} catch (Exception e) {}
-
-			if (this.clientQueue.size() > 0) { 
-				// hay alguien esperando ??
-				Player client = this.clientQueue.get(0);
-				client.readBuffer.flip();
-
-				handleClientData(client.readBuffer.array(), 
-						client,
-						client.bufferLengths.get(0));
-
-				client.readBuffer.clear();
-				client.bufferLengths.remove(0);
-				this.clientQueue.remove(0);
-			}
-
 		}
 	}
 

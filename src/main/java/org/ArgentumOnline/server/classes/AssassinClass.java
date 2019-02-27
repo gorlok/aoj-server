@@ -32,24 +32,14 @@ import org.ArgentumOnline.server.Factions.FactionArmors;
 import org.ArgentumOnline.server.util.Util;
 
 /**
- * Class of killer character.
- * @author  Pablo Fernando Lillia
+ * Class of assassin character.
+ * @author  gorlok
  */
-public class AssassinClass extends CharClass {
+public class AssassinClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected AssassinClass() {
+    AssassinClass() {
         this.name = "ASESINO";
         this.magic = true;
-    }
-    
-    private static AssassinClass instance = null;
-    
-    public static AssassinClass getInstance() {
-        if (instance == null) {
-			instance = new AssassinClass();
-		}
-        return instance;
     }
     
     @Override

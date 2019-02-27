@@ -30,23 +30,13 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the druid character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class DruidClass extends CharClass {
+public class DruidClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected DruidClass() {
+    DruidClass() {
         this.name = "DRUIDA";
         this.magic = true;
-    }
-    
-    private static DruidClass instance = null;
-    
-    public static DruidClass getInstance() {
-        if (instance == null) {
-			instance = new DruidClass();
-		}
-        return instance;
     }
     
     @Override

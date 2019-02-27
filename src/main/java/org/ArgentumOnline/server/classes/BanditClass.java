@@ -31,22 +31,12 @@ import org.ArgentumOnline.server.Factions.FactionArmors;
 
 /** 
  * Class of bandit character.
- * @author Pablo Fernando Lillia
+ * @author gorlok
  */
-public class BanditClass extends CharClass {
+public class BanditClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected BanditClass() {
+    BanditClass() {
         this.name = "BANDIDO";
-    }
-    
-    private static BanditClass instance = null;
-    
-    public static BanditClass getInstance() {
-        if (instance == null) {
-			instance = new BanditClass();
-		}
-        return instance;
     }
     
     @Override

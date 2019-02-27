@@ -29,20 +29,11 @@ package org.ArgentumOnline.server.classes;
  * Class of the tailor character.
  * @author  pablo
  */
-public class TailorClass extends CharClass {
+public class TailorClass extends AbstractClazz {
     
     /** Creates a new instance of TailorClass (Sastre) */
     protected TailorClass() {
         this.name = "SASTRE";
-    }
-    
-    private static TailorClass instance = null;
-    
-    public static TailorClass getInstance() {
-        if (instance == null) {
-			instance = new TailorClass();
-		}
-        return instance;
     }
     
 }

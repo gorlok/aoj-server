@@ -34,11 +34,7 @@ import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
-import org.ArgentumOnline.server.classes.AssassinClass;
-import org.ArgentumOnline.server.classes.CharClass;
-import org.ArgentumOnline.server.classes.FishermanClass;
-import org.ArgentumOnline.server.classes.HunterClass;
-import org.ArgentumOnline.server.classes.ThiefClass;
+import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -50,7 +46,6 @@ import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.net.ServerPacket;
-import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcCashier;
 import org.ArgentumOnline.server.npc.NpcMerchant;
@@ -78,6 +73,7 @@ import org.ArgentumOnline.server.protocol.NPCHitUserResponse;
 import org.ArgentumOnline.server.protocol.NavigateToggleResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
+import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.PosUpdateResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
@@ -113,7 +109,7 @@ public class Player extends AbstractCharacter {
 
 	String m_desc = ""; // Descripcion
 
-	CharClass m_clase = HunterClass.getInstance();
+	Clazz clazz = Clazz.Hunter;
 
 	short m_raza = RAZA_HUMANO;
 	short m_genero = GENERO_HOMBRE;
@@ -237,8 +233,8 @@ public class Player extends AbstractCharacter {
 		return getNick() != null && !getNick().isEmpty();
 	}
 
-	public CharClass getClase() {
-		return m_clase;
+	public Clazz getClazz() {
+		return clazz;
 	}
 
 	public UserQuest getQuest() {
@@ -480,8 +476,8 @@ public class Player extends AbstractCharacter {
 				(int) m_faccion.CiudadanosMatados, 
 				(int) m_faccion.CriminalesMatados, 
 				(int) m_estads.usuariosMatados, 
-				(int) m_estads.NPCsMuertos, 
-				m_clase.id(), 
+				(short) m_estads.NPCsMuertos, 
+				clazz.id(), 
 				(int) m_counters.Pena));
 
 		sendUserAtributos();
@@ -1213,7 +1209,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void doNavega() {
-		double modNave = m_clase.modNavegacion();
+		double modNave = clazz.clazz().modNavegacion();
 		ObjectInfo barco = m_inv.getBarco();
 		if (m_estads.userSkills[Skill.SKILL_Navegacion] / modNave < barco.MinSkill) {
 			enviarMensaje("No tenes suficientes conocimientos para usar este barco.", FontType.FONTTYPE_INFO);
@@ -1334,7 +1330,7 @@ public class Player extends AbstractCharacter {
 		if (m_flags.TargetObjInvIndex > 0) {
 			ObjectInfo info = findObj(m_flags.TargetObjInvIndex);
 			if (info.ObjType == OBJTYPE_MINERALES
-					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria] / m_clase.modFundicion()) {
+					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria] / clazz.clazz().modFundicion()) {
 				doLingotes();
 			} else {
 				enviarMensaje("No tenes conocimientos de mineria suficientes para trabajar este mineral.",
@@ -1344,7 +1340,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private double calcularPoderDomador() {
-		return m_estads.userAtributos[ATRIB_CARISMA] * (m_estads.userSkills[Skill.SKILL_Domar] / m_clase.modDomar())
+		return m_estads.userAtributos[ATRIB_CARISMA] * (m_estads.userSkills[Skill.SKILL_Domar] / clazz.clazz().modDomar())
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
 				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3);
@@ -1390,13 +1386,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doMineria() {
-		m_estads.quitarStamina(m_clase.getEsfuerzoExcavar());
+		m_estads.quitarStamina(clazz.clazz().getEsfuerzoExcavar());
 		if (suerteMineria()) {
 			if (m_flags.TargetObj == 0) {
 				return;
 			}
 			short objid = findObj(m_flags.TargetObj).MineralIndex;
-			int cant = m_clase.getCantMinerales();
+			int cant = clazz.clazz().getCantMinerales();
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
@@ -1421,9 +1417,9 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doTalar() {
-		m_estads.quitarStamina(m_clase.getEsfuerzoTalar());
+		m_estads.quitarStamina(clazz.clazz().getEsfuerzoTalar());
 		if (suerteTalar()) {
-			int cant = m_clase.getCantLeños();
+			int cant = clazz.clazz().getCantLeños();
 			short objid = Leña;
 			Map mapa = server.getMapa(m_pos.map);
 			int agregados = m_inv.agregarItem(objid, cant);
@@ -1510,7 +1506,7 @@ public class Player extends AbstractCharacter {
 		if (m_flags.Privilegios < 2) {
 			if (suerteRobar()) {
 				// Exito robo
-				if ((Util.Azar(1, 50) < 25) && (m_clase == ThiefClass.getInstance())) {
+				if ((Util.Azar(1, 50) < 25) && (clazz == Clazz.Thief)) {
 					if (victima.m_inv.tieneObjetosRobables()) {
 						robarObjeto(victima);
 					} else {
@@ -1549,7 +1545,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doPescarCaña() {
-		m_estads.quitarStamina(m_clase.getEsfuerzoPescar());
+		m_estads.quitarStamina(clazz.clazz().getEsfuerzoPescar());
 		if (suertePescarCaña()) {
 			Map mapa = server.getMapa(m_pos.map);
 			if (m_inv.agregarItem(OBJ_PESCADO, 1) < 1) {
@@ -1573,13 +1569,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doPescarRed() {
-		m_estads.quitarStamina(m_clase.getEsfuerzoPescar());
+		m_estads.quitarStamina(clazz.clazz().getEsfuerzoPescar());
 		int skills = m_estads.userSkills[Skill.SKILL_Pesca];
 		if (skills == 0) {
 			return;
 		}
 		if (suertePescarRed()) {
-			int cant = (m_clase == FishermanClass.getInstance()) ? Util.Azar(1, 5) : 1;
+			int cant = (clazz == Clazz.Fisher) ? Util.Azar(1, 5) : 1;
 			short objid = (short) PESCADOS_RED[Util.Azar(1, PESCADOS_RED.length) - 1];
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
@@ -1593,7 +1589,7 @@ public class Player extends AbstractCharacter {
 		subirSkill(Skill.SKILL_Pesca);
 	}
 
-	public void doWLC(short x, short y, short tLong) {
+	public void doWLC(byte x, byte y, short tLong) {
 		Pos pos = new Pos(x, y);
 		if (!isAlive() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
@@ -2020,9 +2016,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.CharacterChange, getId(), m_infoChar.getCuerpo(),
-				m_infoChar.getCabeza(), m_infoChar.getDir(), m_infoChar.getArma(), m_infoChar.getEscudo(),
-				m_infoChar.getCasco(), m_infoChar.m_fx, m_infoChar.m_loops);
+		mapa.enviarAlArea(pos().x, pos().y, createCC());
 	}
 
 	public void enviarValCode() {
@@ -2088,7 +2082,7 @@ public class Player extends AbstractCharacter {
 	 * @param x es la posición x del clic
 	 * @param y es la posición y del clic
 	 */
-	public void clicIzquierdoMapa(short x, short y) {
+	public void clicIzquierdoMapa(byte x, byte y) {
 		// Clic con el botón primario del mouse
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
@@ -2102,7 +2096,7 @@ public class Player extends AbstractCharacter {
 	 * @param x es la posición x del clic
 	 * @param y es la posición y del clic
 	 */
-	public void clicDerechoMapa(short x, short y) {
+	public void clicDerechoMapa(byte x, byte y) {
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa == null) {
 			return;
@@ -2182,21 +2176,21 @@ public class Player extends AbstractCharacter {
 	}
 
 	/** Comando para hablar (;) */
-	public void doHablar(String s) {
+	public void doHablar(String texto) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
-		if (s.length() > MAX_MENSAJE) {
-			s = s.substring(0, MAX_MENSAJE);
+		if (texto.length() > MAX_MENSAJE) {
+			texto = texto.substring(0, MAX_MENSAJE);
 		}
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(m_pos.x, m_pos.y, 
-				ServerPacketID.ChatOverHead, s, getId(), 
-				Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO));
+			mapa.enviarAlArea(m_pos.x, m_pos.y,
+					new ChatOverHeadResponse(texto, getId(), 
+							Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO)));
 		}
 		if (esConsejero()) {
-			Log.logGM(m_nick, "El consejero dijo: " + s);
+			Log.logGM(m_nick, "El consejero dijo: " + texto);
 		}
 	}
 
@@ -2292,7 +2286,7 @@ public class Player extends AbstractCharacter {
 			enviarCFX(0, 0);
 		}
 		if (m_flags.Oculto) {
-			if (m_clase != ThiefClass.getInstance()) {
+			if (clazz != Clazz.Thief) {
 				volverseVisible();
 			}
 		}
@@ -2368,7 +2362,7 @@ public class Player extends AbstractCharacter {
 		getObj();
 	}
 
-	public void tirarObjeto(short slot, int cant) {
+	public void tirarObjeto(byte slot, int cant) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden tirar objetos.")) {
 			return;
 		}
@@ -2502,14 +2496,14 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	private void cambiarMapa(short mapa, short x, short y) {
+	private void cambiarMapa(short mapa, byte x, byte y) {
 		if (m_saliendo) {
 			return;
 		}
 		cambiarMapa(mapa, x, y, true, true);
 	}
 
-	private void cambiarMapa(short nroMapa, short x, short y, boolean conFX, boolean enviarData) {
+	private void cambiarMapa(short nroMapa, byte x, byte y, boolean conFX, boolean enviarData) {
 
 		short oldMap = m_pos.map;
 		if (m_pos.map != 0) {
@@ -2623,7 +2617,7 @@ public class Player extends AbstractCharacter {
 		enviarEstadsHambreSed();
 	}
 
-	public boolean warpUser(short m, short x, short y, boolean conFX) {
+	public boolean warpUser(short m, byte x, byte y, boolean conFX) {
 		// WarpUserChar(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal
 		// X As Integer, ByVal Y As Integer, Optional ByVal FX As Boolean =
 		// False)
@@ -2750,7 +2744,7 @@ public class Player extends AbstractCharacter {
 	private boolean suerteMostrarse() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
 		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Ocultarse] / 10)]);
-		if (m_clase != ThiefClass.getInstance()) {
+		if (clazz != Clazz.Thief) {
 			rango += 50;
 		}
 		return (Util.Azar(1, rango) > 9);
@@ -2765,7 +2759,7 @@ public class Player extends AbstractCharacter {
 	private boolean suerteOcultarse() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
 		short rango = (suerte[(short) (m_estads.userSkills[Skill.SKILL_Ocultarse] / 10)]);
-		if (m_clase != ThiefClass.getInstance()) {
+		if (clazz != Clazz.Thief) {
 			rango += 50;
 		}
 		return (Util.Azar(1, rango) <= 5);
@@ -2814,9 +2808,9 @@ public class Player extends AbstractCharacter {
 
 		Map mapa = server.getMapa(m_pos.map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, 
-					ServerPacketID.ChatOverHead, texto, (short)quienId,
-					Color.r(color), Color.g(color), Color.b(color));
+			mapa.enviarAlArea(pos().x, pos().y,
+					new ChatOverHeadResponse(texto, (short)quienId,
+							Color.r(color), Color.g(color), Color.b(color)));
 		}
 	}
 
@@ -2913,8 +2907,7 @@ public class Player extends AbstractCharacter {
 	 */
 
 	private void enviarIP() {
-		// FIXME
-		// enviar(MSG_IP, getId());
+		enviar(new UserCharIndexInServerResponse(getId()));
 	}
 
 	private void enviarLogged() {
@@ -2967,7 +2960,7 @@ public class Player extends AbstractCharacter {
 		Map mapa = server.getMapa(m_pos.map);
 		// Sonido
 		if (mapa != null) {
-			mapa.enviarAlArea(m_pos.x, m_pos.y, ServerPacketID.PlayWave, (byte) sonido, m_pos.x, m_pos.y);
+			mapa.enviarAlArea(m_pos.x, m_pos.y, new PlayWaveResponse((byte) sonido, m_pos.x, m_pos.y));
 		}
 	}
 
@@ -3273,7 +3266,7 @@ public class Player extends AbstractCharacter {
 				salirDeDN();
 			}
 			m_estads.ELU *= (m_estads.ELV < 11) ? 1.5 : ((m_estads.ELV < 25) ? 1.3 : 1.2);
-			m_clase.subirEstads(this);
+			clazz.clazz().subirEstads(this);
 			enviarSkills();
 			enviarSubirNivel(pts);
 			sendUpdateUserStats();
@@ -3290,22 +3283,22 @@ public class Player extends AbstractCharacter {
 	}
 
 	public long poderEvasionEscudo() {
-		return (long) ((m_estads.userSkills[Skill.SKILL_Defensa] * m_clase.modEvasionDeEscudoClase()) / 2);
+		return (long) ((m_estads.userSkills[Skill.SKILL_Defensa] * clazz.clazz().modEvasionDeEscudoClase()) / 2);
 	}
 
 	public double poderEvasion() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Tacticas] < 31) {
-			tmp = m_estads.userSkills[Skill.SKILL_Tacticas] * m_clase.modificadorEvasion();
+			tmp = m_estads.userSkills[Skill.SKILL_Tacticas] * clazz.clazz().modificadorEvasion();
 		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 61) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + m_estads.userAtributos[ATRIB_AGILIDAD])
-					* m_clase.modificadorEvasion();
+					* clazz.clazz().modificadorEvasion();
 		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 91) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorEvasion();
+					* clazz.clazz().modificadorEvasion();
 		} else {
 			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorEvasion();
+					* clazz.clazz().modificadorEvasion();
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
 	}
@@ -3313,16 +3306,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueArma() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Armas] < 31) {
-			tmp = m_estads.userSkills[Skill.SKILL_Armas] * m_clase.modificadorPoderAtaqueArmas();
+			tmp = m_estads.userSkills[Skill.SKILL_Armas] * clazz.clazz().modificadorPoderAtaqueArmas();
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 61) {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD])
-					* m_clase.modificadorPoderAtaqueArmas());
+					* clazz.clazz().modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 91) {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueArmas());
+					* clazz.clazz().modificadorPoderAtaqueArmas());
 		} else {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueArmas());
+					* clazz.clazz().modificadorPoderAtaqueArmas());
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
 	}
@@ -3330,16 +3323,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueProyectil() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 31) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * m_clase.modificadorPoderAtaqueProyectiles());
+			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 61) {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD])
-					* m_clase.modificadorPoderAtaqueProyectiles());
+					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 91) {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueProyectiles());
+					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else {
 			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueProyectiles());
+					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
 	}
@@ -3347,16 +3340,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueWresterling() {
 		double tmp = 0;
 		if (m_estads.userSkills[Skill.SKILL_Wresterling] < 31) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * m_clase.modificadorPoderAtaqueArmas());
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * clazz.clazz().modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 61) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + m_estads.userAtributos[ATRIB_AGILIDAD])
-					* m_clase.modificadorPoderAtaqueArmas();
+					* clazz.clazz().modificadorPoderAtaqueArmas();
 		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 91) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueArmas();
+					* clazz.clazz().modificadorPoderAtaqueArmas();
 		} else {
 			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
-					* m_clase.modificadorPoderAtaqueArmas();
+					* clazz.clazz().modificadorPoderAtaqueArmas();
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
 	}
@@ -3427,7 +3420,7 @@ public class Player extends AbstractCharacter {
 				// Usa la mata dragones?
 				if (arma.SubTipo == SUBTYPE_MATADRAGONES) { // Usa la
 					// matadragones?
-					modifClase = m_clase.modicadorDañoClaseArmas();
+					modifClase = clazz.clazz().modicadorDañoClaseArmas();
 					if (npc.getNPCtype() == Npc.NPCTYPE_DRAGON) { // Ataca
 						// dragon?
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
@@ -3438,7 +3431,7 @@ public class Player extends AbstractCharacter {
 					}
 				} else { // daño comun
 					if (arma.esProyectil()) {
-						modifClase = m_clase.modicadorDañoClaseProyectiles();
+						modifClase = clazz.clazz().modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
@@ -3447,19 +3440,19 @@ public class Player extends AbstractCharacter {
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
-						modifClase = m_clase.modicadorDañoClaseArmas();
+						modifClase = clazz.clazz().modicadorDañoClaseArmas();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 					}
 				}
 			} else { // Ataca usuario
 				if (arma.SubTipo == SUBTYPE_MATADRAGONES) {
-					modifClase = m_clase.modicadorDañoClaseArmas();
+					modifClase = clazz.clazz().modicadorDañoClaseArmas();
 					dañoArma = 1; // Si usa la espada matadragones daño es 1
 					dañoMaxArma = 1;
 				} else {
 					if (arma.esProyectil()) {
-						modifClase = m_clase.modicadorDañoClaseProyectiles();
+						modifClase = clazz.clazz().modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
@@ -3468,7 +3461,7 @@ public class Player extends AbstractCharacter {
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
-						modifClase = m_clase.modicadorDañoClaseArmas();
+						modifClase = clazz.clazz().modicadorDañoClaseArmas();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 					}
@@ -3520,7 +3513,7 @@ public class Player extends AbstractCharacter {
 	public boolean puedeApuñalar() {
 		if (m_inv.tieneArmaEquipada()) {
 			return ((m_estads.userSkills[Skill.SKILL_Apuñalar] >= MIN_APUÑALAR) && m_inv.getArma().apuñala())
-					|| ((m_clase == AssassinClass.getInstance()) && m_inv.getArma().apuñala());
+					|| ((clazz == Clazz.Assassin) && m_inv.getArma().apuñala());
 		}
 		return false;
 	}
@@ -4076,9 +4069,9 @@ public class Player extends AbstractCharacter {
 		return false;
 	}
 
-	public void connectNewUser(String nick, String clave, short raza, short genero, CharClass clase, String email, short hogar) {
+	public void connectNewUser(String nick, String clave, short raza, short genero, Clazz clazz, String email, short hogar) {
 		// Validar los datos recibidos :-)
-		m_nick = nick;
+		this.m_nick = nick;
 		if (!server.getAdmins().nombrePermitido(m_nick)) {
 			enviarError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
 			return;
@@ -4091,19 +4084,19 @@ public class Player extends AbstractCharacter {
 			enviarError("Ya existe el personaje.");
 			return;
 		}
-		m_flags.Muerto = false;
-		m_flags.Escondido = false;
-		m_reputacion.asesinoRep = 0;
-		m_reputacion.bandidoRep = 0;
-		m_reputacion.burguesRep = 0;
-		m_reputacion.ladronRep = 0;
-		m_reputacion.nobleRep = 1000;
-		m_reputacion.plebeRep = 30;
-		m_clase = clase;
-		m_raza = raza;
-		m_genero = genero;
-		m_email = email;
-		m_hogar = hogar;
+		this.m_flags.Muerto = false;
+		this.m_flags.Escondido = false;
+		this.m_reputacion.asesinoRep = 0;
+		this.m_reputacion.bandidoRep = 0;
+		this.m_reputacion.burguesRep = 0;
+		this.m_reputacion.ladronRep = 0;
+		this.m_reputacion.nobleRep = 1000;
+		this.m_reputacion.plebeRep = 30;
+		this.clazz = clazz;
+		this.m_raza = raza;
+		this.m_genero = genero;
+		this.m_email = email;
+		this.m_hogar = hogar;
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		// if (!atributosValidos()) {
 		// enviarError("Atributos invalidos.");
@@ -4113,26 +4106,26 @@ public class Player extends AbstractCharacter {
 		inicializarAtributos(raza);
 		// m_estads.setSkills(skills);
 
-		m_estads.SkillPts = 10;
+		this.m_estads.SkillPts = 10;
 
-		m_password = clave;
-		m_infoChar.setDir(Heading.SOUTH);
-		m_infoChar.cuerpoYCabeza(raza, genero);
-		m_infoChar.m_arma = NingunArma;
-		m_infoChar.m_escudo = NingunEscudo;
-		m_infoChar.m_casco = NingunCasco;
-		m_origChar = new CharInfo(m_infoChar);
+		this.m_password = clave;
+		this.m_infoChar.setDir(Heading.SOUTH);
+		this.m_infoChar.cuerpoYCabeza(raza, genero);
+		this.m_infoChar.m_arma = NingunArma;
+		this.m_infoChar.m_escudo = NingunEscudo;
+		this.m_infoChar.m_casco = NingunCasco;
+		this.m_origChar = new CharInfo(m_infoChar);
 
-		m_estads.inicializarEstads(clase);
+		this.m_estads.inicializarEstads(clazz);
 		// Inicializar hechizos:
-		if (clase.esMagica()) {
+		if (clazz.clazz().esMagica()) {
 			m_spells.setSpell(1, HECHIZO_DARDO_MAGICO);
 		}
 		// ???????????????? INVENTARIO ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
-		m_inv.clear();
-		m_inv.setObjeto(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100, false));
-		m_inv.setObjeto(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100, false));
-		m_inv.setArma(3, new InventoryObject(DAGA_NEWBIES, 1, true));
+		this.m_inv.clear();
+		this.m_inv.setObjeto(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100, false));
+		this.m_inv.setObjeto(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100, false));
+		this.m_inv.setArma(3, new InventoryObject(DAGA_NEWBIES, 1, true));
 		switch (raza) {
 		case RAZA_HUMANO:
 			m_inv.setArmadura(4, new InventoryObject(VESTIMENTAS_COMUNES_NEWBIES_1, 1, true));
@@ -4887,13 +4880,15 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void refreshPk() {
-		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 1, getTagsDesc());
+		// FIXME
+//		Map mapa = server.getMapa(m_pos.map);
+//		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 1, getTagsDesc());
 	}
 
 	public void refreshCiu() {
-		Map mapa = server.getMapa(m_pos.map);
-		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 0, getTagsDesc());
+		// FIXME
+//		Map mapa = server.getMapa(m_pos.map);
+//		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 0, getTagsDesc());
 	}
 
 	public void cerrarUsuario() {
@@ -4968,7 +4963,7 @@ public class Player extends AbstractCharacter {
 		if (usuario == null) {
 			return;
 		}
-		enviarMensaje("Pj: " + usuario.getNick() + " Clase: " + usuario.m_clase.getName(), FontType.FONTTYPE_INFOBOLD);
+		enviarMensaje("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz.clazz().getName(), FontType.FONTTYPE_INFOBOLD);
 		enviarMensaje("CiudadanosMatados: " + usuario.getFaccion().CiudadanosMatados + " CriminalesMatados: "
 				+ usuario.getFaccion().CriminalesMatados + " UsuariosMatados: " + usuario.getEstads().usuariosMatados,
 				FontType.FONTTYPE_INFO);
@@ -5169,7 +5164,7 @@ public class Player extends AbstractCharacter {
 	 * @return valor del skill efectivo
 	 */
 	public double skillHerreriaEfectivo() {
-		return this.m_estads.userSkills[Skill.SKILL_Herreria] / this.m_clase.modHerreria();
+		return this.m_estads.userSkills[Skill.SKILL_Herreria] / this.clazz.clazz().modHerreria();
 	}
 	
 	/**
@@ -5177,7 +5172,7 @@ public class Player extends AbstractCharacter {
 	 * @return valor del skill efectivo
 	 */
 	public double skillCarpinteriaEfectivo() {
-		return this.m_estads.userSkills[Skill.SKILL_Carpinteria] / this.m_clase.modCarpinteria();
+		return this.m_estads.userSkills[Skill.SKILL_Carpinteria] / this.clazz.clazz().modCarpinteria();
 	}
 	
 	public void agregarHechizo(int slot) {

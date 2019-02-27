@@ -33,22 +33,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of hunter character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class HunterClass extends CharClass {
+public class HunterClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected HunterClass() {
+    HunterClass() {
         this.name = "CAZADOR";
-    }
-    
-    private static HunterClass instance = null;
-    
-    public static HunterClass getInstance() {
-        if (instance == null) {
-			instance = new HunterClass();
-		}
-        return instance;
     }
     
     @Override

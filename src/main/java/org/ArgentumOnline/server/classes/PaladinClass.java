@@ -33,22 +33,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Character of the paladin character.
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
-public class PaladinClass extends CharClass {
+public class PaladinClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected PaladinClass() {
+    PaladinClass() {
         this.name = "PALADIN";
-    }
-    
-    private static PaladinClass instance = null;
-    
-    public static PaladinClass getInstance() {
-        if (instance == null) {
-			instance = new PaladinClass();
-		}
-        return instance;
     }
     
     @Override

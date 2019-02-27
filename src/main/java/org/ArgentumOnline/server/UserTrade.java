@@ -27,7 +27,7 @@ package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.protocol.UserCommerceEndResponse;
 import org.ArgentumOnline.server.util.FontType;
 
 /**
@@ -58,7 +58,7 @@ public class UserTrade {
 		}
 		this.acepto = true;
 		if (!this.acepto) {
-			client.enviarMensaje("El otro usuario aun no ha aceptado tu oferta.", FontType.TALK);
+			client.enviarMensaje("El otro usuario aun no ha aceptado tu oferta.", FontType.FONTTYPE_TALK);
 			return;
 		}
 		boolean terminarAhora = false;
@@ -67,14 +67,14 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			obj1_objid = Constants.OBJ_ORO;
 			if (this.cant > client.m_estads.getGold()) {
-				client.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				client.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		} else {
 			obj1_cant = this.cant;
 			obj1_objid = client.m_inv.getObjeto(this.objeto).objid;
 			if (obj1_cant > client.m_inv.getObjeto(this.objeto).cant) {
-				client.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				client.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		}
@@ -84,14 +84,14 @@ public class UserTrade {
 		if (this.objeto == Constants.FLAGORO) {
 			obj2_objid = Constants.OBJ_ORO;
 			if (this.cant > targetClient.m_estads.getGold()) {
-				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		} else {
 			obj2_cant = this.cant;
 			obj2_objid = targetClient.m_inv.getObjeto(this.objeto).objid;
 			if (obj2_cant > targetClient.m_inv.getObjeto(this.objeto).cant) {
-				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		}
@@ -150,7 +150,7 @@ public class UserTrade {
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == client.getId()) {
 			Player targetClient = client.server.getClientById(this.destUsu);
-			targetClient.enviarMensaje(client.m_nick + " ha dejado de comerciar con vos.", FontType.TALK);
+			targetClient.enviarMensaje(client.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
 			if (targetClient != null) {
 				targetClient.m_comUsu.finComerciarUsu(targetClient);
 			}
@@ -164,7 +164,7 @@ public class UserTrade {
 		this.destUsu = 0;
 		this.objeto = 0;
 		client.m_flags.Comerciando = false;
-		client.enviar(ServerPacketID.UserCommerceEnd);
+		client.enviar(new UserCommerceEndResponse());
 	}
 
 	public void doRechazarComerciarUsuario(Player client) {
@@ -172,10 +172,10 @@ public class UserTrade {
 		// Rechazar el cambio
 		if (this.destUsu > 0) {
 			Player targetClient = client.server.getClientById(this.destUsu);
-			targetClient.enviarMensaje(client.m_nick + " ha rechazado tu oferta.", FontType.TALK);
+			targetClient.enviarMensaje(client.m_nick + " ha rechazado tu oferta.", FontType.FONTTYPE_TALK);
 			finComerciarUsu(targetClient);
 		}
-		client.enviarMensaje("Has rechazado la oferta del otro usuario.", FontType.TALK);
+		client.enviarMensaje("Has rechazado la oferta del otro usuario.", FontType.FONTTYPE_TALK);
 		finComerciarUsu(client);
 	}
 
@@ -202,18 +202,18 @@ public class UserTrade {
 		if (slot == Constants.FLAGORO) {
 			// oro de la billetera
 			if (cant > client.m_estads.getGold()) {
-				client.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				client.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				return;
 			}
 		} else {
 			// objeto del inventario
 			if (cant > client.m_inv.getObjeto(slot).cant) {
-				client.enviarMensaje("No tienes esa cantidad.", FontType.TALK);
+				client.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				return;
 			}
 		}
 		if (this.objeto > 0) {
-			client.enviarMensaje("No puedes cambiar tu oferta.", FontType.TALK);
+			client.enviarMensaje("No puedes cambiar tu oferta.", FontType.FONTTYPE_TALK);
 			return;
 		}
 		this.objeto = slot;
@@ -225,7 +225,7 @@ public class UserTrade {
 		if (this.acepto) {
 			// NO NO NO vos te estas pasando de listo...
 			this.acepto = false;
-			targetClient.enviarMensaje(client.m_nick + " ha cambiado su oferta.", FontType.TALK);
+			targetClient.enviarMensaje(client.m_nick + " ha cambiado su oferta.", FontType.FONTTYPE_TALK);
 		}
 		// Es la ofrenda de respuesta :)
 		targetClient.m_comUsu.recibirObjetoTransaccion(targetClient);

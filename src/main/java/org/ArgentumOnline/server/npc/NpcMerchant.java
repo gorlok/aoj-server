@@ -1,11 +1,11 @@
 package org.ArgentumOnline.server.npc;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.inventory.InventoryObject;
-import org.ArgentumOnline.server.net.ServerPacketID;
+import org.ArgentumOnline.server.protocol.ChangeNPCInventorySlotResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 
@@ -61,7 +61,7 @@ public class NpcMerchant extends Npc {
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
-        for (int i = 1; i <= this.m_inv.size(); i++) {
+        for (byte i = 1; i <= this.m_inv.size(); i++) {
         	
             if (this.m_inv.getObjeto(i).objid > 0) {
             	
@@ -69,8 +69,8 @@ public class NpcMerchant extends Npc {
                 ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
-                cliente.enviar(ServerPacketID.ChangeNPCInventorySlot, 
-                		(byte) i, 
+                cliente.enviar(new ChangeNPCInventorySlotResponse( 
+                		i, 
                 		info.Nombre, 
                 		(short) this.m_inv.getObjeto(i).cant, 
                 		((int) val),
@@ -79,10 +79,10 @@ public class NpcMerchant extends Npc {
                 		(byte) info.ObjType,
                 		info.MaxHIT, 
                 		info.MinHIT, 
-                		info.MaxDef);
-
+                		info.MaxDef));
             } else {
-                cliente.enviar(ServerPacketID.ChangeNPCInventorySlot, (byte) i, "Nada", (short) 0);
+                cliente.enviar(new ChangeNPCInventorySlotResponse(
+                		(byte) i, "Nada", (short) 0, 0, (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0));
             }
         }
     }

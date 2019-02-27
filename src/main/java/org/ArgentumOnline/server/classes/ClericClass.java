@@ -1,5 +1,5 @@
 /**
- * FishermanClass.java
+ * PriestClass.java
  *
  * Created on 12 de marzo de 2004, 23:18
  * 
@@ -29,58 +29,50 @@ import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.util.Util;
 
 /**
- * Class of the fisherman character.
- * @author  Pablo Fernando Lillia
+ * Class of priest or clergyman character.
+ * @author  gorlok
  */
-public class FishermanClass extends CharClass {
+public class ClericClass extends AbstractClazz {
     
     /** Creates a new instance of ClaseAsesino */
-    protected FishermanClass() {
-        this.name = "PESCADOR";
-    }
-    
-    private static FishermanClass instance = null;
-    
-    public static FishermanClass getInstance() {
-        if (instance == null) {
-			instance = new FishermanClass();
-		}
-        return instance;
+    ClericClass() {
+        this.name = "CLERIGO";
+        this.magic = true;
     }
     
     @Override
 	public double modificadorPoderAtaqueArmas() {
-        return 0.6;
-    }
-    
-    @Override
-	public double modificadorPoderAtaqueProyectiles() {
-        return 0.65;
-    }
-    
-    @Override
-	public double modicadorDañoClaseArmas() {
-        return 0.6;
-    }
-     
-    @Override
-	public double modicadorDañoClaseProyectiles() {
-        return 0.6;
-    }
-    
-    @Override
-	public double modEvasionDeEscudoClase() {
         return 0.7;
     }
     
     @Override
-	public double modNavegacion() {
-        return 1.2;
+	public double modificadorPoderAtaqueProyectiles() {
+        return 0.7;
     }
     
     @Override
-	public short getEsfuerzoPescar() {
-        return 1;
+	public double modicadorDañoClaseArmas() {
+        return 0.8;
+    }
+     
+    @Override
+	public double modicadorDañoClaseProyectiles() {
+        return 0.7;
+    }
+    
+    @Override
+	public double modEvasionDeEscudoClase() {
+        return 0.9;
+    }
+    
+    @Override
+	public double modDomar() {
+        return 7;
+    }
+    
+    @Override
+	public int getManaInicial(int atribInteligencia) {
+        return 50;
     }
     
     /** Incremento de salud al subir de nivel */
@@ -89,16 +81,22 @@ public class FishermanClass extends CharClass {
         return Util.Azar(4, estads.userAtributos[ATRIB_CONSTITUCION] / 2);
     }
     
+    /** Incremento de mana al subir de nivel */
+    @Override
+	protected int getMejoraMana(UserStats estads) {
+        return 2 * estads.userAtributos[ATRIB_INTELIGENCIA];
+    }
+    
     /** Incremento de stamina al subir de nivel */
     @Override
 	protected int getMejoraStamina() {
-        return 15 + AdicionalSTPescador;
+        return 15;
     }
     
     /** Incremento de golpe al subir de nivel */
     @Override
 	protected int getMejoraGolpe() {
-        return 1;
+        return 2;
     }
     
 }

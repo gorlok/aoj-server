@@ -30,22 +30,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the pirate class.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class PirateClass extends CharClass {
+public class PirateClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected PirateClass() {
+	PirateClass() {
         this.name = "PIRATA";
-    }
-    
-    private static PirateClass instance = null;
-    
-    public static PirateClass getInstance() {
-        if (instance == null) {
-			instance = new PirateClass();
-		}
-        return instance;
     }
     
     @Override

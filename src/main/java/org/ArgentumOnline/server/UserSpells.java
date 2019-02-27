@@ -25,21 +25,18 @@
  */
 package org.ArgentumOnline.server;
 
+import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
+
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.npc.Npc;
-
-//import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_CEGU;
-//import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_DUMB;
-//import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_NOVER;
-//import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_PARADOK;
-//import static org.ArgentumOnline.server.protocol.ClientMessage.MSG_SHS;
-
+import org.ArgentumOnline.server.protocol.ChangeSpellSlotResponse;
+import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 /**
  * @author Gorlok
@@ -94,11 +91,11 @@ public class UserSpells implements Constants {
 			return;
 		}
 		if (isSlotEmpty(slot)) {
-			client.enviar(ServerPacketID.ChangeSpellSlot, (byte) slot, (short) 0, "(Vacío)");
+			client.enviar(new ChangeSpellSlotResponse((byte) slot, (short) 0, "(Vacío)"));
 			return;
 		}
 		Spell spell = server.getHechizo(getSpell(slot));
-		client.enviar(ServerPacketID.ChangeSpellSlot, (byte) slot, (short) spell.getId(), spell.getName());
+		client.enviar(new ChangeSpellSlotResponse((byte) slot, (short) spell.getId(), spell.getName()));
 	}
 
 	public void sendMeSpellInfo(short slot) {
@@ -294,7 +291,7 @@ public class UserSpells implements Constants {
 				}
 				targetUser.m_flags.Paralizado = true;
 				targetUser.m_counters.Paralisis = IntervaloParalizado;
-				targetUser.enviar(ServerPacketID.ParalizeOK);
+				targetUser.enviar(new ParalizeOKResponse());
 				infoHechizo();
 				return true;
 			}
@@ -302,7 +299,7 @@ public class UserSpells implements Constants {
 		if (hechizo.RemoverParalisis == 1) {
 			if (targetUser.m_flags.Paralizado) {
 				targetUser.m_flags.Paralizado = false;
-				targetUser.enviar(ServerPacketID.ParalizeOK);
+				targetUser.enviar(new ParalizeOKResponse());
 				infoHechizo();
 				return true;
 			}
@@ -397,8 +394,7 @@ public class UserSpells implements Constants {
 				npc.paralizar();
 				return true;
 			}
-			client.enviarMensaje("El npc es inmune a este hechizo.",
-				FONTTYPE_FIGHT);
+			client.enviarMensaje("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
 		}
 		if (hechizo.RemoverParalisis == 1) {
 			if (npc.estaParalizado()) {

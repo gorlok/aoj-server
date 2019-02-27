@@ -452,19 +452,19 @@ public class Guild {
 
     public void computeVote(Player cliente, String vote) {
         if (!this.elections) {
-            cliente.enviarMensaje("Aun no es período de elecciones.", FontType.GUILD);
+            cliente.enviarMensaje("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
             return;
          }
          if (cliente.guildInfo().yaVoto()) {
-            cliente.enviarMensaje("Ya has votado!!! Solo se permite un voto por miembro.", FontType.GUILD);
+            cliente.enviarMensaje("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
             return;
          }
          if (!this.isMember(vote)) {
-            cliente.enviarMensaje("No hay ningún miembro con ese nombre.", FontType.GUILD);
+            cliente.enviarMensaje("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
             return;
          }
          this.ballotBox.addVote(vote);
          cliente.guildInfo().voto();
-         cliente.enviarMensaje("Tu voto ha sido contabilizado.", FontType.GUILD);
+         cliente.enviarMensaje("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
     }
 }

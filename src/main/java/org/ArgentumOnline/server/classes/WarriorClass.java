@@ -33,22 +33,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the warrior character.
- * @author  Pablo Fernando Lillia
+ * @author gorlok
  */
-public class WarriorClass extends CharClass {
+public class WarriorClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected WarriorClass() {
+    WarriorClass() {
         this.name = "GUERRERO";
-    }
-    
-    private static WarriorClass instance = null;
-    
-    public static WarriorClass getInstance() {
-        if (instance == null) {
-			instance = new WarriorClass();
-		}
-        return instance;
     }
     
     @Override

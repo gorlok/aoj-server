@@ -43,9 +43,12 @@ import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Heading;
-import org.ArgentumOnline.server.net.ServerPacketID;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
+import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
+import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
+import org.ArgentumOnline.server.protocol.CreateFXResponse;
 import org.ArgentumOnline.server.protocol.NPCSwingResponse;
+import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -165,10 +168,10 @@ public class Npc extends AbstractCharacter implements Constants {
     public short   m_domable   = 0;
     public short   m_oldMovement   = 0;
     public String  m_attackedBy = "";
-    public short   m_snd1 = 0; // Sonido ataque NPC
-    public short   m_snd2 = 0; // Sonido ataque exitoso NPC
-    public short   m_snd3 = 0; // Sonido muere NPC
-    public short   m_snd4 = 0; // ???
+    public byte   m_snd1 = 0; // Sonido ataque NPC
+    public byte   m_snd2 = 0; // Sonido ataque exitoso NPC
+    public byte   m_snd3 = 0; // Sonido muere NPC
+    public byte   m_snd4 = 0; // ???
     
     public NpcStats m_estads = new NpcStats();
     
@@ -748,7 +751,7 @@ public class Npc extends AbstractCharacter implements Constants {
             Map m = this.server.getMapa(pos.map);
             
             if (this.m_snd3 > 0) {
-            	m.enviarAlArea(pos.x, pos.y, ServerPacketID.PlayWave, (byte) this.m_snd3, cliente.pos().x, cliente.pos().y);
+            	m.enviarAlArea(pos.x, pos.y, new PlayWaveResponse((byte) this.m_snd3, cliente.pos().x, cliente.pos().y));
             }
             cliente.getFlags().TargetNpc = 0;
             cliente.getFlags().TargetNpcTipo = 0;
@@ -784,7 +787,9 @@ public class Npc extends AbstractCharacter implements Constants {
             cliente.checkUserLevel();
 
             //Agush: updateamos de ser necesario ;-)
-            if (cliente.esCriminal() != eraCrimi && eraCrimi == true) cliente.refreshCiu();
+            if (cliente.esCriminal() != eraCrimi && eraCrimi == true) {
+            	cliente.refreshCiu();
+            }
         }
         
         if (this.petUserOwner == null) {
@@ -830,7 +835,7 @@ public class Npc extends AbstractCharacter implements Constants {
             mapa.salir(this);
         }
         
-        mapa.enviarAlArea(this.m_pos.x,this.m_pos.y,ServerPacketID.CharacterRemove, this.getId());
+        mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new CharacterRemoveResponse(this.getId()));
         
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
@@ -942,11 +947,11 @@ public class Npc extends AbstractCharacter implements Constants {
         }
     }
     
-    public void enviarSonido(int sonido) {
+    public void enviarSonido(byte sonido) {
         Map mapa = this.server.getMapa(this.m_pos.map);
         // Sonido
         if (mapa != null) {
-			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) sonido, this.m_pos.x,this.m_pos.y);
+			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(sonido, this.m_pos.x, this.m_pos.y));
 		}
     }
     
@@ -1011,9 +1016,9 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, 
-        			ServerPacketID.ChatOverHead, texto, this.getId(), 
-        			Color.r(color), Color.g(color), Color.b(color));
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y,
+        			new ChatOverHeadResponse(texto, this.getId(), 
+        					Color.r(color), Color.g(color), Color.b(color)));
         }
     }
     
@@ -1027,16 +1032,7 @@ public class Npc extends AbstractCharacter implements Constants {
         Map mapa = this.server.getMapa(this.m_pos.map);
         if (mapa != null) {
             this.m_infoChar.setDir(dir);
-            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.CharacterChange, 
-            		this.getId(), 
-            		getInfoChar().getCuerpo(), 
-            		getInfoChar().getCabeza(), 
-            		getInfoChar().getDir(), 
-            		getInfoChar().getArma(), 
-            		getInfoChar().getEscudo(), 
-            		getInfoChar().getCasco(), 
-            		getInfoChar().m_fx, 
-            		getInfoChar().m_loops);
+            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, createCC());
         }
     }
     
@@ -1167,8 +1163,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1197,8 +1193,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1246,8 +1242,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1275,8 +1271,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1308,8 +1304,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1334,8 +1330,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     Npc npc = mapa.getNPC(x, y);
@@ -1520,12 +1516,12 @@ public class Npc extends AbstractCharacter implements Constants {
 		}
         this.m_flags.set(FLAG_PUEDE_ATACAR, false);
         if (this.m_snd1 > 0) {
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) this.m_snd1, this.m_pos.x,this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(this.m_snd1, this.m_pos.x,this.m_pos.y));
 		}
         if (cliente.npcImpacto(this)) {
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, this.m_pos.x,this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SND_IMPACTO, this.m_pos.x,this.m_pos.y));
             if (!cliente.estaNavegando()) {
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.CreateFX, cliente.getId(), FXSANGRE, (short) 0);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new CreateFXResponse(cliente.getId(), FXSANGRE, (short) 0));
 			}
             cliente.npcDaño(this);
             // ¿Puede envenenar?
@@ -1575,31 +1571,25 @@ public class Npc extends AbstractCharacter implements Constants {
         
         if (this.m_snd1 > 0) {
 			//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, this.m_snd1);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) this.m_snd1, this.m_pos.x, this.m_pos.y);
+        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(this.m_snd1, this.m_pos.x, this.m_pos.y));
 		}
         if (npcImpactoNpc(victima)) {
             if (victima.m_snd2 > 0) {
-			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, victima.m_snd2);
-            	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) victima.m_snd2, victima.m_pos.x, victima.m_pos.y);
+            	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(victima.m_snd2, victima.m_pos.x, victima.m_pos.y));
 			} else {
-			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SND_IMPACTO2);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y));
 			}
             if (this.petUserOwner != null) {
-			//	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SND_IMPACTO);
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, this.m_pos.x, this.m_pos.y);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SND_IMPACTO, this.m_pos.x, this.m_pos.y));
 			} else {
-			//	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SND_IMPACTO);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SND_IMPACTO, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SND_IMPACTO, victima.m_pos.x, victima.m_pos.y));
 			}
             npcDañoNpc(victima);
         } else {
             if (this.petUserOwner != null) {
-				//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, SOUND_SWING);
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, ServerPacketID.PlayWave, (byte) SOUND_SWING, this.m_pos.x, this.m_pos.y);
+            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SOUND_SWING, this.m_pos.x, this.m_pos.y));
 			} else {
-				//mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, MSG_TW, SOUND_SWING);
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, ServerPacketID.PlayWave, (byte) SOUND_SWING, victima.m_pos.x, victima.m_pos.y);
+				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SOUND_SWING, victima.m_pos.x, victima.m_pos.y));
 			}
         }
     }
@@ -1670,8 +1660,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (mapa == null) {
 			return;
 		}
-        for (short x = (short) (this.m_pos.x-10); x <= (short) (this.m_pos.x+10); x++) {
-            for (short y = (short) (this.m_pos.y-10); y <= (short) (this.m_pos.y+10); y++) {
+        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
+            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
                 MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
@@ -1788,10 +1778,10 @@ public class Npc extends AbstractCharacter implements Constants {
         this.m_flags.set(FLAG_AFECTA_PARALISIS, ini.getInt(section, "AfectaParalisis") == 1);
         this.m_flags.set(FLAG_GOLPE_EXACTO, ini.getInt(section, "GolpeExacto") == 1);
         
-        this.m_snd1  = ini.getShort(section, "Snd1");
-        this.m_snd2  = ini.getShort(section, "Snd2");
-        this.m_snd3  = ini.getShort(section, "Snd3");
-        this.m_snd4  = ini.getShort(section, "Snd4");
+        this.m_snd1  = (byte) ini.getShort(section, "Snd1");
+        this.m_snd2  = (byte) ini.getShort(section, "Snd2");
+        this.m_snd3  = (byte) ini.getShort(section, "Snd3");
+        this.m_snd4  = (byte) ini.getShort(section, "Snd4");
         
         //Spells
         this.m_nroSpells = (byte) ini.getInt(section, "LanzaSpells");

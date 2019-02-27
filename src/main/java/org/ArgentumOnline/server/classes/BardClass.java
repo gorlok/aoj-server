@@ -30,23 +30,13 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of bard character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class BardClass extends CharClass {
+public class BardClass extends AbstractClazz {
     
-    /** Creates a new instance */
-    protected BardClass() {
+    BardClass() {
         this.name = "BARDO";
         this.magic = true;
-    }
-    
-    private static BardClass instance = null;
-    
-    public static BardClass getInstance() {
-        if (instance == null) {
-			instance = new BardClass();
-		}
-        return instance;
     }
     
     @Override

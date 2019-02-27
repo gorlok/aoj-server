@@ -27,22 +27,12 @@ package org.ArgentumOnline.server.classes;
 
 /**
  * Class of carpenter character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class CarpenterClass extends CharClass {
+public class CarpenterClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected CarpenterClass() {
+    CarpenterClass() {
         this.name = "CARPINTERO";
-    }
-    
-    private static CarpenterClass instance = null;
-    
-    public static CarpenterClass getInstance() {
-        if (instance == null) {
-			instance = new CarpenterClass();
-		}
-        return instance;
     }
     
     @Override

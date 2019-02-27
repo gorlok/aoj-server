@@ -30,22 +30,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the miner character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class MinerClass extends CharClass {
+public class MinerClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected MinerClass() {
+    MinerClass() {
         this.name = "MINERO";
-    }
-    
-    private static MinerClass instance = null;
-    
-    public static MinerClass getInstance() {
-        if (instance == null) {
-			instance = new MinerClass();
-		}
-        return instance;
     }
     
     @Override

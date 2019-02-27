@@ -27,22 +27,12 @@ package org.ArgentumOnline.server.classes;
 
 /**
  * Class of the smith (ironworker) character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class BlacksmithClass extends CharClass {
+public class BlacksmithClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected BlacksmithClass() {
+    BlacksmithClass() {
         this.name = "HERRERO";
-    }
-    
-    private static BlacksmithClass instance = null;
-    
-    public static BlacksmithClass getInstance() {
-        if (instance == null) {
-			instance = new BlacksmithClass();
-		}
-        return instance;
     }
     
     @Override

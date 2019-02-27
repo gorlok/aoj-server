@@ -29,7 +29,7 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ArgentumOnline.server.classes.CharClass;
+import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
@@ -364,7 +364,7 @@ public class ObjectInfo implements Constants {
             !this.flags.get(FLAG_NOSECAE);
     }
 
-    public boolean clasePuedeUsarItem(CharClass clase) {
+    public boolean clasePuedeUsarItem(Clazz clase) {
         // Function ClasePuedeUsarItem(ByVal UserIndex As Integer, ByVal ObjIndex As Integer) As Boolean
         /*
         if (ClasesProhibidas[0] != null) {
@@ -376,7 +376,7 @@ public class ObjectInfo implements Constants {
         }
          */        
     	
-        return !this.clasesProhibidas.contains(clase.getName().toUpperCase());
+        return !this.clasesProhibidas.contains(clase.clazz().getName().toUpperCase());
     }
     
 

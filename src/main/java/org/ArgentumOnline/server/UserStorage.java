@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.classes.CharClassManager;
+import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.npc.Npc;
@@ -88,20 +88,20 @@ public class UserStorage {
 		user.getCounters().Pena = ini.getLong("COUNTERS", "Pena");
 		user.m_email = ini.getString("CONTACTO", "Email");
 		user.m_genero = (byte) ini.getShort("INIT", "Genero");
-		user.m_clase = CharClassManager.getInstance().getClase(ini.getString("INIT", "Clase").toUpperCase());
-		if (user.m_clase == null) {
+		user.clazz = Clazz.findByName(ini.getString("INIT", "Clase").toUpperCase());
+		if (user.clazz == null) {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
 		user.m_raza = (byte) ini.getShort("INIT", "Raza");
 		user.m_hogar = (byte) ini.getShort("INIT", "Hogar");
-		user.getInfoChar().m_dir = ini.getShort("INIT", "Heading");
+		user.getInfoChar().m_dir = (byte)ini.getShort("INIT", "Heading");
 
 		user.getOrigChar().m_cabeza = ini.getShort("INIT", "Head");
 		user.getOrigChar().m_cuerpo = ini.getShort("INIT", "Body");
 		user.getOrigChar().m_arma = ini.getShort("INIT", "Arma");
 		user.getOrigChar().m_escudo = ini.getShort("INIT", "Escudo");
 		user.getOrigChar().m_casco = ini.getShort("INIT", "Casco");
-		user.getOrigChar().m_dir = (short)Heading.SOUTH.ordinal();
+		user.getOrigChar().m_dir = (byte)(short)Heading.SOUTH.ordinal();
 
 		user.m_banned_by = ini.getString("BAN", "BannedBy");
 		user.m_banned_reason = ini.getString("BAN", "Reason");
@@ -305,7 +305,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Genero", user.m_genero);
 			ini.setValue("INIT", "Raza", user.m_raza);
 			ini.setValue("INIT", "Hogar", user.m_hogar);
-			ini.setValue("INIT", "Clase", user.getClase().getName());
+			ini.setValue("INIT", "Clase", user.getClazz().clazz().getName());
 			ini.setValue("INIT", "Password", user.m_password);
 			ini.setValue("INIT", "Desc", user.m_desc);
 			ini.setValue("INIT", "Heading", user.getInfoChar().m_dir);

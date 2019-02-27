@@ -33,21 +33,15 @@ import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 
-
 /**
- * Abstract class base of all character clases. 
+ * Abstract class base of character classes. 
  *
  * @author gorlok
  */
-public abstract class CharClass implements Constants {
+public abstract class AbstractClazz implements Constants {
     
     protected String name = null;
     protected boolean magic = false;
-    
-    /** Creates a new instance of Clase */
-    protected CharClass() {
-    	//
-    }
     
     @Override
 	public int hashCode() {

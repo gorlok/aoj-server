@@ -83,12 +83,12 @@ public class UserFlags {
     
     public short TargetObj = 0;// Obj señalado
     public short TargetObjMap = 0;
-    public short TargetObjX = 0;
-    public short TargetObjY = 0;
+    public byte TargetObjX = 0;
+    public byte TargetObjY = 0;
     
     public short TargetMap = 0;
-    public short TargetX = 0;
-    public short TargetY = 0;
+    public byte TargetX = 0;
+    public byte TargetY = 0;
     
     public short TargetObjInvIndex = 0;
     public short TargetObjInvSlot = 0;

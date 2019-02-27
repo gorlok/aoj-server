@@ -33,23 +33,14 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the magician character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class WizardClass extends CharClass {
+public class MagueClass extends AbstractClazz {
     
     /** Creates a new instance of ClaseAsesino */
-    protected WizardClass() {
+    MagueClass() {
         this.name = "MAGO";
         this.magic = true;
-    }
-    
-    private static WizardClass instance = null;
-    
-    public static WizardClass getInstance() {
-        if (instance == null) {
-			instance = new WizardClass();
-		}
-        return instance;
     }
     
     @Override

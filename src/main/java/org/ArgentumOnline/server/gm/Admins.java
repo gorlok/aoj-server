@@ -199,11 +199,11 @@ public class Admins {
 			return;
 		}
 		bannedIPs.add(ip);
-		server.enviarMensajeAAdmins(admin.getNick() + " Baneo la IP " + ip, FONTTYPE_FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " Baneo la IP " + ip, FontType.FONTTYPE_FIGHT);
 		if (usuario != null) {
 			server.logBan(usuario.getNick(), admin.getNick(), "Ban por IP desde Nick");
-			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
-			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
+			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 			// Ponemos el flag de ban a 1
 			usuario.getFlags().Ban = true;
 			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
@@ -521,7 +521,7 @@ public class Admins {
 		admin.enviarMensaje("El ip de " + userName + " es " + usuario.getIP(), FontType.FONTTYPE_INFO);
 	}
 
-	public void doCrearTeleport(Player admin, short dest_mapa, short dest_x, short dest_y) {
+	public void doCrearTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
 		Map mapa = server.getMapa(admin.pos().map);
@@ -529,8 +529,8 @@ public class Admins {
 			return;
 		}
 		// Se creara el Teleport una celda arriba de la posicion del GM.
-		short x = admin.pos().x;
-		short y = (short) (admin.pos().y - 1);
+		byte x = admin.pos().x;
+		byte y = (byte) (admin.pos().y - 1);
 		if (mapa.hayObjeto(x, y)) {
 			admin.enviarMensaje("Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
 					FontType.FONTTYPE_WARNING);
@@ -563,8 +563,8 @@ public class Admins {
 			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		short x = admin.getFlags().TargetX;
-		short y = admin.getFlags().TargetY;
+		byte x = admin.getFlags().TargetX;
+		byte y = admin.getFlags().TargetY;
 		if (!mapa.hayTeleport(x, y)) {
 			admin.enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.FONTTYPE_WARNING);
 			return;
@@ -842,7 +842,7 @@ public class Admins {
 		// Comando /RMSG
 		Log.logGM(admin.getNick(), "Mensaje Broadcast: " + s);
 		if (!s.equals("")) {
-			// server.enviarATodos(MSG_TALK, s + FontType.TALK);
+			// server.enviarATodos(MSG_TALK, s + FontType.FONTTYPE_TALK);
 		}
 	}
 
@@ -878,15 +878,15 @@ public class Admins {
 		}
 		Log.logGM(admin.getNick(), "/BAN " + nombre + " por: " + motivo);
 		server.logBan(usuario.getNick(), admin.getNick(), motivo);
-		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
-		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FONTTYPE_FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 		// Ponemos el flag de ban a 1
 		usuario.getFlags().Ban = true;
 		if (usuario.esGM()) {
 			admin.getFlags().Ban = true;
 			admin.doSALIR();
 			server.enviarMensajeAAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
-					FONTTYPE_FIGHT);
+					FontType.FONTTYPE_FIGHT);
 		}
 		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
 		Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
@@ -1157,7 +1157,7 @@ public class Admins {
 		}
 	}
 
-	public void doTeleportUsuario(Player admin, String nombre, short m, short x, short y) {
+	public void doTeleportUsuario(Player admin, String nombre, short m, byte x, byte y) {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {

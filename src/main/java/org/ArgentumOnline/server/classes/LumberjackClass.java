@@ -1,5 +1,5 @@
 /**
- * PriestClass.java
+ * WoodcutterClass.java
  *
  * Created on 12 de marzo de 2004, 23:18
  * 
@@ -29,29 +29,18 @@ import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.util.Util;
 
 /**
- * Class of priest or clergyman character.
- * @author  Pablo Fernando Lillia
+ * Class of the woodcutter character.
+ * @author  gorlok
  */
-public class PriestClass extends CharClass {
+public class LumberjackClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected PriestClass() {
-        this.name = "CLERIGO";
-        this.magic = true;
-    }
-    
-    private static PriestClass instance = null;
-    
-    public static PriestClass getInstance() {
-        if (instance == null) {
-			instance = new PriestClass();
-		}
-        return instance;
+    LumberjackClass() {
+        this.name = "LEÑADOR";
     }
     
     @Override
 	public double modificadorPoderAtaqueArmas() {
-        return 0.7;
+        return 0.6;
     }
     
     @Override
@@ -61,7 +50,7 @@ public class PriestClass extends CharClass {
     
     @Override
 	public double modicadorDañoClaseArmas() {
-        return 0.8;
+        return 0.7;
     }
      
     @Override
@@ -71,17 +60,17 @@ public class PriestClass extends CharClass {
     
     @Override
 	public double modEvasionDeEscudoClase() {
-        return 0.9;
+        return 0.7;
     }
     
     @Override
-	public double modDomar() {
-        return 7;
+	public short getEsfuerzoTalar() {
+        return 2;
     }
     
     @Override
-	public int getManaInicial(int atribInteligencia) {
-        return 50;
+	public int getCantLeños() {
+        return Util.Azar(1, 5);
     }
     
     /** Incremento de salud al subir de nivel */
@@ -90,16 +79,10 @@ public class PriestClass extends CharClass {
         return Util.Azar(4, estads.userAtributos[ATRIB_CONSTITUCION] / 2);
     }
     
-    /** Incremento de mana al subir de nivel */
-    @Override
-	protected int getMejoraMana(UserStats estads) {
-        return 2 * estads.userAtributos[ATRIB_INTELIGENCIA];
-    }
-    
     /** Incremento de stamina al subir de nivel */
     @Override
 	protected int getMejoraStamina() {
-        return 15;
+        return 15 + AdicionalSTLeñador;
     }
     
     /** Incremento de golpe al subir de nivel */

@@ -1,5 +1,5 @@
 /**
- * WoodcutterClass.java
+ * FishermanClass.java
  *
  * Created on 12 de marzo de 2004, 23:18
  * 
@@ -29,23 +29,13 @@ import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.util.Util;
 
 /**
- * Class of the woodcutter character.
- * @author  Pablo Fernando Lillia
+ * Class of the fisherman character.
+ * @author  gorlok
  */
-public class WoodcutterClass extends CharClass {
+public class FisherClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected WoodcutterClass() {
-        this.name = "LEÑADOR";
-    }
-    
-    private static WoodcutterClass instance = null;
-    
-    public static WoodcutterClass getInstance() {
-        if (instance == null) {
-			instance = new WoodcutterClass();
-		}
-        return instance;
+    FisherClass() {
+        this.name = "PESCADOR";
     }
     
     @Override
@@ -55,17 +45,17 @@ public class WoodcutterClass extends CharClass {
     
     @Override
 	public double modificadorPoderAtaqueProyectiles() {
-        return 0.7;
+        return 0.65;
     }
     
     @Override
 	public double modicadorDañoClaseArmas() {
-        return 0.7;
+        return 0.6;
     }
      
     @Override
 	public double modicadorDañoClaseProyectiles() {
-        return 0.7;
+        return 0.6;
     }
     
     @Override
@@ -74,13 +64,13 @@ public class WoodcutterClass extends CharClass {
     }
     
     @Override
-	public short getEsfuerzoTalar() {
-        return 2;
+	public double modNavegacion() {
+        return 1.2;
     }
     
     @Override
-	public int getCantLeños() {
-        return Util.Azar(1, 5);
+	public short getEsfuerzoPescar() {
+        return 1;
     }
     
     /** Incremento de salud al subir de nivel */
@@ -92,13 +82,13 @@ public class WoodcutterClass extends CharClass {
     /** Incremento de stamina al subir de nivel */
     @Override
 	protected int getMejoraStamina() {
-        return 15 + AdicionalSTLeñador;
+        return 15 + AdicionalSTPescador;
     }
     
     /** Incremento de golpe al subir de nivel */
     @Override
 	protected int getMejoraGolpe() {
-        return 2;
+        return 1;
     }
     
 }

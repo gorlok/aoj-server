@@ -241,7 +241,7 @@ public class GameServer implements Constants {
 			    	.collect(Collectors.toList());
     	
     	users.forEach(c -> {
-	    	c.enviarMensaje("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.SERVER);
+	    	c.enviarMensaje("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.FONTTYPE_SERVER);
 	        c.doSALIR();
     	});
     }
@@ -882,7 +882,7 @@ public class GameServer implements Constants {
     public void enviarMensajeALosGMs(String msg) {
         for (Player cli: getClientes()) {
             if (cli.isLogged() && cli.esGM()) {
-                cli.enviarMensaje(msg, FontType.TALKGM);
+                cli.enviarMensaje(msg, FontType.FONTTYPE_GM);
             }
         }
     }
@@ -928,7 +928,7 @@ public class GameServer implements Constants {
     public void limpiarMundo(Player cli) {
     	int cant = limpiarMundo();
         if (cli != null) {
-			cli.enviarMensaje("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.SERVER);
+			cli.enviarMensaje("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.FONTTYPE_SERVER);
 		}
     }
     

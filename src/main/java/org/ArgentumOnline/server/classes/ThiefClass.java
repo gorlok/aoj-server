@@ -30,22 +30,12 @@ import org.ArgentumOnline.server.util.Util;
 
 /**
  * Class of the thief character.
- * @author  Pablo Fernando Lillia
+ * @author  gorlok
  */
-public class ThiefClass extends CharClass {
+public class ThiefClass extends AbstractClazz {
     
-    /** Creates a new instance of ClaseAsesino */
-    protected ThiefClass() {
+    ThiefClass() {
         this.name = "LADRON";
-    }
-    
-    private static ThiefClass instance = null;
-    
-    public static ThiefClass getInstance() {
-        if (instance == null) {
-			instance = new ThiefClass();
-		}
-        return instance;
     }
     
     @Override

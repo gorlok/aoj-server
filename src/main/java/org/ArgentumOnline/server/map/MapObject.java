@@ -35,11 +35,11 @@ public class MapObject {
 	
 	public short obj_ind;
 	public int obj_cant;
-	public short x;
-	public short y;
+	public byte x;
+	public byte y;
 
 	/** Creates a new instance of Objeto */
-	public MapObject(short objid, int cant, short x, short y) {
+	public MapObject(short objid, int cant, byte x, byte y) {
 		this.obj_ind = objid;
 		this.obj_cant = cant;
 		this.x = x;

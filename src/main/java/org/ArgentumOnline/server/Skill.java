@@ -6,31 +6,31 @@ package org.ArgentumOnline.server;
 public class Skill {
 	
 	//// SKILLS
-	public final static int MAX_SKILLS = 21;
-	public final static int MAX_SKILL_POINTS = 100;
+	public final static byte MAX_SKILLS = 21;
+	public final static byte MAX_SKILL_POINTS = 100;
     
-	public final static int SKILL_ZERO = 0; // En la posición cero del array de skills, se guardaban los skills points libres
-	public final static int SKILL_Suerte = 1;
-	public final static int SKILL_Magia = 2;
-	public final static int SKILL_Robar = 3;
-	public final static int SKILL_Tacticas = 4;
-	public final static int SKILL_Armas = 5;
-	public final static int SKILL_Meditar = 6;
-	public final static int SKILL_Apuñalar = 7;
-	public final static int SKILL_Ocultarse = 8;
-	public final static int SKILL_Supervivencia = 9;
-	public final static int SKILL_Talar = 10;
-	public final static int SKILL_Comerciar = 11;
-	public final static int SKILL_Defensa = 12;
-	public final static int SKILL_Pesca = 13;
-	public final static int SKILL_Mineria = 14;
-	public final static int SKILL_Carpinteria = 15;
-	public final static int SKILL_Herreria = 16;
-	public final static int SKILL_Liderazgo = 17;
-	public final static int SKILL_Domar = 18;
-	public final static int SKILL_Proyectiles = 19;
-	public final static int SKILL_Wresterling = 20;
-	public final static int SKILL_Navegacion = 21;
+	public final static byte SKILL_ZERO = 0; // En la posición cero del array de skills, se guardaban los skills points libres
+	public final static byte SKILL_Suerte = 1;
+	public final static byte SKILL_Magia = 2;
+	public final static byte SKILL_Robar = 3;
+	public final static byte SKILL_Tacticas = 4;
+	public final static byte SKILL_Armas = 5;
+	public final static byte SKILL_Meditar = 6;
+	public final static byte SKILL_Apuñalar = 7;
+	public final static byte SKILL_Ocultarse = 8;
+	public final static byte SKILL_Supervivencia = 9;
+	public final static byte SKILL_Talar = 10;
+	public final static byte SKILL_Comerciar = 11;
+	public final static byte SKILL_Defensa = 12;
+	public final static byte SKILL_Pesca = 13;
+	public final static byte SKILL_Mineria = 14;
+	public final static byte SKILL_Carpinteria = 15;
+	public final static byte SKILL_Herreria = 16;
+	public final static byte SKILL_Liderazgo = 17;
+	public final static byte SKILL_Domar = 18;
+	public final static byte SKILL_Proyectiles = 19;
+	public final static byte SKILL_Wresterling = 20;
+	public final static byte SKILL_Navegacion = 21;
     
     
     final static int SKILL_FundirMetal = 88;

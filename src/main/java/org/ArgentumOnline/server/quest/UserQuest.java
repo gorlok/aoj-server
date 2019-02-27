@@ -57,7 +57,7 @@ public class UserQuest {
             Quest quest  = this.server.getQuest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;
-                cliente.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FONTTYPE_FIGHT);
+                cliente.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);
             }
         }
     }

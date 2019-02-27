@@ -25,7 +25,7 @@ public class AreasAO implements Constants {
 	 * if a new user enter in the game, or change map,
 	 * we defined your area using a head that does not exists
 	 */
-	public final static short USER_NUEVO = heading_w + 1;
+	public final static byte USER_NUEVO = heading_w + 1;
 	
 	//JAO: aqu{i almacenamos una áreaID para cada POS del usuario
 	public int[][] areasInfo = new int[101][101];
@@ -153,10 +153,10 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(new AreaChangedResponse((byte)user.pos().x, (byte)user.pos().y));
+    	user.enviar(new AreaChangedResponse(user.pos().x, user.pos().y));
     	
-    	for(short x = (short) minX; x < maxX;x++) {
-    		for(short y = (short) minY; y < maxY; y++) {
+    	for(byte x = (byte) minX; x < maxX;x++) {
+    		for(byte y = (byte) minY; y < maxY; y++) {
     			
     			if (map.hayCliente(x, y)) {
     				tempInt = map.getCliente(x, y).getId();
@@ -180,11 +180,11 @@ public class AreasAO implements Constants {
     			if (map.hayObjeto(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
-    				user.enviar(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
+    				user.enviar(new ObjectCreateResponse((byte)x, (byte)y, (byte)obj.getInfo().GrhIndex));
     				
     				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
-    					short px = (short) (x - 1);
+    					byte px = (byte) (x - 1);
     					user.enviarBQ(x - 1, y, map.estaBloqueado(px, y));
     				}
     			}
@@ -205,7 +205,7 @@ public class AreasAO implements Constants {
 	/**
 	 * ídem que el método checkUpdateNeededUser, pero con Npcs
 	 */
-	public void checkUpdateNeededNpc(Npc npc, short dir) {
+	public void checkUpdateNeededNpc(Npc npc, byte dir) {
 		
 		if (npc.getArea() == areasInfo[npc.pos().x][npc.pos().y]) return;
 		
@@ -270,8 +270,8 @@ public class AreasAO implements Constants {
     	
     	if (map.getCantUsuarios() > 0) {
     		
-    		for(short x = (short) minX; x < maxX;x++) {
-        		for(short y = (short) minY; y < maxY; y++) {
+    		for(byte x = (byte) minX; x < maxX;x++) {
+        		for(byte y = (byte) minY; y < maxY; y++) {
         			if (map.hayCliente(x, y)) {
         				Player jao = map.getCliente(x, y);
         				
