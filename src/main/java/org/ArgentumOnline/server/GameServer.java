@@ -486,9 +486,9 @@ public class GameServer implements Constants {
         return this.spells.get(spell - 1);
     }
     
-    public Map getMapa(int mapa) {
-        if (mapa > 0 && mapa <= this.maps.size()) {
-			return this.maps.get(mapa - 1);
+    public Map getMap(int map) {
+        if (map > 0 && map <= this.maps.size()) {
+			return this.maps.get(map - 1);
 		}
 		return null;
     }
@@ -526,7 +526,7 @@ public class GameServer implements Constants {
                     } else {
                         // Usamos AI si hay algun user en el mapa
                         if (npc.pos().isValid()) {
-                            Map mapa = getMapa(npc.pos().map);
+                            Map mapa = getMap(npc.pos().map);
                             if (mapa != null && mapa.getCantUsuarios() > 0) {
                                 if (!npc.isStatic()) {
                                     npc.doAI();
@@ -715,7 +715,7 @@ public class GameServer implements Constants {
         this.segundos += 6;
         for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                Map mapa = getMapa(cli.pos().map);
+                Map mapa = getMap(cli.pos().map);
                 if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
                     cli.m_counters.PiqueteC++;
                     cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
@@ -938,7 +938,7 @@ public class GameServer implements Constants {
     private int limpiarMundo() {
     	int cant = 0;
     	for (MapPos pos: this.trashCollector) {
-            Map mapa = getMapa(pos.map);
+            Map mapa = getMap(pos.map);
             mapa.quitarObjeto(pos.x, pos.y);
             cant++;
         }

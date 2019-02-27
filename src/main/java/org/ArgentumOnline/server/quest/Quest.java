@@ -223,7 +223,7 @@ public class Quest implements Constants {
                         }
                         if (quest.DaObj) {
                             if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                Map mapa = this.server.getMapa(cliente.pos().map);
+                                Map mapa = this.server.getMap(cliente.pos().map);
                                 mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                             }
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
@@ -255,7 +255,7 @@ public class Quest implements Constants {
                             }
                             if (quest.DaObj) {
                                 if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                    Map mapa = this.server.getMapa(cliente.pos().map);
+                                    Map mapa = this.server.getMap(cliente.pos().map);
                                     mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                                 }
                                 cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
@@ -285,7 +285,7 @@ public class Quest implements Constants {
                                 }
                                 if (quest.DaObj) {
                                     if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                        Map mapa = this.server.getMapa(cliente.pos().map);
+                                        Map mapa = this.server.getMap(cliente.pos().map);
                                         mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                                     }
                                     cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
@@ -315,7 +315,7 @@ public class Quest implements Constants {
                                 }
                                 if (quest.DaObj) {
                                     if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                        Map mapa = this.server.getMapa(cliente.pos().map);
+                                        Map mapa = this.server.getMap(cliente.pos().map);
                                         mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                                     }
                                     cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
@@ -347,7 +347,7 @@ public class Quest implements Constants {
                         }
                         if (quest.DaObj) {
                             if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                Map mapa = this.server.getMapa(cliente.pos().map);
+                                Map mapa = this.server.getMap(cliente.pos().map);
                                 mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                             }
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
@@ -378,7 +378,7 @@ public class Quest implements Constants {
                         }
                         if (quest.DaObj) {
                             if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
-                                Map mapa = this.server.getMapa(cliente.pos().map);
+                                Map mapa = this.server.getMap(cliente.pos().map);
                                 mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
                             }
                             cliente.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());

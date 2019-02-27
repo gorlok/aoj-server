@@ -61,6 +61,7 @@ import org.ArgentumOnline.server.protocol.ChangeMapResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
+import org.ArgentumOnline.server.protocol.CommerceInitResponse;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.DiceRollResponse;
 import org.ArgentumOnline.server.protocol.DisconnectResponse;
@@ -76,9 +77,11 @@ import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.PosUpdateResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
+import org.ArgentumOnline.server.protocol.RestOKResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOnResponse;
 import org.ArgentumOnline.server.protocol.SendSkillsResponse;
+import org.ArgentumOnline.server.protocol.ShowBlacksmithFormResponse;
 import org.ArgentumOnline.server.protocol.UpdateHungerAndThirstResponse;
 import org.ArgentumOnline.server.protocol.UpdateUserStatsResponse;
 import org.ArgentumOnline.server.protocol.UserCharIndexInServerResponse;
@@ -475,7 +478,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doEnviarMiniEstadisticas() {
+	public void sendMiniStats() { // hazte fama y échate a dormir...
 		sendPacket(new MiniStatsResponse(
 				(int) m_faccion.CiudadanosMatados, 
 				(int) m_faccion.CriminalesMatados, 
@@ -484,9 +487,9 @@ public class Player extends AbstractCharacter {
 				clazz.id(), 
 				(int) m_counters.Pena));
 
-		sendUserAtributos();
-		enviarSkills();
-		doEnviarFama();
+		sendUserAttributes();
+		sendSkills();
+		sendFame();
 	}
 
 	public boolean isLogged() {
@@ -600,7 +603,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doDepositarOroBanco(int cant) {
+	public void bankDepositGold(int cant) {
 		// Comando /DEPOSITAR
 		// DEPOSITAR ORO EN EL BANCO
 		// ¿Esta el user muerto? Si es asi no puede comerciar
@@ -615,23 +618,27 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doRetirar(int cant) {
-		// Comando /RETIRAR
-		// Este comando tiene 2 usos:
-		// a) Retirar oro del banco.
-		// b) Salir de la facción Armada/Caos
-		// ¿Esta el user muerto? Si es asi no puede comerciar
+	public void bankExtractGold(int amount) {
+		// Comando /RETIRAR oro
 		if (!checkAlive()) {
 			return;
 		}
 		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
-		if (npc != null) {
-			if (npc.isBankCashier()) {
-				((NpcCashier)npc).retirarOroBanco(this, cant);
-			} else if (npc.esNoble()) {
-				retirarUsuarioFaccion(npc);
-			}
+		if (npc != null && npc.isBankCashier()) {
+			((NpcCashier)npc).retirarOroBanco(this, amount);
 		}
+	}
+	
+	public void doRetirarFaccion() {
+		// Comando /RETIRAR faccion
+		// Salir de la facción Armada/Caos
+		if (!checkAlive()) {
+			return;
+		}
+		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
+		if (npc != null && npc.esNoble()) {
+			retirarUsuarioFaccion(npc);
+	}
 	}
 
 	private void retirarUsuarioFaccion(Npc npc) {
@@ -657,7 +664,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doBoveda() {
+	public void bankStart() {
 		// Comando /BOVEDA
 		// Abrir bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
@@ -709,7 +716,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doDepositarBoveda(short slot, int cant) {
+	public void bankDepositItem(short slot, int amount) {
 		// Comando DEPO
 		// Depositar un item en la bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
@@ -721,14 +728,14 @@ public class Player extends AbstractCharacter {
 			// ¿El Npc puede comerciar?
 			if (npc.isBankCashier()) {
 				// User deposita el item del slot rdata
-				userDepositaItem(slot, cant);
+				userDepositaItem(slot, amount);
 			} else {
 				enviarMensaje("No te puedo ayudar. Busca al banquero.", FontType.FONTTYPE_INFO);
 			}
 		}
 	}
 
-	public void doRetirarBoveda(short slot, int cant) {
+	public void bankExtractItem(short slot, int cant) {
 		// Comando RETI
 		// Retirar un item de la bóveda del banco.
 		// ¿Esta el user muerto? Si es asi no puede comerciar
@@ -895,7 +902,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doFinBanco() {
+	public void bankEnd() {
 		// Comando FINBAN
 		// User sale del modo BANCO
 		m_flags.Comerciando = false;
@@ -950,7 +957,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -967,7 +974,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doComprar(byte slot, short cant) {
+	public void commerceBuy(byte slot, short amount) {
 		// Comando COMP
 		// ¿Esta el user muerto? Si es asi no puede comerciar
 		if (!checkAlive()) {
@@ -981,7 +988,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -991,11 +998,11 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (npc.getInv().isSlotValid(slot)) {
-			((NpcMerchant)npc).venderItem(this, slot, cant);
+			((NpcMerchant)npc).venderItem(this, slot, amount);
 		}
 	}
 
-	public void doVender(byte slot, short cant) {
+	public void commerceSell(byte slot, short amount) {
 		// Comando VEND
 		// ¿Esta el user muerto? Si es asi no puede comerciar
 		if (!checkAlive()) {
@@ -1009,7 +1016,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -1020,7 +1027,7 @@ public class Player extends AbstractCharacter {
 		}
 
 		if (npc.getInv().isSlotValid(slot)) {
-			((NpcMerchant)npc).comprarItem(this, slot, cant);
+			((NpcMerchant)npc).comprarItem(this, slot, amount);
 		}
 	}
 
@@ -1107,7 +1114,7 @@ public class Player extends AbstractCharacter {
 		return m_flags.Descuento;
 	}
 
-	public void doComerciar() {
+	public void commerceStart() {
 		// Comando /COMERCIAR
 		if (!checkAlive()) {
 			return;
@@ -1115,7 +1122,7 @@ public class Player extends AbstractCharacter {
 		if (esConsejero()) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -1130,20 +1137,14 @@ public class Player extends AbstractCharacter {
 			}
 			return;
 		}
-		// Iniciamos el comercio con el Npc
-		userIniciarComercioNPC(npc);
-		// ///// FIXME - TODO
-	}
-
-	public void userIniciarComercioNPC(Npc npc) {
+		
 		// Mandamos el Inventario
 		((NpcMerchant)npc).enviarNpcInv(this);
-		// Hacemos un Update del inventario del usuario
 		enviarInventario();
-		// Atcualizamos el dinero
 		sendUpdateUserStats();
-		// Mostramos la ventana pa' comerciar y ver ladear la osamenta. jajaja
-		// enviar(MSG_INITCOM);
+		
+		// Iniciamos el comercio con el Npc
+		sendPacket(new CommerceInitResponse());
 		m_flags.Comerciando = true;
 	}
 
@@ -1166,7 +1167,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -1194,7 +1195,7 @@ public class Player extends AbstractCharacter {
 		sendUserStatsTxt(this);
 	}
 
-	public void doEnviarFama() {
+	public void sendFame() {
 		sendPacket(new FameResponse((int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
 				(int) m_reputacion.burguesRep, (int) m_reputacion.ladronRep, (int) m_reputacion.nobleRep,
 				(int) m_reputacion.plebeRep, (int) m_reputacion.getPromedio()));
@@ -1263,7 +1264,7 @@ public class Player extends AbstractCharacter {
 
 	public void tratarDeHacerFogata() {
 		MapPos pos = MapPos.mxy(m_flags.TargetObjMap, m_flags.TargetObjX, m_flags.TargetObjY);
-		Map mapa = server.getMapa(pos.map);
+		Map mapa = server.getMap(pos.map);
 		if (!mapa.isLegalPos(pos, false)) {
 			return;
 		}
@@ -1294,7 +1295,7 @@ public class Player extends AbstractCharacter {
 		subirSkill(Skill.SKILL_Supervivencia);
 	}
 
-	public void usarItem(short slot) {
+	public void useItem(short slot) {
 		if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid == 0) {
 			return;
 		}
@@ -1315,7 +1316,7 @@ public class Player extends AbstractCharacter {
 		enviarObjetoInventario(m_flags.TargetObjInvSlot);
 		if (Util.Azar(1, info.MinSkill) <= 10) {
 			enviarMensaje("Has obtenido un lingote!!!", FontType.FONTTYPE_INFO);
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (m_inv.agregarItem(info.LingoteIndex, 1) < 1) {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(info.LingoteIndex, 1));
 			}
@@ -1344,10 +1345,10 @@ public class Player extends AbstractCharacter {
 	}
 
 	private double calcularPoderDomador() {
-		return m_estads.userAtributos[ATRIB_CARISMA] * (m_estads.userSkills[Skill.SKILL_Domar] / clazz.clazz().modDomar())
-				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
-				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3)
-				+ Util.Azar(1, m_estads.userAtributos[ATRIB_CARISMA] / 3);
+		return m_estads.userAttributes[ATRIB_CARISMA] * (m_estads.userSkills[Skill.SKILL_Domar] / clazz.clazz().modDomar())
+				+ Util.Azar(1, m_estads.userAttributes[ATRIB_CARISMA] / 3)
+				+ Util.Azar(1, m_estads.userAttributes[ATRIB_CARISMA] / 3)
+				+ Util.Azar(1, m_estads.userAttributes[ATRIB_CARISMA] / 3);
 	}
 
 	private void doDomar(Npc npc) {
@@ -1400,7 +1401,7 @@ public class Player extends AbstractCharacter {
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
-				Map mapa = server.getMapa(m_pos.map);
+				Map mapa = server.getMap(m_pos.map);
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarMensaje("¡Has extraido algunos minerales!", FontType.FONTTYPE_INFO);
@@ -1425,7 +1426,7 @@ public class Player extends AbstractCharacter {
 		if (suerteTalar()) {
 			int cant = clazz.clazz().getCantLeños();
 			short objid = Leña;
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
@@ -1483,7 +1484,7 @@ public class Player extends AbstractCharacter {
 			}
 			victima.m_inv.quitarUserInvItem(slot, cant);
 			victima.enviarObjetoInventario(slot);
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
@@ -1503,7 +1504,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doRobar(Player victima) {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (!mapa.esZonaSegura() || triggerZonaPelea(victima) != MapCell.TRIGGER6_AUSENTE) {
 			return;
 		}
@@ -1551,7 +1552,7 @@ public class Player extends AbstractCharacter {
 	private void doPescarCaña() {
 		m_estads.quitarStamina(clazz.clazz().getEsfuerzoPescar());
 		if (suertePescarCaña()) {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (m_inv.agregarItem(OBJ_PESCADO, 1) < 1) {
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(OBJ_PESCADO, 1));
 			}
@@ -1583,7 +1584,7 @@ public class Player extends AbstractCharacter {
 			short objid = (short) PESCADOS_RED[Util.Azar(1, PESCADOS_RED.length) - 1];
 			int agregados = m_inv.agregarItem(objid, cant);
 			if (agregados < cant) {
-				Map mapa = server.getMapa(m_pos.map);
+				Map mapa = server.getMap(m_pos.map);
 				mapa.tirarItemAlPiso(m_pos.x, m_pos.y, new InventoryObject(objid, cant - agregados));
 			}
 			enviarMensaje("¡Has pescado algunos peces!", FontType.FONTTYPE_INFO);
@@ -1593,20 +1594,20 @@ public class Player extends AbstractCharacter {
 		subirSkill(Skill.SKILL_Pesca);
 	}
 
-	public void doWLC(byte x, byte y, short tLong) {
+	public void workLeftClick(byte x, byte y, short skill) {
 		Pos pos = new Pos(x, y);
 		if (!isAlive() || m_flags.Descansar || m_flags.Meditando || !pos.isValid()) {
 			return;
 		}
 		if (!m_pos.inRangoVision(pos)) {
-			enviarPU();
+			sendPositionUpdate();
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		Player tu = null;
 		MapObject obj = null;
 
-		switch (tLong) {
+		switch (skill) {
 		case Skill.SKILL_Proyectiles:
 			// Nos aseguramos que este usando un arma de proyectiles
 			if (!m_inv.tieneArmaEquipada()) {
@@ -1839,7 +1840,7 @@ public class Player extends AbstractCharacter {
 				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
 					m_inv.enviarArmasConstruibles();
 					m_inv.enviarArmadurasConstruibles();
-					// enviar(MSG_SFH);
+					sendPacket(new ShowBlacksmithFormResponse());
 				} else {
 					enviarMensaje("Ahi no hay ningun yunque.", FontType.FONTTYPE_INFO);
 				}
@@ -1850,13 +1851,13 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doUK(int val) {
+	public void handleWork(int skill) {
 		// Comando UK
 		if (!checkAlive()) {
 			return;
 		}
 
-		switch (val) {
+		switch (skill) {
 		case Skill.SKILL_Robar:
 			sendPacket(new WorkRequestTargetResponse((byte)Skill.SKILL_Robar));
 			break;
@@ -1886,11 +1887,12 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doLanzarHechizo(short slot) {
+	public void castSpell(short slot) {
 		// Comando LH
 		// Fixed by agush
 		if (checkAlive()) {
 			m_spells.castSpell(slot);
+			handleWork(Skill.SKILL_Magia);
 		}
 	}
 
@@ -1920,7 +1922,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doMeditar() {
+	public void meditate() { // oooommmmmmm
 		// Comando /MEDITAR
 		if (!checkAlive("¡¡Estas muerto!! Solo los vivos pueden meditar.")) {
 			return;
@@ -2015,7 +2017,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendCharacterChange() {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -2036,7 +2038,7 @@ public class Player extends AbstractCharacter {
 		log.info(this + " haciendo doSALIR()");
 		boolean wasLogged = m_flags.UserLogged;
 		try {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa != null && mapa.estaCliente(this)) {
 				getUserPets().removeAll();
 				mapa.salir(this);
@@ -2064,20 +2066,21 @@ public class Player extends AbstractCharacter {
 		log.info(m_nick + ": Hasta la vista, baby!");
 	}
 
-	public void tirarDados() {
+	public void throwDices() { // and get lucky!
+		
 		// TODO dados fáciles, hacerlo configurable
-		m_estads.userAtributos[ATRIB_FUERZA] = (byte) (Util.Azar(16, 18));
-		m_estads.userAtributos[ATRIB_AGILIDAD] = (byte) (Util.Azar(16, 18));
-		m_estads.userAtributos[ATRIB_INTELIGENCIA] = (byte) (Util.Azar(16, 18));
-		m_estads.userAtributos[ATRIB_CARISMA] = (byte) (Util.Azar(16, 18));
-		m_estads.userAtributos[ATRIB_CONSTITUCION] = (byte) (Util.Azar(16, 18));
+		m_estads.userAttributes[ATRIB_FUERZA] = (byte) (Util.Azar(16, 18));
+		m_estads.userAttributes[ATRIB_AGILIDAD] = (byte) (Util.Azar(16, 18));
+		m_estads.userAttributes[ATRIB_INTELIGENCIA] = (byte) (Util.Azar(16, 18));
+		m_estads.userAttributes[ATRIB_CARISMA] = (byte) (Util.Azar(16, 18));
+		m_estads.userAttributes[ATRIB_CONSTITUCION] = (byte) (Util.Azar(16, 18));
 
 		sendPacket(new DiceRollResponse(
-				m_estads.userAtributos[ATRIB_FUERZA], 
-				m_estads.userAtributos[ATRIB_AGILIDAD],
-				m_estads.userAtributos[ATRIB_INTELIGENCIA], 
-				m_estads.userAtributos[ATRIB_CARISMA], 
-				m_estads.userAtributos[ATRIB_CONSTITUCION]));
+				m_estads.userAttributes[ATRIB_FUERZA], 
+				m_estads.userAttributes[ATRIB_AGILIDAD],
+				m_estads.userAttributes[ATRIB_INTELIGENCIA], 
+				m_estads.userAttributes[ATRIB_CARISMA], 
+				m_estads.userAttributes[ATRIB_CONSTITUCION]));
 	}
 
 	/**
@@ -2086,9 +2089,9 @@ public class Player extends AbstractCharacter {
 	 * @param x es la posición x del clic
 	 * @param y es la posición y del clic
 	 */
-	public void clicIzquierdoMapa(byte x, byte y) {
+	public void leftClickOnMap(byte x, byte y) {
 		// Clic con el botón primario del mouse
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			mapa.consultar(this, x, y);
 		}
@@ -2101,7 +2104,7 @@ public class Player extends AbstractCharacter {
 	 * @param y es la posición y del clic
 	 */
 	public void clicDerechoMapa(byte x, byte y) {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -2140,15 +2143,10 @@ public class Player extends AbstractCharacter {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
 					}
 				} else if ((npc = mapa.getNPC(x, y)) != null) {
+					m_flags.TargetNpc = npc.getId();
 					if (npc.comercia()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
-						if (!checkAlive()) {
-							return;
-						}
-						if (checkNpcNear(npc, DISTANCE_MERCHANT)) {
-							// Iniciamos el comercio con el Npc
-							userIniciarComercioNPC(npc);
-						}
+						commerceStart();
 					} else if (npc.isBankCashier()) {
 						if (!checkAlive()) {
 							return;
@@ -2180,14 +2178,14 @@ public class Player extends AbstractCharacter {
 	}
 
 	/** Comando para hablar (;) */
-	public void doHablar(String texto) {
+	public void talk(String texto) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
 		if (texto.length() > MAX_MENSAJE) {
 			texto = texto.substring(0, MAX_MENSAJE);
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			mapa.enviarAlArea(m_pos.x, m_pos.y,
 					new ChatOverHeadResponse(texto, getId(), 
@@ -2206,7 +2204,7 @@ public class Player extends AbstractCharacter {
 		if (s.length() > MAX_MENSAJE) {
 			s = s.substring(0, MAX_MENSAJE);
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
 			// COLOR_ROJO, s, getId());
@@ -2228,7 +2226,7 @@ public class Player extends AbstractCharacter {
 		if ((sep = s.indexOf(' ')) > -1 && (s.length() > sep + 1)) {
 			String nombre = s.substring(0, sep);
 			s = s.substring(sep + 1);
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa == null) {
 				return;
 			}
@@ -2255,7 +2253,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void mover(Heading dir) {
+	public void walk(Heading dir) {
 		try {
 			speedHackMover.check();
 		} catch (SpeedHackException e) {
@@ -2278,7 +2276,7 @@ public class Player extends AbstractCharacter {
 		}
 		if (m_flags.Descansar) {
 			m_flags.Descansar = false;
-			// enviar(MSG_DOK);
+			sendPacket(new RestOKResponse());
 			enviarMensaje("Has dejado de descansar.", FontType.FONTTYPE_INFO);
 		}
 		if (m_flags.Meditando) {
@@ -2302,7 +2300,8 @@ public class Player extends AbstractCharacter {
 		enviarMensaje("¡Has vuelto a ser visible!", FontType.FONTTYPE_INFO);
 		m_flags.Oculto = false;
 		m_flags.Invisible = false;
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
+		// FIXME
 		// m.enviarATodos(MSG_NOVER, m_id, 0);
 	}
 
@@ -2310,7 +2309,7 @@ public class Player extends AbstractCharacter {
 		MapPos new_pos = m_pos.copy();
 		new_pos.moveToDir(dir);
 
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -2325,11 +2324,11 @@ public class Player extends AbstractCharacter {
 				cambiarMapa(pos.map, pos.x, pos.y, conFX, enviarData);
 			}
 		} else {
-			enviarPU();
+			sendPositionUpdate();
 		}
 	}
 
-	public void doAtacar() {
+	public void atack() {
 		if (!checkAlive("¡¡No puedes atacar a nadie por estar muerto!!")) {
 			return;
 		}
@@ -2351,11 +2350,11 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void enviarPU() {
-		sendPacket(new PosUpdateResponse((byte)m_pos.x, (byte)m_pos.y));
+	public void sendPositionUpdate() {
+		sendPacket(new PosUpdateResponse(m_pos.x, m_pos.y));
 	}
 
-	public void agarrarObjeto() {
+	public void pickUpObject() {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden recoger objetos.")) {
 			return;
 		}
@@ -2366,7 +2365,7 @@ public class Player extends AbstractCharacter {
 		getObj();
 	}
 
-	public void tirarObjeto(byte slot, int cant) {
+	public void dropObject(byte slot, int cant) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden tirar objetos.")) {
 			return;
 		}
@@ -2391,7 +2390,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void getObj() {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		// ¿Hay algun obj?
 		if (mapa.hayObjeto(m_pos.x, m_pos.y)) {
 			// ¿Esta permitido agarrar este obj?
@@ -2416,13 +2415,11 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void equiparObjeto(short slot) {
+	public void equipItem(short slot) {
 		// Comando EQUI
 		if (!checkAlive("¡¡Estas muerto!! Solo puedes usar items cuando estas vivo.")) {
 			return;
 		}
-		// StringTokenizer st = new StringTokenizer(s, ",");
-		// short slot = Short.parseShort(st.nextToken());
 		if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
 			if (m_inv.getObjeto(slot) != null && m_inv.getObjeto(slot).objid > 0) {
 				m_inv.equipar(slot); // EquiparInvItem
@@ -2511,7 +2508,7 @@ public class Player extends AbstractCharacter {
 
 		short oldMap = m_pos.map;
 		if (m_pos.map != 0) {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa == null) {
 				return;
 			}
@@ -2520,7 +2517,7 @@ public class Player extends AbstractCharacter {
 				log.fatal(this + "> No pudo salir del mapa actual");
 			}
 		}
-		Map mapa = server.getMapa(nroMapa);
+		Map mapa = server.getMap(nroMapa);
 		if (mapa == null) {
 			return;
 		}
@@ -2535,7 +2532,7 @@ public class Player extends AbstractCharacter {
 		if (mapa.entrar(this, pos_libre.x, pos_libre.y)) {
 			m_pos = MapPos.mxy(nroMapa, pos_libre.x, pos_libre.y);
 
-			Map old = server.getMapa(oldMap);
+			Map old = server.getMap(oldMap);
 
 			// Agus: check if user pet exists
 			if (oldMap != nroMapa)
@@ -2556,7 +2553,7 @@ public class Player extends AbstractCharacter {
 			// m_flags.Privilegios);
 
 			mapa.areasData.loadUser(this);
-			enviarPU();
+			sendPositionUpdate();
 
 			// old.areasData.userDisconnect(this);
 			// old.areasData.resetUser(this);
@@ -2587,7 +2584,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarCFX(int fx, int val) {
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
 		if (m == null) {
 			return;
 		}
@@ -2602,7 +2599,7 @@ public class Player extends AbstractCharacter {
 		if (m_counters.Saliendo) {
 			return;
 		}
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
 		if (m == null) {
 			return;
 		}
@@ -2626,7 +2623,7 @@ public class Player extends AbstractCharacter {
 		// X As Integer, ByVal Y As Integer, Optional ByVal FX As Boolean =
 		// False)
 		// Quitar el dialogo
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			// mapa.enviarATodos(MSG_QDL, m_id);
 			// enviar(MSG_QTDL);
@@ -2634,7 +2631,7 @@ public class Player extends AbstractCharacter {
 		// Si el destino es distinto a la posición actual
 		if (m_pos.map != m || m_pos.x != x || m_pos.y != y) {
 			short oldMap = m_pos.map;
-			Map newMap = server.getMapa(m);
+			Map newMap = server.getMap(m);
 			MapPos pos_libre = newMap.closestLegalPosPj(x, y, m_flags.Navegando, esGM());
 			if (pos_libre == null) {
 				log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + m + " x=" + x + " y=" + y);
@@ -2648,7 +2645,7 @@ public class Player extends AbstractCharacter {
 				cambiarMapa(m, x, y, false, false);
 			}
 		}
-		enviarPU();
+		sendPositionUpdate();
 		// Call UpdateUserMap(UserIndex)
 		// Seguis invisible al pasar de mapa
 		if ((m_flags.Invisible || m_flags.Oculto) && !m_flags.AdminInvisible) {
@@ -2679,8 +2676,8 @@ public class Player extends AbstractCharacter {
 			} else if (pet.puedeReSpawn()) {
 				// Es una mascota domada que puede hacer respawn
 				
-				Map oldMapa = server.getMapa(pet.pos().map);
-				Map newMapa = server.getMapa(m_pos.map);
+				Map oldMapa = server.getMap(pet.pos().map);
+				Map newMapa = server.getMap(m_pos.map);
 				MapPos lugarLibre = newMapa.closestLegalPosNpc(m_pos.x, m_pos.y, pet.esAguaValida(), pet.esTierraInvalida(), true);
 				
 				if (lugarLibre != null) {
@@ -2726,7 +2723,7 @@ public class Player extends AbstractCharacter {
 
 	public void efectoLluvia() {
 		if (m_flags.UserLogged) {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y) && mapa.getZona() != ZONA_DUNGEON) {
 				int modifi = Util.porcentaje(m_estads.maxStamina, 3);
 				m_estads.quitarStamina(modifi);
@@ -2773,7 +2770,7 @@ public class Player extends AbstractCharacter {
 		// FIXME
 		m_flags.Oculto = true;
 		m_flags.Invisible = true;
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		// mapa.enviarATodos(MSG_NOVER, m_id, 1);
 		enviarMensaje("¡Te has escondido entre las sombras!", FontType.FONTTYPE_INFO);
 	}
@@ -2810,7 +2807,7 @@ public class Player extends AbstractCharacter {
 			texto = texto.substring(0, MAX_TEXTO_HABLAR);
 		}
 
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			mapa.enviarAlArea(pos().x, pos().y,
 					new ChatOverHeadResponse(texto, (short)quienId,
@@ -2961,7 +2958,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarSonido(int sonido) {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		// Sonido
 		if (mapa != null) {
 			mapa.enviarAlArea(m_pos.x, m_pos.y, new PlayWaveResponse((byte) sonido, m_pos.x, m_pos.y));
@@ -2972,7 +2969,7 @@ public class Player extends AbstractCharacter {
 		if (esGM()) {
 			return;
 		}
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		// Sonido
 		enviarSonido(SND_USERMUERTE);
 		// Quitar el dialogo del usuario muerto
@@ -3057,7 +3054,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void tirarTodo() {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS || esGM()) {
 			return;
 		}
@@ -3066,7 +3063,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void tirarTodosLosItems() {
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
 		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i) != null && m_inv.getObjeto(i).objid > 0) {
 				ObjectInfo info_obj = findObj(m_inv.getObjeto(i).objid);
@@ -3083,7 +3080,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void tirarTodosLosItemsNoNewbies() {
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
 		for (int i = 1; i <= m_inv.size(); i++) {
 			if (m_inv.getObjeto(i).objid > 0) {
 				ObjectInfo info_obj = findObj(m_inv.getObjeto(i).objid);
@@ -3103,7 +3100,7 @@ public class Player extends AbstractCharacter {
 		if (cantidad > MAX_INVENTORY_OBJS) {
 			return;
 		}
-		Map m = server.getMapa(m_pos.map);
+		Map m = server.getMap(m_pos.map);
 		// SI EL Npc TIENE ORO LO TIRAMOS
 		if ((cantidad > 0) && (cantidad <= m_estads.getGold())) {
 			while ((cantidad > 0) && (m_estads.getGold() > 0)) {
@@ -3127,7 +3124,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void volverCriminal() {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS) {
 			return;
 		}
@@ -3193,14 +3190,14 @@ public class Player extends AbstractCharacter {
 		return m_estads.ELV <= LimiteNewbie;
 	}
 
-	public void enviarSkills() {
+	public void sendSkills() {
 		// Comando ESKI
 		byte[] skills = new byte[Skill.MAX_SKILLS];
-		for (int i = 0; i <= Skill.MAX_SKILLS; i++) {
-			if (i == 0) {
-				skills[i] = (byte) m_estads.getSkillPoints();
+		for (int skill = 0; skill <= Skill.MAX_SKILLS; skill++) {
+			if (skill == 0) {
+				skills[skill] = (byte) m_estads.getSkillPoints();
 			} else {
-				skills[i] = m_estads.getUserSkill(i);
+				skills[skill] = m_estads.getUserSkill(skill);
 			}
 		}
 		sendPacket(new SendSkillsResponse(skills));
@@ -3271,7 +3268,7 @@ public class Player extends AbstractCharacter {
 			}
 			m_estads.ELU *= (m_estads.ELV < 11) ? 1.5 : ((m_estads.ELV < 25) ? 1.3 : 1.2);
 			clazz.clazz().subirEstads(this);
-			enviarSkills();
+			sendSkills();
 			enviarSubirNivel(pts);
 			sendUpdateUserStats();
 		}
@@ -3295,13 +3292,13 @@ public class Player extends AbstractCharacter {
 		if (m_estads.userSkills[Skill.SKILL_Tacticas] < 31) {
 			tmp = m_estads.userSkills[Skill.SKILL_Tacticas] * clazz.clazz().modificadorEvasion();
 		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 61) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + m_estads.userAtributos[ATRIB_AGILIDAD])
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + m_estads.userAttributes[ATRIB_AGILIDAD])
 					* clazz.clazz().modificadorEvasion();
 		} else if (m_estads.userSkills[Skill.SKILL_Tacticas] < 91) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (2 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorEvasion();
 		} else {
-			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Tacticas] + (3 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorEvasion();
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
@@ -3312,13 +3309,13 @@ public class Player extends AbstractCharacter {
 		if (m_estads.userSkills[Skill.SKILL_Armas] < 31) {
 			tmp = m_estads.userSkills[Skill.SKILL_Armas] * clazz.clazz().modificadorPoderAtaqueArmas();
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 61) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAtributos[ATRIB_AGILIDAD])
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + m_estads.userAttributes[ATRIB_AGILIDAD])
 					* clazz.clazz().modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Armas] < 91) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (2 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueArmas());
 		} else {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = ((m_estads.userSkills[Skill.SKILL_Armas] + (3 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueArmas());
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
@@ -3329,13 +3326,13 @@ public class Player extends AbstractCharacter {
 		if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 31) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Proyectiles] * clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 61) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAtributos[ATRIB_AGILIDAD])
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + m_estads.userAttributes[ATRIB_AGILIDAD])
 					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (m_estads.userSkills[Skill.SKILL_Proyectiles] < 91) {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (2 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		} else {
-			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = ((m_estads.userSkills[Skill.SKILL_Proyectiles] + (3 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueProyectiles());
 		}
 		return (tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0)));
@@ -3346,13 +3343,13 @@ public class Player extends AbstractCharacter {
 		if (m_estads.userSkills[Skill.SKILL_Wresterling] < 31) {
 			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] * clazz.clazz().modificadorPoderAtaqueArmas());
 		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 61) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + m_estads.userAtributos[ATRIB_AGILIDAD])
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + m_estads.userAttributes[ATRIB_AGILIDAD])
 					* clazz.clazz().modificadorPoderAtaqueArmas();
 		} else if (m_estads.userSkills[Skill.SKILL_Wresterling] < 91) {
-			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (2 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (2 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueArmas();
 		} else {
-			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (3 * m_estads.userAtributos[ATRIB_AGILIDAD]))
+			tmp = (m_estads.userSkills[Skill.SKILL_Wresterling] + (3 * m_estads.userAttributes[ATRIB_AGILIDAD]))
 					* clazz.clazz().modificadorPoderAtaqueArmas();
 		}
 		return tmp + (2.5 * Util.Max(m_estads.ELV - 12, 0));
@@ -3473,7 +3470,7 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		dañoUsuario = Util.Azar(m_estads.MinHIT, m_estads.MaxHIT);
-		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Util.Max(0, (m_estads.userAtributos[ATRIB_FUERZA] - 15)))
+		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Util.Max(0, (m_estads.userAttributes[ATRIB_FUERZA] - 15)))
 				+ dañoUsuario) * modifClase);
 		return (int) daño;
 	}
@@ -3635,7 +3632,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void cambiarSeguro() {
+	public void safeToggle() {
 		m_flags.Seguro = !m_flags.Seguro;
 	}
 
@@ -3681,7 +3678,7 @@ public class Player extends AbstractCharacter {
 				enviarSonido(SOUND_SWING);
 				return;
 			}
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			Player cliente = mapa.getCliente(attackPos.x, attackPos.y);
 			// Look for user
 			if (cliente != null) {
@@ -3943,7 +3940,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean puedeAtacar(Player victima) {
-		Map mapa = server.getMapa(victima.pos().map);
+		Map mapa = server.getMap(victima.pos().map);
 
 		if (!victima.isAlive()) {
 			enviarMensaje("No puedes atacar a un espíritu", FontType.FONTTYPE_INFO);
@@ -4073,7 +4070,7 @@ public class Player extends AbstractCharacter {
 		return false;
 	}
 
-	public void connectNewUser(String nick, String clave, short raza, short genero, Clazz clazz, String email, short hogar) {
+	public void connectNewUser(String nick, String clave, byte raza, byte genero, byte clazz, String email, byte hogar) {
 		// Validar los datos recibidos :-)
 		this.m_nick = nick;
 		if (!server.getAdmins().nombrePermitido(m_nick)) {
@@ -4096,11 +4093,12 @@ public class Player extends AbstractCharacter {
 		this.m_reputacion.ladronRep = 0;
 		this.m_reputacion.nobleRep = 1000;
 		this.m_reputacion.plebeRep = 30;
-		this.clazz = clazz;
+		this.clazz = Clazz.value(clazz);
 		this.m_raza = raza;
 		this.m_genero = genero;
 		this.m_email = email;
 		this.m_hogar = hogar;
+		// FIXME
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		// if (!atributosValidos()) {
 		// enviarError("Atributos invalidos.");
@@ -4108,8 +4106,6 @@ public class Player extends AbstractCharacter {
 		// }
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		inicializarAtributos(raza);
-		// m_estads.setSkills(skills);
-
 		this.m_estads.SkillPts = 10;
 
 		this.m_password = clave;
@@ -4120,9 +4116,9 @@ public class Player extends AbstractCharacter {
 		this.m_infoChar.m_casco = NingunCasco;
 		this.m_origChar = new CharInfo(m_infoChar);
 
-		this.m_estads.inicializarEstads(clazz);
+		this.m_estads.inicializarEstads(this.clazz);
 		// Inicializar hechizos:
-		if (clazz.clazz().esMagica()) {
+		if (this.clazz.clazz().esMagica()) {
 			m_spells.setSpell(1, HECHIZO_DARDO_MAGICO);
 		}
 		// ???????????????? INVENTARIO ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
@@ -4191,11 +4187,11 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void inicializarAtributos(int raza) {
-		m_estads.userAtributos[ATRIB_FUERZA] += modificadorFuerza[raza];
-		m_estads.userAtributos[ATRIB_AGILIDAD] += modificadorAgilidad[raza];
-		m_estads.userAtributos[ATRIB_INTELIGENCIA] += modificadorInteligencia[raza];
-		m_estads.userAtributos[ATRIB_CARISMA] += modificadorCarisma[raza];
-		m_estads.userAtributos[ATRIB_CONSTITUCION] += modificadorConstitucion[raza];
+		m_estads.userAttributes[ATRIB_FUERZA] += modificadorFuerza[raza];
+		m_estads.userAttributes[ATRIB_AGILIDAD] += modificadorAgilidad[raza];
+		m_estads.userAttributes[ATRIB_INTELIGENCIA] += modificadorInteligencia[raza];
+		m_estads.userAttributes[ATRIB_CARISMA] += modificadorCarisma[raza];
+		m_estads.userAttributes[ATRIB_CONSTITUCION] += modificadorConstitucion[raza];
 	}
 
 	public void enviarError(String msg) {
@@ -4284,6 +4280,7 @@ public class Player extends AbstractCharacter {
 					m_pos = server.getCiudadPos(CIUDAD_ULLA).copy();
 				}
 			} else {
+				// FIXME
 				// if (MapData(m_pos.Map, m_pos.x,
 				// m_pos.y).UserIndex <> 0 Then
 				// Call CloseSocket(MapData(m_pos.Map, m_pos.x,
@@ -4291,9 +4288,9 @@ public class Player extends AbstractCharacter {
 			}
 
 			// agush ;-)
-			if (server.estaLloviendo())
+			if (server.estaLloviendo()) {
 				sendPacket(new RainToggleResponse());
-
+			}
 			if (!esCriminal()) {
 				m_flags.Seguro = true;
 				sendPacket(new SafeModeOnResponse());
@@ -4303,12 +4300,9 @@ public class Player extends AbstractCharacter {
 			}
 
 			cambiarMapa(m_pos.map, m_pos.x, m_pos.y);
-
 			enviarIndiceUsuario();
-
-			m_flags.UserLogged = true;
-
 			enviarLogged();
+			m_flags.UserLogged = true;
 
 		} catch (Exception e) {
 			log.fatal("ERROR EN connectUser(), nick=" + m_nick, e);
@@ -4358,7 +4352,7 @@ public class Player extends AbstractCharacter {
 		if (m_counters.Frio < IntervaloFrio) {
 			m_counters.Frio++;
 		} else {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa.getTerreno() == TERRENO_NIEVE) {
 				enviarMensaje("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.FONTTYPE_INFO);
 				int modifi = Util.porcentaje(m_estads.MaxHP, 5);
@@ -4382,7 +4376,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean sanar(int intervalo) {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		short trigger = mapa.getTrigger(m_pos.x, m_pos.y);
 		if (trigger == 1 || trigger == 2 || trigger == 4) {
 			return false;
@@ -4478,13 +4472,13 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void sendUserAtributos() {
+	public void sendUserAttributes() {
 		sendPacket(new AttributesResponse(
-				m_estads.userAtributos[ATRIB_FUERZA], 
-				m_estads.userAtributos[ATRIB_AGILIDAD], 
-				m_estads.userAtributos[ATRIB_INTELIGENCIA],
-				m_estads.userAtributos[ATRIB_CARISMA], 
-				m_estads.userAtributos[ATRIB_CONSTITUCION]));		
+				m_estads.userAttributes[ATRIB_FUERZA], 
+				m_estads.userAttributes[ATRIB_AGILIDAD], 
+				m_estads.userAttributes[ATRIB_INTELIGENCIA],
+				m_estads.userAttributes[ATRIB_CARISMA], 
+				m_estads.userAttributes[ATRIB_CONSTITUCION]));		
 	}
 
 	public boolean aplicarHambreYSed() {
@@ -4521,7 +4515,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean recStamina(int intervalo) {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		short trigger = mapa.getTrigger(m_pos.x, m_pos.y);
 		if (trigger == 2 || trigger == 3 || trigger == 4) {
 			return false;
@@ -4584,7 +4578,7 @@ public class Player extends AbstractCharacter {
 				}
 				duracionPociones();
 				bEnviarAyS = aplicarHambreYSed();
-				Map mapa = server.getMapa(m_pos.map);
+				Map mapa = server.getMap(m_pos.map);
 				if (!(server.estaLloviendo() && mapa.intemperie(m_pos.x, m_pos.y))) {
 					if (!m_flags.Descansar && !m_flags.Hambre && !m_flags.Sed) {
 						// No esta descansando
@@ -4804,7 +4798,7 @@ public class Player extends AbstractCharacter {
 
 	private void herreroConstruirItem(short objid) {
 		if (puedeConstruir(objid) && puedeConstruirHerreria(objid)) {
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa == null) {
 				return;
 			}
@@ -4841,7 +4835,7 @@ public class Player extends AbstractCharacter {
 
 	private void carpinteroConstruirItem(short objid) {
 		ObjectInfo info = findObj(objid);
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
@@ -4862,7 +4856,7 @@ public class Player extends AbstractCharacter {
 	// ################################# FIN TRABAJO ###################################
 
 	public void volverCiudadano() {
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		if (mapa.getTrigger(m_pos.x, m_pos.y) == MapCell.TRIGGER_ARENA_DUELOS) {
 			return;
 		}
@@ -4878,7 +4872,7 @@ public class Player extends AbstractCharacter {
 
 	private void actualizarUserChar() {
 		// FIXME
-		Map mapa = server.getMapa(m_pos.map);
+		Map mapa = server.getMap(m_pos.map);
 		// mapa.enviarATodos(MSG_BP, getId());
 		// mapa.enviarATodos(MSG_CC, ccParams());
 	}
@@ -4895,17 +4889,14 @@ public class Player extends AbstractCharacter {
 //		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 0, getTagsDesc());
 	}
 
-	public void cerrarUsuario() {
+	public void quitGame() {
 		if (m_flags.UserLogged && !m_counters.Saliendo) {
 			m_counters.Saliendo = true;
-			Map mapa = server.getMapa(m_pos.map);
+			Map mapa = server.getMap(m_pos.map);
 			if (mapa != null && mapa.esZonaSegura()) {
 				m_counters.SalirCounter = 1; // 1 segundo.
 			} else {
-				m_counters.SalirCounter = IntervaloCerrarConexion; // Esto
-				// es
-				// 10
-				// segundos
+				m_counters.SalirCounter = IntervaloCerrarConexion; // 10 segundos
 				enviarMensaje("Cerrando... Se cerrará el juego en " + IntervaloCerrarConexion + " segundos...",
 						FontType.FONTTYPE_INFO);
 			}
@@ -5028,8 +5019,8 @@ public class Player extends AbstractCharacter {
 		if (victima == null) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}
-		int t1 = server.getMapa(m_pos.map).getTrigger(m_pos.x, m_pos.y);
-		int t2 = server.getMapa(victima.pos().map).getTrigger(victima.pos().x, victima.pos().y);
+		int t1 = server.getMap(m_pos.map).getTrigger(m_pos.x, m_pos.y);
+		int t2 = server.getMap(victima.pos().map).getTrigger(victima.pos().x, victima.pos().y);
 		if (t1 != MapCell.TRIGGER_ARENA_DUELOS && t2 != MapCell.TRIGGER_ARENA_DUELOS) {
 			return MapCell.TRIGGER6_AUSENTE;
 		}

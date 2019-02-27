@@ -268,7 +268,7 @@ public class UserInventory extends Inventory implements Constants {
                 cant = this.objs[slot-1].cant;
             }
             // Check objeto en el suelo
-            Map mapa = this.server.getMapa(this.dueño.pos().map);
+            Map mapa = this.server.getMap(this.dueño.pos().map);
             byte x = this.dueño.pos().x;
             byte y = this.dueño.pos().y;
             short objid = this.objs[slot-1].objid;
@@ -676,7 +676,7 @@ public class UserInventory extends Inventory implements Constants {
     }
 
     public void tirarTodosLosItemsNoNewbies() {
-        Map mapa = this.server.getMapa(this.dueño.pos().map);
+        Map mapa = this.server.getMap(this.dueño.pos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo obj = findObj(element.objid);
@@ -706,7 +706,7 @@ public class UserInventory extends Inventory implements Constants {
         }
         this.dueño.getFlags().TargetObjInvIndex = obj.objid;
         this.dueño.getFlags().TargetObjInvSlot = slot;
-        Map mapa = this.server.getMapa(this.dueño.pos().map);
+        Map mapa = this.server.getMap(this.dueño.pos().map);
         switch (info.ObjType) {
             case OBJTYPE_USEONCE:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {

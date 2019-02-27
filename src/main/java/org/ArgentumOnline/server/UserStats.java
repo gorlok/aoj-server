@@ -64,9 +64,9 @@ public class UserStats extends AbstractCharStats {
 	public int ELV = 0; // Nivel
 	public int ELU = 0; // Exp. Max del nivel
 
-	public byte userSkills[] = new byte[Skill.MAX_SKILLS + 1];
-	public byte userAtributos[] = new byte[NUMATRIBUTOS];
-	byte userAtributosBackup[] = new byte[NUMATRIBUTOS];
+	public byte userSkills[] = new byte[Skill.MAX_SKILLS + 1]; // 0-index don't use. FIXME
+	public byte userAttributes[] = new byte[NUMATRIBUTOS];
+	byte userAttributesBackup[] = new byte[NUMATRIBUTOS];
 
 	public int NPCsMuertos = 0;
 	public int SkillPts = 0; // Puntos de skills sin asignar.
@@ -103,7 +103,7 @@ public class UserStats extends AbstractCharStats {
 	}
 
 	public boolean atributosValidos() {
-		for (byte element : this.userAtributos) {
+		for (byte element : this.userAttributes) {
 			if (element > 18 || element < 1) {
 				return false;
 			}
@@ -112,14 +112,14 @@ public class UserStats extends AbstractCharStats {
 	}
 
 	public void saveAtributos() {
-		for (int i = 0; i < this.userAtributos.length; i++) {
-			this.userAtributosBackup[i] = this.userAtributos[i];
+		for (int i = 0; i < this.userAttributes.length; i++) {
+			this.userAttributesBackup[i] = this.userAttributes[i];
 		}
 	}
 
 	public void restoreAtributos() {
-		for (int i = 0; i < this.userAtributos.length; i++) {
-			this.userAtributos[i] = this.userAtributosBackup[i];
+		for (int i = 0; i < this.userAttributes.length; i++) {
+			this.userAttributes[i] = this.userAttributesBackup[i];
 		}
 	}
 
@@ -288,24 +288,24 @@ public class UserStats extends AbstractCharStats {
 	}
 
 	public void aumentarAtributo(int atributo, int cant) {
-		int tmp = this.userAtributos[atributo] + cant;
+		int tmp = this.userAttributes[atributo] + cant;
 		if (tmp > MAXATRIBUTOS) {
 			tmp = MAXATRIBUTOS;
 		}
-		this.userAtributos[atributo] = (byte) tmp;
+		this.userAttributes[atributo] = (byte) tmp;
 	}
 
 	public void disminuirAtributo(int atributo, int cant) {
-		int tmp = this.userAtributos[atributo] - cant;
+		int tmp = this.userAttributes[atributo] - cant;
 		if (tmp < MINATRIBUTOS) {
 			tmp = MINATRIBUTOS;
 		}
-		this.userAtributos[atributo] = (byte) tmp;
+		this.userAttributes[atributo] = (byte) tmp;
 	}
 
 	public Object[] getAtribs() {
 		List<Object> atribs = new LinkedList<Object>();
-		for (byte b : this.userAtributos) {
+		for (byte b : this.userAttributes) {
 			atribs.add(b);
 		}
 		return atribs.toArray();
@@ -313,10 +313,10 @@ public class UserStats extends AbstractCharStats {
 
 	public void inicializarEstads(Clazz clase) {
 		// Salud
-		this.MaxHP = 15 + Util.Azar(1, this.userAtributos[ATRIB_CONSTITUCION] / 3);
+		this.MaxHP = 15 + Util.Azar(1, this.userAttributes[ATRIB_CONSTITUCION] / 3);
 		this.MinHP = this.MaxHP;
 		// Stamina
-		int agil = Util.Azar(1, this.userAtributos[ATRIB_AGILIDAD] / 6);
+		int agil = Util.Azar(1, this.userAttributes[ATRIB_AGILIDAD] / 6);
 		if (agil < 2) {
 			agil = 2;
 		}
@@ -329,7 +329,7 @@ public class UserStats extends AbstractCharStats {
 		this.maxEaten = 100;
 		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.maxMana = clase.clazz().getManaInicial(this.userAtributos[ATRIB_INTELIGENCIA]);
+		this.maxMana = clase.clazz().getManaInicial(this.userAttributes[ATRIB_INTELIGENCIA]);
 		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;

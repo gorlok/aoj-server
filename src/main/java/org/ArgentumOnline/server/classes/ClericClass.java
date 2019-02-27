@@ -78,13 +78,13 @@ public class ClericClass extends AbstractClazz {
     /** Incremento de salud al subir de nivel */
     @Override
 	protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAtributos[ATRIB_CONSTITUCION] / 2);
+        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2);
     }
     
     /** Incremento de mana al subir de nivel */
     @Override
 	protected int getMejoraMana(UserStats estads) {
-        return 2 * estads.userAtributos[ATRIB_INTELIGENCIA];
+        return 2 * estads.userAttributes[ATRIB_INTELIGENCIA];
     }
     
     /** Incremento de stamina al subir de nivel */

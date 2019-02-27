@@ -760,7 +760,7 @@ public class UserSpells implements Constants {
 			return false;
 		}
 		
-		Map mapa = server.getMapa(client.pos().map);
+		Map mapa = server.getMap(client.pos().map);
 		
 		if (mapa.esZonaSegura()) {
 			client.enviarMensaje("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
@@ -838,7 +838,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void infoHechizo() {
-		Map mapa = server.getMapa(client.pos().map);
+		Map mapa = server.getMap(client.pos().map);
 		Spell hechizo = server.getHechizo(client.getFlags().Hechizo);
 		client.decirPalabrasMagicas(hechizo.PalabrasMagicas);
 		client.enviarSonido(hechizo.WAV);

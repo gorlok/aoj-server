@@ -184,8 +184,8 @@ public class UserStorage {
 
 	private void loadUserStats(IniFile ini) {
 		for (int i = 0; i < NUMATRIBUTOS; i++) {
-			user.getEstads().userAtributos[i] = (byte) ini.getShort("ATRIBUTOS", "AT" + (i + 1));
-			user.getEstads().userAtributosBackup[i] = user.getEstads().userAtributos[i];
+			user.getEstads().userAttributes[i] = (byte) ini.getShort("ATRIBUTOS", "AT" + (i + 1));
+			user.getEstads().userAttributesBackup[i] = user.getEstads().userAttributes[i];
 		}
 
 		for (int i = 1; i < user.getEstads().userSkills.length; i++) {
@@ -287,12 +287,12 @@ public class UserStorage {
 
 			// ¿Fueron modificados los atributos del usuario?
 			if (!user.getFlags().TomoPocion) {
-				for (int i = 0; i < user.getEstads().userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.getEstads().userAtributos[i]);
+				for (int i = 0; i < user.getEstads().userAttributes.length; i++) {
+					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.getEstads().userAttributes[i]);
 				}
 			} else {
-				for (int i = 0; i < user.getEstads().userAtributos.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.getEstads().userAtributosBackup[i]);
+				for (int i = 0; i < user.getEstads().userAttributes.length; i++) {
+					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.getEstads().userAttributesBackup[i]);
 				}
 			}
 

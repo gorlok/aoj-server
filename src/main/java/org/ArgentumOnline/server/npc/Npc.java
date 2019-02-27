@@ -242,7 +242,7 @@ public class Npc extends AbstractCharacter implements Constants {
     public static Npc spawnPetNpc(int nroNPC, MapPos orig, boolean bajoTecho, GameServer server) {
         // Crea un NPC del tipo NRONPC
         Npc npc = server.createNpc(nroNPC);
-        Map mapa = server.getMapa(orig.map);
+        Map mapa = server.getMap(orig.map);
         
         MapPos tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), bajoTecho);
         
@@ -263,7 +263,7 @@ public class Npc extends AbstractCharacter implements Constants {
         if (!conRespawn) {
 			npc.m_flags.set(FLAG_RESPAWN, false);
 		}
-        Map mapa = server.getMapa(orig.map);
+        Map mapa = server.getMap(orig.map);
         boolean hayPosValida = false;
         MapPos tmp;
         int i = 0;
@@ -748,7 +748,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	boolean eraCrimi = cliente.esCriminal();
         	
             MapPos pos = cliente.pos();
-            Map m = this.server.getMapa(pos.map);
+            Map m = this.server.getMap(pos.map);
             
             if (this.m_snd3 > 0) {
             	m.enviarAlArea(pos.x, pos.y, new PlayWaveResponse((byte) this.m_snd3, cliente.pos().x, cliente.pos().y));
@@ -812,7 +812,7 @@ public class Npc extends AbstractCharacter implements Constants {
         if (this.m_inv.size() > 0) {
             for (int i = 1; i <= this.m_inv.size(); i++) {
                 if (this.m_inv.getObjeto(i) != null && this.m_inv.getObjeto(i).objid > 0) {
-                    Map m = this.server.getMapa(this.m_pos.map);
+                    Map m = this.server.getMap(this.m_pos.map);
                     m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(this.m_inv.getObjeto(i).objid, this.m_inv.getObjeto(i).cant));
                 }
             }
@@ -825,7 +825,7 @@ public class Npc extends AbstractCharacter implements Constants {
     	}
     	    	
         this.m_flags.set(FLAG_NPC_ACTIVE, false);
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         
         //JAO: Nuevo sistema de áreas!! ;-)
         //mapa.areasData.dieNpc(this);
@@ -864,7 +864,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void enviarMP() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa != null) {
            // mapa.enviarATodos(serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
            // mapa.enviarAlArea(getPos().x, getPos().y, -1, serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
@@ -880,7 +880,7 @@ public class Npc extends AbstractCharacter implements Constants {
         this.m_lastMove = now;
         MapPos newPos = this.m_pos.copy();
         newPos.moveToDir(dir);
-        Map mapa = this.server.getMapa(newPos.map);
+        Map mapa = this.server.getMap(newPos.map);
         if (mapa == null) {
 			return;
 		}
@@ -948,7 +948,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void enviarSonido(byte sonido) {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         // Sonido
         if (mapa != null) {
 			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(sonido, this.m_pos.x, this.m_pos.y));
@@ -956,7 +956,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void enviarCFX(int fx, int val) {
-        Map m = this.server.getMapa(this.m_pos.map);
+        Map m = this.server.getMap(this.m_pos.map);
         if (m == null) {
 			return;
 		}
@@ -967,7 +967,7 @@ public class Npc extends AbstractCharacter implements Constants {
         // NPCTirarOro
         // SI EL NPC TIENE ORO LO TIRAMOS
         if (this.m_giveGLD > 0) {
-            Map m = this.server.getMapa(this.m_pos.map);
+            Map m = this.server.getMap(this.m_pos.map);
             m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(OBJ_ORO, this.m_giveGLD));
         }
     }
@@ -1005,7 +1005,7 @@ public class Npc extends AbstractCharacter implements Constants {
         //WorldPos pos = m_maestroUser.getPos();
         if (this.m_nroExpresiones > 0) {
             int azar = Util.Azar(0, this.m_nroExpresiones - 1);
-            Map mapa = this.server.getMapa(this.m_pos.map);
+            Map mapa = this.server.getMap(this.m_pos.map);
             if (mapa != null) {            
                 hablarAlArea(Color.COLOR_BLANCO, this.m_expresiones[azar]);
             }
@@ -1013,7 +1013,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void hablarAlArea(int color, String texto) {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa != null) {            
             //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
         	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y,
@@ -1029,7 +1029,7 @@ public class Npc extends AbstractCharacter implements Constants {
     
     public void cambiarDir(Heading dir) {
         // ChangeNPCChar
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa != null) {
             this.m_infoChar.setDir(dir);
             mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, createCC());
@@ -1049,7 +1049,7 @@ public class Npc extends AbstractCharacter implements Constants {
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
     
     private void guardiasAI() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1105,7 +1105,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void hostilMalvadoAI() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1132,7 +1132,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void hostilBuenoAI() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1159,7 +1159,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void irUsuarioCercano() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1189,7 +1189,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void seguirAgresor() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1238,7 +1238,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void persigueCriminal() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1267,7 +1267,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void persigueCiudadano() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1300,7 +1300,7 @@ public class Npc extends AbstractCharacter implements Constants {
         mover(dir);
         */
     	// FIXME: ESTO SE PUEDE OPTIMIZAR, YO SE QUIEN Y DONDE ESTA EL AMO !!!
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1326,7 +1326,7 @@ public class Npc extends AbstractCharacter implements Constants {
     private void aiNpcAtacaNpc() {
     	// FIXME: ESTO SE PUEDE OPTIMIZAR TERRIBLEMENTE, 
     	// CONOCIENDO m_targetNpc no tengo que buscarlo en el mapa ;)
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}
@@ -1501,7 +1501,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void npcAtacaUser(Player cliente) {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         // El npc puede atacar ???
         if (!puedeAtacar()) {
 			return;
@@ -1559,7 +1559,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void npcAtacaNpc(Npc victima) {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         
         // El npc puede atacar ???
         if (!puedeAtacar()) {
@@ -1656,7 +1656,7 @@ public class Npc extends AbstractCharacter implements Constants {
     
     private void calculatePath() {
         //private void pathFindingAI() {
-        Map mapa = this.server.getMapa(this.m_pos.map);
+        Map mapa = this.server.getMap(this.m_pos.map);
         if (mapa == null) {
 			return;
 		}

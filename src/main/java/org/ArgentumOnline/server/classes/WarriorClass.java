@@ -74,7 +74,7 @@ public class WarriorClass extends AbstractClazz {
     /** Incremento de salud al subir de nivel */
     @Override
 	protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAtributos[ATRIB_CONSTITUCION] / 2) + AdicionalHPGuerrero;
+        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2) + AdicionalHPGuerrero;
     }
     
     /** Incremento de stamina al subir de nivel */

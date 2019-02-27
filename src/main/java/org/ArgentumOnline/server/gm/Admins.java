@@ -420,7 +420,7 @@ public class Admins {
 	public void doUsuariosEnMapa(Player admin) {
 		// Comando /ONLINEMAP
 		// Devuelve la lista de usuarios en el mapa.
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -524,7 +524,7 @@ public class Admins {
 	public void doCrearTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -540,7 +540,7 @@ public class Admins {
 			admin.enviarMensaje("Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		Map mapaDest = server.getMapa(dest_mapa);
+		Map mapaDest = server.getMap(dest_mapa);
 		if (mapaDest == null || !Pos.isValid(dest_x, dest_y)) {
 			admin.enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.FONTTYPE_WARNING);
 			return;
@@ -558,7 +558,7 @@ public class Admins {
 			return;
 		}
 		short m = admin.getFlags().TargetMap;
-		Map mapa = server.getMapa(m);
+		Map mapa = server.getMap(m);
 		if (mapa == null) {
 			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
@@ -641,7 +641,7 @@ public class Admins {
 			return;
 		}
 		Log.logGM(admin.getNick(), "/MODMAPINFO " + accion + " " + valor);
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -713,7 +713,7 @@ public class Admins {
 		// Crear Item
 		// Comando /CI
 		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
 			if (mapa.hayObjeto(admin.pos().x, admin.pos().y)) {
 				return;
@@ -732,7 +732,7 @@ public class Admins {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
 		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
 			mapa.saveMapData();
 			admin.enviarMensaje("Mapa guardado.", FontType.FONTTYPE_INFO);
@@ -743,7 +743,7 @@ public class Admins {
 		// Destruir el objeto de la posición actual.
 		// Comando /DEST
 		Log.logGM(admin.getNick(), "/DEST " + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
 			mapa.quitarObjeto(admin.pos().x, admin.pos().y);
 		}
@@ -753,7 +753,7 @@ public class Admins {
 		// Bloquear la posición actual.
 		// Comando /BLOQ
 		Log.logGM(admin.getNick(), "/BLOQ " + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
 			if (mapa.estaBloqueado(admin.pos().x, admin.pos().y)) {
 				mapa.desbloquearTerreno(admin.pos().x, admin.pos().y);
@@ -769,7 +769,7 @@ public class Admins {
 		// Quita todos los NPCs del area.
 		// Comando /MASSKILL
 		Log.logGM(admin.getNick(), "/MASSKILL " + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
 			mapa.quitarNpcsArea(admin.pos().x, admin.pos().y);
 		}
@@ -779,7 +779,7 @@ public class Admins {
 		// Consulta o cambia el trigger de la posición actual.
 		// Comando /TRIGGER
 		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.pos());
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		mapa.setTrigger(admin.pos().x, admin.pos().y, t);
 		admin.enviarMensaje("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y) + 
 				" en " + admin.pos(), FontType.FONTTYPE_INFO);
@@ -788,7 +788,7 @@ public class Admins {
 	public void doMassDest(Player admin) {
 		// Quita todos los objetos del area
 		// Comando /MASSDEST
-		Map mapa = server.getMapa(admin.pos().map);
+		Map mapa = server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
@@ -1140,7 +1140,7 @@ public class Admins {
 			admin.enviarMensaje("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Map mapa = server.getMapa(m);
+		Map mapa = server.getMap(m);
 		if (mapa != null) {
 			Log.logGM(admin.getNick(), "Consultó el número de enemigos en el mapa, /NENE " + m);
 			// enviar(MSG_NENE, mapa.getCantHostiles());
@@ -1164,7 +1164,7 @@ public class Admins {
 			admin.enviarMensaje("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		Map mapa = server.getMapa(m);
+		Map mapa = server.getMap(m);
 		if (mapa == null) {
 			return;
 		}
