@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-27
+- nuevo networking, usando Netty. Se hizo un generador de código usando ANTLR4 para todos los paquetes del protocolo.
+
 ### 2019-02-22
 - nuevo protocolo, compatible con AO 0.12.3 (se usa el cliente gs-zone-v0.12.3 como referencia)
 

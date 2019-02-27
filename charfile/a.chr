@@ -1,5 +1,5 @@
 ;Archivo: charfile/a.chr
-;Ultima modificacion: 23/02/2019 20:49:45
+;Ultima modificacion: 27/02/2019 01:04:32
 
 [ATRIBUTOS]
 AT1=20
@@ -238,8 +238,8 @@ MAXHIT=18
 MAXHP=77
 MAXMAN=354
 MAXSTA=160
-MINAGU=80
-MINHAM=80
+MINAGU=70
+MINHAM=70
 MINHIT=17
 MINHP=77
 MINMAN=354
