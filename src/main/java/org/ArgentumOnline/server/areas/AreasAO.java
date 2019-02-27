@@ -153,7 +153,7 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	user.enviar(new AreaChangedResponse(user.pos().x, user.pos().y));
+    	user.sendPacket(new AreaChangedResponse(user.pos().x, user.pos().y));
     	
     	for(byte x = (byte) minX; x < maxX;x++) {
     		for(byte y = (byte) minY; y < maxY; y++) {
@@ -164,23 +164,23 @@ public class AreasAO implements Constants {
     			
     			if (user.getId() != tempInt && tempInt > 0) {
     				Player other = this.server.getClientById(tempInt);
-    				user.enviar(other.createCC());
-    				other.enviar(user.createCC());
+    				user.sendPacket(other.createCC());
+    				other.sendPacket(user.createCC());
     				
     			} else if (dir == USER_NUEVO) {
-    				user.enviar(user.createCC());
+    				user.sendPacket(user.createCC());
     			}
     			
     			}
     			
     			if (map.hayNpc(x, y)) {
-    				user.enviar(map.getNpc(x, y).createCC());
+    				user.sendPacket(map.getNpc(x, y).createCC());
     			}
     			
     			if (map.hayObjeto(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
-    				user.enviar(new ObjectCreateResponse((byte)x, (byte)y, (byte)obj.getInfo().GrhIndex));
+    				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
     				
     				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
@@ -275,7 +275,7 @@ public class AreasAO implements Constants {
         			if (map.hayCliente(x, y)) {
         				Player jao = map.getCliente(x, y);
         				
-        				jao.enviar(npc.createCC());
+        				jao.sendPacket(npc.createCC());
         				
         			}
         		}
@@ -347,7 +347,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					user.enviar(packet);
+					user.sendPacket(packet);
 				}
 			}
 		}
@@ -376,7 +376,7 @@ public class AreasAO implements Constants {
 				
 				if (gral.cardinality() > 0) {
 					if (user.getId() != id) {
-						user.enviar(packet);
+						user.sendPacket(packet);
 					}
 				}
 			}
@@ -405,7 +405,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					tempIndex.enviar(packet);
+					tempIndex.sendPacket(packet);
 				}
 			}
 		}
@@ -434,7 +434,7 @@ public class AreasAO implements Constants {
 				
 				if (gral.cardinality() > 0) {
 					if (tempIndex.getId() != user.getId()) {
-						tempIndex.enviar(packet);
+						tempIndex.sendPacket(packet);
 					}
 				}
 			}
@@ -462,7 +462,7 @@ public class AreasAO implements Constants {
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
 					
-					tempIndex.enviar(packet);
+					tempIndex.sendPacket(packet);
 				}
 			}
 		}

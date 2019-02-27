@@ -1529,7 +1529,7 @@ public class Npc extends AbstractCharacter implements Constants {
 				npcEnvenenarUser(cliente);
 			}
         } else {
-        	cliente.enviar(new NPCSwingResponse());
+        	cliente.sendPacket(new NPCSwingResponse());
         }
         // -----Tal vez suba los skills------
         cliente.subirSkill(Skill.SKILL_Tacticas);

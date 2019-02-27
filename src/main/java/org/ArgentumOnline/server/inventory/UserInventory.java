@@ -885,16 +885,16 @@ public class UserInventory extends Inventory implements Constants {
                     	
                     	break;
                     case OBJTYPE_RED_PESCA:
-                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Pesca));
+                        this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Pesca));
                         break;
                     case OBJTYPE_HACHA_LEÑADOR:
-                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Talar));
+                        this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Talar));
                         break;
                     case OBJTYPE_PIQUETE_MINERO:
-                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Mineria));
+                        this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Mineria));
                         break;
                     case OBJTYPE_MARTILLO_HERRERO:
-                        this.dueño.enviar(new WorkRequestTargetResponse(Skill.SKILL_Herreria));
+                        this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Herreria));
                         break;
                     case OBJTYPE_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();

@@ -91,11 +91,11 @@ public class UserSpells implements Constants {
 			return;
 		}
 		if (isSlotEmpty(slot)) {
-			client.enviar(new ChangeSpellSlotResponse((byte) slot, (short) 0, "(Vacío)"));
+			client.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) 0, "(Vacío)"));
 			return;
 		}
 		Spell spell = server.getHechizo(getSpell(slot));
-		client.enviar(new ChangeSpellSlotResponse((byte) slot, (short) spell.getId(), spell.getName()));
+		client.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) spell.getId(), spell.getName()));
 	}
 
 	public void sendMeSpellInfo(short slot) {
@@ -291,7 +291,7 @@ public class UserSpells implements Constants {
 				}
 				targetUser.m_flags.Paralizado = true;
 				targetUser.m_counters.Paralisis = IntervaloParalizado;
-				targetUser.enviar(new ParalizeOKResponse());
+				targetUser.sendPacket(new ParalizeOKResponse());
 				infoHechizo();
 				return true;
 			}
@@ -299,7 +299,7 @@ public class UserSpells implements Constants {
 		if (hechizo.RemoverParalisis == 1) {
 			if (targetUser.m_flags.Paralizado) {
 				targetUser.m_flags.Paralizado = false;
-				targetUser.enviar(new ParalizeOKResponse());
+				targetUser.sendPacket(new ParalizeOKResponse());
 				infoHechizo();
 				return true;
 			}

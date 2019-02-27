@@ -69,7 +69,7 @@ public class NpcMerchant extends Npc {
                 ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
-                cliente.enviar(new ChangeNPCInventorySlotResponse( 
+                cliente.sendPacket(new ChangeNPCInventorySlotResponse( 
                 		i, 
                 		info.Nombre, 
                 		(short) this.m_inv.getObjeto(i).cant, 
@@ -81,7 +81,7 @@ public class NpcMerchant extends Npc {
                 		info.MinHIT, 
                 		info.MaxDef));
             } else {
-                cliente.enviar(new ChangeNPCInventorySlotResponse(
+                cliente.sendPacket(new ChangeNPCInventorySlotResponse(
                 		(byte) i, "Nada", (short) 0, 0, (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0));
             }
         }

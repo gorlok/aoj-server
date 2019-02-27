@@ -111,7 +111,10 @@ public class GameServer implements Constants {
 
     private Feedback m_feedback = new Feedback();
     
+    private NettyServer ns;
+    
     private GameServer() {
+    	this.ns = new NettyServer(Constants.SERVER_PORT);
     	this.guildManager = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
@@ -255,7 +258,7 @@ public class GameServer implements Constants {
     
     public void shutdown() {
         this.m_corriendo = false;
-        // FIXME close Netty
+        this.ns.shutdown();
         System.out.println("=== Goodbye. Server closed. ===");
     }
     
@@ -649,7 +652,7 @@ public class GameServer implements Constants {
     public void enviarATodos(ServerPacket packet) {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                cli.enviar(packet);
+                cli.sendPacket(packet);
             }
         }
     }
@@ -657,7 +660,7 @@ public class GameServer implements Constants {
     public void enviarAAdmins(ServerPacket packet) {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
-                cli.enviar(packet);
+                cli.sendPacket(packet);
             }
         }
     }
@@ -1037,8 +1040,6 @@ public class GameServer implements Constants {
 
 	private static boolean loadBackup = false;
     public static void main(String[] args) {
-    	NettyServer ns = new NettyServer(Constants.SERVER_PORT);
-    	
         loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));
         if (loadBackup) {
 			log.info("Arrancando usando el backup");

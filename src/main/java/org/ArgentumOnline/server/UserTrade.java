@@ -164,7 +164,7 @@ public class UserTrade {
 		this.destUsu = 0;
 		this.objeto = 0;
 		client.m_flags.Comerciando = false;
-		client.enviar(new UserCommerceEndResponse());
+		client.sendPacket(new UserCommerceEndResponse());
 	}
 
 	public void doRechazarComerciarUsuario(Player client) {

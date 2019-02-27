@@ -94,6 +94,8 @@ import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.Gson;
+
 import io.netty.channel.Channel;
 
 /**
@@ -325,12 +327,14 @@ public class Player extends AbstractCharacter {
 	 * @param msg    is the message type to send.
 	 * @param params is the parameters of the message (optional).
 	 */
-	public synchronized void enviar(ServerPacket packet) {
+	public synchronized void sendPacket(ServerPacket packet) {
 		if (m_saliendo) {
 			return;
 		}
 		try {
 			log.debug(">>" + m_nick + ">> " + packet.id());
+			Gson gson = new Gson();
+			System.out.println(">>" + m_nick + ">> " + packet.id() + " " + gson.toJson(packet)); // FIXME remove this
 			this.channel.writeAndFlush(packet);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -472,7 +476,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void doEnviarMiniEstadisticas() {
-		enviar(new MiniStatsResponse(
+		sendPacket(new MiniStatsResponse(
 				(int) m_faccion.CiudadanosMatados, 
 				(int) m_faccion.CriminalesMatados, 
 				(int) m_estads.usuariosMatados, 
@@ -850,7 +854,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void updateVentanaBanco(short slot, int npc_inv) {
-		enviar(new BankOKResponse());
+		sendPacket(new BankOKResponse());
 	}
 
 	private void iniciarDeposito() {
@@ -859,7 +863,7 @@ public class Player extends AbstractCharacter {
 		// Actualizamos el dinero
 		sendUpdateUserStats();
 
-		enviar(new BankInitResponse());
+		sendPacket(new BankInitResponse());
 
 		m_flags.Comerciando = true;
 	}
@@ -870,7 +874,7 @@ public class Player extends AbstractCharacter {
 		if (m_bancoInv.getObjeto(slot).objid > 0) {
 			sendBanObj(slot, m_bancoInv.getObjeto(slot));
 		} else {
-			enviar(new ChangeBankSlotResponse((byte) slot, (short) 0, "", (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0, (int)0));
+			sendPacket(new ChangeBankSlotResponse((byte) slot, (short) 0, "", (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0, (int)0));
 		}
 	}
 
@@ -885,7 +889,7 @@ public class Player extends AbstractCharacter {
 	private void sendBanObj(short slot, InventoryObject obj_inv) {
 		if (obj_inv != null) {
 			ObjectInfo info = findObj(obj_inv.objid);
-			enviar(new ChangeBankSlotResponse(
+			sendPacket(new ChangeBankSlotResponse(
 					(byte) slot, info.ObjIndex, info.Nombre, (short)obj_inv.cant, info.GrhIndex,
 					(byte) info.ObjType, info.MaxHIT, info.MinHIT, info.MaxDef, info.Valor));
 		}
@@ -895,7 +899,7 @@ public class Player extends AbstractCharacter {
 		// Comando FINBAN
 		// User sale del modo BANCO
 		m_flags.Comerciando = false;
-		enviar(new BankEndResponse());
+		sendPacket(new BankEndResponse());
 	}
 
 	public void cambiarPasswd(String s) {
@@ -1081,7 +1085,7 @@ public class Player extends AbstractCharacter {
 
 	public void doFinComerciar() {
 		m_flags.Comerciando = false;
-		enviar(new CommerceEndResponse());
+		sendPacket(new CommerceEndResponse());
 	}
 
 	public double descuento() {
@@ -1191,7 +1195,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void doEnviarFama() {
-		enviar(new FameResponse((int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
+		sendPacket(new FameResponse((int) m_reputacion.asesinoRep, (int) m_reputacion.bandidoRep,
 				(int) m_reputacion.burguesRep, (int) m_reputacion.ladronRep, (int) m_reputacion.nobleRep,
 				(int) m_reputacion.plebeRep, (int) m_reputacion.getPromedio()));
 	}
@@ -1254,7 +1258,7 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		sendCharacterChange();
-		enviar(new NavigateToggleResponse());
+		sendPacket(new NavigateToggleResponse());
 	}
 
 	public void tratarDeHacerFogata() {
@@ -1854,13 +1858,13 @@ public class Player extends AbstractCharacter {
 
 		switch (val) {
 		case Skill.SKILL_Robar:
-			enviar(new WorkRequestTargetResponse((byte)Skill.SKILL_Robar));
+			sendPacket(new WorkRequestTargetResponse((byte)Skill.SKILL_Robar));
 			break;
 		case Skill.SKILL_Magia:
-			enviar(new WorkRequestTargetResponse((byte)Skill.SKILL_Magia));
+			sendPacket(new WorkRequestTargetResponse((byte)Skill.SKILL_Magia));
 			break;
 		case Skill.SKILL_Domar:
-			enviar(new WorkRequestTargetResponse((byte)Skill.SKILL_Domar));
+			sendPacket(new WorkRequestTargetResponse((byte)Skill.SKILL_Domar));
 			break;
 		case Skill.SKILL_Ocultarse:
 			if (m_flags.Navegando) {
@@ -1921,7 +1925,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive("¡¡Estas muerto!! Solo los vivos pueden meditar.")) {
 			return;
 		}
-		enviar(new MeditateToggleResponse());
+		sendPacket(new MeditateToggleResponse());
 		if (!m_flags.Meditando) {
 			enviarMensaje("Comienzas a meditar.", FontType.FONTTYPE_INFO);
 		} else {
@@ -2040,9 +2044,9 @@ public class Player extends AbstractCharacter {
 			if (wasLogged) {
 				if (server.estaLloviendo()) {
 					// Detener la lluvia.
-					enviar(new RainToggleResponse());
+					sendPacket(new RainToggleResponse());
 				}
-				enviar(new DisconnectResponse());
+				sendPacket(new DisconnectResponse());
 			}
 			m_flags.UserLogged = false;
 		} catch (Exception ex) {
@@ -2068,7 +2072,7 @@ public class Player extends AbstractCharacter {
 		m_estads.userAtributos[ATRIB_CARISMA] = (byte) (Util.Azar(16, 18));
 		m_estads.userAtributos[ATRIB_CONSTITUCION] = (byte) (Util.Azar(16, 18));
 
-		enviar(new DiceRollResponse(
+		sendPacket(new DiceRollResponse(
 				m_estads.userAtributos[ATRIB_FUERZA], 
 				m_estads.userAtributos[ATRIB_AGILIDAD],
 				m_estads.userAtributos[ATRIB_INTELIGENCIA], 
@@ -2279,7 +2283,7 @@ public class Player extends AbstractCharacter {
 		}
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(new MeditateToggleResponse());
+			sendPacket(new MeditateToggleResponse());
 			enviarMensaje("Dejas de meditar.", FontType.FONTTYPE_INFO);
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -2348,7 +2352,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarPU() {
-		enviar(new PosUpdateResponse((byte)m_pos.x, (byte)m_pos.y));
+		sendPacket(new PosUpdateResponse((byte)m_pos.x, (byte)m_pos.y));
 	}
 
 	public void agarrarObjeto() {
@@ -2442,7 +2446,7 @@ public class Player extends AbstractCharacter {
 		} else {
 			objInfo = ObjectInfo.EMPTY;
 		}
-		enviar(new ChangeInventorySlotResponse( 
+		sendPacket(new ChangeInventorySlotResponse( 
 				(byte) slot, 
 				inv.objid, 
 				objInfo.Nombre, 
@@ -2457,19 +2461,19 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void enviarIndiceUsuario() {
-		enviar(new UserCharIndexInServerResponse(getId()));
+		sendPacket(new UserCharIndexInServerResponse(getId()));
 	}
 
 	public void enviarMensaje(String msg, FontType fuente) {
-		enviar(new ConsoleMsgResponse(msg, fuente.id()));
+		sendPacket(new ConsoleMsgResponse(msg, fuente.id()));
 	}
 
 	public void enviarHabla(int color, String msg, short id) {
-		enviar(new ChatOverHeadResponse(msg, id, Color.r(color), Color.g(color), Color.b(color)));
+		sendPacket(new ChatOverHeadResponse(msg, id, Color.r(color), Color.g(color), Color.b(color)));
 	}
 
 	public void sendUpdateUserStats() {
-		enviar(new UpdateUserStatsResponse(
+		sendPacket(new UpdateUserStatsResponse(
 				(short) m_estads.MaxHP, 
 				(short) m_estads.MinHP,
 				(short) m_estads.maxMana, 
@@ -2483,7 +2487,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarEstadsHambreSed() {
-		enviar(new UpdateHungerAndThirstResponse(
+		sendPacket(new UpdateHungerAndThirstResponse(
 				(byte) m_estads.maxDrinked, 
 				(byte) m_estads.drinked, 
 				(byte) m_estads.maxEaten, 
@@ -2538,7 +2542,7 @@ public class Player extends AbstractCharacter {
 				petDelete();
 
 			if (enviarData) {
-				enviar(new ChangeMapResponse((short)nroMapa, (short)mapa.getVersion()));
+				sendPacket(new ChangeMapResponse((short)nroMapa, (short)mapa.getVersion()));
 			}
 
 			short crimi = 0;
@@ -2570,9 +2574,9 @@ public class Player extends AbstractCharacter {
 			// enviarIP();
 			if (enviarData) {
 				// Enviarme los m_clients del mapa, sin contarme a mi
-				// m.enviarClientes(this);
+				mapa.enviarClientes(this);
 				// Enviarme los objetos del mapa.
-				// m.enviarObjetos(this);
+				mapa.enviarObjetos(this);
 				// Enviarme las posiciones bloqueadas del mapa.
 				mapa.enviarBQs(this);
 			}
@@ -2737,7 +2741,7 @@ public class Player extends AbstractCharacter {
 			m_counters.Paralisis--;
 		} else {
 			m_flags.Paralizado = false;
-			enviar(new ParalizeOKResponse());
+			sendPacket(new ParalizeOKResponse());
 		}
 	}
 
@@ -2797,7 +2801,7 @@ public class Player extends AbstractCharacter {
 			getCounters().Paralisis = IntervaloParalizado;
 			enviarSonido(hechizo.WAV);
 			enviarCFX(hechizo.FXgrh, hechizo.loops);
-			enviar(new ParalizeOKResponse());
+			sendPacket(new ParalizeOKResponse());
 		}
 	}
 
@@ -2879,7 +2883,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void enviarCC() {
-		enviar(createCC());
+		sendPacket(createCC());
 	}
 
 	public CharacterCreateResponse createCC() {
@@ -2896,7 +2900,7 @@ public class Player extends AbstractCharacter {
 				m_infoChar.getFX(), 
 				(short) m_infoChar.m_loops,
 				m_nick + getClan(),
-				(byte) (this.esCriminal() ? 0 : 1),
+				(byte) (this.esCriminal() ? 1 : 0),
 				(byte)m_flags.Privilegios);
 	}
 
@@ -2907,11 +2911,11 @@ public class Player extends AbstractCharacter {
 	 */
 
 	private void enviarIP() {
-		enviar(new UserCharIndexInServerResponse(getId()));
+		sendPacket(new UserCharIndexInServerResponse(getId()));
 	}
 
 	private void enviarLogged() {
-		enviar(new LoggedMessageResponse());
+		sendPacket(new LoggedMessageResponse());
 	}
 
 	private void enviarCambioMapa(short mapa) {
@@ -2932,14 +2936,14 @@ public class Player extends AbstractCharacter {
 	public void enviarObjeto(int objId, int x, int y) {
 		short grhIndex = findObj(objId).GrhIndex;
 
-		enviar(new ObjectCreateResponse((byte)x, (byte)y, (short)grhIndex));
+		sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)grhIndex));
 	}
 
 	public void enviarBQ(int x, int y, boolean bloqueado) {
 		byte bq = 0;
 		if (bloqueado)
 			bq = 1;
-		enviar(new BlockPositionResponse((byte)x, (byte)y, (byte)bq));
+		sendPacket(new BlockPositionResponse((byte)x, (byte)y, (byte)bq));
 	}
 
 	public void cuerpoDesnudo() {
@@ -2990,7 +2994,7 @@ public class Player extends AbstractCharacter {
 		// <<<< Paralisis >>>>
 		if (m_flags.Paralizado) {
 			m_flags.Paralizado = false;
-			enviar(new ParalizeOKResponse());
+			sendPacket(new ParalizeOKResponse());
 		}
 		// <<<< Descansando >>>>
 		if (m_flags.Descansar) {
@@ -3000,7 +3004,7 @@ public class Player extends AbstractCharacter {
 		// <<<< Meditando >>>>
 		if (m_flags.Meditando) {
 			m_flags.Meditando = false;
-			enviar(new MeditateToggleResponse());
+			sendPacket(new MeditateToggleResponse());
 		}
 		// desequipar armadura
 		if (m_inv.tieneArmaduraEquipada()) {
@@ -3199,7 +3203,7 @@ public class Player extends AbstractCharacter {
 				skills[i] = m_estads.getUserSkill(i);
 			}
 		}
-		enviar(new SendSkillsResponse(skills));
+		sendPacket(new SendSkillsResponse(skills));
 	}
 
 	public void enviarSubirNivel(int pts) {
@@ -3486,11 +3490,11 @@ public class Player extends AbstractCharacter {
 		}
 		npc.getEstads().MinHP -= daño;
 		if (daño > 0) {
-			enviar(new UserHitNPCResponse(daño));
+			sendPacket(new UserHitNPCResponse(daño));
 			npc.calcularDarExp(this, daño);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(new UserSwingResponse());
+			sendPacket(new UserSwingResponse());
 		}
 		if (npc.getEstads().MinHP > 0) {
 			// Trata de apuñalar por la espalda al enemigo
@@ -3571,7 +3575,7 @@ public class Player extends AbstractCharacter {
 			}
 			break;
 		}
-		enviar(new NPCHitUserResponse(lugar, (short)daño));
+		sendPacket(new NPCHitUserResponse(lugar, (short)daño));
 		if (m_flags.Privilegios == 0) {
 			m_estads.MinHP -= daño;
 		}
@@ -3627,7 +3631,7 @@ public class Player extends AbstractCharacter {
 			userDañoNpc(npc);
 		} else {
 			enviarSonido(SOUND_SWING);
-			enviar(new UserSwingResponse());
+			sendPacket(new UserSwingResponse());
 		}
 	}
 
@@ -4196,7 +4200,7 @@ public class Player extends AbstractCharacter {
 
 	public void enviarError(String msg) {
 		log.warn("ERROR: " + msg);
-		enviar(new ErrorMsgResponse(msg));
+		sendPacket(new ErrorMsgResponse(msg));
 	}
 
 	public void connectUser(String nick, String passwd) {
@@ -4288,13 +4292,13 @@ public class Player extends AbstractCharacter {
 
 			// agush ;-)
 			if (server.estaLloviendo())
-				enviar(new RainToggleResponse());
+				sendPacket(new RainToggleResponse());
 
 			if (!esCriminal()) {
 				m_flags.Seguro = true;
-				enviar(new SafeModeOnResponse());
+				sendPacket(new SafeModeOnResponse());
 			} else {
-				enviar(new SafeModeOffResponse());
+				sendPacket(new SafeModeOffResponse());
 				m_flags.Seguro = false;
 			}
 
@@ -4422,7 +4426,7 @@ public class Player extends AbstractCharacter {
 		m_counters.IdleCount = 0;
 		if (m_estads.mana >= m_estads.maxMana) {
 			enviarMensaje("Has terminado de meditar.", FontType.FONTTYPE_INFO);
-			enviar(new MeditateToggleResponse());
+			sendPacket(new MeditateToggleResponse());
 			m_flags.Meditando = false;
 			m_infoChar.m_fx = 0;
 			m_infoChar.m_loops = 0;
@@ -4475,7 +4479,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendUserAtributos() {
-		enviar(new AttributesResponse(
+		sendPacket(new AttributesResponse(
 				m_estads.userAtributos[ATRIB_FUERZA], 
 				m_estads.userAtributos[ATRIB_AGILIDAD], 
 				m_estads.userAtributos[ATRIB_INTELIGENCIA],
