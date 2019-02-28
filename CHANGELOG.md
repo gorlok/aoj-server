@@ -4,6 +4,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 ## [SIN PUBLICAR]
 
 ### 2019-02-27
+- se manejan varios paquetes básicos del protocolo.
+
+### 2019-02-26
 - nuevo networking, usando Netty. Se hizo un generador de código usando ANTLR4 para todos los paquetes del protocolo.
 
 ### 2019-02-22

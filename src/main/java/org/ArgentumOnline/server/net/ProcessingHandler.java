@@ -21,8 +21,10 @@ import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
+import org.ArgentumOnline.server.protocol.WhisperRequest;
 import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
 import org.ArgentumOnline.server.protocol.WorkRequest;
+import org.ArgentumOnline.server.protocol.YellRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,6 +57,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case Talk:
 			handleTalk((TalkRequest)packet, player);
+			break;
+			
+		case Yell:
+			player.yell(((YellRequest)packet).chat);
+			break;
+			
+		case Whisper:
+			player.whisper(((WhisperRequest)packet).targetCharIndex, ((WhisperRequest)packet).chat);
 			break;
 
 		case LeftClick:

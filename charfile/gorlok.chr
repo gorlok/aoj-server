@@ -1,5 +1,5 @@
-;Archivo: pjs/gorlok.chr
-;Ultima modificacion: 17/02/2019 23:57:11
+;Archivo: charfile/gorlok.chr
+;Ultima modificacion: 27/02/2019 21:22:03
 
 [ATRIBUTOS]
 AT1=11
@@ -143,11 +143,11 @@ DESC=
 ESCUDO=1
 GENERO=0
 HEAD=104
-HEADING=4
+HEADING=3
 HOGAR=0
 LASTIP=192.168.0.186
 PASSWORD=a
-POSITION=34-34-38
+POSITION=34-34-36
 RAZA=1
 
 [INVENTORY]

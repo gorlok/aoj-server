@@ -16,10 +16,10 @@ public class Color {
     	return (byte) (color & COLOR_ROJO);
     }
     public static byte g(int color) {
-    	return (byte) ((color & COLOR_VERDE) >>2);
+    	return (byte) ((color & COLOR_VERDE) >> 8);
     }
     public static byte b(int color) {
-    	return (byte) ((color & COLOR_AZUL) >> 4);
+    	return (byte) ((color & COLOR_AZUL) >> 16);
     }
     
     public static int rgb(int r, int g, int b) {

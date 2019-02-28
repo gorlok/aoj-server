@@ -2178,78 +2178,81 @@ public class Player extends AbstractCharacter {
 	}
 
 	/** Comando para hablar (;) */
-	public void talk(String texto) {
+	public void talk(String text) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
-		if (texto.length() > MAX_MENSAJE) {
-			texto = texto.substring(0, MAX_MENSAJE);
+		if (text.length() > MAX_MENSAJE) {
+			text = text.substring(0, MAX_MENSAJE);
 		}
 		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
 			mapa.enviarAlArea(m_pos.x, m_pos.y,
-					new ChatOverHeadResponse(texto, getId(), 
+					new ChatOverHeadResponse(text, getId(), 
 							Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO)));
 		}
 		if (esConsejero()) {
-			Log.logGM(m_nick, "El consejero dijo: " + texto);
+			Log.logGM(m_nick, "El consejero dijo: " + text);
 		}
 	}
 
 	/** Comando para gritar (-) */
-	public void doGritar(String s) {
+	public void yell(String text) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
-		if (s.length() > MAX_MENSAJE) {
-			s = s.substring(0, MAX_MENSAJE);
+		if (text.length() > MAX_MENSAJE) {
+			text = text.substring(0, MAX_MENSAJE);
 		}
 		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
-			// mapa.enviarAlArea(m_pos.x, m_pos.y, MSG_TALK,
-			// COLOR_ROJO, s, getId());
+			mapa.enviarAlArea(m_pos.x, m_pos.y,
+				new ChatOverHeadResponse(text, getId(), 
+						Color.r(Color.COLOR_ROJO), Color.g(Color.COLOR_ROJO), Color.b(Color.COLOR_ROJO)));
 		}
 		if (esConsejero()) {
-			Log.logGM(m_nick, "El consejero gritó: " + s);
+			Log.logGM(m_nick, "El consejero gritó: " + text);
 		}
 	}
 
 	/** Comando para susurrarle al oido a un usuario (\) */
-	public void doSusurrar(String s) {
+	public void whisper(short targetIndex, String text) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
-		if (s.length() > MAX_MENSAJE) {
-			s = s.substring(0, MAX_MENSAJE);
+		if (text.length() > MAX_MENSAJE) {
+			text = text.substring(0, MAX_MENSAJE);
 		}
-		int sep;
-		if ((sep = s.indexOf(' ')) > -1 && (s.length() > sep + 1)) {
-			String nombre = s.substring(0, sep);
-			s = s.substring(sep + 1);
-			Map mapa = server.getMap(m_pos.map);
-			if (mapa == null) {
-				return;
-			}
-			Player usuario = server.getUsuario(nombre);
-			if (usuario != null) {
-				if (mapa.buscarEnElArea(m_pos.x, m_pos.y, usuario.getId()) == null) {
-					enviarMensaje("Estas muy lejos de " + nombre, FontType.FONTTYPE_INFO);
-				} else {
-					if (esConsejero()) {
-						Log.logGM(m_nick, "El consejero le susurró a " + nombre + ": " + s);
-					}
-					// usuario.enviarHabla(COLOR_AZUL, s, getId());
-					// enviarHabla(COLOR_AZUL, s, getId());
-					// if (!esGM() || esConsejero()) {
-					// mapa.enviarAlAreaAdminsNoConsejeros(m_pos.x,
-					// m_pos.y, MSG_TALK, COLOR_AMARILLO, "a "
-					// + usuario.getNick() + "> " + s, this
-					// .getId());
-					// }
-				}
+		
+		Map map = server.getMap(m_pos.map);
+		if (map == null) {
+			return;
+		}
+		Player targetUser = server.getClientById(targetIndex);
+		if (targetUser != null) {
+			if (map.buscarEnElArea(m_pos.x, m_pos.y, targetUser.getId()) == null) {
+				enviarMensaje("Estas muy lejos de " + targetUser.getNick(), FontType.FONTTYPE_INFO);
 			} else {
-				enviarMensaje("Usuario inexistente.", FontType.FONTTYPE_INFO);
+				if (esConsejero()) {
+					Log.logGM(m_nick, "El consejero le susurró a " + targetUser.getNick() + ": " + text);
+				}
+				
+				// send to target user
+				targetUser.sendPacket(new ChatOverHeadResponse(text, getId(), 
+								Color.r(Color.COLOR_AZUL), Color.g(Color.COLOR_AZUL), Color.b(Color.COLOR_AZUL)));
+				// send to source user
+				sendPacket(new ChatOverHeadResponse(text, getId(), 
+						Color.r(Color.COLOR_AZUL), Color.g(Color.COLOR_AZUL), Color.b(Color.COLOR_AZUL)));
+				
+				if (!esGM() || esConsejero()) {
+					// send to admins at area
+					map.enviarAlAreaAdminsNoConsejeros(m_pos.x, m_pos.y,
+							new ChatOverHeadResponse("a " + targetUser.getNick() + "> " + text, this.getId(),
+									Color.r(Color.COLOR_AMARILLO), Color.g(Color.COLOR_AMARILLO), Color.b(Color.COLOR_AMARILLO)));
+				}
 			}
+		} else {
+			enviarMensaje("Usuario inexistente.", FontType.FONTTYPE_INFO);
 		}
 	}
 
