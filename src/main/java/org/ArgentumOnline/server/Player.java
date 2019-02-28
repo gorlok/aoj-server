@@ -86,6 +86,7 @@ import org.ArgentumOnline.server.protocol.UpdateHungerAndThirstResponse;
 import org.ArgentumOnline.server.protocol.UpdateUserStatsResponse;
 import org.ArgentumOnline.server.protocol.UserCharIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserHitNPCResponse;
+import org.ArgentumOnline.server.protocol.UserIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserSwingResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.quest.UserQuest;
@@ -155,7 +156,7 @@ public class Player extends AbstractCharacter {
 
 	UserCounters m_counters = new UserCounters();
 
-	public UserTrade m_comUsu = new UserTrade();
+	public UserTrade m_comUsu;
 	
 	UserArea userArea = new UserArea();
 	
@@ -172,6 +173,8 @@ public class Player extends AbstractCharacter {
 	
 	public Player(Channel channel, GameServer aoserver) {
 		init(aoserver);
+		
+		this.m_comUsu = new UserTrade(this);
 
 		this.channel = channel;
 		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) channel.remoteAddress();
@@ -263,6 +266,10 @@ public class Player extends AbstractCharacter {
 		return m_flags.Invisible;
 	}
 
+	public boolean estaComerciando() {
+		return m_flags.Comerciando;
+	}
+	
 	public boolean estaOculto() {
 		return m_flags.Oculto;
 	}
@@ -1090,7 +1097,7 @@ public class Player extends AbstractCharacter {
 		//enviar(ServerPacketID.ChangeUserTradeSlot); FIXME
 	}
 
-	public void doFinComerciar() {
+	public void commerceEnd() {
 		m_flags.Comerciando = false;
 		sendPacket(new CommerceEndResponse());
 	}
@@ -1122,30 +1129,82 @@ public class Player extends AbstractCharacter {
 		if (esConsejero()) {
 			return;
 		}
+		
+		if (estaComerciando()) {
+			enviarMensaje("Ya estás comerciando", FontType.FONTTYPE_INFO);
+			return;
+		}
+		
 		Map mapa = server.getMap(m_pos.map);
 		if (mapa == null) {
 			return;
 		}
 		Npc npc = getNearNpcSelected(DISTANCE_MERCHANT);
-		if (npc == null) {
-			return;
-		}
-		// ¿El Npc puede comerciar?
-		if (!npc.comercia()) {
-			if (npc.getDesc().length() > 0) {
-				hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+		if (npc != null) {
+			// ¿El Npc puede comerciar?
+			if (!npc.comercia()) {
+				if (npc.getDesc().length() > 0) {
+					hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+				}
+				return;
 			}
-			return;
+			
+			// Mandamos el Inventario
+			((NpcMerchant)npc).enviarNpcInv(this);
+			enviarInventario();
+			sendUpdateUserStats();
+			
+			// Iniciamos el comercio con el Npc
+			sendPacket(new CommerceInitResponse());
+			m_flags.Comerciando = true;
 		}
 		
-		// Mandamos el Inventario
-		((NpcMerchant)npc).enviarNpcInv(this);
-		enviarInventario();
-		sendUpdateUserStats();
+		if (getFlags().TargetUser > 0) {
+            //User commerce...
+            //Can he commerce??
+			if (esConsejero()) {
+				enviarMensaje("No puedes vender items.", FontType.FONTTYPE_WARNING);
+                return;
+			}
+            
+			Player targetPlayer = server.getClientById(m_flags.TargetUser);
+			if (targetPlayer == null) {
+				return;
+			}
+            //Is the other one dead??
+			if (!targetPlayer.isAlive()) {
+				enviarMensaje("¡¡No puedes comerciar con los muertos!!", FontType.FONTTYPE_INFO);
+                return;
+			}
+            
+            //Is it me??
+			if (targetPlayer == this) {
+				enviarMensaje("No puedes comerciar con vos mismo...", FontType.FONTTYPE_INFO);
+                return;
+			}
+            
+            //Check distance
+			if (pos().distance(targetPlayer.pos()) > 3) {
+				enviarMensaje("Estás demasiado lejos del usuario.", FontType.FONTTYPE_INFO);
+                return;
+			}
+            
+            //Is he already trading?? is it with me or someone else??
+			if (targetPlayer.estaComerciando() && targetPlayer.getFlags().TargetUser != this.getId()) {
+				enviarMensaje("No puedes comerciar con el usuario en este momento.", FontType.FONTTYPE_INFO);
+			}
+            
+            //Initialize some variables...
+			m_comUsu.destUsu = m_flags.TargetUser;
+			m_comUsu.cant = 0;
+			m_comUsu.objeto = 0;
+			m_comUsu.acepto = false;
+            
+            //Rutina para comerciar con otro usuario
+            m_comUsu.iniciarComercioConUsuario(getFlags().TargetUser);
+		}
 		
-		// Iniciamos el comercio con el Npc
-		sendPacket(new CommerceInitResponse());
-		m_flags.Comerciando = true;
+		enviarMensaje("Primero haz click izquierdo sobre el personaje.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doEntrenar() {
@@ -1628,7 +1687,7 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			tu = server.getClientById(m_flags.TargetUser);
 			Npc npc = server.getNpcById(m_flags.TargetNpc);
 			if (npc != null) {
@@ -1668,7 +1727,7 @@ public class Player extends AbstractCharacter {
 			}
 			if (esConsejero())
 				return;
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			if (m_flags.Hechizo > 0) {
 				m_spells.lanzarHechizo(server.getHechizo(m_flags.Hechizo));
 				m_flags.Hechizo = 0;
@@ -1716,7 +1775,7 @@ public class Player extends AbstractCharacter {
 				if (!intervaloPermiteTrabajar()) {
 					return;
 				}
-				mapa.consultar(this, x, y);
+				mapa.lookAtTile(this, x, y);
 				if (m_flags.TargetUser > 0 && m_flags.TargetUser != getId()) {
 					tu = server.getClientById(m_flags.TargetUser);
 					if (tu.isAlive()) {
@@ -1778,7 +1837,7 @@ public class Player extends AbstractCharacter {
 				doSALIR();
 				return;
 			}
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			obj = mapa.getObjeto(x, y);
 			if (obj != null) {
 				MapPos wpaux = MapPos.mxy(m_pos.map, x, y);
@@ -1801,7 +1860,7 @@ public class Player extends AbstractCharacter {
 			// Modificado 25/11/02
 			// Optimizado y solucionado el bug de la doma de
 			// criaturas hostiles.
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			if (m_flags.TargetNpc > 0) {
 				npc = server.getNpcById(m_flags.TargetNpc);
 				if (npc.domable() > 0) {
@@ -1823,7 +1882,7 @@ public class Player extends AbstractCharacter {
 			}
 			break;
 		case Skill.SKILL_FundirMetal:
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			if (m_flags.TargetObj > 0) {
 				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_FRAGUA) {
 					fundirMineral();
@@ -1835,7 +1894,7 @@ public class Player extends AbstractCharacter {
 			}
 			break;
 		case Skill.SKILL_Herreria:
-			mapa.consultar(this, x, y);
+			mapa.lookAtTile(this, x, y);
 			if (m_flags.TargetObj > 0) {
 				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
 					m_inv.enviarArmasConstruibles();
@@ -2091,9 +2150,9 @@ public class Player extends AbstractCharacter {
 	 */
 	public void leftClickOnMap(byte x, byte y) {
 		// Clic con el botón primario del mouse
-		Map mapa = server.getMap(m_pos.map);
-		if (mapa != null) {
-			mapa.consultar(this, x, y);
+		Map map = server.getMap(m_pos.map);
+		if (map != null) {
+			map.lookAtTile(this, x, y);
 		}
 	}
 
@@ -2461,6 +2520,10 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void enviarIndiceUsuario() {
+		sendPacket(new UserIndexInServerResponse(getId()));
+	}
+
+	private void enviarIP() {
 		sendPacket(new UserCharIndexInServerResponse(getId()));
 	}
 
@@ -2571,7 +2634,7 @@ public class Player extends AbstractCharacter {
 					enviarSonido(SND_WARP);
 				}
 			}
-			// enviarIP();
+			enviarIP();
 			if (enviarData) {
 				// Enviarme los m_clients del mapa, sin contarme a mi
 				mapa.enviarClientes(this);
@@ -2909,10 +2972,6 @@ public class Player extends AbstractCharacter {
 	 * private void enviarATodosCC() { Mapa m = server.getMapa(m_pos.mapa); if (m ==
 	 * null) return; m.enviarATodos(getCC()); }
 	 */
-
-	private void enviarIP() {
-		sendPacket(new UserCharIndexInServerResponse(getId()));
-	}
 
 	private void enviarLogged() {
 		sendPacket(new LoggedMessageResponse());
@@ -4304,6 +4363,7 @@ public class Player extends AbstractCharacter {
 
 			cambiarMapa(m_pos.map, m_pos.x, m_pos.y);
 			enviarIndiceUsuario();
+			enviarIP();
 			enviarLogged();
 			m_flags.UserLogged = true;
 

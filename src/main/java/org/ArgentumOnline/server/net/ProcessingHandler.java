@@ -20,6 +20,7 @@ import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
+import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
 import org.ArgentumOnline.server.protocol.WhisperRequest;
 import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
@@ -123,8 +124,8 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.commerceStart();
 			break;
 			
-		case UserCommerceEnd:
-			player.m_comUsu.commerceEnd(player);
+		case CommerceEnd:
+			player.commerceEnd();
 			break;
 			
 		case CommerceBuy:
@@ -134,7 +135,23 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case CommerceSell:
 			handleCommerceSell((CommerceSellRequest)packet, player);
 			break;
+			
+		case UserCommerceOffer:
+			player.m_comUsu.userCommerceOffer(((UserCommerceOfferRequest)packet).slot, ((UserCommerceOfferRequest)packet).amount);
+			break;
 
+		case UserCommerceEnd:
+			player.m_comUsu.userCommerceEnd();
+			break;
+		
+		case UserCommerceOk:
+			player.m_comUsu.userCommerceAccept();
+			break;
+		
+		case UserCommerceReject:
+			player.m_comUsu.userCommerceReject();
+			break;
+			
 		case Meditate:
 			player.meditate();
 			break;

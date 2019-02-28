@@ -876,43 +876,29 @@ public class Map implements Constants {
         return null;
     }
     
-    public void consultar(Player cliente, byte  x, byte y) {
-        // Sub LookatTile(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
-    	
-    	if (!cliente.pos().inRangoVision(x, y)) {
+    public void lookAtTile(Player player, byte  x, byte y) {
+    	if (!player.pos().inRangoVision(x, y)) {
             return;
         }
-        
         boolean hayAlgo = false;
+        
         // Ver si hay un objeto en los alrededores...
         MapObject obj = buscarObjeto(x, y);
         if (obj != null) {
-            cliente.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
-            cliente.getFlags().TargetObj = obj.getInfo().ObjIndex;
-            cliente.getFlags().TargetObjMap = this.nroMapa;
-            cliente.getFlags().TargetObjX = obj.x;
-            cliente.getFlags().TargetObjY = obj.y;
+            player.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+            player.getFlags().TargetObj = obj.getInfo().ObjIndex;
+            player.getFlags().TargetObjMap = this.nroMapa;
+            player.getFlags().TargetObjX = obj.x;
+            player.getFlags().TargetObjY = obj.y;
             hayAlgo = true;
         }
+        
         // Ver si hay un Npc...
-        MapCell bloque = this.cells[x-1][y-1];
         Npc npc;
         if ((npc = buscarNpc(x, y)) != null) {
             hayAlgo = true;
-            if (cliente.esGM() && this.server.isShowDebug()) { 
-            	// Info para DEBUG by Gorlok
-            	/*
-                cliente.enviarMensaje(npc.m_name + " id=" + npc.getId() + 
-                " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
-                " mov=" + npc.m_movement, FontType.FONTTYPE_SERVER);
-                cliente.enviarMensaje("AI NPC: " + npc.m_name + " id=" + npc.getId() + 
-                " nro=" + npc.m_numero + " type=" + npc.getNPCtype() + 
-                " mov=" + npc.m_movement + " atby=" + npc.m_attackedBy +
-				" oldmov=" + npc.m_oldMovement + " hostil=" + npc.esHostil(), FontType.FONTTYPE_SERVER);
-				*/
-            }
             if (npc.m_desc.length() > 0) {
-                cliente.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
+                player.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
             } 
             String msg = "";
             if (npc.getPetUserOwner() != null) {
@@ -920,50 +906,48 @@ public class Map implements Constants {
             } else {
                 msg = npc.m_name;
             }
-            msg = msg + " " + npc.estadoVida(cliente);
-            cliente.enviarMensaje(msg, FontType.FONTTYPE_INFO);
-            cliente.getFlags().TargetNpc = npc.getId();
-            cliente.getFlags().TargetMap = this.nroMapa;
-            cliente.getFlags().TargetX = x;
-            cliente.getFlags().TargetY = y;
-            cliente.getFlags().TargetUser = 0;
-            cliente.getFlags().TargetObj = 0;
+            msg = msg + " " + npc.estadoVida(player);
+            player.enviarMensaje(msg, FontType.FONTTYPE_INFO);
+            player.getFlags().TargetNpc = npc.getId();
+            player.getFlags().TargetMap = this.nroMapa;
+            player.getFlags().TargetX = x;
+            player.getFlags().TargetY = y;
+            player.getFlags().TargetUser = 0;
+            player.getFlags().TargetObj = 0;
         }
         
-        
+        // Ver si hay un jugador
         Player cli;
         if ((cli = buscarCliente(x, y)) != null) {
-        	
             if (!cli.getFlags().AdminInvisible) {
-            	
-                cliente.enviarMensaje("Ves a " + cli.getTagsDesc(), cli.getTagColor());
-                cliente.getFlags().TargetUser = cli.getId();
-                cliente.getFlags().TargetNpc = 0;
-                cliente.getFlags().TargetObj = 0;
-                cliente.getFlags().TargetMap = this.nroMapa;
-                cliente.getFlags().TargetX = x;
-                cliente.getFlags().TargetY = y;
+                player.enviarMensaje("Ves a " + cli.getTagsDesc(), cli.getTagColor());
+                player.getFlags().TargetUser = cli.getId();
+                player.getFlags().TargetNpc = 0;
+                player.getFlags().TargetObj = 0;
+                player.getFlags().TargetMap = this.nroMapa;
+                player.getFlags().TargetX = x;
+                player.getFlags().TargetY = y;
                 hayAlgo = true;
             }
         }
+        
         if (!hayAlgo) {
-            cliente.getFlags().TargetNpc = 0;
-            cliente.getFlags().TargetNpcTipo = 0;
-            cliente.getFlags().TargetUser = 0;
-            cliente.getFlags().TargetObj = 0;
-            cliente.getFlags().TargetObjMap = 0;
-            cliente.getFlags().TargetObjX = 0;
-            cliente.getFlags().TargetObjY = 0;
-            cliente.getFlags().TargetMap = this.nroMapa;
-            cliente.getFlags().TargetX = x;
-            cliente.getFlags().TargetY = y;
+            player.getFlags().TargetNpc = 0;
+            player.getFlags().TargetNpcTipo = 0;
+            player.getFlags().TargetUser = 0;
+            player.getFlags().TargetObj = 0;
+            player.getFlags().TargetObjMap = 0;
+            player.getFlags().TargetObjX = 0;
+            player.getFlags().TargetObjY = 0;
+            player.getFlags().TargetMap = this.nroMapa;
+            player.getFlags().TargetX = x;
+            player.getFlags().TargetY = y;
             //cliente.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
+
         // FIXME: REVISAR SI ESTO VA...
-        cliente.getFlags().TargetX = x;
-        cliente.getFlags().TargetY = y;
-       
-        
+        player.getFlags().TargetX = x;
+        player.getFlags().TargetY = y;
     }
     
     public MapPos getTeleport(byte  x, byte y) {
