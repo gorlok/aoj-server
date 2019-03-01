@@ -76,7 +76,7 @@ public class NpcMerchant extends Npc {
                 		((int) val),
                 		info.GrhIndex, 
                 		this.m_inv.getObjeto(i).objid, 
-                		(byte) info.ObjType,
+                		(byte) info.objType.value(),
                 		info.MaxHIT, 
                 		info.MinHIT, 
                 		info.MaxDef));
@@ -159,9 +159,9 @@ public class NpcMerchant extends Npc {
             cliente.enviarMensaje("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
             return;
         }
-        if (this.m_tipoItems != OBJTYPE_CUALQUIERA) {
+        if (this.m_tipoItems != OBJ_INDEX_CUALQUIERA) {
             // ¿Son los items con los que comercia el npc?
-            if (this.m_tipoItems != info.ObjType) {
+            if (this.m_tipoItems != info.objType.value()) {
                 cliente.enviarMensaje("No me interesa comprar ese objeto.", FontType.FONTTYPE_WARNING);
                 return;
             }

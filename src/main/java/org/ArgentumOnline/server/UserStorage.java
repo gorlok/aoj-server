@@ -5,8 +5,8 @@ import static org.ArgentumOnline.server.Constants.NUMATRIBUTOS;
 import static org.ArgentumOnline.server.Constants.NingunArma;
 import static org.ArgentumOnline.server.Constants.NingunCasco;
 import static org.ArgentumOnline.server.Constants.NingunEscudo;
-import static org.ArgentumOnline.server.Constants.iCabezaMuerto;
-import static org.ArgentumOnline.server.Constants.iCuerpoMuerto;
+import static org.ArgentumOnline.server.Constants.OBJ_INDEX_CABEZA_MUERTO;
+import static org.ArgentumOnline.server.Constants.OBJ_INDEX_CUERPO_MUERTO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -114,8 +114,8 @@ public class UserStorage {
 			user.getInfoChar().m_casco = user.getOrigChar().m_casco;
 			user.getInfoChar().m_dir = user.getOrigChar().m_dir;
 		} else {
-			user.getInfoChar().m_cabeza = iCabezaMuerto;
-			user.getInfoChar().m_cuerpo = iCuerpoMuerto;
+			user.getInfoChar().m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
+			user.getInfoChar().m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
 			user.getInfoChar().m_arma = NingunArma;
 			user.getInfoChar().m_escudo = NingunEscudo;
 			user.getInfoChar().m_casco = NingunCasco;
@@ -416,7 +416,7 @@ public class UserStorage {
 
 			// Devuelve el head de muerto
 			if (!user.isAlive()) {
-				user.getInfoChar().m_cabeza = iCabezaMuerto;
+				user.getInfoChar().m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
 			}
 
 			// Guardar todo

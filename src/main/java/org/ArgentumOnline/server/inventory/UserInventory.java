@@ -30,13 +30,12 @@ import java.util.List;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
-import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -58,6 +57,7 @@ public class UserInventory extends Inventory implements Constants {
     boolean cascoEquipado = false;
     boolean escudoEquipado = false;
     boolean barcoEquipado = false;
+    boolean anilloEquipado = false;
 
     int armaSlot = 0;
     int municionSlot = 0;
@@ -67,6 +67,7 @@ public class UserInventory extends Inventory implements Constants {
     int escudoSlot = 0;
     int barcoSlot = 0;
     int espadaMataDragonesSlot = 0;
+    int anilloSlot = 0;
     
     /** Creates a new instance of UserInventory */
     public UserInventory(GameServer server, Player dueño, int slots) {
@@ -78,6 +79,13 @@ public class UserInventory extends Inventory implements Constants {
 		this.herramientaSlot = herramientaSlot;
 		if (this.herramientaSlot > 0) {
 			this.herramientaEquipada = true;
+		}
+	}
+    
+    public void setAnilloSlot(int anilloSlot) {
+		this.anilloSlot = anilloSlot;
+		if (this.anilloSlot > 0) {
+			this.anilloEquipado = true;
 		}
 	}
     
@@ -123,6 +131,10 @@ public class UserInventory extends Inventory implements Constants {
 		}
 	}
     
+    public boolean tieneAnilloEquipado() {
+    	return this.anilloEquipado;
+    }
+    
     public boolean tieneArmaEquipada() {
         return this.armaEquipada;
     }
@@ -147,6 +159,9 @@ public class UserInventory extends Inventory implements Constants {
         return this.cascoEquipado;
     }
     
+    public int getAnilloSlot() {
+		return anilloSlot;
+	}
     public int getArmaSlot() {
         return this.armaSlot;
     }
@@ -190,7 +205,17 @@ public class UserInventory extends Inventory implements Constants {
         this.armaduraEquipada = obji.equipado;
     }
     
+    public void setAnillo(int slot, InventoryObject obji) {
+        setObjeto(slot, obji);
+        this.anilloSlot = slot;
+        this.anilloEquipado = obji.equipado;
+    }
     //FIX BY AGUSH ;-)
+    
+    public ObjectInfo getAnillo() {
+    	if (this.anilloSlot > 0) return findObj(this.objs[this.anilloSlot-1].objid);
+    	return null;
+    }
     
     public ObjectInfo getArma() {
     	if (this.armaSlot > 0) return findObj(this.objs[this.armaSlot-1].objid);
@@ -299,55 +324,71 @@ public class UserInventory extends Inventory implements Constants {
 		}
         
         ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
-        switch (infoObj.ObjType) {
-            case OBJTYPE_WEAPON:
+        switch (infoObj.objType) {
+            case Weapon:
                 this.objs[slot-1].equipado = false;
                 this.armaSlot = 0;
                 this.armaEquipada = false;
-                this.dueño.getInfoChar().m_arma = NingunArma;
-                this.dueño.sendCharacterChange();
+                if (!this.dueño.getFlags().Mimetizado) {
+	                this.dueño.getInfoChar().m_arma = NingunArma;
+	                this.dueño.sendCharacterChange();
+                }
                 break;
-            case OBJTYPE_FLECHAS:
+                
+            case Flechas:
                 this.objs[slot-1].equipado = false;
                 this.municionSlot = 0;
                 this.municionEquipada = false;
                 break;
-            case OBJTYPE_HERRAMIENTAS:
+                
+            case Anillo:
                 this.objs[slot-1].equipado = false;
-                this.herramientaSlot = 0;
-                this.herramientaEquipada = false;
+                this.anilloSlot = 0;
+                this.anilloEquipado = false;
                 break;
-            case OBJTYPE_BARCOS:
+
+            case Armadura:
+                this.objs[slot-1].equipado = false;
+                this.armaduraSlot = 0;
+                this.armaduraEquipada = false;
+                this.dueño.cuerpoDesnudo();
+                this.dueño.sendCharacterChange();
+                break;
+                
+            case CASCO:
+                this.objs[slot-1].equipado = false;
+                this.cascoSlot = 0;
+                this.cascoEquipado = false;
+                if (!this.dueño.getFlags().Mimetizado) {
+	                this.dueño.getInfoChar().m_casco = NingunCasco;
+	                this.dueño.sendCharacterChange();
+                }
+                break;
+                
+            case ESCUDO:
+                this.objs[slot-1].equipado = false;
+                this.escudoSlot = 0;
+                this.escudoEquipado = false;
+                if (!this.dueño.getFlags().Mimetizado) {
+	                this.dueño.getInfoChar().m_escudo = NingunEscudo;
+	                this.dueño.sendCharacterChange();
+                }
+                break;
+                
+//            case OBJTYPE_HERRAMIENTAS: FIXME todavía sirve?
+//                this.objs[slot-1].equipado = false;
+//                this.herramientaSlot = 0;
+//                this.herramientaEquipada = false;
+//                break;
+                
+            case Barcos: // FIXME esto todavía va acá?
                 this.objs[slot-1].equipado = false;
                 this.barcoSlot = 0;
                 this.barcoEquipado = false;
                 break;
-            case OBJTYPE_ARMOUR:
-                switch (infoObj.SubTipo) {
-                    case SUBTYPE_ARMADURA:
-                        this.objs[slot-1].equipado = false;
-                        this.armaduraSlot = 0;
-                        this.armaduraEquipada = false;
-                        this.dueño.cuerpoDesnudo();
-                        this.dueño.sendCharacterChange();
-                        break;
-                    case SUBTYPE_CASCO:
-                        this.objs[slot-1].equipado = false;
-                        this.cascoSlot = 0;
-                        this.cascoEquipado = false;
-                        this.dueño.getInfoChar().m_casco = NingunCasco;
-                        this.dueño.sendCharacterChange();
-                        break;
-                    case SUBTYPE_ESCUDO:
-                        this.objs[slot-1].equipado = false;
-                        this.escudoSlot = 0;
-                        this.escudoEquipado = false;
-                        this.dueño.getInfoChar().m_escudo = NingunEscudo;
-                        this.dueño.sendCharacterChange();
-                        break;
-                }
         }
-        //dueño.enviarInventario();
+
+		this.dueño.sendUpdateUserStats();
         this.dueño.enviarObjetoInventario(slot);
     }
     
@@ -367,12 +408,13 @@ public class UserInventory extends Inventory implements Constants {
             return;
         }
         InventoryObject obj_inv = getObjeto(slot);
-        log.debug("objeto: " + infoObj.Nombre + " objtype=" + infoObj.ObjType + " subtipo=" + infoObj.SubTipo);
+        log.debug("objeto: " + infoObj.Nombre + " objtype=" + infoObj.objType);
         log.debug("WeaponAnim: " + infoObj.WeaponAnim);
         log.debug("CascoAnim: " + infoObj.CascoAnim);
         log.debug("ShieldAnim: " + infoObj.ShieldAnim);
-        switch (infoObj.ObjType) {
-            case OBJTYPE_WEAPON:
+        
+        switch (infoObj.objType) {
+            case Weapon:
                 log.debug("es un arma");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
@@ -389,16 +431,27 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaEquipada = true;
                     this.armaSlot = slot;
                     // Sonido
-                    this.dueño.enviarSonido(SOUND_SACARARMA);
-                    this.dueño.getInfoChar().m_arma = infoObj.WeaponAnim;
-                    this.dueño.sendCharacterChange();
+                    if (!this.dueño.getFlags().AdminInvisible) {
+                        // El sonido solo se envia si no lo produce un admin invisible
+                    	this.dueño.enviarSonido(SOUND_SACARARMA);
+                    }
+                    
+                    if (this.dueño.getFlags().Mimetizado) {
+                        this.dueño.getMimetizadoChar().m_arma = infoObj.WeaponAnim; 
+                    } else {
+	                    this.dueño.getInfoChar().m_arma = infoObj.WeaponAnim;
+	                    this.dueño.sendCharacterChange();
+                    }
+                    
+                    
                 } else {
                     this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
-            case OBJTYPE_HERRAMIENTAS:
-                log.debug("es una herramienta");
+                
+            case Anillo:
+                log.debug("es un anillo");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
@@ -407,18 +460,18 @@ public class UserInventory extends Inventory implements Constants {
                         return;
                     }
                     // Quitamos el elemento anterior
-                    if (tieneHerramientaEquipada()) {
-                        desequipar(this.herramientaSlot);
+                    if (tieneAnilloEquipado()) {
+                        desequipar(this.anilloSlot);
                     }
                     this.objs[slot-1].equipado = true;
-                    this.herramientaEquipada = true;
-                    this.herramientaSlot = slot;
+                    this.anilloEquipado = true;
+                    this.anilloSlot = slot;
                 } else {
                     this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
-                
-            case OBJTYPE_FLECHAS:
+
+            case Flechas:
                 log.debug("son flechas");
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
@@ -439,95 +492,147 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
                 
-            case OBJTYPE_ARMOUR:
-                log.debug("es un armour");
+            case Armadura:
+                log.debug("es una armadura");
                 if (this.dueño.estaNavegando()) {
 					return;
 				}
-                switch (infoObj.SubTipo) {
-                    case SUBTYPE_ARMADURA: // ARMADURA
-                        // Nos aseguramos que puede usarla
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
-                            this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid) &&
-                            this.dueño.sexoPuedeUsarItem(objid) &&
-                            this.dueño.checkRazaUsaRopa(objid)) {
-                            // Si esta equipado lo quita
-                            if (obj_inv.equipado) {
-                                // Quitamos del inv el item
-                                desequipar(slot);
-                                this.dueño.cuerpoDesnudo();
-                                this.dueño.sendCharacterChange();
-                                return;
-                            }
-                            // Quita el anterior
-                            if (tieneArmaduraEquipada()) {
-                                desequipar(this.armaduraSlot);
-                            }
-                            // Lo equipa
-                            this.objs[slot-1].equipado = true;
-                            this.armaduraEquipada = true;
-                            this.armaduraSlot = slot;
-                            this.dueño.getInfoChar().m_cuerpo = infoObj.Ropaje;
-                            this.dueño.getFlags().Desnudo = false;
-                            this.dueño.sendCharacterChange();
-                        } else {
-                            this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                // Nos aseguramos que puede usarla
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
+                    this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid) &&
+                    this.dueño.sexoPuedeUsarItem(objid) &&
+                    this.dueño.checkRazaUsaRopa(objid)) {
+                    // Si esta equipado lo quita
+                    if (obj_inv.equipado) {
+                        // Quitamos del inv el item
+                        desequipar(slot);
+                        this.dueño.cuerpoDesnudo();
+                        if (!this.dueño.getFlags().Mimetizado) {
+                        	this.dueño.sendCharacterChange();
                         }
-                        break;
-                        
-                    case SUBTYPE_CASCO:
-                        log.debug("es un casco");
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
-                            // Si esta equipado lo quita
-                            if (obj_inv.equipado) {
-                                // Quitamos del inv el item
-                                desequipar(slot);
-                                this.dueño.getInfoChar().m_casco = NingunCasco;
-                                this.dueño.sendCharacterChange();
-                                return;
-                            }
-                            // Quita el anterior
-                            if (tieneCascoEquipado()) {
-                                desequipar(this.cascoSlot);
-                            }
-                            // Lo equipa                    
-                            this.objs[slot-1].equipado = true;
-                            this.cascoEquipado = true;
-                            this.cascoSlot = slot;
-                            this.dueño.getInfoChar().m_casco = infoObj.CascoAnim;
-                            this.dueño.sendCharacterChange();
-                        } else {
-                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
-                        }
-                        break;
-                        
-                    case SUBTYPE_ESCUDO:
-                        log.debug("es un escudo");
-                        if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
-                            // Si esta equipado lo quita
-                            if (obj_inv.equipado) {
-                                // Quitamos del inv el item
-                                desequipar(slot);
-                                this.dueño.getInfoChar().m_escudo = NingunEscudo;
-                                this.dueño.sendCharacterChange();
-                                return;
-                            }
-                            // Quita el anterior
-                            if (tieneEscudoEquipado()) {
-                                desequipar(this.escudoSlot);
-                            }
-                            // Lo equipa
-                            this.objs[slot-1].equipado = true;
-                            this.escudoEquipado = true;
-                            this.escudoSlot = slot;
-                            this.dueño.getInfoChar().m_escudo = infoObj.ShieldAnim;
-                            this.dueño.sendCharacterChange();
-                        } else {
-                            this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
-                        }
-                        break;
+                        return;
+                    }
+                    // Quita el anterior
+                    if (tieneArmaduraEquipada()) {
+                        desequipar(this.armaduraSlot);
+                    }
+                    // Lo equipa
+                    this.objs[slot-1].equipado = true;
+                    this.armaduraEquipada = true;
+                    this.armaduraSlot = slot;
+                    
+                    if (this.dueño.getFlags().Mimetizado) {
+                    	this.dueño.getMimetizadoChar().m_cuerpo = infoObj.Ropaje;
+                    } else {
+	                    this.dueño.getInfoChar().m_cuerpo = infoObj.Ropaje;
+	                    this.dueño.sendCharacterChange();
+                    }
+                    this.dueño.getFlags().Desnudo = false;
+                } else {
+                    this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
+                
+            case CASCO:
+                log.debug("es un casco");
+                if (this.dueño.estaNavegando()) {
+					return;
+				}
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
+                    // Si esta equipado lo quita
+                    if (obj_inv.equipado) {
+                        // Quitamos del inv el item
+                        desequipar(slot);
+                        if (this.dueño.getFlags().Mimetizado) {
+                        	this.dueño.getMimetizadoChar().m_casco = NingunCasco;
+                        } else {
+                            this.dueño.getInfoChar().m_casco = NingunCasco;
+                        	this.dueño.sendCharacterChange();
+                        }
+                        return;
+                    }
+                    // Quita el anterior
+                    if (tieneCascoEquipado()) {
+                        desequipar(this.cascoSlot);
+                    }
+                    // Lo equipa                    
+                    this.objs[slot-1].equipado = true;
+                    this.cascoEquipado = true;
+                    this.cascoSlot = slot;
+                    
+                    if (this.dueño.getFlags().Mimetizado) {
+                    	this.dueño.getMimetizadoChar().m_casco = infoObj.CascoAnim;
+                    } else {
+	                    this.dueño.getInfoChar().m_casco = infoObj.CascoAnim;
+	                    this.dueño.sendCharacterChange();
+                    }
+                    
+                } else {
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                }
+                break;
+                
+            case ESCUDO:
+                log.debug("es un escudo");
+                if (this.dueño.estaNavegando()) {
+					return;
+				}
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
+                		this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                    // Si esta equipado lo quita
+                    if (obj_inv.equipado) {
+                        // Quitamos del inv el item
+                        desequipar(slot);
+                        if (this.dueño.getFlags().Mimetizado) {
+                        	this.dueño.getMimetizadoChar().m_escudo = NingunEscudo;
+                        } else {
+                            this.dueño.getInfoChar().m_escudo = NingunEscudo;
+                        	this.dueño.sendCharacterChange();
+                        }
+                        return;
+                    }
+                    // Quita el anterior
+                    if (tieneEscudoEquipado()) {
+                        desequipar(this.escudoSlot);
+                    }
+                    // Lo equipa
+                    this.objs[slot-1].equipado = true;
+                    this.escudoEquipado = true;
+                    this.escudoSlot = slot;
+                    
+                    if (this.dueño.getFlags().Mimetizado) {
+                    	this.dueño.getMimetizadoChar().m_escudo = infoObj.ShieldAnim;
+                    } else {
+	                    this.dueño.getInfoChar().m_escudo = infoObj.ShieldAnim;
+	                    this.dueño.sendCharacterChange();
+                    }
+                } else {
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                }
+                break;
+
+                /* FIXME esto va??
+            case OBJTYPE_HERRAMIENTAS:
+                log.debug("es una herramienta");
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                    // Si esta equipado lo quita
+                    if (obj_inv.equipado) {
+                        // Quitamos del inv el item
+                        desequipar(slot);
+                        return;
+                    }
+                    // Quitamos el elemento anterior
+                    if (tieneHerramientaEquipada()) {
+                        desequipar(this.herramientaSlot);
+                    }
+                    this.objs[slot-1].equipado = true;
+                    this.herramientaEquipada = true;
+                    this.herramientaSlot = slot;
+                } else {
+                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                }
+                break;
+                */
         }
         // Actualiza
         log.debug("actualizar inventario del cliente");
@@ -626,7 +731,7 @@ public class UserInventory extends Inventory implements Constants {
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo infoObj = findObj(element.objid);
-                if (infoObj.ObjType != OBJTYPE_LLAVES && infoObj.ObjType != OBJTYPE_BARCOS) {
+                if (infoObj.objType != ObjType.Llaves && infoObj.objType != ObjType.Barcos) {
                     return true;
                 }
             }
@@ -639,7 +744,7 @@ public class UserInventory extends Inventory implements Constants {
         for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
             ObjectInfo info = findObj(this.server.getArmasHerrero()[i]);
             if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
-                if (info.ObjType == OBJTYPE_WEAPON) {
+                if (info.objType == ObjType.Weapon) {
                 	params.add(info.Nombre + " (" + info.MinHIT + "/" + info.MaxHIT + ")");
                 	params.add(this.server.getArmasHerrero()[i]);
                 } else {
@@ -707,8 +812,8 @@ public class UserInventory extends Inventory implements Constants {
         this.dueño.getFlags().TargetObjInvIndex = obj.objid;
         this.dueño.getFlags().TargetObjInvSlot = slot;
         Map mapa = this.server.getMap(this.dueño.pos().map);
-        switch (info.ObjType) {
-            case OBJTYPE_USEONCE:
+        switch (info.objType) {
+            case UseOnce:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -721,7 +826,7 @@ public class UserInventory extends Inventory implements Constants {
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
                 break;
-            case OBJTYPE_GUITA:
+            case Guita:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -729,7 +834,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.sendUpdateUserStats();
                 quitarUserInvItem(slot, obj.cant);
                 break;
-            case OBJTYPE_WEAPON:
+            case Weapon:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -741,14 +846,14 @@ public class UserInventory extends Inventory implements Constants {
 					}
                     ObjectInfo targeInfo = findObj(this.dueño.getFlags().TargetObj);
                     // ¿El target-objeto es leña?
-                    if (targeInfo.ObjType == OBJTYPE_LEÑA) {
+                    if (targeInfo.objType == ObjType.Leña) {
                         if (info.ObjIndex == DAGA) {
                             this.dueño.tratarDeHacerFogata();
                         }
                     }
                 }
                 break;
-            case OBJTYPE_POCIONES:
+            case Pociones:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -791,7 +896,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.enviarSonido(SND_BEBER);
                 this.dueño.sendUpdateUserStats();
                 break;
-            case OBJTYPE_BEBIDA:
+            case Bebidas:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -802,7 +907,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, 1);
                 this.dueño.enviarSonido(SND_BEBER);
                 break;
-            case OBJTYPE_LLAVES:
+            case Llaves:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -811,7 +916,7 @@ public class UserInventory extends Inventory implements Constants {
 				}
                 ObjectInfo targetInfo = findObj(this.dueño.getFlags().TargetObj);
                 // ¿El objeto clickeado es una puerta?
-                if (targetInfo.ObjType == OBJTYPE_PUERTAS) {
+                if (targetInfo.objType == ObjType.Puertas) {
                     // ¿Esta cerrada?
                     if (targetInfo.estaCerrada()) {
                         // ¿Cerrada con llave?
@@ -840,7 +945,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 break;
-            case OBJTYPE_BOTELLAVACIA:
+            case BotellaVacia:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -854,7 +959,7 @@ public class UserInventory extends Inventory implements Constants {
                     mapa.tirarItemAlPiso(this.dueño.pos().x, this.dueño.pos().y, new InventoryObject(info.IndexAbierta, 1));
                 }
                 break;
-            case OBJTYPE_BOTELLALLENA:
+            case BotellaLlena:
                 if (!this.dueño.isAlive()) {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
@@ -867,6 +972,7 @@ public class UserInventory extends Inventory implements Constants {
                     mapa.tirarItemAlPiso(this.dueño.pos().x, this.dueño.pos().y, new InventoryObject(info.IndexCerrada, 1));
                 }
                 break;
+                /* FIXME
             case OBJTYPE_HERRAMIENTAS:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
@@ -881,28 +987,29 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 this.dueño.getReputacion().incPlebe(vlProleta);
                 switch (info.ObjIndex) {
-                    case OBJTYPE_CAÑA:
+                    case OBJ_INDEX_CAÑA:
                     	
                     	break;
-                    case OBJTYPE_RED_PESCA:
+                    case OBJ_INDEX_RED_PESCA:
                         this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Pesca));
                         break;
-                    case OBJTYPE_HACHA_LEÑADOR:
+                    case OBJ_INDEX_HACHA_LEÑADOR:
                         this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Talar));
                         break;
-                    case OBJTYPE_PIQUETE_MINERO:
+                    case OBJ_INDEX_PIQUETE_MINERO:
                         this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Mineria));
                         break;
-                    case OBJTYPE_MARTILLO_HERRERO:
+                    case OBJ_INDEX_MARTILLO_HERRERO:
                         this.dueño.sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Herreria));
                         break;
-                    case OBJTYPE_SERRUCHO_CARPINTERO:
+                    case OBJ_INDEX_SERRUCHO_CARPINTERO:
                         enviarObjConstruibles();
                       //  this.dueño.enviar(MSG_SFC);
                         break;
                 }
                 break;
-            case OBJTYPE_PERGAMINOS:
+                */
+            case Pergaminos:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
@@ -913,19 +1020,19 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("Estas demasiado hambriento y sediento.", FontType.FONTTYPE_INFO);
                 }
                 break;
-            case OBJTYPE_MINERALES:
+            case Minerales:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-               //this.dueño.enviar(MSG_T01, SKILL_FundirMetal);
+               //this.dueño.enviar(MSG_T01, SKILL_FundirMetal); FIXME
                break;
-            case OBJTYPE_INSTRUMENTOS:
+            case Instrumentos:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 this.dueño.enviarSonido(info.Snd1);
                 break;
-            case OBJTYPE_BARCOS:
+            case Barcos:
                 short m = this.dueño.pos().map;
                 short x = this.dueño.pos().x;
                 short y = this.dueño.pos().y;
@@ -941,7 +1048,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 break;
             default:
-                log.fatal("No se como usar este tipo de objeto: " + info.ObjType);
+                log.fatal("No se como usar este tipo de objeto: " + info.objType);
         }
         // Actualiza
         //this.dueño.refreshStatus();

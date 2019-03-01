@@ -38,10 +38,9 @@ public abstract class AbstractCharacter implements Constants {
 	
     protected MapPos m_pos  = MapPos.empty();
 	
-	
     protected CharInfo m_infoChar = new CharInfo();
     protected CharInfo m_origChar = new CharInfo();
-
+    
 	public short getId() {
 		return id;
 	}

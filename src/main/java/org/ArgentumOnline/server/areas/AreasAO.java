@@ -4,6 +4,7 @@ import java.util.BitSet;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
@@ -182,7 +183,7 @@ public class AreasAO implements Constants {
  
     				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
     				
-    				if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
+    				if (obj.getInfo().objType == ObjType.Puertas) {
     					user.enviarBQ(x, y, map.estaBloqueado(x, y));
     					byte px = (byte) (x - 1);
     					user.enviarBQ(x - 1, y, map.estaBloqueado(px, y));
@@ -291,7 +292,6 @@ public class AreasAO implements Constants {
     	npc.setAreaPerteneceY( (int) Math.pow(2, tempInt));
     	
     	npc.setArea(areasInfo[npc.pos().x][npc.pos().y]);
-		
 	}
 	
 	public void resetNpc(Npc npc) {

@@ -131,12 +131,12 @@ public class Factions implements Constants {
     
     public boolean faccionPuedeUsarItem(Player cliente, short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
-        if (infoObj.Real == 1) {
+        if (infoObj.esReal()) {
             if (!cliente.esCriminal()) {
                 return this.ArmadaReal;
             } 
             return false;
-        } else if (infoObj.Caos == 1) {
+        } else if (infoObj.esCaos()) {
             if (cliente.esCriminal()) {
                 return this.FuerzasCaos;
             }

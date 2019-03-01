@@ -159,7 +159,7 @@ public interface Constants {
     // Constantes de razas:
     final static int RAZA_HUMANO       = 0;
     final static int RAZA_ELFO         = 1;
-    final static int RAZA_ELFO_OSCURO  = 2;
+    final static int RAZA_ELFO_OSCURO  = 2; // DROW
     final static int RAZA_ENANO        = 3;
     final static int RAZA_GNOMO        = 4;
     
@@ -269,11 +269,47 @@ public interface Constants {
     final static int MAXATRIBUTOS = 35;
     final static int MINATRIBUTOS = 6;
     
-    final static int iCuerpoMuerto = 8;
-    final static int iCabezaMuerto = 500;
-    final static int iEspadaMataDragones = 402;
+    
+    final static short OBJ_INDEX_HACHA_LEÑADOR = 127;
+    final static short OBJ_INDEX_CAÑA = 138;
+    final static short OBJ_INDEX_PIQUETE_MINERO = 187;
+    final static short OBJ_INDEX_SERRUCHO_CARPINTERO = 198;
+    final static short OBJ_INDEX_MARTILLO_HERRERO = 389;    
+    final static short OBJ_INDEX_CUALQUIERA = 1000;
+    final static short OBJ_INDEX_RED_PESCA = 543;
+    final static short OBJ_INDEX_ESPADA_MATA_DRAGONES = 402;
+    final static short OBJ_INDEX_FRAGATA_FANTASMAL = 87;
+    final static short OBJ_INDEX_CUERPO_MUERTO = 8;
+    final static short OBJ_INDEX_CABEZA_MUERTO = 500;
     //final static short ObjArboles = 4;
-    final static short iFragataFantasmal = 87;
+    
+    /*
+Public Const EspadaMataDragonesIndex As Integer = 402
+Public Const LAUDMAGICO As Integer = 696
+Public Const FLAUTAMAGICA As Integer = 208
+
+Public Const iFragataFantasmal = 87
+Public Const iFragataReal = 190
+Public Const iFragataCaos = 189
+Public Const iBarca = 84
+Public Const iGalera = 85
+Public Const iGaleon = 86
+Public Const iBarcaCiuda = 395
+Public Const iBarcaPk = 396
+Public Const iGaleraCiuda = 397
+Public Const iGaleraPk = 398
+Public Const iGaleonCiuda = 399
+Public Const iGaleonPk = 400
+
+Public Enum iMinerales
+    HierroCrudo = 192
+    PlataCruda = 193
+    OroCrudo = 194
+    LingoteDeHierro = 386
+    LingoteDePlata = 387
+    LingoteDeOro = 388
+End Enum
+     */
     
     
     final static short NingunEscudo = 2;
@@ -356,60 +392,17 @@ public interface Constants {
     final static byte SND_DECLAREWAR = 45;
     final static byte SND_BEBER = 46;
     
-    // Tipos de objetos:
-    final static int OBJTYPE_USEONCE = 1;
-    final static int OBJTYPE_WEAPON = 2;
-    final static int OBJTYPE_ARMOUR = 3;
-    final static int OBJTYPE_ARBOLES = 4;
-    final static int OBJTYPE_GUITA = 5;
-    final static int OBJTYPE_PUERTAS = 6;
-    final static int OBJTYPE_CONTENEDORES = 7;
-    final static int OBJTYPE_CARTELES = 8;
-    final static int OBJTYPE_LLAVES = 9;
-    final static int OBJTYPE_FOROS = 10;
-    final static int OBJTYPE_POCIONES = 11;
-    final static int OBJTYPE_LIBROS = 12;
-    final static int OBJTYPE_BEBIDA = 13;
-    final static int OBJTYPE_LEÑA = 14;
-    final static int OBJTYPE_FOGATA = 15;
-    final static int OBJTYPE_ESCUDO = 16;
-    final static int OBJTYPE_CASCO = 17;
-    final static int OBJTYPE_HERRAMIENTAS = 18;
-    final static int OBJTYPE_TELEPORT = 19;
-    final static int OBJTYPE_MUEBLE = 20;
-    final static int OBJTYPE_JOYA = 21;
-    final static int OBJTYPE_YACIMIENTO = 22;
-    final static int OBJTYPE_MINERALES = 23;
-    final static int OBJTYPE_PERGAMINOS = 24;
-    final static int OBJTYPE_AURA = 25;
-    final static int OBJTYPE_INSTRUMENTOS = 26;
-    final static int OBJTYPE_YUNQUE = 27;
-    final static int OBJTYPE_FRAGUA = 28;
-    final static int OBJTYPE_GEMA = 29;
-    final static int OBJTYPE_FLOR = 30;
-    final static int OBJTYPE_BARCOS = 31;
-    final static int OBJTYPE_FLECHAS = 32;
-    final static int OBJTYPE_BOTELLAVACIA = 33;
-    final static int OBJTYPE_BOTELLALLENA = 34;
-    final static int OBJTYPE_MANCHAS = 35;    
-    final static int OBJTYPE_HACHA_LEÑADOR = 127;
-    final static int OBJTYPE_CAÑA = 138;
-    final static int OBJTYPE_PIQUETE_MINERO = 187;
-    final static int OBJTYPE_SERRUCHO_CARPINTERO = 198;
-    final static int OBJTYPE_MARTILLO_HERRERO = 389;    
-    final static int OBJTYPE_CUALQUIERA = 1000;
-    final static int OBJTYPE_RED_PESCA = 543;
-    
     // PECES_POSIBLES
     final static int PESCADOS_RED[] = { 139, 544, 545, 546 };
     
     // <------------------SUB-CATEGORIAS----------------->
+    /*
     final static int SUBTYPE_ARMADURA = 0;
     final static int SUBTYPE_CASCO = 1;
     final static int SUBTYPE_ESCUDO = 2;
     final static int SUBTYPE_CAÑA = 138;
     final static int SUBTYPE_MATADRAGONES = 1;
-    
+    */
     
 
 }

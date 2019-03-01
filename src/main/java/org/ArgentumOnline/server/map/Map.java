@@ -40,6 +40,7 @@ import java.util.Vector;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
@@ -48,7 +49,6 @@ import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
-import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
 import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
@@ -56,6 +56,7 @@ import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ObjectDeleteResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
+import org.ArgentumOnline.server.protocol.ShowSignalResponse;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -474,11 +475,8 @@ public class Map implements Constants {
 		}
         this.players.add(player);
         this.cells[x-1][y-1].setClienteId(player.getId());
-        // FIXME
-        //enviarATodosExc(cliente.getId(), serverPacketID.CC, cliente.ccParams());
-        //this.areasData.sendToArea(x, y, cliente.getId(), serverPacketID.CC, cliente.ccParams());
-        
-        player.pos().set(this.nroMapa, x, y); // REVISAR
+        enviarAlArea(x, y, player.getId(), player.createCC());
+        player.pos().set(this.nroMapa, x, y);
         return true;
     }
     
@@ -493,6 +491,7 @@ public class Map implements Constants {
 	        	} finally {
 	        		this.players.remove(cliente);
 	        		// Nuevo sistema de areas by JAO
+	        		// FIXME
 	        		//this.areasData.userDisconnect(cliente);
 	        		this.areasData.resetUser(cliente);
 	        	}
@@ -637,7 +636,7 @@ public class Map implements Constants {
     }
     
     public void abrirCerrarPuerta(MapObject obj) {
-        if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
+        if (obj.getInfo().objType == ObjType.Puertas) {
             // Es un objeto tipo puerta.
             if (obj.getInfo().estaCerrada()) {
                 // Abrir puerta.
@@ -659,7 +658,7 @@ public class Map implements Constants {
     }
     
     private void enviarPuerta(MapObject obj) {
-        if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
+        if (obj.getInfo().objType == ObjType.Puertas) {
             // Es un objeto tipo puerta.
             if (obj.getInfo().estaCerrada()) {
                 bloquearTerreno((byte) (obj.x-1), obj.y);
@@ -991,7 +990,7 @@ public class Map implements Constants {
         }
         // ¿Hay mensajes?
         MapObject obj = getObjeto(x, y);
-        if (obj == null || obj.getInfo().ObjType != OBJTYPE_FOROS) {
+        if (obj == null || obj.getInfo().objType != ObjType.Foros) {
             return;
         }
         String foroId = obj.getInfo().ForoID;
@@ -1004,7 +1003,7 @@ public class Map implements Constants {
             return;
         }
         MapObject obj = getObjeto(x, y);
-        if (obj == null || obj.getInfo().ObjType != OBJTYPE_PUERTAS) {
+        if (obj == null || obj.getInfo().objType != ObjType.Puertas) {
 			return;
 		}
         if (obj.getInfo().Clave == 0) {
@@ -1015,14 +1014,13 @@ public class Map implements Constants {
         }
     }
     
-    public void accionParaCartel(byte  x, byte y, Player cliente) {
+    public void accionParaCartel(byte  x, byte y, Player player) {
         MapObject obj = getObjeto(x, y);
-        if (obj == null || obj.getInfo().ObjType != OBJTYPE_CARTELES) {
+        if (obj == null || obj.getInfo().objType != ObjType.Carteles) {
 			return;
 		}
         if (obj.getInfo().Texto.length() > 0) {
-        	// FIXME
-           // cliente.enviar(MSG_MCAR, obj.getInfo().Texto, obj.getInfo().GrhSecundario);
+        	player.sendPacket(new ShowSignalResponse(obj.getInfo().Texto, obj.getInfo().GrhSecundario));
         }
     }
     
@@ -1266,6 +1264,8 @@ public class Map implements Constants {
     }
     
     public void doFX() {
+    	// FIXME
+    	/*
         if (getCantUsuarios() > 0 && Util.Azar(1, 150) < 12) {
             switch (this.m_terreno) {
                 case TERRENO_BOSQUE:
@@ -1275,21 +1275,22 @@ public class Map implements Constants {
                         case ZONA_CIUDAD:
                             if (!this.server.estaLloviendo()) {
                                 if (n < 15) {
-                                   // enviarATodos(MSG_TW, SND_AVE2);
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE2));
                                 } else if (n < 30) {
-                                  //  enviarATodos(MSG_TW, SND_AVE);
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE));
                                 } else if (n <= 35) {
-                                  //  enviarATodos(MSG_TW, SND_GRILLO);
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO));
                                 } else if (n <= 40) {
-                                 //   enviarATodos(MSG_TW, SND_GRILLO2);
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO2));
                                 } else if (n <= 45) {
-                                 //   enviarATodos(MSG_TW, SND_AVE3);
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE3));
                                 }
                             }
                             break;
                     }
             }
         }
+        */
     }
     
     // Esto no hace falta por ahora, era para hacer funcionar a los teleports,

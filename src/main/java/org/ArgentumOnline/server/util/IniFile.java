@@ -110,7 +110,7 @@ public class IniFile {
         BufferedReader f = 
             new BufferedReader(
                 new InputStreamReader(
-                    new FileInputStream(filename), "UTF-8"));
+                    new FileInputStream(filename), "ISO-8859-1")); //"UTF-8"
         try {
             loadFromFile(f);
         } finally {

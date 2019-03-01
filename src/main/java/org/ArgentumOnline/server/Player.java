@@ -54,10 +54,12 @@ import org.ArgentumOnline.server.protocol.AttributesResponse;
 import org.ArgentumOnline.server.protocol.BankEndResponse;
 import org.ArgentumOnline.server.protocol.BankInitResponse;
 import org.ArgentumOnline.server.protocol.BankOKResponse;
+import org.ArgentumOnline.server.protocol.BlindNoMoreResponse;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
 import org.ArgentumOnline.server.protocol.ChangeBankSlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeInventorySlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeMapResponse;
+import org.ArgentumOnline.server.protocol.ChangeUserTradeSlotResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
@@ -65,6 +67,7 @@ import org.ArgentumOnline.server.protocol.CommerceInitResponse;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.DiceRollResponse;
 import org.ArgentumOnline.server.protocol.DisconnectResponse;
+import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
 import org.ArgentumOnline.server.protocol.FameResponse;
 import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
@@ -77,12 +80,15 @@ import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.PosUpdateResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
+import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
 import org.ArgentumOnline.server.protocol.RestOKResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOnResponse;
 import org.ArgentumOnline.server.protocol.SendSkillsResponse;
+import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
 import org.ArgentumOnline.server.protocol.ShowBlacksmithFormResponse;
 import org.ArgentumOnline.server.protocol.UpdateHungerAndThirstResponse;
+import org.ArgentumOnline.server.protocol.UpdateTagAndStatusResponse;
 import org.ArgentumOnline.server.protocol.UpdateUserStatsResponse;
 import org.ArgentumOnline.server.protocol.UserCharIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserHitNPCResponse;
@@ -126,6 +132,8 @@ public class Player extends AbstractCharacter {
 	UserSpells m_spells;
 	
 	private UserPets userPets = new UserPets();
+	
+	private CharInfo mimetizadoChar = new CharInfo(); // FIXME
 
 	// FIXME network
 	long NumeroPaquetesPorMiliSec = 0;
@@ -194,6 +202,10 @@ public class Player extends AbstractCharacter {
 		this.m_inv = new UserInventory(this.server, this, MAX_USER_INVENTORY_SLOTS);
 		this.m_bancoInv = new Inventory(this.server, MAX_BANCOINVENTORY_SLOTS);
 		this.m_faccion = new Factions(this.server, this);
+	}
+	
+	public CharInfo getMimetizadoChar() {
+		return mimetizadoChar;
 	}
 	
 	public GuildUser getGuildInfo() {
@@ -905,7 +917,7 @@ public class Player extends AbstractCharacter {
 			ObjectInfo info = findObj(obj_inv.objid);
 			sendPacket(new ChangeBankSlotResponse(
 					(byte) slot, info.ObjIndex, info.Nombre, (short)obj_inv.cant, info.GrhIndex,
-					(byte) info.ObjType, info.MaxHIT, info.MinHIT, info.MaxDef, info.Valor));
+					info.objType.value(), info.MaxHIT, info.MinHIT, info.MaxDef, info.Valor));
 		}
 	}
 
@@ -1076,7 +1088,7 @@ public class Player extends AbstractCharacter {
 			m_estads.addGold( -monto );
 			// tal vez suba el skill comerciar ;-)
 			subirSkill(Skill.SKILL_Comerciar);
-			if (info.ObjType == OBJTYPE_LLAVES) {
+			if (info.objType == ObjType.Llaves) {
 				Log.logVentaCasa(m_nick + " compro " + info.Nombre);
 			}
 			((NpcMerchant)npc).quitarNpcInvItem(slot, cant);
@@ -1086,15 +1098,19 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void updateVentanaComercio(short slot, short npcInv) {
-		/* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME 
+		/* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME*/
 		var invObj = getInv().getObjeto(slot);
-		var info = findObj(invObj.);
-		enviar(new ChangeUserTradeSlotResponse(
-				objIndex, name, amount, grhIndex, objType, maxHIT, minHIT, def, valor)
-				
-				ServerPacketID.ChangeUserTradeSlot, slot, npcInv);
-				*/
-		//enviar(ServerPacketID.ChangeUserTradeSlot); FIXME
+		var info = findObj(invObj.objid);
+		sendPacket(new ChangeUserTradeSlotResponse(
+				info.ObjIndex, 
+				info.Nombre, 
+				invObj.cant, 
+				info.GrhIndex, 
+				info.objType.value(), 
+				info.MaxHIT, 
+				info.MinHIT, 
+				info.Def, 
+				info.Valor));
 	}
 
 	public void commerceEnd() {
@@ -1104,7 +1120,8 @@ public class Player extends AbstractCharacter {
 
 	public double descuento() {
 		// Establece el descuento en funcion del skill comercio
-		final double indicesDto[] = { 1.0, // 0-5
+		final double indicesDto[] = { 
+				1.0, // 0-5
 				1.1, 1.1, // 6-10
 				1.2, 1.2, // 11-20
 				1.3, 1.3, // 21-30
@@ -1285,7 +1302,7 @@ public class Player extends AbstractCharacter {
 			if (isAlive()) {
 				m_infoChar.m_cuerpo = barco.Ropaje;
 			} else {
-				m_infoChar.m_cuerpo = iFragataFantasmal;
+				m_infoChar.m_cuerpo = OBJ_INDEX_FRAGATA_FANTASMAL;
 			}
 			m_infoChar.m_escudo = NingunEscudo;
 			m_infoChar.m_arma = NingunArma;
@@ -1310,8 +1327,8 @@ public class Player extends AbstractCharacter {
 					m_infoChar.m_casco = m_inv.getCasco().CascoAnim;
 				}
 			} else {
-				m_infoChar.m_cuerpo = iCuerpoMuerto;
-				m_infoChar.m_cabeza = iCabezaMuerto;
+				m_infoChar.m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
+				m_infoChar.m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
 				m_infoChar.m_escudo = NingunEscudo;
 				m_infoChar.m_arma = NingunArma;
 				m_infoChar.m_casco = NingunCasco;
@@ -1367,7 +1384,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		ObjectInfo info = findObj(m_flags.TargetObjInvIndex);
-		if (info.ObjType != OBJTYPE_MINERALES) {
+		if (info.objType != ObjType.Minerales) {
 			enviarMensaje("Debes utilizar minerales para hacer un lingote.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -1393,7 +1410,7 @@ public class Player extends AbstractCharacter {
 	private void fundirMineral() {
 		if (m_flags.TargetObjInvIndex > 0) {
 			ObjectInfo info = findObj(m_flags.TargetObjInvIndex);
-			if (info.ObjType == OBJTYPE_MINERALES
+			if (info.objType == ObjType.Minerales
 					&& info.MinSkill <= m_estads.userSkills[Skill.SKILL_Mineria] / clazz.clazz().modFundicion()) {
 				doLingotes();
 			} else {
@@ -1743,8 +1760,8 @@ public class Player extends AbstractCharacter {
 				enviarMensaje("Deberías equiparte la caña o la red.", FontType.FONTTYPE_INFO);
 				return;
 			}
-			if (m_inv.getHerramienta().ObjIndex != OBJTYPE_CAÑA
-					&& m_inv.getHerramienta().ObjIndex != OBJTYPE_RED_PESCA) {
+			if (m_inv.getHerramienta().ObjIndex != OBJ_INDEX_CAÑA
+					&& m_inv.getHerramienta().ObjIndex != OBJ_INDEX_RED_PESCA) {
 				enviarMensaje("Deberías equiparte la caña o la red.", FontType.FONTTYPE_INFO);
 				return;
 			}
@@ -1755,10 +1772,10 @@ public class Player extends AbstractCharacter {
 			if (mapa.hayAgua(x, y)) {
 				enviarSonido(SOUND_PESCAR);
 				switch (m_inv.getHerramienta().ObjIndex) {
-				case OBJTYPE_CAÑA:
+				case OBJ_INDEX_CAÑA:
 					doPescarCaña();
 					break;
-				case OBJTYPE_RED_PESCA:
+				case OBJ_INDEX_RED_PESCA:
 					if (m_pos.distance(MapPos.mxy(m_pos.map, x, y)) > 2) {
 						enviarMensaje("Estás demasiado lejos para pescar.", FontType.FONTTYPE_INFO);
 						return;
@@ -1818,7 +1835,7 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				// ¿Hay un arbol donde cliqueo?
-				if (obj.getInfo().ObjType == OBJTYPE_ARBOLES) {
+				if (obj.getInfo().objType == ObjType.Arboles) {
 					enviarSonido(SOUND_TALAR);
 					doTalar();
 				}
@@ -1846,7 +1863,7 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				// ¿Hay un yacimiento donde cliqueo?
-				if (obj.getInfo().ObjType == OBJTYPE_YACIMIENTO) {
+				if (obj.getInfo().objType == ObjType.Yacimiento) {
 					enviarSonido(SOUND_MINERO);
 					doMineria();
 				} else {
@@ -1884,7 +1901,7 @@ public class Player extends AbstractCharacter {
 		case Skill.SKILL_FundirMetal:
 			mapa.lookAtTile(this, x, y);
 			if (m_flags.TargetObj > 0) {
-				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_FRAGUA) {
+				if (findObj(m_flags.TargetObj).objType == ObjType.Fragua) {
 					fundirMineral();
 				} else {
 					enviarMensaje("Ahi no hay ninguna fragua.", FontType.FONTTYPE_INFO);
@@ -1896,7 +1913,7 @@ public class Player extends AbstractCharacter {
 		case Skill.SKILL_Herreria:
 			mapa.lookAtTile(this, x, y);
 			if (m_flags.TargetObj > 0) {
-				if (findObj(m_flags.TargetObj).ObjType == OBJTYPE_YUNQUE) {
+				if (findObj(m_flags.TargetObj).objType == ObjType.Yunque) {
 					m_inv.enviarArmasConstruibles();
 					m_inv.enviarArmadurasConstruibles();
 					sendPacket(new ShowBlacksmithFormResponse());
@@ -2174,17 +2191,17 @@ public class Player extends AbstractCharacter {
 			if (mapa.hayObjeto(x, y)) {
 				MapObject obj = mapa.getObjeto(x, y);
 				m_flags.TargetObj = obj.getInfo().ObjIndex;
-				switch (obj.getInfo().ObjType) {
-				case OBJTYPE_PUERTAS:
+				switch (obj.getInfo().objType) {
+				case Puertas:
 					mapa.accionParaPuerta(x, y, this);
 					break;
-				case OBJTYPE_CARTELES:
+				case Carteles:
 					mapa.accionParaCartel(x, y, this);
 					break;
-				case OBJTYPE_FOROS:
+				case Foros:
 					mapa.accionParaForo(x, y, this);
 					break;
-				case OBJTYPE_LEÑA:
+				case Leña:
 					if (m_flags.TargetObj == FOGATA_APAG) {
 						mapa.accionParaRamita(x, y, this);
 					}
@@ -2196,9 +2213,7 @@ public class Player extends AbstractCharacter {
 				Npc npc;
 				if (obj != null) {
 					m_flags.TargetObj = obj.getInfo().ObjIndex;
-					// enviar(MSG_SELE, obj.getInfo().ObjType,
-					// obj.getInfo().Nombre, "OBJ");
-					if (obj.getInfo().ObjType == OBJTYPE_PUERTAS) {
+					if (obj.getInfo().objType == ObjType.Puertas) {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
 					}
 				} else if ((npc = mapa.getNPC(x, y)) != null) {
@@ -2217,8 +2232,7 @@ public class Player extends AbstractCharacter {
 						}
 					} else if (npc.esSacerdote()) {
 						// Extensión de AOJ - 01/02/2007
-						// Doble clic sobre el sacerdote hace /RESUCITAR o
-						// /CURAR
+						// Doble clic sobre el sacerdote hace /RESUCITAR o /CURAR
 						if (isAlive()) {
 							doCurar();
 						} else {
@@ -2362,9 +2376,8 @@ public class Player extends AbstractCharacter {
 		enviarMensaje("¡Has vuelto a ser visible!", FontType.FONTTYPE_INFO);
 		m_flags.Oculto = false;
 		m_flags.Invisible = false;
-		Map m = server.getMap(m_pos.map);
-		// FIXME
-		// m.enviarATodos(MSG_NOVER, m_id, 0);
+		Map map = server.getMap(m_pos.map);
+		map.enviarAlArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)0));
 	}
 
 	private void moverUsuario(Heading dir) {
@@ -2381,7 +2394,7 @@ public class Player extends AbstractCharacter {
 			if (mapa.hayTeleport(new_pos.x, new_pos.y)) {
 				MapPos pos = mapa.getTeleport(new_pos.x, new_pos.y);
 				boolean conFX = (mapa.hayObjeto(new_pos.x, new_pos.y)
-						&& mapa.getObjeto(new_pos.x, new_pos.y).getInfo().ObjType == OBJTYPE_TELEPORT);
+						&& mapa.getObjeto(new_pos.x, new_pos.y).getInfo().objType == ObjType.Teleport);
 				boolean enviarData = m_pos.map != pos.map;
 				cambiarMapa(pos.map, pos.x, pos.y, conFX, enviarData);
 			}
@@ -2512,7 +2525,7 @@ public class Player extends AbstractCharacter {
 				(short) inv.cant,
 				(byte) (inv.equipado ? 1 : 0), 
 				objInfo.GrhIndex, 
-				(byte)objInfo.ObjType, 
+				objInfo.objType.value(), 
 				objInfo.MaxHIT, 
 				objInfo.MinHIT, 
 				objInfo.MaxDef,
@@ -2612,20 +2625,16 @@ public class Player extends AbstractCharacter {
 			if (esCriminal())
 				crimi = 1;
 
-			// enviar(serverPacketID.CC, getId(), m_infoChar.getCuerpo(),
-			// m_infoChar.getCabeza(), m_infoChar.getDir(), getPos().x, getPos().y,
-			// m_infoChar.getArma(), m_infoChar.getEscudo(), m_infoChar.getCasco(),
-			// m_infoChar.getFX(), (short) 999, m_nick + getClan(), crimi,
-			// m_flags.Privilegios);
+			sendPacket(createCC());
 
 			mapa.areasData.loadUser(this);
 			sendPositionUpdate();
 
+			// FIXME
 			// old.areasData.userDisconnect(this);
 			// old.areasData.resetUser(this);
 			// old.areasData.sendToArea(x, y, this.m_id, serverPacketID.MSG_BP, this.m_id);
 			// old.areasData.sendToArea(m, x, y, serverPacketID.MSG_BP, this.m_id);
-
 			// m.areasData.areasLogged(this);
 
 			if (conFX) {
@@ -2685,14 +2694,10 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean warpUser(short m, byte x, byte y, boolean conFX) {
-		// WarpUserChar(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal
-		// X As Integer, ByVal Y As Integer, Optional ByVal FX As Boolean =
-		// False)
 		// Quitar el dialogo
 		Map mapa = server.getMap(m_pos.map);
 		if (mapa != null) {
-			// mapa.enviarATodos(MSG_QDL, m_id);
-			// enviar(MSG_QTDL);
+			mapa.enviarAlArea(x, y, new  RemoveCharDialogResponse(getId()));
 		}
 		// Si el destino es distinto a la posición actual
 		if (m_pos.map != m || m_pos.x != x || m_pos.y != y) {
@@ -2712,19 +2717,17 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		sendPositionUpdate();
-		// Call UpdateUserMap(UserIndex)
 		// Seguis invisible al pasar de mapa
 		if ((m_flags.Invisible || m_flags.Oculto) && !m_flags.AdminInvisible) {
-			// mapa.enviarATodos(MSG_NOVER, m_id, 1);
+			mapa.enviarAlArea(x, y, new SetInvisibleResponse(getId(), (byte)1));			
 		}
 		if (conFX && !m_flags.AdminInvisible) { // FX
 			enviarSonido(SND_WARP);
 			enviarCFX(FXWARP, 0);
 		}
-		// warpMascotas();
-
+		warpMascotas();
 		// Agus: byte bye user pet...
-		petDelete();
+		//petDelete();
 
 		return true;
 	}
@@ -2833,11 +2836,10 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void volverseOculto() {
-		// FIXME
 		m_flags.Oculto = true;
 		m_flags.Invisible = true;
-		Map mapa = server.getMap(m_pos.map);
-		// mapa.enviarATodos(MSG_NOVER, m_id, 1);
+		Map map = server.getMap(m_pos.map);
+		map.enviarAlArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
 		enviarMensaje("¡Te has escondido entre las sombras!", FontType.FONTTYPE_INFO);
 	}
 
@@ -2967,29 +2969,8 @@ public class Player extends AbstractCharacter {
 				(byte)m_flags.Privilegios);
 	}
 
-	/*
-	 * FIXME
-	 * private void enviarATodosCC() { Mapa m = server.getMapa(m_pos.mapa); if (m ==
-	 * null) return; m.enviarATodos(getCC()); }
-	 */
-
 	private void enviarLogged() {
 		sendPacket(new LoggedMessageResponse());
-	}
-
-	private void enviarCambioMapa(short mapa) {
-		// FIXME
-		// enviar(MSG_CM, (short) mapa);
-		// enviarMidi(13);
-	}
-
-	private void enviarMidi(int midi) {
-		enviarMidi("" + midi + "-1");
-	}
-
-	private void enviarMidi(String midi) {
-		// FIXME
-		// enviar(MSG_TM, midi);
 	}
 
 	public void enviarObjeto(int objId, int x, int y) {
@@ -3006,8 +2987,11 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void cuerpoDesnudo() {
-		// DarCuerpoDesnudo
-		m_infoChar.cuerpoDesnudo(m_raza, m_genero);
+		if (this.getFlags().Mimetizado) {
+			mimetizadoChar.cuerpoDesnudo(m_raza, m_genero);
+		} else {
+			m_infoChar.cuerpoDesnudo(m_raza, m_genero);
+		}
 		m_flags.Desnudo = true;
 	}
 
@@ -3101,13 +3085,13 @@ public class Player extends AbstractCharacter {
 		}
 		// << Cambiamos la apariencia del char >>
 		if (!m_flags.Navegando) {
-			m_infoChar.m_cuerpo = iCuerpoMuerto;
-			m_infoChar.m_cabeza = iCabezaMuerto;
+			m_infoChar.m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
+			m_infoChar.m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
 			m_infoChar.m_escudo = NingunEscudo;
 			m_infoChar.m_arma = NingunArma;
 			m_infoChar.m_casco = NingunCasco;
 		} else {
-			m_infoChar.m_cuerpo = iFragataFantasmal;
+			m_infoChar.m_cuerpo = OBJ_INDEX_FRAGATA_FANTASMAL;
 		}
 		
 		getUserPets().removeAll();
@@ -3196,7 +3180,7 @@ public class Player extends AbstractCharacter {
 				if (m_faccion.ArmadaReal) {
 					m_faccion.expulsarFaccionReal();
 				}
-				refreshPk();
+				refreshUpdateTagAndStatus();
 				System.out.println(this.getNick() + " ahora es criminal");
 			}
 		}
@@ -3481,7 +3465,7 @@ public class Player extends AbstractCharacter {
 			// Ataca a un npc?
 			if (npc != null) {
 				// Usa la mata dragones?
-				if (arma.SubTipo == SUBTYPE_MATADRAGONES) { // Usa la
+				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) { // Usa la
 					// matadragones?
 					modifClase = clazz.clazz().modicadorDañoClaseArmas();
 					if (npc.getNPCtype() == Npc.NPCTYPE_DRAGON) { // Ataca
@@ -3509,7 +3493,7 @@ public class Player extends AbstractCharacter {
 					}
 				}
 			} else { // Ataca usuario
-				if (arma.SubTipo == SUBTYPE_MATADRAGONES) {
+				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) {
 					modifClase = clazz.clazz().modicadorDañoClaseArmas();
 					dañoArma = 1; // Si usa la espada matadragones daño es 1
 					dañoMaxArma = 1;
@@ -3565,7 +3549,7 @@ public class Player extends AbstractCharacter {
 		if (npc.getEstads().MinHP <= 0) {
 			// Si era un Dragon perdemos la espada matadragones
 			if (npc.getNPCtype() == Npc.NPCTYPE_DRAGON) {
-				quitarObjetos(iEspadaMataDragones, 1);
+				quitarObjetos(OBJ_INDEX_ESPADA_MATA_DRAGONES, 1);
 			}
 			getUserPets().petsFollowMaster();
 
@@ -4316,7 +4300,7 @@ public class Player extends AbstractCharacter {
 			}
 
 			if (m_flags.Navegando) {
-				m_infoChar.m_cuerpo = !isAlive() ? iFragataFantasmal : m_inv.getBarco().Ropaje;
+				m_infoChar.m_cuerpo = !isAlive() ? OBJ_INDEX_FRAGATA_FANTASMAL : m_inv.getBarco().Ropaje;
 				m_infoChar.m_cabeza = 0;
 				m_infoChar.m_arma = NingunArma;
 				m_infoChar.m_escudo = NingunEscudo;
@@ -4397,16 +4381,15 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void efectoCegueEstu() {
-		// FIXME
 		if (m_counters.Ceguera > 0) {
 			m_counters.Ceguera--;
 		} else {
 			if (m_flags.Ceguera) {
 				m_flags.Ceguera = false;
-				// enviar(MSG_NSEGUE);
+				sendPacket(new BlindNoMoreResponse());
 			} else {
 				m_flags.Estupidez = false;
-				// enviar(MSG_NESTUP);
+				sendPacket(new DumbNoMoreResponse());
 			}
 		}
 	}
@@ -4868,13 +4851,13 @@ public class Player extends AbstractCharacter {
 			ObjectInfo info = findObj(objid);
 			herreroQuitarMateriales(objid);
 			// AGREGAR FX
-			if (info.ObjType == OBJTYPE_WEAPON) {
+			if (info.objType == ObjType.Weapon) {
 				enviarMensaje("Has construido el arma!.", FontType.FONTTYPE_INFO);
-			} else if (info.ObjType == OBJTYPE_ESCUDO) {
+			} else if (info.objType == ObjType.ESCUDO) {
 				enviarMensaje("Has construido el escudo!.", FontType.FONTTYPE_INFO);
-			} else if (info.ObjType == OBJTYPE_CASCO) {
+			} else if (info.objType == ObjType.CASCO) {
 				enviarMensaje("Has construido el casco!.", FontType.FONTTYPE_INFO);
-			} else if (info.ObjType == OBJTYPE_ARMOUR) {
+			} else if (info.objType == ObjType.Armadura) {
 				enviarMensaje("Has construido la armadura!.", FontType.FONTTYPE_INFO);
 			}
 			if (m_inv.agregarItem(objid, 1) < 1) {
@@ -4926,30 +4909,17 @@ public class Player extends AbstractCharacter {
 		boolean eraCrimi = esCriminal();
 		m_reputacion.perdonar();
 		if (eraCrimi) {
-			refreshCiu();
+			refreshUpdateTagAndStatus();
 		}
 
 		System.out.println(this.getNick() + "ahora es ciuda");
 
 	}
 
-	private void actualizarUserChar() {
-		// FIXME
+	public void refreshUpdateTagAndStatus() {
 		Map mapa = server.getMap(m_pos.map);
-		// mapa.enviarATodos(MSG_BP, getId());
-		// mapa.enviarATodos(MSG_CC, ccParams());
-	}
-
-	private void refreshPk() {
-		// FIXME
-//		Map mapa = server.getMapa(m_pos.map);
-//		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 1, getTagsDesc());
-	}
-
-	public void refreshCiu() {
-		// FIXME
-//		Map mapa = server.getMapa(m_pos.map);
-//		mapa.enviarAlArea(pos().x, pos().y, ServerPacketID.UpdateTagAndStatus, getId(), (byte) 0, getTagsDesc());
+		mapa.enviarAlArea(pos().x, pos().y,
+				new UpdateTagAndStatusResponse(getId(), esCriminal() ? (byte)1 : (byte)0, getTagsDesc()));
 	}
 
 	public void quitGame() {

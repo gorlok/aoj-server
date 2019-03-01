@@ -115,6 +115,8 @@ public class UserFlags {
     
     short indexDuel = 0;
     
+    public boolean Mimetizado = false; // FIXME
+    
 }
 
 

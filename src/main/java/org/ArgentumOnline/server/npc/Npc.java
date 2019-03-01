@@ -788,7 +788,7 @@ public class Npc extends AbstractCharacter implements Constants {
 
             //Agush: updateamos de ser necesario ;-)
             if (cliente.esCriminal() != eraCrimi && eraCrimi == true) {
-            	cliente.refreshCiu();
+            	cliente.refreshUpdateTagAndStatus();
             }
         }
         

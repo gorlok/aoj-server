@@ -32,14 +32,18 @@ import org.ArgentumOnline.server.util.*;
  * @author gorlok
  */
 public class CharInfo implements Constants {
-	public short m_cabeza;
-	public short m_cuerpo;
-	public short m_arma;
-	public short m_escudo;
-	public short m_casco;
+	
+	public short m_cabeza; // head
+	public short m_cuerpo; // body
+	
+	public short m_arma; // weapon anim
+	public short m_escudo; // shield anim
+	public short m_casco; // casco anim
+	
 	public short m_fx;
 	public short m_loops;
-	public byte m_dir;
+	
+	public byte m_dir; // heading
 
 	public CharInfo() {
 	}
@@ -114,12 +118,14 @@ public class CharInfo implements Constants {
 		case RAZA_ELFO_OSCURO:
 			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 32 : (short) 40;
 			break;
+		case RAZA_ELFO:
+			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 210 : (short) 259;
+			break;
 		case RAZA_ENANO:
-		case RAZA_GNOMO:
 			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 53 : (short) 60;
 			break;
-		default:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 21 : (short) 39;
+		case RAZA_GNOMO:
+			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 222 : (short) 260;
 			break;
 		}
 	}

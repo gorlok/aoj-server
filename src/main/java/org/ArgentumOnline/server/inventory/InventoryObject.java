@@ -26,6 +26,7 @@
 package org.ArgentumOnline.server.inventory;
 
 import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjectInfo;
 
@@ -33,16 +34,14 @@ import org.ArgentumOnline.server.ObjectInfo;
  * @author gorlok
  */
 public class InventoryObject {
-	
+
 	public short objid = 0;
 
 	public int cant = 0;
 
 	public boolean equipado = false;
 
-	/** Creates a new instance of InventoryObject */
 	public InventoryObject() {
-		//
 	}
 
 	public InventoryObject(short objid, int cant) {
@@ -70,14 +69,14 @@ public class InventoryObject {
 	}
 
 	public boolean esRobable() {
-		// Determina qué objetos son robables.
 		var storage = GameServer.instance().getObjectInfoStorage();
-		
 		ObjectInfo info = storage.getInfoObjeto(this.objid);
-		
-		return !this.equipado && info.Real == 0 && info.Caos == 0
-				&& info.ObjType != Constants.OBJTYPE_LLAVES
-				&& info.ObjType != Constants.OBJTYPE_BARCOS;
+
+		return !this.equipado &&
+				!info.esReal() &&
+				!info.esCaos() &&
+				info.objType != ObjType.Llaves &&
+				info.objType != ObjType.Barcos;
 	}
 
 }
