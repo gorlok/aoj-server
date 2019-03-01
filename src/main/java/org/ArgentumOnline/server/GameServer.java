@@ -31,6 +31,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,7 +74,7 @@ public class GameServer implements Constants {
     private boolean useUPnP = true;
 
     private HashMap<Short, Player> players = new HashMap<>();
-    private HashMap<Integer, Npc> 	npcs = new HashMap<>();
+    private HashMap<Integer, Npc> npcs = new HashMap<>();
     
     private List<Player> m_clientes_eliminar = new LinkedList<>();
     private List<Short> m_npcs_muertos = new LinkedList<>();
@@ -161,8 +164,7 @@ public class GameServer implements Constants {
     }
     
     public List<Npc> getNpcs() {
-    	return this.npcs.values().stream()
-    			.collect(Collectors.toList());
+    	return new ArrayList<Npc>(this.npcs.values());
     }
     
     public long runningTimeInSecs() {
@@ -305,10 +307,11 @@ public class GameServer implements Constants {
             this.m_corriendo = true;
             this.manager.start();
             
+            int fps = 0;
+            long worstTime = 0;
         	// Main loop.
             while (this.m_corriendo) {
-            	// FIXME add Updates/Seconds and warning when low.
-            	
+                fps++;
                 long now = Util.millis();
                 if ((now - lastNpcAI) > 400) {
                     doAI();
@@ -351,10 +354,23 @@ public class GameServer implements Constants {
                     lastAutoSaveTimer = now;
                 }
                 if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
+                	System.out.println("fps: " + fps + " max-time: " + worstTime);
+                	fps = 0;
+                	worstTime = 0;
                     pasarSegundo();
                     lastPasarSegundoTimer = now;
                 }
                 eliminarClientes();
+
+                long ellapsed = Util.millis() - now;
+                if (ellapsed > worstTime) worstTime = ellapsed;
+                long wait = (1000 - ellapsed);
+                if (wait < 0) wait = 1;
+                if (wait > 40) wait = 40;
+                try {
+					Thread.sleep(wait);
+				} catch (InterruptedException ignore) {
+				}
             }
         } finally {
             doBackup();
@@ -517,29 +533,26 @@ public class GameServer implements Constants {
     private void doAI() {
         // TIMER_AI_Timer()
         if (!this.m_haciendoBackup) {
-            // Update NPCs
-            var npcs = new Vector<Npc>(getNpcs());
-            for (Npc npc: npcs) {
-                if (npc.isNpcActive()) { // Nos aseguramos que sea INTELIGENTE!
-                    if (npc.estaParalizado()) {
-                        npc.efectoParalisisNpc();
-                    } else {
-                        // Usamos AI si hay algun user en el mapa
-                        if (npc.pos().isValid()) {
-                            Map mapa = getMap(npc.pos().map);
-                            if (mapa != null && mapa.getCantUsuarios() > 0) {
-                                if (!npc.isStatic()) {
-                                    npc.doAI();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            for (Object element : this.m_npcs_muertos) {
-                this.npcs.remove(element);
-            }
-            this.m_npcs_muertos.clear();
+            var npcs = new ArrayList<Npc>(getNpcs());
+            npcs.stream()
+            	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
+            	.forEach(npc -> {
+	                if (npc.estaParalizado()) {
+	                    npc.efectoParalisisNpc();
+	                } else {
+	                    // Usamos AI si hay algun user en el mapa
+	                    if (npc.pos().isValid()) {
+	                        Map mapa = getMap(npc.pos().map);
+	                        if (mapa != null && mapa.getCantUsuarios() > 0) {
+	                            if (!npc.isStatic()) {
+	                                npc.doAI();
+	                            }
+	                        }
+	                    }
+	                }
+            	});
+	        this.m_npcs_muertos.stream().map(npc -> npcs.remove(npc));
+	        this.m_npcs_muertos.clear();
         }
     }
 

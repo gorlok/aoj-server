@@ -3,6 +3,10 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-02-28
+- se corrigieron muchos comandos y más refactory.
+- se mide y se mejoró la performace de GameServer.
+
 ### 2019-02-27
 - se manejan varios paquetes básicos del protocolo.
 

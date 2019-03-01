@@ -49,6 +49,7 @@ public enum ObjType {
     final static int OBJTYPE_CUALQUIERA = 1000;
     final static int OBJTYPE_RED_PESCA = 543;
 	 */
+	NONE(0),
 	UseOnce(1),
 	Weapon(2),
 	Armadura(3),
@@ -60,6 +61,7 @@ public enum ObjType {
 	Llaves(9),
 	Foros(10),
 	Pociones(11),
+	Libros(12),
 	Bebidas(13),
 	Leña(14),
 	Fogata(15),
@@ -67,12 +69,17 @@ public enum ObjType {
 	CASCO(17),
 	Anillo(18),
 	Teleport(19),
+	Mueble(20),
+	Joya(21),
 	Yacimiento(22),
 	Minerales(23),
 	Pergaminos(24),
+	Aura(25),
 	Instrumentos(26),
 	Yunque(27),
 	Fragua(28),
+	Gema(29),
+	Flor(30),
 	Barcos(31),
 	Flechas(32),
 	BotellaVacia(33),

@@ -25,9 +25,30 @@
  */
 package org.ArgentumOnline.server.npc;
 
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_AFECTA_PARALISIS;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_AGUA_VALIDA;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_ATACABLE;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_BACKUP;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_BENDICION;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_COMERCIA;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_ENVENENA;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_FACCION;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_FOLLOW;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_GOLPE_EXACTO;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_HOSTIL;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INVISIBLE;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INV_RESPAWN;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_LANZA_SPELLS;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_MALDICION;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_NPC_ACTIVE;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_OLD_HOSTILE;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_PARALIZADO;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_PUEDE_ATACAR;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN_ORIG_POS;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_TIERRA_INVALIDA;
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
-import java.util.BitSet;
 import java.util.List;
 
 import org.ArgentumOnline.server.AbstractCharacter;
@@ -109,42 +130,7 @@ public class Npc extends AbstractCharacter implements Constants {
     int   m_numero  = 0;
     short m_level   = 0;
 
-    private final static int FLAG_INV_RESPAWN   = 0;
-    private final static int FLAG_COMERCIA      = 1;
-    private final static int FLAG_ENVENENA      = 2;
-    private final static int FLAG_ATACABLE      = 3;
-    private final static int FLAG_HOSTIL        = 4;
-    private final static int FLAG_PUEDE_ATACAR  = 5;
-    private final static int FLAG_AFECTA_PARALISIS = 6;
-    private final static int FLAG_GOLPE_EXACTO  = 7;
-    private final static int FLAG_NPC_ACTIVE    = 8; // ¿Esta vivo?
-    private final static int FLAG_FOLLOW        = 9;
-    private final static int FLAG_FACCION       = 10;
-    private final static int FLAG_OLD_HOSTILE   = 11;
-    private final static int FLAG_AGUA_VALIDA   = 12;
-    private final static int FLAG_TIERRA_INVALIDA = 13;
-    private final static int FLAG_USE_AI_NOW    = 14;
-    private final static int FLAG_ATTACKING     = 15;
-    private final static int FLAG_BACKUP        = 16;
-    private final static int FLAG_RESPAWN_ORIG_POS= 17; // POS_ORIG
-    private final static int FLAG_ENVENENADO    = 18;
-    private final static int FLAG_PARALIZADO    = 19;
-    private final static int FLAG_INVISIBLE     = 20;
-    private final static int FLAG_MALDICION     = 21;
-    private final static int FLAG_BENDICION     = 22;
-    private final static int FLAG_RESPAWN       = 23;
-    private final static int FLAG_LANZA_SPELLS  = 24;
-
-    private final static int MAX_FLAGS          = 25;
-    private BitSet m_flags = new BitSet(MAX_FLAGS);
-    /*
-    boolean m_invReSpawn  = false;
-    boolean m_comercia    = false;
-    boolean m_veneno      = false;
-    boolean m_attackable  = false;
-    boolean m_hostile     = false;
-    boolean m_canAttack   = false;
-    */
+    private NpcFlags m_flags = new NpcFlags();
     
     int   m_targetUser    = 0;
     Npc   m_targetNpc = null;
