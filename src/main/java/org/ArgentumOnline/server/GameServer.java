@@ -82,9 +82,9 @@ public class GameServer implements Constants {
     
     private List<MapPos> trashCollector = new LinkedList<>();
     
-    private short [] m_armasHerrero;
-    private short [] m_armadurasHerrero;
-    private short [] m_objCarpintero;
+    private short[] m_armasHerrero;
+    private short[] m_armadurasHerrero;
+    private short[] m_objCarpintero;
     
     boolean m_corriendo = false;
     boolean m_haciendoBackup = false;
@@ -124,7 +124,8 @@ public class GameServer implements Constants {
     }
 
     private static GameServer instance = null;
-    public static GameServer instance() {
+    
+    public synchronized static GameServer instance() {
         if (instance == null) {
 			instance = new GameServer();
 		}
@@ -210,15 +211,15 @@ public class GameServer implements Constants {
         return this.quests.size();
     }
     
-    public short [] getArmasHerrero() {
+    public short[] getArmasHerrero() {
         return this.m_armasHerrero;
     }
     
-    public short [] getArmadurasHerrero() {
+    public short[] getArmadurasHerrero() {
         return this.m_armadurasHerrero;
     }
     
-    public short [] getObjCarpintero() {
+    public short[] getObjCarpintero() {
         return this.m_objCarpintero;
     }
     
@@ -232,14 +233,14 @@ public class GameServer implements Constants {
     
     public List<String> getUsuariosConectados() {
     	return getClientes().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.esGM())
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.map(Player::getNick)
 			    	.collect(Collectors.toList());
     }
     
     public void echarPjsNoPrivilegiados() {
     	var users = getClientes().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.esGM())
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.collect(Collectors.toList());
     	
     	users.forEach(c -> {
@@ -250,7 +251,7 @@ public class GameServer implements Constants {
 	
     public List<String> getUsuariosTrabajando() {
     	return getClientes().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.estaTrabajando())
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
@@ -270,7 +271,7 @@ public class GameServer implements Constants {
     
     public List<String> getGMsOnline() {
     	return getClientes().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.esGM())
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.isGM())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
@@ -641,7 +642,7 @@ public class GameServer implements Constants {
     private void timerOculto() {
     	for (Player cli: getClientes()) {
             if (cli != null && cli.getId() > 0) {
-                if (cli.estaOculto()) {
+                if (cli.isHidden()) {
 					cli.doPermanecerOculto();
 				}
             }
@@ -669,7 +670,7 @@ public class GameServer implements Constants {
     
     public void enviarAAdmins(ServerPacket packet) {
     	for (Player cli: getClientes()) {
-            if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
+            if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
         }
@@ -677,7 +678,7 @@ public class GameServer implements Constants {
     
     public void enviarMensajeAAdmins(String msg, FontType fuente) {
     	for (Player cli: getClientes()) {
-            if (cli != null && cli.getId() > 0 && cli.esGM() && cli.isLogged()) {
+            if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
                 cli.enviarMensaje(msg, fuente);
             }
         }
@@ -750,7 +751,7 @@ public class GameServer implements Constants {
     
     public void purgePenalties() {
     	for (Player cli: getClientes()) {
-            if (cli != null && cli.getId() > 0 && cli.getFlags().UserLogged) {
+            if (cli != null && cli.getId() > 0 && cli.flags().UserLogged) {
                 if (cli.m_counters.Pena > 0) {
                     cli.m_counters.Pena--;
                     if (cli.m_counters.Pena < 1) {
@@ -894,7 +895,7 @@ public class GameServer implements Constants {
 
     public void enviarMensajeALosGMs(String msg) {
         for (Player cli: getClientes()) {
-            if (cli.isLogged() && cli.esGM()) {
+            if (cli.isLogged() && cli.isGM()) {
                 cli.enviarMensaje(msg, FontType.FONTTYPE_GM);
             }
         }

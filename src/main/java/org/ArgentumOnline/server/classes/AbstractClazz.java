@@ -146,7 +146,7 @@ public abstract class AbstractClazz implements Constants {
     
     /** Subir las estadísticas segun la clase */
     public void subirEstads(Player cliente) {
-        UserStats estads = cliente.getEstads();
+        UserStats estads = cliente.stats();
 
         // Las mejoras varian según las características de cada clase.
         int aumentoSalud = getMejoraSalud(estads);
@@ -175,14 +175,14 @@ public abstract class AbstractClazz implements Constants {
     }
     
     public short getArmaduraImperial(Player cliente) {
-        if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
+        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
         return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
     }
 
     public short getArmaduraCaos(Player cliente) {
-        if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
+        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
         return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);

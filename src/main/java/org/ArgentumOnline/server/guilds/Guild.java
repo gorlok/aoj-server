@@ -25,13 +25,17 @@
  */
 package org.ArgentumOnline.server.guilds;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
-import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 
@@ -40,12 +44,21 @@ import org.ArgentumOnline.server.util.IniFile;
  */
 public class Guild {
 
-    public String guildName = "";
+    private static final String YYYY_MM_DD_HH_MM_SS = "yyyy/MM/dd HH:mm:ss";
+    
+    private static final byte CANTIDAD_MAXIMA_CODEX = 8;
+
+    private static final byte MAX_ASPIRANTES = 10;
+
+	// puntos maximos de antifaccion que un clan tolera antes de ser cambiada su alineacion
+    private static final byte MAX_ANTIFACCION = 5;
+    
+	public String guildName = "";
     public String URL = "";
     public String founder = "";
     public String fundationDate = "";
     public String description  = "";
-    private String codex[] = new String[8];
+    private String codex[] = new String[CANTIDAD_MAXIMA_CODEX];
     public String leader = "";
     public double reputation = 0;
     public double gold = 0;
@@ -61,8 +74,16 @@ public class Guild {
     public boolean elections = false;
     private BallotBox ballotBox = new BallotBox();
     
-    private static java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
-
+    boolean eleccionesAbiertas = false;
+    int puntosAntifaccion = 0;
+    Date eleccionesFinalizanDia;
+    
+    AlineacionGuild alineacion;
+    
+	final static byte RELACIONES_GUILD_GUERRA = -1;
+	final static byte RELACIONES_GUILD_PAZ = 0;
+	final static byte RELACIONES_GUILD_ALIADOS = 1;
+    
     private GameServer server;
     
     /** 
@@ -78,6 +99,10 @@ public class Guild {
     throws InvalidGuildNameException {
         // initialize
         parseGuildInfo(guildInfo, founderName, rep);
+    }
+    
+    public String antifactionPoints() {
+    	return puntosAntifaccion + "/" + MAX_ANTIFACCION;    	
     }
 
     public String getCodex(int number) {
@@ -106,25 +131,17 @@ public class Guild {
         }
     }
     
-    public void enviarSonido(int sonido) {
+    public void enviarSonido(byte sound) {
     	// ToGuildMembers
-        Player cliente;
+        Player player;
         for (String member: this.members) {
-            cliente = this.server.getUsuario(member);
-            // FIXME
-           // cliente.enviar(MSG_TW, sonido);            
+        	player = this.server.getUsuario(member);
+        	player.sendPacket(new PlayWaveResponse(sound, player.pos().x, player.pos().y));
         }
     }
     
     public int codexLength() {
-    	int cant = 0;
-        for (String element : this.codex) {
-        	cant++;
-            if (element.equals("")) {
-				break;
-			}
-        }
-        return cant;
+    	return this.codex.length;
     }
     
     public long daysToNextElection() {
@@ -147,7 +164,8 @@ public class Guild {
     throws InvalidGuildNameException {
         this.founder = founderName;
         this.leader = founderName;
-        this.fundationDate = df.format(new java.util.Date());
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        this.fundationDate = df.format(new Date());
         StringTokenizer st = new StringTokenizer(guildInfo, "¬");
         this.description = st.nextToken();
         this.guildName = st.nextToken();
@@ -188,6 +206,19 @@ public class Guild {
         this.guildExperience = ini.getDouble(seccion, "Exp");
         this.daysSinceLastElection = ini.getLong(seccion, "DaysLast");
         this.guildNews = ini.getString(seccion, "GuildNews");
+        this.alineacion = AlineacionGuild.value(ini.getShort(seccion, "Alineacion"));
+        
+        this.eleccionesAbiertas = ini.getInt(seccion, "EleccionesAbiertas") == 1;
+        if (this.eleccionesAbiertas) {
+        	SimpleDateFormat df = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS);
+        	try {
+				this.eleccionesFinalizanDia = df.parse(ini.getString(seccion, "EleccionesFinalizan"));
+			} catch (ParseException pe) {
+				this.eleccionesFinalizanDia = new Date(); //now
+			} 
+        }
+        this.puntosAntifaccion = ini.getInt(seccion, "Antifaccion");
+        
         this.loadGuildMembers();
         this.loadSolicitudes();
         this.loadAlliedGuilds();
@@ -248,12 +279,14 @@ public class Guild {
 
     public void saveGuild(IniFile ini, int nro)
     throws java.io.IOException {
+    	SimpleDateFormat df = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS);
+    	
     	String seccion = "GUILD" + nro;
     	ini.setValue(seccion, "GuildName", this.guildName);
-    	ini.setValue(seccion, "Founder", this.founder);
+    	ini.setValue(seccion, "Founder",   this.founder);
     	ini.setValue(seccion, "GuildName", this.guildName);
-    	ini.setValue(seccion, "Date", this.fundationDate);
-    	ini.setValue(seccion, "Desc", this.description);
+    	ini.setValue(seccion, "Date",   this.fundationDate);
+    	ini.setValue(seccion, "Desc",   this.description);
     	ini.setValue(seccion, "Codex0", this.codex[0]);
     	ini.setValue(seccion, "Codex1", this.codex[1]);
     	ini.setValue(seccion, "Codex2", this.codex[2]);
@@ -268,6 +301,10 @@ public class Guild {
     	ini.setValue(seccion, "DaysLast", this.daysSinceLastElection);
     	ini.setValue(seccion, "GuildNews", this.guildNews);
     	ini.setValue(seccion, "Rep", this.reputation);
+    	ini.setValue(seccion, "EleccionesAbiertas", this.eleccionesAbiertas);
+    	ini.setValue(seccion, "EleccionesFinalizan", eleccionesAbiertas ? df.format(this.eleccionesFinalizanDia) : "");
+    	ini.setValue(seccion, "Alineacion", this.alineacion.value());
+    	ini.setValue(seccion, "Antifaccion", this.puntosAntifaccion);
 		saveAlliedGuilds();
 		saveEnemyGuilds();
 		saveGuildMembers();

@@ -186,4 +186,8 @@ public class MapPos extends Pos {
 	    		this.map == wp.map;
 	}
 
+	@Override
+	public int hashCode() {
+		return this.x + this.y * 100 + this.map * 100 * 100;
+	}
 }

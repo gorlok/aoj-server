@@ -42,12 +42,12 @@ public class Util {
     }
 	
 	public static boolean asciiValidos(String str) {
-		// Function AsciiValidos(ByVal cad As String) As Boolean
 		byte[] bytes = str.toLowerCase().getBytes();
-		for (byte element : bytes) {
-			if ((element < 97 || element > 122) && element != 255
-					&& element != 32) {
-				return false;
+		for (byte b : bytes) {
+			if ((b < 97 || b > 122) 
+					&& b != (byte)255
+					&& b != 32) {
+						return false;
 			}
 		}
 		return true;
@@ -55,14 +55,6 @@ public class Util {
 
 	public static short leShort(short n) {
 		return (short) (((n & 0xff) << 8) | (((n & 0xff00) >> 8) & 0xff));
-	}
-
-	public static int leInt(int n) {
-		int a = n & 0xff;
-		int b = n & 0xff00;
-		int c = n & 0xff0000;
-		int d = n & 0xff000000;
-		return ((a << 32) | (b << 16) | (c << 8) | d);
 	}
 
 	public static double distance(int x1, int y1, int x2, int y2) {
@@ -114,6 +106,12 @@ public class Util {
 	public static boolean existeArchivo(String nombre) {
 		java.io.File f = new java.io.File(nombre);
 		return f.canRead();
+	}
+	
+	public static String capitalize(String s) {
+		if (s.length()<2)
+			return s.toUpperCase();
+		return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
 	}
 
 }

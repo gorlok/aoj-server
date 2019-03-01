@@ -1,32 +1,33 @@
 package org.ArgentumOnline.server.npc;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.protocol.TrainerCreatureListResponse;
 import org.ArgentumOnline.server.util.IniFile;
 
+/**
+ * @author gorlok
+ */
 public class NpcTrainer extends Npc {
 
-    // <<<<Entrenadores>>>>>
-    byte m_criaturas_entrenador_cant = 0;
-    TrainerMascot[] m_criaturas_entrenador;
+	// list of creatures for train
+    private TrainerMascot[] creatureList;
     
     short petsCount    = 0;
-    Npc pets[] = new Npc[MAX_MASCOTAS_ENTRENADOR];
+    Npc pets[] = new Npc[MAX_TRAINER_PETS];
     
-	protected NpcTrainer(int npc_numero, GameServer server) {
-		super(npc_numero, server);
+	protected NpcTrainer(int npc_number, GameServer server) {
+		super(npc_number, server);
 	}
 
-    public short getCantMascotas() {
+    public short petsCount() {
         return this.petsCount;
     }
 	
-    public void quitarMascotaNpc(Npc mascota) {
+    public void removePet(Npc pet) {
         for (int i = 0; i < this.pets.length; i++) {
-            if (this.pets[i] == mascota) {
+            if (this.pets[i] == pet) {
                 this.pets[i] = null;
                 this.petsCount--;
                 return;
@@ -34,36 +35,40 @@ public class NpcTrainer extends Npc {
         }
     }
     
-    public void agregarMascota(Npc mascota) {
+    private void addPet(Npc pet) {
     	for (int i = 0; i < this.pets.length; i++) {
     		if (this.pets[i] == null) {
-    			this.pets[i] = mascota;
-                mascota.setPetNpcOwner(this);
+    			this.pets[i] = pet;
+                pet.setPetNpcOwner(this);
                 this.petsCount++;
                 return;
     		}
     	}
     }
     
-    public short getCantCriaturas() {
-        return this.m_criaturas_entrenador_cant;
+    private  int creaturesCount() {
+        return this.creatureList.length;
     }
 
-    public short getCriaturaIndex(short slot) {
-        if (slot > 0 && slot <= MAX_CRIATURAS_ENTRENADOR) {
-			return this.m_criaturas_entrenador[slot-1].npc_index;
+    private short creatureIndex(short slot) {
+        if (slot > 0 && slot <= this.creatureList.length) {
+			return this.creatureList[slot-1].npc_index;
 		} 
 		return 0;
     }
     
-	/** Envia la lista de criaturas del entrenador. */
-    public void enviarListaCriaturas(Player cliente) {
-    	List<Object> criaturas = new LinkedList<Object>();
-        criaturas.add(this.m_criaturas_entrenador_cant);
-        for (int i = 0; i < this.m_criaturas_entrenador_cant; i++) {
-            criaturas.add(this.m_criaturas_entrenador[i].npc_name);
+    public void sendTrainerCreatureList(Player player) {
+    	StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < this.creatureList.length; i++) {
+            sb.append(this.creatureList[i].npc_name)
+              .append(Constants.NULL_CHAR); // separator
         }
-      //  cliente.enviar(MSG_LSTCRI, criaturas);
+        if (sb.length() > 0) {
+        	// remove last separator (extra)
+        	sb.deleteCharAt(sb.length()-1);
+        }
+        
+        player.sendPacket(new TrainerCreatureListResponse(sb.toString()));
     }
     
     @Override
@@ -71,33 +76,30 @@ public class NpcTrainer extends Npc {
     	super.leerNpc(ini, npc_ind);
         String section = "NPC" + npc_ind;
     	
-        //Entrenador
-        this.m_criaturas_entrenador = new TrainerMascot[MAX_CRIATURAS_ENTRENADOR];
-        this.m_criaturas_entrenador_cant = (byte) ini.getShort(section, "NroCriaturas");
-        
-        if (this.m_criaturas_entrenador_cant > MAX_CRIATURAS_ENTRENADOR) {
-        	this.m_criaturas_entrenador_cant = MAX_CRIATURAS_ENTRENADOR;
+        int count = (byte) ini.getShort(section, "NroCriaturas");
+        if (count > MAX_TRAINER_CREATURES) {
+        	count = MAX_TRAINER_CREATURES;
         }
+        this.creatureList = new TrainerMascot[count];
         
-        if (this.m_criaturas_entrenador_cant > 0) {
-            for (int c = 0; c < this.m_criaturas_entrenador_cant; c++) {
-            	short npcIndex = ini.getShort(section, "CI" + (c+1));
-            	String npcName = ini.getString(section, "CN" + (c+1));
-            	this.m_criaturas_entrenador[c] = new TrainerMascot(npcIndex, npcName);
-            }
+        for (int i = 0; i < count; i++) {
+        	short npcIndex = ini.getShort(section, "CI" + (i+1));
+        	String npcName = ini.getString(section, "CN" + (i+1));
+        	this.creatureList[i] = new TrainerMascot(npcIndex, npcName);
         }
     }
     
     public boolean isTrainerIsFull() {
-    	return this.getCantMascotas() >= MAX_MASCOTAS_ENTRENADOR;	
+    	return this.petsCount() >= MAX_TRAINER_PETS;	
     }
 
 	public void spawnTrainerPet(short slot) {
-		if (getCantMascotas() < Player.MAX_MASCOTAS_ENTRENADOR) {
-			if (slot > 0 && slot <= getCantCriaturas()) {
-				Npc criatura = Npc.spawnNpc(getCriaturaIndex(slot), pos(), true, false);
-				if (criatura != null) {
-					agregarMascota(criatura);
+		if (petsCount() < Player.MAX_TRAINER_PETS) {
+			if (slot > 0 && slot <= creaturesCount()) {
+				Npc trainerPet = Npc.spawnNpc(creatureIndex(slot), 
+						pos(), /*fx*/ true, /*respawn*/ false);
+				if (trainerPet != null) {
+					addPet(trainerPet);
 				}
 			}
 		}

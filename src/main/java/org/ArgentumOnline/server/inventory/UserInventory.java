@@ -25,8 +25,7 @@
  */
 package org.ArgentumOnline.server.inventory;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -36,6 +35,12 @@ import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.net.BlacksmithArmors_DATA;
+import org.ArgentumOnline.server.net.BlacksmithWeapons_DATA;
+import org.ArgentumOnline.server.net.CarpenterObjects_DATA;
+import org.ArgentumOnline.server.protocol.BlacksmithArmorsResponse;
+import org.ArgentumOnline.server.protocol.BlacksmithWeaponsResponse;
+import org.ArgentumOnline.server.protocol.CarpenterObjectsResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -52,7 +57,6 @@ public class UserInventory extends Inventory implements Constants {
     
     boolean armaEquipada = false;
     boolean municionEquipada = false;
-    boolean herramientaEquipada = false;
     boolean armaduraEquipada = false;
     boolean cascoEquipado = false;
     boolean escudoEquipado = false;
@@ -61,7 +65,6 @@ public class UserInventory extends Inventory implements Constants {
 
     int armaSlot = 0;
     int municionSlot = 0;
-    int herramientaSlot = 0;
     int armaduraSlot = 0;
     int cascoSlot = 0;
     int escudoSlot = 0;
@@ -74,13 +77,6 @@ public class UserInventory extends Inventory implements Constants {
         super(server, slots);
         this.dueño = dueño;
     }
-    
-    public void setHerramientaSlot(int herramientaSlot) {
-		this.herramientaSlot = herramientaSlot;
-		if (this.herramientaSlot > 0) {
-			this.herramientaEquipada = true;
-		}
-	}
     
     public void setAnilloSlot(int anilloSlot) {
 		this.anilloSlot = anilloSlot;
@@ -147,10 +143,6 @@ public class UserInventory extends Inventory implements Constants {
         return this.municionEquipada;
     }
     
-    public boolean tieneHerramientaEquipada() {
-        return this.herramientaEquipada;
-    }
-    
     public boolean tieneArmaduraEquipada() {
         return this.armaduraEquipada;
     }
@@ -167,9 +159,6 @@ public class UserInventory extends Inventory implements Constants {
     }
     public int getMunicionSlot() {
         return this.municionSlot;
-    }
-    public int getHerramientaSlot() {
-        return this.herramientaSlot;
     }
     public int getArmaduraSlot() {
         return this.armaduraSlot;
@@ -247,11 +236,6 @@ public class UserInventory extends Inventory implements Constants {
     	return null;
     }
     
-    public ObjectInfo getHerramienta() {
-    	if (this.herramientaSlot > 0) return findObj(this.objs[this.herramientaSlot-1].objid);
-    	return null;
-    }
-    
     public void quitarObjsNewbie() {
         for (int j = 0; j < this.objs.length; j++) {
             if (this.objs[j].objid > 0) {
@@ -305,7 +289,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, cant);
                 this.dueño.enviarObjetoInventario(slot);
                 ObjectInfo iobj = findObj(objid);
-                if (this.dueño.esGM()) {
+                if (this.dueño.isGM()) {
 					Log.logGM(this.dueño.getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
@@ -329,8 +313,8 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.armaSlot = 0;
                 this.armaEquipada = false;
-                if (!this.dueño.getFlags().Mimetizado) {
-	                this.dueño.getInfoChar().m_arma = NingunArma;
+                if (!this.dueño.flags().Mimetizado) {
+	                this.dueño.infoChar().m_arma = NingunArma;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
@@ -359,8 +343,8 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.cascoSlot = 0;
                 this.cascoEquipado = false;
-                if (!this.dueño.getFlags().Mimetizado) {
-	                this.dueño.getInfoChar().m_casco = NingunCasco;
+                if (!this.dueño.flags().Mimetizado) {
+	                this.dueño.infoChar().m_casco = NingunCasco;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
@@ -369,17 +353,11 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.escudoSlot = 0;
                 this.escudoEquipado = false;
-                if (!this.dueño.getFlags().Mimetizado) {
-	                this.dueño.getInfoChar().m_escudo = NingunEscudo;
+                if (!this.dueño.flags().Mimetizado) {
+	                this.dueño.infoChar().m_escudo = NingunEscudo;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
-                
-//            case OBJTYPE_HERRAMIENTAS: FIXME todavía sirve?
-//                this.objs[slot-1].equipado = false;
-//                this.herramientaSlot = 0;
-//                this.herramientaEquipada = false;
-//                break;
                 
             case Barcos: // FIXME esto todavía va acá?
                 this.objs[slot-1].equipado = false;
@@ -431,15 +409,15 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaEquipada = true;
                     this.armaSlot = slot;
                     // Sonido
-                    if (!this.dueño.getFlags().AdminInvisible) {
+                    if (!this.dueño.flags().AdminInvisible) {
                         // El sonido solo se envia si no lo produce un admin invisible
                     	this.dueño.enviarSonido(SOUND_SACARARMA);
                     }
                     
-                    if (this.dueño.getFlags().Mimetizado) {
-                        this.dueño.getMimetizadoChar().m_arma = infoObj.WeaponAnim; 
+                    if (this.dueño.flags().Mimetizado) {
+                        this.dueño.mimetizeChar().m_arma = infoObj.WeaponAnim; 
                     } else {
-	                    this.dueño.getInfoChar().m_arma = infoObj.WeaponAnim;
+	                    this.dueño.infoChar().m_arma = infoObj.WeaponAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                     
@@ -494,7 +472,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case Armadura:
                 log.debug("es una armadura");
-                if (this.dueño.estaNavegando()) {
+                if (this.dueño.isSailing()) {
 					return;
 				}
                 // Nos aseguramos que puede usarla
@@ -507,7 +485,7 @@ public class UserInventory extends Inventory implements Constants {
                         // Quitamos del inv el item
                         desequipar(slot);
                         this.dueño.cuerpoDesnudo();
-                        if (!this.dueño.getFlags().Mimetizado) {
+                        if (!this.dueño.flags().Mimetizado) {
                         	this.dueño.sendCharacterChange();
                         }
                         return;
@@ -521,13 +499,13 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaduraEquipada = true;
                     this.armaduraSlot = slot;
                     
-                    if (this.dueño.getFlags().Mimetizado) {
-                    	this.dueño.getMimetizadoChar().m_cuerpo = infoObj.Ropaje;
+                    if (this.dueño.flags().Mimetizado) {
+                    	this.dueño.mimetizeChar().m_cuerpo = infoObj.Ropaje;
                     } else {
-	                    this.dueño.getInfoChar().m_cuerpo = infoObj.Ropaje;
+	                    this.dueño.infoChar().m_cuerpo = infoObj.Ropaje;
 	                    this.dueño.sendCharacterChange();
                     }
-                    this.dueño.getFlags().Desnudo = false;
+                    this.dueño.flags().Desnudo = false;
                 } else {
                     this.dueño.enviarMensaje("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
@@ -535,7 +513,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case CASCO:
                 log.debug("es un casco");
-                if (this.dueño.estaNavegando()) {
+                if (this.dueño.isSailing()) {
 					return;
 				}
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz())) {
@@ -543,10 +521,10 @@ public class UserInventory extends Inventory implements Constants {
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
                         desequipar(slot);
-                        if (this.dueño.getFlags().Mimetizado) {
-                        	this.dueño.getMimetizadoChar().m_casco = NingunCasco;
+                        if (this.dueño.flags().Mimetizado) {
+                        	this.dueño.mimetizeChar().m_casco = NingunCasco;
                         } else {
-                            this.dueño.getInfoChar().m_casco = NingunCasco;
+                            this.dueño.infoChar().m_casco = NingunCasco;
                         	this.dueño.sendCharacterChange();
                         }
                         return;
@@ -560,10 +538,10 @@ public class UserInventory extends Inventory implements Constants {
                     this.cascoEquipado = true;
                     this.cascoSlot = slot;
                     
-                    if (this.dueño.getFlags().Mimetizado) {
-                    	this.dueño.getMimetizadoChar().m_casco = infoObj.CascoAnim;
+                    if (this.dueño.flags().Mimetizado) {
+                    	this.dueño.mimetizeChar().m_casco = infoObj.CascoAnim;
                     } else {
-	                    this.dueño.getInfoChar().m_casco = infoObj.CascoAnim;
+	                    this.dueño.infoChar().m_casco = infoObj.CascoAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                     
@@ -574,7 +552,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case ESCUDO:
                 log.debug("es un escudo");
-                if (this.dueño.estaNavegando()) {
+                if (this.dueño.isSailing()) {
 					return;
 				}
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
@@ -583,10 +561,10 @@ public class UserInventory extends Inventory implements Constants {
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
                         desequipar(slot);
-                        if (this.dueño.getFlags().Mimetizado) {
-                        	this.dueño.getMimetizadoChar().m_escudo = NingunEscudo;
+                        if (this.dueño.flags().Mimetizado) {
+                        	this.dueño.mimetizeChar().m_escudo = NingunEscudo;
                         } else {
-                            this.dueño.getInfoChar().m_escudo = NingunEscudo;
+                            this.dueño.infoChar().m_escudo = NingunEscudo;
                         	this.dueño.sendCharacterChange();
                         }
                         return;
@@ -600,10 +578,10 @@ public class UserInventory extends Inventory implements Constants {
                     this.escudoEquipado = true;
                     this.escudoSlot = slot;
                     
-                    if (this.dueño.getFlags().Mimetizado) {
-                    	this.dueño.getMimetizadoChar().m_escudo = infoObj.ShieldAnim;
+                    if (this.dueño.flags().Mimetizado) {
+                    	this.dueño.mimetizeChar().m_escudo = infoObj.ShieldAnim;
                     } else {
-	                    this.dueño.getInfoChar().m_escudo = infoObj.ShieldAnim;
+	                    this.dueño.infoChar().m_escudo = infoObj.ShieldAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                 } else {
@@ -654,12 +632,6 @@ public class UserInventory extends Inventory implements Constants {
     public void desequiparCasco() {
         if (this.cascoSlot > 0) {
 			desequipar(this.cascoSlot);
-		}
-    }
-    
-    public void desequiparHerramienta() {
-        if (this.herramientaSlot > 0) {
-			desequipar(this.herramientaSlot);
 		}
     }
     
@@ -740,44 +712,48 @@ public class UserInventory extends Inventory implements Constants {
     }
     
     public void enviarArmasConstruibles() {
-        List<Object> params = new LinkedList<Object>();
-        for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
-            ObjectInfo info = findObj(this.server.getArmasHerrero()[i]);
+    	var validWeapons = new ArrayList<BlacksmithWeapons_DATA>();
+    	for (short objid : this.server.getArmasHerrero()) {
+            ObjectInfo info = findObj(objid);
             if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
-                if (info.objType == ObjType.Weapon) {
-                	params.add(info.Nombre + " (" + info.MinHIT + "/" + info.MaxHIT + ")");
-                	params.add(this.server.getArmasHerrero()[i]);
-                } else {
-                	params.add(info.Nombre);
-                	params.add(this.server.getArmasHerrero()[i]);
-                }
+            	validWeapons.add(new BlacksmithWeapons_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
-        }
-      //  this.dueño.enviar(MSG_LAH, params.toArray());
+    	}
+
+        dueño.sendPacket(
+        		new BlacksmithWeaponsResponse(
+					(short) validWeapons.size(), 
+					validWeapons.toArray(new BlacksmithWeapons_DATA[0])));
     }
  
     public void enviarObjConstruibles() {
-        List<Object> params = new LinkedList<Object>();
-        for (int i = 0; i < this.server.getObjCarpintero().length; i++) {
-            ObjectInfo info = findObj(this.server.getObjCarpintero()[i]);
-            if (info.SkCarpinteria <= this.dueño.skillCarpinteriaEfectivo()) {
-            	params.add(info.Nombre + " (" + info.Madera + ")");
-            	params.add(this.server.getObjCarpintero()[i]);
+    	var validObjects = new ArrayList<CarpenterObjects_DATA>();
+    	for (short objid : this.server.getObjCarpintero()) {
+            ObjectInfo info = findObj(objid);
+            if (info.SkHerreria <= this.dueño.skillCarpinteriaEfectivo()) {
+            	validObjects.add(new CarpenterObjects_DATA(info.Nombre, info.Madera, objid));
             }
-        }
-       // this.dueño.enviar(MSG_OBR, params.toArray());
+    	}
+
+        dueño.sendPacket(
+        		new CarpenterObjectsResponse(
+        				(short) validObjects.size(), 
+        				validObjects.toArray(new CarpenterObjects_DATA[0])));
     }
 
     public void enviarArmadurasConstruibles() {
-        List<Object> params = new LinkedList<Object>();
-        for (int i = 0; i < this.server.getArmadurasHerrero().length; i++) {
-            ObjectInfo info = findObj(this.server.getArmadurasHerrero()[i]);
+    	var validArmaduras = new ArrayList<BlacksmithArmors_DATA>();
+    	for (short objid : this.server.getArmadurasHerrero()) {
+            ObjectInfo info = findObj(objid);
             if (info.SkHerreria <= this.dueño.skillHerreriaEfectivo()) {
-            	params.add(info.Nombre + " (" + info.MinDef + "/" + info.MaxDef + ")");
-            	params.add(this.server.getArmadurasHerrero()[i]);
+            	validArmaduras.add(new BlacksmithArmors_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
-        }
-      //  this.dueño.enviar(MSG_LAR, params.toArray());
+    	}
+
+        dueño.sendPacket(
+        		new BlacksmithArmorsResponse(
+        				(short) validArmaduras.size(), 
+        				validArmaduras.toArray(new BlacksmithArmors_DATA[0])));
     }
 
     public void tirarTodosLosItemsNoNewbies() {
@@ -806,11 +782,11 @@ public class UserInventory extends Inventory implements Constants {
             this.dueño.enviarMensaje("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
-        if (!this.dueño.intervaloPermiteUsar()) {
+        if (!this.dueño.counters().intervaloPermiteUsar()) {
             return;
         }
-        this.dueño.getFlags().TargetObjInvIndex = obj.objid;
-        this.dueño.getFlags().TargetObjInvSlot = slot;
+        this.dueño.flags().TargetObjInvIndex = obj.objid;
+        this.dueño.flags().TargetObjInvSlot = slot;
         Map mapa = this.server.getMap(this.dueño.pos().map);
         switch (info.objType) {
             case UseOnce:
@@ -818,8 +794,8 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 // Usa el item
-                this.dueño.getEstads().aumentarHambre(info.MinHam);
-                this.dueño.getFlags().Hambre = false;
+                this.dueño.stats().aumentarHambre(info.MinHam);
+                this.dueño.flags().Hambre = false;
                 this.dueño.enviarEstadsHambreSed();
                 // Sonido
                 this.dueño.enviarSonido(SOUND_COMIDA);
@@ -830,7 +806,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                this.dueño.getEstads().addGold(obj.cant);
+                this.dueño.stats().addGold(obj.cant);
                 this.dueño.sendUpdateUserStats();
                 quitarUserInvItem(slot, obj.cant);
                 break;
@@ -841,10 +817,10 @@ public class UserInventory extends Inventory implements Constants {
                 if (info.esProyectil()) {
                //     this.dueño.enviar(MSG_T01, SKILL_Proyectiles); // FIXME: REVISAR MEJOR, NO DEBERIA ATACAR ???
                 } else {
-                    if (this.dueño.getFlags().TargetObj == 0) {
+                    if (this.dueño.flags().TargetObj == 0) {
 						return;
 					}
-                    ObjectInfo targeInfo = findObj(this.dueño.getFlags().TargetObj);
+                    ObjectInfo targeInfo = findObj(this.dueño.flags().TargetObj);
                     // ¿El target-objeto es leña?
                     if (targeInfo.objType == ObjType.Leña) {
                         if (info.ObjIndex == DAGA) {
@@ -857,36 +833,36 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!this.dueño.intervaloPermiteAtacar()) {
+                if (!this.dueño.counters().intervaloPermiteAtacar()) {
                     this.dueño.enviarMensaje("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
                     return;
                 }
-                this.dueño.getFlags().TomoPocion = true;
-                this.dueño.getFlags().TipoPocion = info.TipoPocion;
-                switch (this.dueño.getFlags().TipoPocion) {
+                this.dueño.flags().TomoPocion = true;
+                this.dueño.flags().TipoPocion = info.TipoPocion;
+                switch (this.dueño.flags().TipoPocion) {
                     case 1: // Modif la agilidad
-                        this.dueño.getFlags().DuracionEfecto = info.DuracionEfecto;
+                        this.dueño.flags().DuracionEfecto = info.DuracionEfecto;
                         // Usa el item
-                        this.dueño.getEstads().aumentarAtributo(ATRIB_AGILIDAD, Util.Azar(info.MinModificador, info.MaxModificador));
+                        this.dueño.stats().aumentarAtributo(ATRIB_AGILIDAD, Util.Azar(info.MinModificador, info.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
-                        this.dueño.getFlags().DuracionEfecto = info.DuracionEfecto;
+                        this.dueño.flags().DuracionEfecto = info.DuracionEfecto;
                         // Usa el item
-                        this.dueño.getEstads().aumentarAtributo(ATRIB_FUERZA, Util.Azar(info.MinModificador, info.MaxModificador));
+                        this.dueño.stats().aumentarAtributo(ATRIB_FUERZA, Util.Azar(info.MinModificador, info.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
                         // Usa el item
-                        this.dueño.getEstads().addMinHP(Util.Azar(info.MinModificador, info.MaxModificador));
+                        this.dueño.stats().addMinHP(Util.Azar(info.MinModificador, info.MaxModificador));
                         this.dueño.sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
                         // Usa el item
-                        this.dueño.getEstads().aumentarMana(Util.porcentaje(this.dueño.getEstads().maxMana, 5));
+                        this.dueño.stats().aumentarMana(Util.porcentaje(this.dueño.stats().maxMana, 5));
                         this.dueño.sendUpdateUserStats();
                         break;
                     case 5: // Pocion violeta
-                        if (this.dueño.getFlags().Envenenado) {
-                            this.dueño.getFlags().Envenenado = false;
+                        if (this.dueño.flags().Envenenado) {
+                            this.dueño.flags().Envenenado = false;
                             this.dueño.enviarMensaje("Te has curado del envenenamiento.", FontType.FONTTYPE_INFO);
                         }
                         break;
@@ -900,8 +876,8 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                this.dueño.getEstads().aumentarSed(info.MinSed);
-                this.dueño.getFlags().Sed = false;
+                this.dueño.stats().aumentarSed(info.MinSed);
+                this.dueño.flags().Sed = false;
                 this.dueño.enviarEstadsHambreSed();
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
@@ -911,21 +887,21 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (this.dueño.getFlags().TargetObj == 0) {
+                if (this.dueño.flags().TargetObj == 0) {
 					return;
 				}
-                ObjectInfo targetInfo = findObj(this.dueño.getFlags().TargetObj);
+                ObjectInfo targetInfo = findObj(this.dueño.flags().TargetObj);
                 // ¿El objeto clickeado es una puerta?
                 if (targetInfo.objType == ObjType.Puertas) {
                     // ¿Esta cerrada?
                     if (targetInfo.estaCerrada()) {
                         // ¿Cerrada con llave?
-                        byte targetX = this.dueño.getFlags().TargetObjX;
-                        byte targetY = this.dueño.getFlags().TargetObjY;
+                        byte targetX = this.dueño.flags().TargetObjX;
+                        byte targetY = this.dueño.flags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == info.Clave) {
                                 mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
-                                this.dueño.getFlags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
+                                this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
                                 this.dueño.enviarMensaje("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
@@ -934,7 +910,7 @@ public class UserInventory extends Inventory implements Constants {
                         }
                         if (targetInfo.Clave == info.Clave) {
                             mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
-                            this.dueño.getFlags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
+                            this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
                             this.dueño.enviarMensaje("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 
@@ -949,8 +925,8 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                Pos lugar = new Pos(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY);
-                if (!lugar.isValid() || !mapa.hayAgua(this.dueño.getFlags().TargetX, this.dueño.getFlags().TargetY)) {
+                Pos lugar = new Pos(this.dueño.flags().TargetX, this.dueño.flags().TargetY);
+                if (!lugar.isValid() || !mapa.hayAgua(this.dueño.flags().TargetX, this.dueño.flags().TargetY)) {
                     this.dueño.enviarMensaje("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
@@ -964,8 +940,8 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
                 }
-                this.dueño.getEstads().aumentarSed(info.MinSed);
-                this.dueño.getFlags().Sed = false;
+                this.dueño.stats().aumentarSed(info.MinSed);
+                this.dueño.flags().Sed = false;
                 this.dueño.enviarEstadsHambreSed();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(info.IndexCerrada, 1) == 0) {
@@ -1013,7 +989,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!this.dueño.getFlags().Hambre && !this.dueño.getFlags().Sed) {
+                if (!this.dueño.flags().Hambre && !this.dueño.flags().Sed) {
                     this.dueño.agregarHechizo(slot);
                     this.dueño.enviarInventario();
                 } else {
@@ -1040,7 +1016,7 @@ public class UserInventory extends Inventory implements Constants {
                 mapa.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) || 
                 mapa.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) || 
                 mapa.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true)) &&
-                !this.dueño.getFlags().Navegando) || this.dueño.getFlags().Navegando) {
+                !this.dueño.flags().Navegando) || this.dueño.flags().Navegando) {
                     this.barcoSlot = slot;
                     this.dueño.doNavega();
                 } else {

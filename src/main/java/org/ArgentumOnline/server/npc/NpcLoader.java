@@ -8,10 +8,6 @@ public class NpcLoader {
 	
 	private GameServer server;
 	
-    private static IniFile iniNPC = null;
-    private static IniFile iniHostiles = null;
-    private static IniFile iniBackup = null;
-    
     public NpcLoader(GameServer server) {
     	this.server = server;
 	}
@@ -41,35 +37,52 @@ public class NpcLoader {
     
     public IniFile getIniFile(int npc_ind, boolean loadBackup) {
         if (loadBackup) {
-            if (iniBackup == null) {
-                iniBackup = new IniFile();
-                try {
-                    iniBackup.load("worldBackup" + java.io.File.separator + "backNPCs.dat");
-                } catch (java.io.FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (java.io.IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        	IniFile iniBackup = openIniBackup();
             // Si esta en el backup, lo usamos. Sino, procedemos normalmente.
             if (!iniBackup.getString("NPC" + npc_ind, "Name").equals("")) {
 				return iniBackup;
 			}
         }
         if (npc_ind < 500) {
-            if (iniNPC == null) {
-                iniNPC = new IniFile();
-                try {
-                    iniNPC.load(Constants.DATDIR + java.io.File.separator + "NPCs.dat");
-                } catch (java.io.FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (java.io.IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return iniNPC;
+            return openIniNpc();
         }
-        if (iniHostiles == null) {
+        return openIniHostiles();
+    }
+
+    private static IniFile iniNPC = null;
+    private static IniFile iniHostiles = null;
+    private static IniFile iniBackup = null;
+    
+	private synchronized static IniFile openIniNpc() {
+		if (iniNPC == null) {
+		    iniNPC = new IniFile();
+		    try {
+		        iniNPC.load(Constants.DATDIR + java.io.File.separator + "NPCs.dat");
+		    } catch (java.io.FileNotFoundException e) {
+		        e.printStackTrace();
+		    } catch (java.io.IOException e) {
+		        e.printStackTrace();
+		    }
+		}
+		return iniNPC;
+	}
+
+	private synchronized static IniFile openIniBackup() {
+		if (iniBackup == null) {
+		    iniBackup = new IniFile();
+		    try {
+		        iniBackup.load("worldBackup" + java.io.File.separator + "backNPCs.dat");
+		    } catch (java.io.FileNotFoundException e) {
+		        e.printStackTrace();
+		    } catch (java.io.IOException e) {
+		        e.printStackTrace();
+		    }
+		}
+		return iniBackup;
+	}
+
+	private synchronized static IniFile openIniHostiles() {
+		if (iniHostiles == null) {
             iniHostiles = new IniFile();
             try {
                 //iniHostiles.load(Constants.DATDIR + java.io.File.separator + "NPCs-HOSTILES.dat");
@@ -81,6 +94,5 @@ public class NpcLoader {
             }
         }
         return iniHostiles;
-    }
-
+	}
 }

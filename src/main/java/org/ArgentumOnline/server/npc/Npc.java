@@ -264,7 +264,7 @@ public class Npc extends AbstractCharacter implements Constants {
 			}
             if (mapa.testSpawnTriggerNpc(orig, false)) {
                 // Necesita ser respawned en un lugar especifico
-                npc.m_pos = orig.copy();
+                npc.setPos(orig.copy());
                 
                 mapa.entrar(npc, orig.x, orig.y);
                 hayPosValida = true;
@@ -279,10 +279,10 @@ public class Npc extends AbstractCharacter implements Constants {
         	System.out.println("OJO: NO HAY POSICION VALIDA !!!");
         	return null;
         } else if (conFX) {
-            npc.enviarSonido(SND_WARP);
-            npc.enviarCFX(FXWARP, 0);
+            npc.sendPlayWave(SND_WARP);
+            npc.sendCreateFX(FXWARP, 0);
         }
-        npc.activar();
+        npc.activate();
         
         return npc;
     }
@@ -293,7 +293,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	if (respawnOrigPos()) {
         		spawnNpc(this.m_numero, this.m_orig, false, true); // TODO: PROBAR !!! 
         	} else {
-        		spawnNpc(this.m_numero, MapPos.mxy(this.m_pos.map, (short)0, (short)0), false, true); // TODO: PROBAR !!!
+        		spawnNpc(this.m_numero, MapPos.mxy(pos().map, (short)0, (short)0), false, true); // TODO: PROBAR !!!
         	}
         } else {
         	log.debug("{{{{{{{ DEBUG }}}}}}} NO PUEDE RESPAWN !!!");
@@ -601,7 +601,7 @@ public class Npc extends AbstractCharacter implements Constants {
     	return getNPCtype() == Npc.NPCTYPE_NOBLE;
     }
     
-    public void activar() {
+    public void activate() {
         this.m_flags.set(FLAG_NPC_ACTIVE, true);
     }
     
@@ -720,7 +720,7 @@ public class Npc extends AbstractCharacter implements Constants {
         }
         if (expADar > 0) {
         	expADar = expADar * 1000;
-            cliente.getEstads().addExp(expADar);
+            cliente.stats().addExp(expADar);
             cliente.enviarMensaje("Has ganado " + expADar + " puntos de experiencia.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
             cliente.checkUserLevel();
@@ -731,7 +731,7 @@ public class Npc extends AbstractCharacter implements Constants {
         ////////////// FIXME
         // Lo mato un usuario?
         if (cliente != null) {
-        	boolean eraCrimi = cliente.esCriminal();
+        	boolean eraCrimi = cliente.isCriminal();
         	
             MapPos pos = cliente.pos();
             Map m = this.server.getMap(pos.map);
@@ -739,41 +739,41 @@ public class Npc extends AbstractCharacter implements Constants {
             if (this.m_snd3 > 0) {
             	m.enviarAlArea(pos.x, pos.y, new PlayWaveResponse((byte) this.m_snd3, cliente.pos().x, cliente.pos().y));
             }
-            cliente.getFlags().TargetNpc = 0;
-            cliente.getFlags().TargetNpcTipo = 0;
+            cliente.flags().TargetNpc = 0;
+            cliente.flags().TargetNpcTipo = 0;
             // El user que lo mato tiene mascotas?
             if (cliente.getUserPets().hasPets()) {
                 cliente.getUserPets().petsFollowMaster(this);
             }
             cliente.enviarMensaje("Has matado la criatura!", FONTTYPE_FIGHT);
             if (this.m_expCount > 0) {
-                cliente.getEstads().addExp(this.m_expCount);
+                cliente.stats().addExp(this.m_expCount);
                 cliente.enviarMensaje("Has ganado " + this.m_expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
             } else {
                 cliente.enviarMensaje("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
             }
-            cliente.getEstads().incNPCsMuertos();
+            cliente.stats().incNPCsMuertos();
             cliente.getQuest().checkNpcEnemigo(cliente, this);
 
             if (this.m_estads.Alineacion == 0) {
                 if (this.m_numero == GUARDIAS) {
                     cliente.volverCriminal();
                 }
-                if (!cliente.esDios()) {
-                    cliente.getReputacion().incAsesino(vlAsesino);
+                if (!cliente.isGod()) {
+                    cliente.reputation().incAsesino(vlAsesino);
                 }
             } else if (this.m_estads.Alineacion == 1) {
-                cliente.getReputacion().incPlebe(vlCazador);
+                cliente.reputation().incPlebe(vlCazador);
             } else if (this.m_estads.Alineacion == 2) {
-                cliente.getReputacion().incNoble(vlAsesino / 2);
+                cliente.reputation().incNoble(vlAsesino / 2);
             } else if (this.m_estads.Alineacion == 4) {
-                cliente.getReputacion().incPlebe(vlCazador);
+                cliente.reputation().incPlebe(vlCazador);
             }
             // Controla el nivel del usuario
             cliente.checkUserLevel();
 
             //Agush: updateamos de ser necesario ;-)
-            if (cliente.esCriminal() != eraCrimi && eraCrimi == true) {
+            if (cliente.isCriminal() != eraCrimi && eraCrimi == true) {
             	cliente.refreshUpdateTagAndStatus();
             }
         }
@@ -784,7 +784,7 @@ public class Npc extends AbstractCharacter implements Constants {
             // Tiramos el inventario
             tirarItems();
         }
-        //short mapa = m_pos.mapa;
+        //short mapa = pos().mapa;
         // Quitamos el npc
         quitarNPC();
         // ReSpawn o no
@@ -798,8 +798,8 @@ public class Npc extends AbstractCharacter implements Constants {
         if (this.m_inv.size() > 0) {
             for (int i = 1; i <= this.m_inv.size(); i++) {
                 if (this.m_inv.getObjeto(i) != null && this.m_inv.getObjeto(i).objid > 0) {
-                    Map m = this.server.getMap(this.m_pos.map);
-                    m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(this.m_inv.getObjeto(i).objid, this.m_inv.getObjeto(i).cant));
+                    Map m = this.server.getMap(pos().map);
+                    m.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(this.m_inv.getObjeto(i).objid, this.m_inv.getObjeto(i).cant));
                 }
             }
         }
@@ -811,17 +811,21 @@ public class Npc extends AbstractCharacter implements Constants {
     	}
     	    	
         this.m_flags.set(FLAG_NPC_ACTIVE, false);
-        Map mapa = this.server.getMap(this.m_pos.map);
-        
-        //JAO: Nuevo sistema de áreas!! ;-)
-        //mapa.areasData.dieNpc(this);
-        mapa.areasData.resetNpc(this);
-        
-        if (mapa != null && this.m_pos.isValid()) {
-            mapa.salir(this);
+        Map map = this.server.getMap(pos().map);
+        if (map == null) {
+        	return;
         }
         
-        mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new CharacterRemoveResponse(this.getId()));
+        //JAO: Nuevo sistema de áreas!! ;-)
+        // FIXME
+        //mapa.areasData.dieNpc(this);
+        map.areasData.resetNpc(this);
+        
+        if (map != null && pos().isValid()) {
+            map.salir(this);
+        }
+        
+        map.enviarAlArea(pos().x, pos().y, new CharacterRemoveResponse(this.getId()));
         
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
@@ -833,7 +837,7 @@ public class Npc extends AbstractCharacter implements Constants {
         Npc ownerNpc = this.server.getNpcById(this.petNpcOwnerId);
         if (ownerNpc != null) {
         	if (ownerNpc.isTrainer()) {
-        		((NpcTrainer)ownerNpc).quitarMascotaNpc(this);
+        		((NpcTrainer)ownerNpc).removePet(this);
         	} else {
         		log.debug("ERROR, el NPC propietario de la mascota no es un entrenador!!! npc_type=" + ownerNpc.getNPCtype());
         	}
@@ -850,11 +854,12 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void enviarMP() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
-           // mapa.enviarATodos(serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
-           // mapa.enviarAlArea(getPos().x, getPos().y, -1, serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
-           // mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, serverPacketID.MSG_MP, this.m_id, this.m_pos.x, this.m_pos.y);
+        	// FIXME
+           // mapa.enviarATodos(serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
+           // mapa.enviarAlArea(getPos().x, getPos().y, -1, serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
+           // mapa.enviarAlArea(pos().x, pos().y, serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
         }
     }
     
@@ -864,7 +869,7 @@ public class Npc extends AbstractCharacter implements Constants {
 			return;
 		}
         this.m_lastMove = now;
-        MapPos newPos = this.m_pos.copy();
+        MapPos newPos = pos().copy();
         newPos.moveToDir(dir);
         Map mapa = this.server.getMap(newPos.map);
         if (mapa == null) {
@@ -890,8 +895,8 @@ public class Npc extends AbstractCharacter implements Constants {
                 // Update map and user pos
                 this.m_infoChar.setDir(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
-                this.m_pos = newPos;
-                //enviarMP();
+                this.setPos(newPos);
+                //enviarMP(); FIXME
             }
         } else { // No es mascota
             // Controlamos que la posicion sea legal, los npc que
@@ -912,8 +917,8 @@ public class Npc extends AbstractCharacter implements Constants {
                 // Update map and user pos
                 this.m_infoChar.setDir(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
-                this.m_pos = newPos;
-                //enviarMP();
+                this.setPos(newPos);
+                //enviarMP(); // FIXME
             } else {
                 if (this.m_movement == MOV_NPC_PATHFINDING) {
                     // Someone has blocked the npc's way, we must to seek a new path!
@@ -933,28 +938,28 @@ public class Npc extends AbstractCharacter implements Constants {
         }
     }
     
-    public void enviarSonido(byte sonido) {
-        Map mapa = this.server.getMap(this.m_pos.map);
+    public void sendPlayWave(byte sonido) {
+        Map mapa = this.server.getMap(pos().map);
         // Sonido
         if (mapa != null) {
-			mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(sonido, this.m_pos.x, this.m_pos.y));
+			mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(sonido, pos().x, pos().y));
 		}
     }
     
-    public void enviarCFX(int fx, int val) {
-        Map m = this.server.getMap(this.m_pos.map);
+    public void sendCreateFX(int fx, int val) {
+        Map m = this.server.getMap(pos().map);
         if (m == null) {
 			return;
 		}
-        m.enviarCFX(this.m_pos.x, this.m_pos.y, getId(), (short) fx, (short) val);
+        m.sendCreateFX(pos().x, pos().y, getId(), (short) fx, (short) val);
     }
     
     public void tirarOro() {
         // NPCTirarOro
         // SI EL NPC TIENE ORO LO TIRAMOS
         if (this.m_giveGLD > 0) {
-            Map m = this.server.getMap(this.m_pos.map);
-            m.tirarItemAlPiso(this.m_pos.x, this.m_pos.y, new InventoryObject(OBJ_ORO, this.m_giveGLD));
+            Map m = this.server.getMap(pos().map);
+            m.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(OBJ_ORO, this.m_giveGLD));
         }
     }
     
@@ -991,7 +996,7 @@ public class Npc extends AbstractCharacter implements Constants {
         //WorldPos pos = m_maestroUser.getPos();
         if (this.m_nroExpresiones > 0) {
             int azar = Util.Azar(0, this.m_nroExpresiones - 1);
-            Map mapa = this.server.getMap(this.m_pos.map);
+            Map mapa = this.server.getMap(pos().map);
             if (mapa != null) {            
                 hablarAlArea(Color.COLOR_BLANCO, this.m_expresiones[azar]);
             }
@@ -999,10 +1004,9 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     public void hablarAlArea(int color, String texto) {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {            
-            //mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TALK, color, texto, this.m_id);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y,
+        	mapa.enviarAlArea(pos().x, pos().y,
         			new ChatOverHeadResponse(texto, this.getId(), 
         					Color.r(color), Color.g(color), Color.b(color)));
         }
@@ -1015,10 +1019,10 @@ public class Npc extends AbstractCharacter implements Constants {
     
     public void cambiarDir(Heading dir) {
         // ChangeNPCChar
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
             this.m_infoChar.setDir(dir);
-            mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, createCC());
+            mapa.enviarAlArea(pos().x, pos().y, createCC());
         }
     }
     
@@ -1035,7 +1039,7 @@ public class Npc extends AbstractCharacter implements Constants {
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
     
     private void guardiasAI() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
@@ -1043,15 +1047,15 @@ public class Npc extends AbstractCharacter implements Constants {
         	if (dir == Heading.NONE)
         		continue;
         	
-            MapPos pos = this.m_pos.copy();
+            MapPos pos = pos().copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.isAlive() && !cliente.esGM()) {
+                    if (cliente.isAlive() && !cliente.isGM()) {
                         // ¿ES CRIMINAL?
                     	if (getNPCtype() != NPCTYPE_GUARDIAS_CAOS) {
-                    		if (cliente.esCriminal()) {
+                    		if (cliente.isCriminal()) {
                     			cambiarDir(dir);
                     			npcAtacaUser(cliente);
                     			return;
@@ -1061,7 +1065,7 @@ public class Npc extends AbstractCharacter implements Constants {
                     			return;
                     		}
                     	} else {
-                    		if (!cliente.esCriminal()) {
+                    		if (!cliente.isCriminal()) {
                     			cambiarDir(dir);
                     			npcAtacaUser(cliente);
                     			return;
@@ -1091,19 +1095,19 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void hostilMalvadoAI() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
         for (Heading dir : Heading.values()) {
         	if (dir == Heading.NONE)
         		continue;
-            MapPos pos = this.m_pos.copy();
+            MapPos pos = pos().copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.isAlive() && !cliente.esGM()) {
+                    if (cliente.isAlive() && !cliente.isGM()) {
                         if (lanzaSpells()) {
                             npcLanzaUnSpell(cliente);
                         }
@@ -1118,19 +1122,19 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void hostilBuenoAI() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
         for (Heading dir : Heading.values()) {
         	if (dir == Heading.NONE)
         		continue;
-            MapPos pos = this.m_pos.copy();
+            MapPos pos = pos().copy();
             pos.moveToDir(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
-                    if (cliente.isAlive() && !cliente.esGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
+                    if (cliente.isAlive() && !cliente.isGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
                         if (lanzaSpells()) {
                             npcLanzaUnSpell(cliente);
                         }
@@ -1145,24 +1149,24 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void irUsuarioCercano() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
                         
                         if (cliente != null) {
                         
-                            if (cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
+                            if (cliente.isAlive() && !cliente.isInvisible() && !cliente.isGM()) {
                                 if (lanzaSpells()) {
                                    npcLanzaUnSpell(cliente);
                                 }
-                                Heading dir = this.m_pos.findDirection(cliente.pos());
+                                Heading dir = pos().findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1175,19 +1179,19 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void seguirAgresor() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
-                        if (!cliente.esGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
+                        if (!cliente.isGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
                             if (getPetUserOwner() != null) {
-		                        if (	!getPetUserOwner().esCriminal() && !cliente.esCriminal() && 
+		                        if (	!getPetUserOwner().isCriminal() && !cliente.isCriminal() && 
 		                        		(getPetUserOwner().tieneSeguro() || getPetUserOwner().getFaccion().ArmadaReal)) {
 		                            getPetUserOwner().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.FONTTYPE_INFO);
 		                            this.m_attackedBy = "";
@@ -1195,11 +1199,11 @@ public class Npc extends AbstractCharacter implements Constants {
 		                            return;
 		                        }
                             }
-                            if (cliente.isAlive() && !cliente.estaInvisible()) {
+                            if (cliente.isAlive() && !cliente.isInvisible()) {
                                 if (lanzaSpells()) {
                                     npcLanzaUnSpell(cliente);
                                 }
-                                Heading dir = this.m_pos.findDirection(cliente.pos());
+                                Heading dir = pos().findDirection(cliente.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1224,24 +1228,24 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void persigueCriminal() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
                         
                         if (cliente == null) break;
                         
-                        if (cliente.esCriminal() && cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
+                        if (cliente.isCriminal() && cliente.isAlive() && !cliente.isInvisible() && !cliente.isGM()) {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Heading dir = this.m_pos.findDirection(cliente.pos());
+                            Heading dir = pos().findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1253,21 +1257,21 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void persigueCiudadano() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
-                        if (!cliente.esCriminal() && cliente.isAlive() && !cliente.estaInvisible() && !cliente.esGM()) {
+                        if (!cliente.isCriminal() && cliente.isAlive() && !cliente.isInvisible() && !cliente.isGM()) {
                             if (lanzaSpells()) {
                                 npcLanzaUnSpell(cliente);
                             }
-                            Heading dir = this.m_pos.findDirection(cliente.pos());
+                            Heading dir = pos().findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1282,23 +1286,23 @@ public class Npc extends AbstractCharacter implements Constants {
     	/*
         if (m_target > 0 || m_targetNpc != null) return;
         if (m_maestroUser == null) return;
-        short dir = m_pos.findDirection(m_maestroUser.getPos());
+        short dir = pos().findDirection(m_maestroUser.getPos());
         mover(dir);
         */
     	// FIXME: ESTO SE PUEDE OPTIMIZAR, YO SE QUIEN Y DONDE ESTA EL AMO !!!
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
-                        if (cliente.isAlive() && !cliente.estaInvisible() && getPetUserOwner() == cliente &&
-                        		getPetUserOwner().pos().distance(this.m_pos) > 3) {
-                            Heading dir = this.m_pos.findDirection(cliente.pos());
+                        if (cliente.isAlive() && !cliente.isInvisible() && getPetUserOwner() == cliente &&
+                        		getPetUserOwner().pos().distance(pos()) > 3) {
+                            Heading dir = pos().findDirection(cliente.pos());
                             mover(dir);
                             return;
                         }
@@ -1312,18 +1316,18 @@ public class Npc extends AbstractCharacter implements Constants {
     private void aiNpcAtacaNpc() {
     	// FIXME: ESTO SE PUEDE OPTIMIZAR TERRIBLEMENTE, 
     	// CONOCIENDO m_targetNpc no tengo que buscarlo en el mapa ;)
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     Npc npc = mapa.getNPC(x, y);
                     if (npc != null) {
                         if (this.m_targetNpc == npc) {
-                            Heading dir = this.m_pos.findDirection(pos);
+                            Heading dir = pos().findDirection(pos);
                             mover(dir);
                             npcAtacaNpc(npc);
                             return;
@@ -1438,7 +1442,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void npcLanzaUnSpell(Player cliente) {
-        if (cliente.estaInvisible()) {
+        if (cliente.isInvisible()) {
 			return;
 		}
         npcLanzaSpellSobreUser(cliente, this.m_spells[Util.Azar(0, this.m_nroSpells-1)]);
@@ -1451,7 +1455,7 @@ public class Npc extends AbstractCharacter implements Constants {
         if (estaInvisible()) {
 			return;
 		}
-        if (cliente.esGM()) {
+        if (cliente.isGM()) {
 			return;
 		}
         this.m_flags.set(FLAG_PUEDE_ATACAR, false);
@@ -1461,19 +1465,19 @@ public class Npc extends AbstractCharacter implements Constants {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             cliente.enviarSonido(hechizo.WAV);
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
-            cliente.getEstads().addMinHP(daño);
+            cliente.stats().addMinHP(daño);
             cliente.enviarMensaje(this.m_name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
         } else if (hechizo.SubeHP == 2) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             cliente.enviarSonido(hechizo.WAV);            
             cliente.enviarCFX(hechizo.FXgrh, hechizo.loops);
-            cliente.getEstads().quitarHP(daño);
+            cliente.stats().quitarHP(daño);
             cliente.enviarMensaje(this.m_name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             cliente.sendUpdateUserStats();
             // Muere
-            if (cliente.getEstads().MinHP < 1) {
-                cliente.getEstads().MinHP = 0;
+            if (cliente.stats().MinHP < 1) {
+                cliente.stats().MinHP = 0;
                 cliente.userDie();
                 if (getPetUserOwner() != null) {
                     getPetUserOwner().contarMuerte(cliente);
@@ -1487,27 +1491,27 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void npcAtacaUser(Player cliente) {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         // El npc puede atacar ???
         if (!puedeAtacar()) {
 			return;
 		}
-        if (cliente.esGM()) {
+        if (cliente.isGM()) {
 			return;
 		}
         cliente.getUserPets().petsAttackNpc(this);
 		setTargetUser(cliente.getId());
-        if (cliente.getFlags().AtacadoPorNpc == 0 && cliente.getFlags().AtacadoPorUser == 0) {
-			cliente.getFlags().AtacadoPorNpc = this.getId();
+        if (cliente.flags().AtacadoPorNpc == 0 && cliente.flags().AtacadoPorUser == 0) {
+			cliente.flags().AtacadoPorNpc = this.getId();
 		}
         this.m_flags.set(FLAG_PUEDE_ATACAR, false);
         if (this.m_snd1 > 0) {
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(this.m_snd1, this.m_pos.x,this.m_pos.y));
+        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(this.m_snd1, pos().x,pos().y));
 		}
         if (cliente.npcImpacto(this)) {
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SND_IMPACTO, this.m_pos.x,this.m_pos.y));
-            if (!cliente.estaNavegando()) {
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new CreateFXResponse(cliente.getId(), FXSANGRE, (short) 0));
+        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x,pos().y));
+            if (!cliente.isSailing()) {
+            	mapa.enviarAlArea(pos().x, pos().y, new CreateFXResponse(cliente.getId(), FXSANGRE, (short) 0));
 			}
             cliente.npcDaño(this);
             // ¿Puede envenenar?
@@ -1545,7 +1549,7 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private void npcAtacaNpc(Npc victima) {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         
         // El npc puede atacar ???
         if (!puedeAtacar()) {
@@ -1556,26 +1560,25 @@ public class Npc extends AbstractCharacter implements Constants {
         victima.m_movement = MOV_NPC_ATACA_NPC;
         
         if (this.m_snd1 > 0) {
-			//mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, MSG_TW, this.m_snd1);
-        	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(this.m_snd1, this.m_pos.x, this.m_pos.y));
+        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(this.m_snd1, pos().x, pos().y));
 		}
         if (npcImpactoNpc(victima)) {
             if (victima.m_snd2 > 0) {
-            	mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(victima.m_snd2, victima.m_pos.x, victima.m_pos.y));
+            	mapa.enviarAlArea(victima.pos().x, victima.pos().y, new PlayWaveResponse(victima.m_snd2, victima.pos().x, victima.pos().y));
 			} else {
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SND_IMPACTO2, victima.m_pos.x, victima.m_pos.y));
+				mapa.enviarAlArea(victima.pos().x, victima.pos().y, new PlayWaveResponse(SND_IMPACTO2, victima.pos().x, victima.pos().y));
 			}
             if (this.petUserOwner != null) {
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SND_IMPACTO, this.m_pos.x, this.m_pos.y));
+            	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x, pos().y));
 			} else {
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SND_IMPACTO, victima.m_pos.x, victima.m_pos.y));
+				mapa.enviarAlArea(victima.pos().x, victima.pos().y, new PlayWaveResponse(SND_IMPACTO, victima.pos().x, victima.pos().y));
 			}
             npcDañoNpc(victima);
         } else {
             if (this.petUserOwner != null) {
-            	mapa.enviarAlArea(this.m_pos.x, this.m_pos.y, new PlayWaveResponse(SOUND_SWING, this.m_pos.x, this.m_pos.y));
+            	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SOUND_SWING, pos().x, pos().y));
 			} else {
-				mapa.enviarAlArea(victima.m_pos.x, victima.m_pos.y, new PlayWaveResponse(SOUND_SWING, victima.m_pos.x, victima.m_pos.y));
+				mapa.enviarAlArea(victima.pos().x, victima.pos().y, new PlayWaveResponse(SOUND_SWING, victima.pos().x, victima.pos().y));
 			}
         }
     }
@@ -1584,7 +1587,7 @@ public class Npc extends AbstractCharacter implements Constants {
         //#################################################################
         //Returns True if there is an user adjacent to the npc position.
         //#################################################################
-        return this.m_pos.distance(this.m_pfinfo.m_targetPos) <= 1;
+        return pos().distance(this.m_pfinfo.m_targetPos) <= 1;
     }
   
     private boolean isPathEnd() {
@@ -1613,11 +1616,11 @@ public class Npc extends AbstractCharacter implements Constants {
         this.current_step++;
         org.ArgentumOnline.server.aStar.Node node = this.current_path.get(this.current_step);
         org.ArgentumOnline.server.aStar.Location loc = node.location;
-        MapPos pos = MapPos.mxy(this.m_pos.map, (short)loc.x, (short)loc.y);
-        Heading dir = this.m_pos.findDirection(pos);
+        MapPos pos = MapPos.mxy(pos().map, (short)loc.x, (short)loc.y);
+        Heading dir = pos().findDirection(pos);
         
         if (DEBUG)
-        	System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + this.m_pos + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);
+        	System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + pos() + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);
         
         mover(dir);
     }
@@ -1642,18 +1645,18 @@ public class Npc extends AbstractCharacter implements Constants {
     
     private void calculatePath() {
         //private void pathFindingAI() {
-        Map mapa = this.server.getMap(this.m_pos.map);
+        Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (this.m_pos.x-10); x <= (byte) (this.m_pos.x+10); x++) {
-            for (byte y = (byte) (this.m_pos.y-10); y <= (byte) (this.m_pos.y+10); y++) {
-                MapPos pos = MapPos.mxy(this.m_pos.map, x, y);
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
                     if (mapa.hayCliente(x, y)) {
                         Player cliente = mapa.getCliente(x, y);
-                        if (cliente.isAlive() && !cliente.estaInvisible()) {
-                        	this.m_pfinfo = new PFINFO(MapPos.mxy(this.m_pos.map, x, y), cliente);
+                        if (cliente.isAlive() && !cliente.isInvisible()) {
+                        	this.m_pfinfo = new PFINFO(MapPos.mxy(pos().map, x, y), cliente);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
                             return;
@@ -1807,10 +1810,10 @@ public class Npc extends AbstractCharacter implements Constants {
 			return "";
 		}
     	//agush: con esto los gms ahora ven la vida de los npcs
-    	if (!cliente.esGM() == false) {
+    	if (!cliente.isGM() == false) {
 			return estadoVidaExacta();
 		}
-        short skSup = cliente.getEstads().getUserSkill(Skill.SKILL_Supervivencia);
+        short skSup = cliente.stats().getUserSkill(Skill.SKILL_Supervivencia);
         double vidaPct = this.getEstads().MinHP / this.getEstads().MaxHP;
         if (skSup < 11) {
         	return "(Dudoso)";

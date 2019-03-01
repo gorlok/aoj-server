@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -19,6 +20,7 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -205,7 +207,7 @@ public class Admins {
 			server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 			server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 			// Ponemos el flag de ban a 1
-			usuario.getFlags().Ban = true;
+			usuario.flags().Ban = true;
 			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
 			Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
 			usuario.doSALIR();
@@ -275,7 +277,7 @@ public class Admins {
 			return;
 		}
 		if (admin.warpUser(usuario.pos().map, usuario.pos().x, usuario.pos().y, true)) {
-			if (!admin.getFlags().AdminInvisible) {
+			if (!admin.flags().AdminInvisible) {
 				usuario.enviarMensaje(admin.getNick() + " se ha trasportado hacia donde te encuentras.", FontType.FONTTYPE_INFO);
 			}
 			Log.logGM(admin.getNick(), "Hizo un /IRA " + usuario.getNick() + " mapa=" + usuario.pos().map + " x=" + usuario.pos().x
@@ -290,18 +292,18 @@ public class Admins {
 	}
 
 	private void doAdminInvisible(Player admin) {
-		if (!admin.getFlags().AdminInvisible) {
-			admin.getFlags().AdminInvisible = true;
-			admin.getFlags().Invisible = true;
-			admin.getFlags().OldBody = admin.getInfoChar().m_cuerpo;
-			admin.getFlags().OldHead = admin.getInfoChar().m_cabeza;
-			admin.getInfoChar().m_cuerpo = 0;
-			admin.getInfoChar().m_cabeza = 0;
+		if (!admin.flags().AdminInvisible) {
+			admin.flags().AdminInvisible = true;
+			admin.flags().Invisible = true;
+			admin.flags().OldBody = admin.infoChar().m_cuerpo;
+			admin.flags().OldHead = admin.infoChar().m_cabeza;
+			admin.infoChar().m_cuerpo = 0;
+			admin.infoChar().m_cabeza = 0;
 		} else {
-			admin.getFlags().AdminInvisible = false;
-			admin.getFlags().Invisible = false;
-			admin.getInfoChar().m_cuerpo = admin.getFlags().OldBody;
-			admin.getInfoChar().m_cabeza = admin.getFlags().OldHead;
+			admin.flags().AdminInvisible = false;
+			admin.flags().Invisible = false;
+			admin.infoChar().m_cuerpo = admin.flags().OldBody;
+			admin.infoChar().m_cabeza = admin.flags().OldHead;
 		}
 		admin.sendCharacterChange();
 	}
@@ -314,7 +316,7 @@ public class Admins {
 		for (String name : getSpawnListNames()) {
 			params.add(name);
 		}
-		// enviar(MSG_SPL, params.toArray());
+		admin.sendPacket(new SpawnListResponse(Arrays.toString(params.toArray())));
 	}
 
 	public void doSpawnCreature(Player admin, short index) {
@@ -553,18 +555,18 @@ public class Admins {
 	public void doDestruirTeleport(Player admin) {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
-		if (admin.getFlags().TargetMap == 0 || admin.getFlags().TargetX == 0 || admin.getFlags().TargetY == 0) {
+		if (admin.flags().TargetMap == 0 || admin.flags().TargetX == 0 || admin.flags().TargetY == 0) {
 			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		short m = admin.getFlags().TargetMap;
+		short m = admin.flags().TargetMap;
 		Map mapa = server.getMap(m);
 		if (mapa == null) {
 			admin.enviarMensaje("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		byte x = admin.getFlags().TargetX;
-		byte y = admin.getFlags().TargetY;
+		byte x = admin.flags().TargetX;
+		byte y = admin.flags().TargetY;
 		if (!mapa.hayTeleport(x, y)) {
 			admin.enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.FONTTYPE_WARNING);
 			return;
@@ -576,7 +578,7 @@ public class Admins {
 	public void doMataNpc(Player admin) {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
-		Npc npc = server.getNpcById(admin.getFlags().TargetNpc);
+		Npc npc = server.getNpcById(admin.flags().TargetNpc);
 		if (npc == null) {
 			admin.enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.FONTTYPE_INFO);
 			return;
@@ -675,7 +677,7 @@ public class Admins {
 		}
 		if (accion.equalsIgnoreCase("ORO")) {
 			if (valor < 95001) {
-				usuario.getEstads().setGold(valor);
+				usuario.stats().setGold(valor);
 				usuario.sendUpdateUserStats();
 			} else {
 				admin.enviarMensaje(
@@ -684,7 +686,7 @@ public class Admins {
 			}
 		} else if (accion.equalsIgnoreCase("EXP")) {
 			if (valor < 1000000) {
-				usuario.getEstads().Exp += valor;
+				usuario.stats().Exp += valor;
 				usuario.checkUserLevel();
 				usuario.sendUpdateUserStats();
 			} else {
@@ -693,17 +695,17 @@ public class Admins {
 						FontType.FONTTYPE_INFO);
 			}
 		} else if (accion.equalsIgnoreCase("BODY")) {
-			usuario.getInfoChar().m_cuerpo = (short) valor;
+			usuario.infoChar().m_cuerpo = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("HEAD")) {
-			usuario.getInfoChar().m_cabeza = (short) valor;
+			usuario.infoChar().m_cabeza = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("CRI")) {
 			usuario.getFaccion().CriminalesMatados = valor;
 		} else if (accion.equalsIgnoreCase("CIU")) {
 			usuario.getFaccion().CiudadanosMatados = valor;
 		} else if (accion.equalsIgnoreCase("LEVEL")) {
-			usuario.getEstads().ELV = valor;
+			usuario.stats().ELV = valor;
 		} else {
 			admin.enviarMensaje("Comando no permitido o inválido.", FontType.FONTTYPE_INFO);
 		}
@@ -823,10 +825,10 @@ public class Admins {
 	public void doResetInv(Player admin) {
 		// Resetea el inventario
 		// Comando /RESETINV
-		if (admin.getFlags().TargetNpc == 0) {
+		if (admin.flags().TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNpcById(admin.getFlags().TargetNpc);
+		Npc npc = server.getNpcById(admin.flags().TargetNpc);
 		npc.getInv().clear();
 		admin.enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/RESETINV " + npc.toString());
@@ -872,7 +874,7 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -881,9 +883,9 @@ public class Admins {
 		server.enviarMensajeAAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 		server.enviarMensajeAAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 		// Ponemos el flag de ban a 1
-		usuario.getFlags().Ban = true;
-		if (usuario.esGM()) {
-			admin.getFlags().Ban = true;
+		usuario.flags().Ban = true;
+		if (usuario.isGM()) {
+			admin.flags().Ban = true;
 			admin.doSALIR();
 			server.enviarMensajeAAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
 					FontType.FONTTYPE_FIGHT);
@@ -910,7 +912,7 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -938,12 +940,12 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.getFlags().Privilegios > admin.getFlags().Privilegios) {
+		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
 			admin.enviarMensaje("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.getCounters().Pena > 0) {
-			admin.enviarMensaje("El usuario ya esta en la carcel. Le quedan " + admin.getCounters().Pena + " minutos.",
+		if (usuario.counters().Pena > 0) {
+			admin.enviarMensaje("El usuario ya esta en la carcel. Le quedan " + admin.counters().Pena + " minutos.",
 					FontType.FONTTYPE_WARNING);
 			return;
 		}
@@ -964,7 +966,7 @@ public class Admins {
 			return;
 		}
 		if (usuario.esNewbie()) {
-			if (usuario.getReputacion().esIntachable()) {
+			if (usuario.reputation().esIntachable()) {
 				admin.enviarMensaje("No hay que perdonarle a " + usuario.getNick(), FontType.FONTTYPE_INFO);
 				return;
 			}
@@ -986,7 +988,7 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.getReputacion().esCriminal()) {
+		if (usuario.reputation().esCriminal()) {
 			admin.enviarMensaje(usuario.getNick() + " ya es un criminal condenado.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -1019,7 +1021,7 @@ public class Admins {
 
 	public void doONLINEGM(Player admin) {
 		// Comando /ONLINEGM
-		if (!admin.esGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		List<String> gms = server.getGMsOnline();
@@ -1091,13 +1093,13 @@ public class Admins {
 
 		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.getEstads().userSkills[i], FontType.FONTTYPE_INFO);
+			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.stats().userSkills[i], FontType.FONTTYPE_INFO);
 		}
 	}
 
 	public void doMensajeALosGM(Player admin, String s) {
 		// Mensaje para los GMs
-		if (!admin.esGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		if (s.length() > 0) {
@@ -1151,9 +1153,9 @@ public class Admins {
 
 	public void doTeleploc(Player admin) {
 		// Comando /TELEPLOC
-		if (admin.warpUser(admin.getFlags().TargetMap, admin.getFlags().TargetX, admin.getFlags().TargetY, true)) {
-			Log.logGM(admin.getNick(), "hizo un /TELEPLOC a x=" + admin.getFlags().TargetX + 
-					" y=" + admin.getFlags().TargetY + " mapa=" + admin.getFlags().TargetMap);
+		if (admin.warpUser(admin.flags().TargetMap, admin.flags().TargetX, admin.flags().TargetY, true)) {
+			Log.logGM(admin.getNick(), "hizo un /TELEPLOC a x=" + admin.flags().TargetX + 
+					" y=" + admin.flags().TargetY + " mapa=" + admin.flags().TargetMap);
 		}
 	}
 
@@ -1174,7 +1176,7 @@ public class Admins {
 
 		Player usuario = admin;
 		if (!nombre.equalsIgnoreCase("YO")) {
-			if (admin.getFlags().Privilegios < 2) {
+			if (admin.flags().Privilegios < 2) {
 				return;
 			}
 			usuario = server.getUsuario(nombre);

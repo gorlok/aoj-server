@@ -80,7 +80,7 @@ public class Map implements Constants {
     // Cabecera archivo .map
     private short version   = 0;
     //private byte desc[] = new byte[255];
-    private String desc;
+    private String desc = "";
     //private int crc     = 0;
     //private int mw      = 0;
     
@@ -448,7 +448,7 @@ public class Map implements Constants {
 		                        npc.getOrig().x = (byte)0;
 		                        npc.getOrig().y = (byte)0;                        
 	                        }
-	                        npc.activar();
+	                        npc.activate();
 	                        // JAO: Sistema de areas!!
 	                        //  this.areasData.setNpcArea(npc);
 	                        this.areasData.loadNpc(npc);
@@ -517,7 +517,7 @@ public class Map implements Constants {
         this.cells[npc.pos().x-1][npc.pos().y-1].setNpc(null);
         this.cells[x-1][y-1].setNpc(npc);
         
-        this.areasData.checkUpdateNeededNpc(npc, npc.getInfoChar().getDir());
+        this.areasData.checkUpdateNeededNpc(npc, npc.infoChar().getDir());
         this.areasData.sendToNPCArea(npc, new CharacterMoveResponse(npc.getId(), x, y));
         
     }
@@ -671,7 +671,7 @@ public class Map implements Constants {
         }
     }
     
-    public void enviarCFX(byte  x, byte y, int id, int fx, int val) {
+    public void sendCreateFX(byte  x, byte y, int id, int fx, int val) {
     	enviarAlArea(x,y, new CreateFXResponse((short) id, (short) fx, (short) val));
     }
     
@@ -718,7 +718,7 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 if (this.cells[x-1][y-1].getClienteId() > 0) {
                     cliente = this.server.getClientById(this.cells[x-1][y-1].getClienteId());
-                    if (cliente != null && (cliente.esDios() || cliente.esSemiDios())) {
+                    if (cliente != null && (cliente.isGod() || cliente.isDemiGod())) {
 						cliente.sendPacket(packet);
 					}
                 }
@@ -795,7 +795,7 @@ public class Map implements Constants {
 		//JAO: Nuevo sistema de areas !!
         this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(),
         		new CharacterMoveResponse(cliente.getId(), x, y));
-        this.areasData.checkUpdateNeededUser(cliente, cliente.getInfoChar().getDir());
+        this.areasData.checkUpdateNeededUser(cliente, cliente.infoChar().getDir());
     }
     
     public boolean hayTeleport(byte  x, byte y) {
@@ -885,10 +885,10 @@ public class Map implements Constants {
         MapObject obj = buscarObjeto(x, y);
         if (obj != null) {
             player.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
-            player.getFlags().TargetObj = obj.getInfo().ObjIndex;
-            player.getFlags().TargetObjMap = this.nroMapa;
-            player.getFlags().TargetObjX = obj.x;
-            player.getFlags().TargetObjY = obj.y;
+            player.flags().TargetObj = obj.getInfo().ObjIndex;
+            player.flags().TargetObjMap = this.nroMapa;
+            player.flags().TargetObjX = obj.x;
+            player.flags().TargetObjY = obj.y;
             hayAlgo = true;
         }
         
@@ -907,46 +907,46 @@ public class Map implements Constants {
             }
             msg = msg + " " + npc.estadoVida(player);
             player.enviarMensaje(msg, FontType.FONTTYPE_INFO);
-            player.getFlags().TargetNpc = npc.getId();
-            player.getFlags().TargetMap = this.nroMapa;
-            player.getFlags().TargetX = x;
-            player.getFlags().TargetY = y;
-            player.getFlags().TargetUser = 0;
-            player.getFlags().TargetObj = 0;
+            player.flags().TargetNpc = npc.getId();
+            player.flags().TargetMap = this.nroMapa;
+            player.flags().TargetX = x;
+            player.flags().TargetY = y;
+            player.flags().TargetUser = 0;
+            player.flags().TargetObj = 0;
         }
         
         // Ver si hay un jugador
         Player cli;
         if ((cli = buscarCliente(x, y)) != null) {
-            if (!cli.getFlags().AdminInvisible) {
+            if (!cli.flags().AdminInvisible) {
                 player.enviarMensaje("Ves a " + cli.getTagsDesc(), cli.getTagColor());
-                player.getFlags().TargetUser = cli.getId();
-                player.getFlags().TargetNpc = 0;
-                player.getFlags().TargetObj = 0;
-                player.getFlags().TargetMap = this.nroMapa;
-                player.getFlags().TargetX = x;
-                player.getFlags().TargetY = y;
+                player.flags().TargetUser = cli.getId();
+                player.flags().TargetNpc = 0;
+                player.flags().TargetObj = 0;
+                player.flags().TargetMap = this.nroMapa;
+                player.flags().TargetX = x;
+                player.flags().TargetY = y;
                 hayAlgo = true;
             }
         }
         
         if (!hayAlgo) {
-            player.getFlags().TargetNpc = 0;
-            player.getFlags().TargetNpcTipo = 0;
-            player.getFlags().TargetUser = 0;
-            player.getFlags().TargetObj = 0;
-            player.getFlags().TargetObjMap = 0;
-            player.getFlags().TargetObjX = 0;
-            player.getFlags().TargetObjY = 0;
-            player.getFlags().TargetMap = this.nroMapa;
-            player.getFlags().TargetX = x;
-            player.getFlags().TargetY = y;
+            player.flags().TargetNpc = 0;
+            player.flags().TargetNpcTipo = 0;
+            player.flags().TargetUser = 0;
+            player.flags().TargetObj = 0;
+            player.flags().TargetObjMap = 0;
+            player.flags().TargetObjX = 0;
+            player.flags().TargetObjY = 0;
+            player.flags().TargetMap = this.nroMapa;
+            player.flags().TargetX = x;
+            player.flags().TargetY = y;
             //cliente.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
 
         // FIXME: REVISAR SI ESTO VA...
-        player.getFlags().TargetX = x;
-        player.getFlags().TargetY = y;
+        player.flags().TargetX = x;
+        player.flags().TargetY = y;
     }
     
     public MapPos getTeleport(byte  x, byte y) {
@@ -959,7 +959,7 @@ public class Map implements Constants {
             return;
         }
         int suerte = 0;
-        int skillSupervivencia = cliente.getEstads().getUserSkill(Skill.SKILL_Supervivencia);        
+        int skillSupervivencia = cliente.stats().getUserSkill(Skill.SKILL_Supervivencia);        
         if (skillSupervivencia == 0) {
 			suerte = 0;
 		} else if (skillSupervivencia < 6) {
@@ -978,7 +978,7 @@ public class Map implements Constants {
             cliente.enviarMensaje("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
         // Si no tiene hambre o sed quizas suba el skill supervivencia
-        if (!cliente.getFlags().Hambre && !cliente.getFlags().Sed) {
+        if (!cliente.flags().Hambre && !cliente.flags().Sed) {
 			cliente.subirSkill(Skill.SKILL_Supervivencia);
 		}
     }
@@ -1008,7 +1008,7 @@ public class Map implements Constants {
 		}
         if (obj.getInfo().Clave == 0) {
             abrirCerrarPuerta(obj);
-            cliente.getFlags().TargetObj = obj.getInfo().ObjIndex;
+            cliente.flags().TargetObj = obj.getInfo().ObjIndex;
         } else {
             cliente.enviarMensaje("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
@@ -1025,12 +1025,14 @@ public class Map implements Constants {
     }
     
     public MapPos tirarItemAlPiso(byte  x, byte y, InventoryObject obj) {
-        MapPos nuevaPos = tilelibre(x, y);
-        log.debug("tirarItemAlPiso: x=" + nuevaPos.x + " y=" + nuevaPos.y);
-        if (nuevaPos != null) {
-            if (agregarObjeto(obj.objid, obj.cant, nuevaPos.x, nuevaPos.y)) {
-                return nuevaPos;
-            }
+        MapPos newPos = tilelibre(x, y);
+        if (newPos != null) {
+	        log.debug("tirarItemAlPiso: x=" + newPos.x + " y=" + newPos.y);
+	        if (newPos != null) {
+	            if (agregarObjeto(obj.objid, obj.cant, newPos.x, newPos.y)) {
+	                return newPos;
+	            }
+	        }
         }
         return null;
     }

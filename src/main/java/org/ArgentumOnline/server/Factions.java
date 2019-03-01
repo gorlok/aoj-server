@@ -132,12 +132,12 @@ public class Factions implements Constants {
     public boolean faccionPuedeUsarItem(Player cliente, short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
         if (infoObj.esReal()) {
-            if (!cliente.esCriminal()) {
+            if (!cliente.isCriminal()) {
                 return this.ArmadaReal;
             } 
             return false;
         } else if (infoObj.esCaos()) {
-            if (cliente.esCriminal()) {
+            if (cliente.isCriminal()) {
                 return this.FuerzasCaos;
             }
             return false;
@@ -155,7 +155,7 @@ public class Factions implements Constants {
             this.cliente.hablar(COLOR_BLANCO, "¡Maldito insolente! Vete de aqui seguidor de las sombras!!!", npc.getId());
             return;
         }
-        if (this.cliente.esCriminal()) {
+        if (this.cliente.isCriminal()) {
             this.cliente.hablar(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
             return;
         }
@@ -163,7 +163,7 @@ public class Factions implements Constants {
             this.cliente.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.CriminalesMatados, npc.getId());
             return;
         }
-        if (this.cliente.getEstads().ELV < 18) {
+        if (this.cliente.stats().ELV < 18) {
             this.cliente.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
             return;
         }
@@ -183,7 +183,7 @@ public class Factions implements Constants {
             this.RecibioArmaduraReal = true;
         }
         if (!this.RecibioExpInicialReal) {
-            this.cliente.getEstads().addExp(EXP_AL_UNIRSE);
+            this.cliente.stats().addExp(EXP_AL_UNIRSE);
             this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialReal = true;
             this.cliente.checkUserLevel();
@@ -192,7 +192,7 @@ public class Factions implements Constants {
     }
 
     public void enlistarCaos(Npc npc) {
-        if (!this.cliente.esCriminal()) {
+        if (!this.cliente.isCriminal()) {
             this.cliente.hablar(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
             return;
         }
@@ -214,7 +214,7 @@ public class Factions implements Constants {
             this.cliente.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.CiudadanosMatados + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
             return;
         }
-        if (this.cliente.getEstads().ELV < 25) {
+        if (this.cliente.stats().ELV < 25) {
             this.cliente.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
             return;
         }
@@ -230,7 +230,7 @@ public class Factions implements Constants {
             this.RecibioArmaduraCaos = true;
         }
         if (!this.RecibioExpInicialCaos) {
-            this.cliente.getEstads().addExp(EXP_AL_UNIRSE);
+            this.cliente.stats().addExp(EXP_AL_UNIRSE);
             this.cliente.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialCaos = true;
             this.cliente.checkUserLevel();
@@ -243,7 +243,7 @@ public class Factions implements Constants {
             this.cliente.hablar(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
         } else {
             this.cliente.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.cliente.getEstads().addExp(EXP_X_100);
+            this.cliente.stats().addExp(EXP_X_100);
             this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
             this.cliente.checkUserLevel();
@@ -255,7 +255,7 @@ public class Factions implements Constants {
             this.cliente.hablar(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
         } else {
             this.cliente.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.cliente.getEstads().addExp(EXP_X_100);
+            this.cliente.stats().addExp(EXP_X_100);
             this.cliente.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;
             this.cliente.checkUserLevel();

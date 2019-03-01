@@ -49,16 +49,20 @@ public abstract class AbstractCharacter implements Constants {
 		this.id = id;
 	}
     
-    public CharInfo getInfoChar() {
+    public CharInfo infoChar() {
         return this.m_infoChar;
     }
     
-    public CharInfo getOrigChar() {
+    public CharInfo origChar() {
     	return this.m_origChar;
     }
     
     public MapPos pos() {
         return this.m_pos;
+    }
+    
+    protected void setPos(MapPos newPos) {
+    	pos().set(newPos.map, newPos.x, newPos.y);
     }
 
 }

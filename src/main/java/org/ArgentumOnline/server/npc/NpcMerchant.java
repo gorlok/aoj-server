@@ -107,7 +107,7 @@ public class NpcMerchant extends Npc {
         double infla = (this.m_inflacion * info.Valor) / 100;
         double val = (info.Valor + infla) / dto;
         
-        if (cliente.getEstads().getGold() < (val * cant)) {
+        if (cliente.stats().getGold() < (val * cant)) {
             cliente.enviarMensaje("No tienes suficiente oro.", FontType.FONTTYPE_INFO);
             return;
         }
@@ -124,7 +124,8 @@ public class NpcMerchant extends Npc {
             cliente.sendUpdateUserStats();
             // Actualizamos la ventana de comercio
             enviarNpcInv(cliente);
-            cliente.updateVentanaComercio(slot, (short) 0);
+            short objid = this.m_inv.getObjeto(slot).objid;
+            cliente.updateVentanaComercio(objid, cant);
         }
     }
 
@@ -144,7 +145,8 @@ public class NpcMerchant extends Npc {
             cliente.sendUpdateUserStats();
             enviarNpcInv(cliente);
             // Actualizamos la ventana de comercio
-            cliente.updateVentanaComercio(slot, (short) 1);
+            short objid = cliente.getInv().getObjeto(slot).objid;
+            cliente.updateVentanaComercio(objid, cant);
         }
     }
     
@@ -189,7 +191,7 @@ public class NpcMerchant extends Npc {
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);
-                cliente.getEstads().addGold((int) monto);
+                cliente.stats().addGold((int) monto);
                 // tal vez suba el skill comerciar ;-)
                 cliente.subirSkill(Skill.SKILL_Comerciar);
             } else {
@@ -200,7 +202,7 @@ public class NpcMerchant extends Npc {
             // Le sumamos al user el valor en oro del obj vendido
             //double monto = ((info.Valor / 3 + infla) * cant);
             double monto = ((info.Valor / 3) * cant);
-            cliente.getEstads().addGold((int) monto);
+            cliente.stats().addGold((int) monto);
         }
     }
 

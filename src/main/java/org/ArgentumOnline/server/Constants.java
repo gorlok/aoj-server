@@ -32,6 +32,8 @@ public interface Constants {
 	
 	public final boolean DEBUG = false;
 	
+	public final static char NULL_CHAR = '\0';
+	
 	final static int DISTANCE_CASHIER = 4; // CAJERO DE BANCO
 	final static int DISTANCE_QUEST = 4;
 	final static int DISTANCE_PET = 10; // MASCOTA
@@ -253,11 +255,11 @@ public interface Constants {
     final static int MAX_NUM_SPELLS     = 10;
     final static int MAX_NPC_NAME       = 100;
     final static int MAX_NPC_DESC       = 300;
-    final static int MAX_CRIATURAS_ENTRENADOR = 20;
-
-    final static int MAX_MASCOTAS_ENTRENADOR = 7;
     
-    final static int MAX_MASCOTAS_USER = 3;
+    final static int MAX_TRAINER_CREATURES = 20;
+    final static int MAX_TRAINER_PETS = 7;
+
+    final static int MAX_USER_PETS = 3;
     
     final static int MAX_USER_INVENTORY_SLOTS = 20;
     final static int MAX_BANCOINVENTORY_SLOTS = 40;

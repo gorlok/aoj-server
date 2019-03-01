@@ -1,6 +1,6 @@
 package org.ArgentumOnline.server;
 
-import static org.ArgentumOnline.server.Constants.MAX_MASCOTAS_USER;
+import static org.ArgentumOnline.server.Constants.MAX_USER_PETS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class UserPets {
 	}
 
 	public boolean isFullPets() {
-		return this.pets.size() >= MAX_MASCOTAS_USER;
+		return this.pets.size() >= MAX_USER_PETS;
 	}
 	
 	public void addPet(Npc pet) {

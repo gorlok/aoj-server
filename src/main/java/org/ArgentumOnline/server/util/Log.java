@@ -34,14 +34,11 @@ import java.util.Date;
  */
 public class Log {
     
-    static SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmssSSS");
-    
-    /** Creates a new instance of Log */
     private Log() {
-    	//
     }
     
     public static String getTimestamp() {
+        SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmssSSS");
         return df.format(new Date());
     }
 

@@ -39,10 +39,16 @@ public class GmRequest {
     
     @Override
 	public boolean equals(Object o) {
-        if (o.getClass() == this.getClass()) {
-            return (this.usuario.equals(((GmRequest) o).usuario));
-        }
-        return false;
+    	if (o == null) return false;
+    	
+    	if ((o instanceof GmRequest)) return false;
+    	
+        return (this.usuario.equals(((GmRequest) o).usuario));
+    }
+    
+    @Override
+    public int hashCode() {
+    	return 42;
     }
 }
 

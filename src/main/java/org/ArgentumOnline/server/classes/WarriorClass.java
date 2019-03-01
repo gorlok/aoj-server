@@ -91,7 +91,7 @@ public class WarriorClass extends AbstractClazz {
     
     @Override
 	public short getArmaduraImperial(Player cliente) {
-        if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
+        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
         	return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
         return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
@@ -99,7 +99,7 @@ public class WarriorClass extends AbstractClazz {
     
     @Override
 	public short getArmaduraCaos(Player cliente) {
-        if (cliente.getRaza() == RAZA_ENANO || cliente.getRaza() == RAZA_GNOMO) {
+        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
             return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
         return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);

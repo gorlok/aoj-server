@@ -25,7 +25,13 @@
  */
 package org.ArgentumOnline.server;
 
+import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeAtacar;
+import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeCastear;
+import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeTrabajar;
+import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeUsar;
+
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.util.Util;
 
 /**
  * @author gorlok
@@ -62,5 +68,51 @@ public class UserCounters {
     public void resetIdleCount() {
     	this.IdleCount = 0;
     }
+    
+	// Las siguientes funciones devuelven TRUE o FALSE si el intervalo
+	// permite hacerlo. Si devuelve TRUE, setean automaticamente el
+	// timer para que no se pueda hacer la accion hasta el nuevo ciclo.
+
+	/** INTERVALO DE CASTING DE HECHIZOS */
+	public boolean intervaloPermiteLanzarSpell() {
+		long time = Util.millis();
+		if ((time - TimerLanzarSpell) >= IntervaloUserPuedeCastear) {
+			TimerLanzarSpell = time;
+			return true;
+		}
+		return false;
+	}
+
+	/** INTERVALO DE ATAQUE CUERPO A CUERPO */
+	public boolean intervaloPermiteAtacar() {
+		long time = Util.millis();
+		if ((time - TimerPuedeAtacar) >= IntervaloUserPuedeAtacar) {
+			TimerPuedeAtacar = time;
+			return true;
+		}
+		return false;
+	}
+
+	/** INTERVALO DE TRABAJO */
+	public boolean intervaloPermiteTrabajar() {
+		long time = Util.millis();
+		if ((time - TimerPuedeTrabajar) >= IntervaloUserPuedeTrabajar) {
+			TimerPuedeTrabajar = time;
+			return true;
+		}
+		return false;
+	}
+
+	/** INTERVALO DE USAR OBJETOS */
+	public boolean intervaloPermiteUsar() {
+		long time = Util.millis();
+		if ((time - TimerUsar) >= IntervaloUserPuedeUsar) {
+			TimerUsar = time;
+			return true;
+		}
+		return false;
+	}
+
+    
 }
 

@@ -64,7 +64,7 @@ public class Motd {
 	public void doIniciarCambiarMOTD(Player client) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
-		if (!client.esDios()) {
+		if (!client.isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;

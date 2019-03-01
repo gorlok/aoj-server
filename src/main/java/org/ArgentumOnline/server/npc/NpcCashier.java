@@ -22,11 +22,11 @@ public class NpcCashier extends Npc {
 			return;
 		}
 		// Se asegura que el target es un npc
-		if (client.getFlags().TargetNpc == 0) {
+		if (client.flags().TargetNpc == 0) {
 			client.enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Npc npc = server.getNpcById(client.getFlags().TargetNpc);
+		Npc npc = server.getNpcById(client.flags().TargetNpc);
 		if (npc.pos().distance(m_pos) > 3) {
 			client.enviarMensaje("Estas demasiado lejos del vendedor.", FontType.FONTTYPE_INFO);
 			return;
@@ -39,7 +39,7 @@ public class NpcCashier extends Npc {
 			client.doSALIR();
 			return;
 		}
-		client.hablar(COLOR_BLANCO, "Tienes " + client.getEstads().getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
+		client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
 	}
 
 	public void retirarOroBanco(Player client, int cant) {
@@ -54,10 +54,10 @@ public class NpcCashier extends Npc {
 			client.doSALIR();
 			return;
 		}
-		if (cant > 0 && cant <= client.getEstads().getBankGold()) {
-			client.getEstads().addBankGold( -cant );
-			client.getEstads().addGold( cant );
-			client.hablar(COLOR_BLANCO, "Tienes " + client.getEstads().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+		if (cant > 0 && cant <= client.stats().getBankGold()) {
+			client.stats().addBankGold( -cant );
+			client.stats().addGold( cant );
+			client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
@@ -70,10 +70,10 @@ public class NpcCashier extends Npc {
 			return;
 		}
 		// ¿Se tiene dicha cantidad realmente?
-		if (cant > 0 && cant <= client.getEstads().getGold()) {
-			client.getEstads().addBankGold( cant );
-			client.getEstads().addGold( -cant );
-			client.hablar(COLOR_BLANCO, "Tienes " + client.getEstads().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+		if (cant > 0 && cant <= client.stats().getGold()) {
+			client.stats().addBankGold( cant );
+			client.stats().addGold( -cant );
+			client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
 			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}

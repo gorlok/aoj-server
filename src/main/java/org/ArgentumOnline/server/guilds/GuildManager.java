@@ -45,6 +45,11 @@ import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Skill;
+import org.ArgentumOnline.server.protocol.GuildDetailsResponse;
+import org.ArgentumOnline.server.protocol.GuildLeaderInfoResponse;
+import org.ArgentumOnline.server.protocol.GuildListResponse;
+import org.ArgentumOnline.server.protocol.GuildNewsResponse;
+import org.ArgentumOnline.server.protocol.PeaceProposalsListResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
@@ -248,15 +253,20 @@ public class GuildManager {
         if (guild == null) {
             return;
         }
-        StringBuffer sb = new StringBuffer();
         if (guild.peacePropositions.isEmpty()) {
 			return;
 		}
-        sb.append(guild.peacePropositions.size()).append(",");
+        
+        var sb = new StringBuilder();
         for (GuildRequest solicitud: guild.peacePropositions) {
-        	sb.append(solicitud.getUserName()).append(",");
+        	sb.append(solicitud.getUserName())
+        		.append(Constants.NULL_CHAR);
         }
-        //cliente.enviar(MSG_PEACEPR, sb.toString());
+        if (sb.length() > 0) {
+        	// remove last separator
+        	sb.deleteCharAt(sb.length()-1);
+        }
+        cliente.sendPacket(new PeaceProposalsListResponse(sb.toString()));
     }
 
     private void echarMember(Player cliente, String userName) {
@@ -430,42 +440,88 @@ public class GuildManager {
         }
     }
     
-    private void sendGuildLeaderInfo(Player cliente) {
-        if (!cliente.guildInfo().esGuildLeader()) {
+    private void sendGuildLeaderInfo(Player player) {
+        if (!player.guildInfo().esGuildLeader()) {
             return;
         }
-        //<-------Lista de guilds ---------->
-        StringBuffer sb = new StringBuffer(guildsCount() + "¬");
-        for (Guild guild: getGuilds()) {
-            sb.append(guild.guildName);
-            sb.append("¬");
-        }
-        Guild guild = getGuild(cliente.guildInfo().getGuildName());
-        if (guild == null) {
+		Guild playerGuild = getGuild(player.guildInfo().getGuildName());
+        if (playerGuild == null) {
             return;
         }
-        //<-------Lista de miembros ---------->
-        sb.append(guild.members.size());
-        sb.append("¬");
-        for (String member: guild.members) {
-            sb.append(member);
-            sb.append("¬");
-        }
-        //<------- Guild News -------->
-        String news = guild.guildNews.replaceAll("º", "\r\n");
-        sb.append(news);
-        sb.append("¬");
-        //<------- Solicitudes de ingreso ------->
-        sb.append(guild.joinRequest.size());
-        sb.append("¬");
+        
+        String guildsList = guildListAsString();
+        String membersList = memberListAsString(playerGuild);
+        String news = guildNewsAsString(playerGuild);
+        String requestsList = guildRequestAsString(playerGuild);
+        
+        player.sendPacket(new GuildLeaderInfoResponse(guildsList, membersList, news, requestsList));
+    }
+    
+    private String guildRequestAsString(Guild guild) {
+        var requestsList = new StringBuilder();
         for (GuildRequest solicitud: guild.joinRequest) {
-            sb.append(solicitud.getUserName());
-            sb.append("¬");
+        	requestsList.append(solicitud.getUserName());
+        	requestsList.append(Constants.NULL_CHAR);
         }
-        //cliente.enviar(MSG_LEADERI, sb.toString());
+        if (requestsList.length()>0) {
+        	requestsList.deleteCharAt(requestsList.length()-1); // remove extra separator
+        }
+        return requestsList.toString();
+    }
+    
+    private String guildNewsAsString(Guild guild) {
+        var news = new StringBuilder()
+		        .append(guild.guildNews)
+		        .append(Constants.NULL_CHAR);
+    	return news.toString();
     }
 
-    private void setNewURL(Player cliente, String newURL) {
+    private String guildListAsString() {
+        var guildsList = new StringBuilder();
+        for (Guild g: getGuilds()) {
+            guildsList.append(g.guildName);
+            guildsList.append(Constants.NULL_CHAR);
+        }
+        if (guildsList.length()>0) {
+        	guildsList.deleteCharAt(guildsList.length()-1); // remove extra separator
+        }
+        return guildsList.toString();
+	}
+
+	private String memberListAsString(Guild guild) {
+    	var membersList = new StringBuilder();
+        for (String member: guild.members) {
+        	membersList.append(member);
+        	membersList.append(Constants.NULL_CHAR);        }
+        if (membersList.length()>0) {
+        	membersList.deleteCharAt(membersList.length()-1); // remove extra separator
+        }
+        return membersList.toString();
+    }
+
+	private String alliesListAsString(Guild guild) {
+    	var guilds = new StringBuilder();
+        for (String allied: guild.alliedGuilds) {
+        	guilds.append(allied);
+        	guilds.append(Constants.NULL_CHAR);        }
+        if (guilds.length()>0) {
+        	guilds.deleteCharAt(guilds.length()-1); // remove extra separator
+        }
+        return guilds.toString();
+    }
+
+	private String enemiesListAsString(Guild guild) {
+    	var guilds = new StringBuilder();
+        for (String allied: guild.enemyGuilds) {
+        	guilds.append(allied);
+        	guilds.append(Constants.NULL_CHAR);        }
+        if (guilds.length()>0) {
+        	guilds.deleteCharAt(guilds.length()-1); // remove extra separator
+        }
+        return guilds.toString();
+    }
+
+	private void setNewURL(Player cliente, String newURL) {
         if (!cliente.guildInfo().esGuildLeader()) {
             return;
         }
@@ -537,39 +593,38 @@ public class GuildManager {
         enemyGuild.enviarSonido(Constants.SND_DECLAREWAR);        
     }
     
-    public void sendGuildNews(Player miembro) {
-    	if (!miembro.getGuildInfo().esMiembroClan()) {
+    public void sendGuildNews(Player member) {
+    	if (!member.getGuildInfo().esMiembroClan()) {
 			return;
 		}
-        Guild guild = getGuild(miembro);
-        if (guild == null) {
+		
+		Guild playerGuild = getGuild(member);
+        if (playerGuild == null) {
             return;
         }
-        StringBuffer sb = new StringBuffer()
-		.append(guild.guildNews).append("¬")
-		.append(guild.enemyGuilds.size()).append("¬");
-        for (String name: guild.enemyGuilds) {
-			sb.append(name).append("¬");
-		}
-		sb.append(guild.alliedGuilds.size()).append("¬");
-		for (String name: guild.alliedGuilds) {
-			sb.append(name).append("¬");
-		}
-		//miembro.enviar(MSG_GUILDNE, sb.toString());
-		if (guild.elections) {
-			enviarMensajeVotacion(miembro);
+        
+        String news = guildNewsAsString(playerGuild);
+    	String allies = alliesListAsString(playerGuild);
+    	String enemies = enemiesListAsString(playerGuild);
+
+    	member.sendPacket(new GuildNewsResponse(news, enemies, allies));
+		
+		if (playerGuild.elections) {
+			enviarMensajeVotacion(member);
 		}
     }
 
     private void sendGuildsList(Player cliente) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(guildsCount());
-        sb.append(",");
+        var sb = new StringBuilder();
         for (Guild guild: getGuilds()) {
             sb.append(guild.guildName);
-            sb.append(",");
+            sb.append(Constants.NULL_CHAR);
         }
-       // cliente.enviar(MSG_GL, sb.toString());
+        if (sb.length()>0) {
+        	sb.deleteCharAt(sb.length()-1);
+        }
+        
+        cliente.sendPacket(new GuildListResponse(sb.toString()));
     }
 
     public void loadGuildsDB() {
@@ -595,33 +650,38 @@ public class GuildManager {
 		if (guild == null) {
 			return;
 		}
-        StringBuffer msg = new StringBuffer()
-	        .append(guild.guildName).append("¬")
-	        .append(guild.founder).append("¬")
-	        .append(guild.fundationDate).append("¬")
-	        .append(guild.leader).append("¬")
-	    	.append(guild.URL).append("¬")
-	    	.append(guild.members.size()).append("¬")
-	        .append(guild.daysToNextElection()).append("¬")
-	        .append(guild.gold).append("¬")
-	        .append(guild.enemyGuilds.size()).append("¬")
-	        .append(guild.alliedGuilds.size()).append("¬");
-        int cant = guild.codexLength();
-        msg.append(cant);
-        for (int i = 0; i < cant; i++) {
-            msg.append("¬");
-            msg.append(guild.getCodex(i));
-        }
-        msg.append("¬").append(guild.description);
-       // cliente.enviar(MSG_CLANDET, msg.toString());
+		
+		var codex = new StringBuilder();
+		for (var i = 0; i<guild.codexLength(); i++) {
+			codex.append(guild.getCodex(i))
+				.append(Constants.NULL_CHAR);
+		}
+		if (codex.length()>0) {
+			codex.deleteCharAt(codex.length()-1);
+		}
+		
+        cliente.sendPacket(new GuildDetailsResponse(
+					guild.guildName, 
+					guild.founder,
+					guild.fundationDate,
+					guild.leader,
+					guild.URL,
+					(short) guild.members.size(), 
+					(byte) (guild.eleccionesAbiertas ? 1 : 0),
+					guild.alineacion.toString(), 
+					(short) guild.enemyGuilds.size(), 
+					(short) guild.alliedGuilds.size(), 
+					guild.antifactionPoints(), 
+					codex.toString(),
+					guild.description));
     }
     
     private boolean canCreateGuild(Player cliente) {
-        if (cliente.getEstads().ELV < 20) {
+        if (cliente.stats().ELV < 20) {
             cliente.enviarMensaje("Para fundar un clan debes de ser nivel 20 o superior", FontType.FONTTYPE_GUILD);
             return false;
         }
-        if (cliente.getEstads().userSkills[Skill.SKILL_Liderazgo] < 90) {
+        if (cliente.stats().userSkills[Skill.SKILL_Liderazgo] < 90) {
             cliente.enviarMensaje("Para fundar un clan necesitás al menos 90 pts en liderazgo", FontType.FONTTYPE_GUILD);
             return false;
         }
@@ -643,7 +703,7 @@ public class GuildManager {
         }
         Guild guild;
         try {
-            guild = new Guild(guildInfo, cliente.getNick(), (long) cliente.getReputacion().getPromedio());
+            guild = new Guild(guildInfo, cliente.getNick(), (long) cliente.reputation().getPromedio());
         } catch (InvalidGuildNameException e) {
             cliente.enviarMensaje("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
             return false;
@@ -809,5 +869,140 @@ public class GuildManager {
 		sendGuildDetails(user, s);
 	}
 
+/*
+'
+'
+'ELECCIONES
+'
+'
+
+Public Function EleccionesAbiertas() As Boolean
+Dim ee As String
+    ee = GetVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesAbiertas")
+    EleccionesAbiertas = (ee = "1")     'cualquier otra cosa da falso
+End Function
+
+Public Sub AbrirElecciones()
+    Call WriteVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesAbiertas", "1")
+    Call WriteVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesFinalizan", DateAdd("d", 1, Now))
+    Call WriteVar(VOTACIONESFILE, "INIT", "NumVotos", "0")
+End Sub
+
+Private Sub CerrarElecciones()  'solo pueden cerrarse mediante recuento de votos
+    Call WriteVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesAbiertas", "0")
+    Call WriteVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesFinalizan", vbNullString)
+    Call Kill(VOTACIONESFILE)   'borramos toda la evidencia ;-)
+End Sub
+
+Public Sub ContabilizarVoto(ByRef Votante As String, ByRef Votado As String)
+Dim q       As Integer
+Dim Temps   As String
+
+    Temps = GetVar(VOTACIONESFILE, "INIT", "NumVotos")
+    q = IIf(IsNumeric(Temps), CInt(Temps), 0)
+    Call WriteVar(VOTACIONESFILE, "VOTOS", Votante, Votado)
+    Call WriteVar(VOTACIONESFILE, "INIT", "NumVotos", CStr(q + 1))
+End Sub
+
+Public Function YaVoto(ByRef Votante) As Boolean
+    YaVoto = ((LenB(Trim$(GetVar(VOTACIONESFILE, "VOTOS", Votante)))) <> 0)
+End Function
+
+Private Function ContarVotos(ByRef CantGanadores As Integer) As String
+Dim q           As Integer
+Dim i           As Integer
+Dim Temps       As String
+Dim tempV       As String
+Dim d           As diccionario
+
+On Error GoTo errh
+    ContarVotos = vbNullString
+    CantGanadores = 0
+    Temps = GetVar(MEMBERSFILE, "INIT", "NroMembers")
+    q = IIf(IsNumeric(Temps), CInt(Temps), 0)
+    If q > 0 Then
+        'el diccionario tiene clave el elegido y valor la #votos
+        Set d = New diccionario
+        
+        For i = 1 To q
+            'miembro del clan
+            Temps = GetVar(MEMBERSFILE, "MEMBERS", "Member" & i)
+            
+            'a quienvoto
+            tempV = GetVar(VOTACIONESFILE, "VOTOS", Temps)
+            
+            'si voto a alguien contabilizamos el voto
+            If LenB(tempV) <> 0 Then
+                If Not IsNull(d.At(tempV)) Then  'cuantos votos tiene?
+                    Call d.AtPut(tempV, CInt(d.At(tempV)) + 1)
+                Else
+                    Call d.AtPut(tempV, 1)
+                End If
+            End If
+        Next i
     
+        'quien quedo con mas votos, y cuantos tuvieron esos votos?
+        ContarVotos = d.MayorValor(CantGanadores)
+    
+        Set d = Nothing
+    End If
+    
+Exit Function
+errh:
+    LogError ("clsClan.Contarvotos: " & Err.description)
+    If Not d Is Nothing Then Set d = Nothing
+    ContarVotos = vbNullString
+End Function
+
+Public Function RevisarElecciones() As Boolean
+Dim FechaSufragio   As Date
+Dim Temps           As String
+Dim Ganador         As String
+Dim CantGanadores   As Integer
+Dim list()          As String
+Dim i               As Long
+
+    RevisarElecciones = False
+    Temps = Trim$(GetVar(GUILDINFOFILE, "GUILD" & p_GuildNumber, "EleccionesFinalizan"))
+    
+    If Temps = vbNullString Then Exit Function
+    
+    If IsDate(Temps) Then
+        FechaSufragio = CDate(Temps)
+        If FechaSufragio < Now Then     'toca!
+            Ganador = ContarVotos(CantGanadores)
+
+            If CantGanadores > 1 Then
+                'empate en la votacion
+                Call SetGuildNews("*Empate en la votación. " & Ganador & " con " & CantGanadores & " votos ganaron las elecciones del clan")
+            ElseIf CantGanadores = 1 Then
+                list = Me.GetMemberList()
+                
+                For i = 0 To UBound(list())
+                    If Ganador = list(i) Then Exit For
+                Next i
+                
+                If i <= UBound(list()) Then
+                    Call SetGuildNews("*" & Ganador & " ganó la elección del clan*")
+                    Call Me.SetLeader(Ganador)
+                    RevisarElecciones = True
+                Else
+                    Call SetGuildNews("*" & Ganador & " ganó la elección del clan pero abandonó las filas por lo que la votación queda desierta*")
+                End If
+            Else
+                Call SetGuildNews("*El período de votación se cerró sin votos*")
+            End If
+            
+            Call CerrarElecciones
+            
+        End If
+    Else
+        Call LogError("clsClan.RevisarElecciones: tempS is not Date")
+    End If
+
+End Function
+
+'/VOTACIONES
+    
+ */
 }

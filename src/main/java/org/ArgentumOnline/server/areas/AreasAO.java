@@ -109,24 +109,32 @@ public class AreasAO implements Constants {
 			maxX = minX + 26;
 			userArea.minX = minX;
 			userArea.minY = minY;
+			break;
+			
 		case heading_s:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
 			userArea.minX = minX;
 			userArea.minY = minY - 18;
+			break;
+			
 		case heading_w:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
 			userArea.minX = minX;
 			userArea.minY = minY;
+			break;
+			
 		case heading_e:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
 			userArea.minX = minX - 18;
 			userArea.minY = minY;
+			break;
+			
 		default: //user nuevo
 			minY = ((user.pos().y / 9) - 1) * 9;
 			maxY = minY + 26;
@@ -136,6 +144,7 @@ public class AreasAO implements Constants {
 			
 			userArea.minX = minX;
 			userArea.minY = minY;
+			break;
 		}
 		
     	if (maxY > YMaxMapSize - 1) {
@@ -223,24 +232,32 @@ public class AreasAO implements Constants {
 			maxX = minX + 26;
 			npc.minX = minX;
 			npc.minY = minY;
+			break;
+			
 		case heading_s:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
 			npc.minX = minX;
 			npc.minY = minY - 18;
+			break;
+			
 		case heading_w:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
 			npc.minX = minX;
 			npc.minY = minY;
+			break;
+			
 		case heading_e:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
 			npc.minX = minX - 18;
 			npc.minY = minY;
+			break;
+			
 		default: //user nuevo
 			minY = ((npc.pos().y / 9) - 1) * 9;
 			maxY = minY + 26;
@@ -250,7 +267,7 @@ public class AreasAO implements Constants {
 			
 			npc.minX = minX;
 			npc.minY = minY;
-			
+			break;
 		}
 		
     	if (maxY > YMaxMapSize - 1) {

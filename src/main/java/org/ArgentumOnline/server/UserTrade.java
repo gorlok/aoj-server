@@ -76,7 +76,7 @@ public class UserTrade {
 		} else {
 		    //Es el primero que comercia ?
 			player.enviarMensaje(targetPlayer.getNick() + " desea comerciar. Si deseas aceptar, Escribe /COMERCIAR.", FontType.FONTTYPE_TALK);
-			targetPlayer.getFlags().TargetUser = player.getId();
+			targetPlayer.flags().TargetUser = player.getId();
 		}
 	}
 	
@@ -150,8 +150,8 @@ public class UserTrade {
 			int agregados = player.m_inv.agregarItem(obj2_objid, obj2_cant);
 			if (agregados < obj2_cant) {
 				// Tiro al piso lo que no pude guardar en el inventario.
-				Map mapa = player.server.getMap(player.m_pos.map);
-				mapa.tirarItemAlPiso(player.m_pos.x, player.m_pos.y,
+				Map mapa = player.server.getMap(player.pos().map);
+				mapa.tirarItemAlPiso(player.pos().x, player.pos().y,
 						new InventoryObject(obj2_objid, obj2_cant - agregados));
 			}
 			targetClient.quitarObjetos(obj2_objid, obj2_cant);
@@ -169,8 +169,8 @@ public class UserTrade {
 			int agregados = targetClient.m_inv.agregarItem(obj1_objid, obj1_objid);
 			if (agregados < obj1_cant) {
 				// Tiro al piso los items que no se agregaron al inventario.
-				Map mapa = player.server.getMap(targetClient.m_pos.map);
-				mapa.tirarItemAlPiso(targetClient.m_pos.x, targetClient.m_pos.y,
+				Map mapa = player.server.getMap(targetClient.pos().map);
+				mapa.tirarItemAlPiso(targetClient.pos().x, targetClient.pos().y,
 						new InventoryObject(obj1_objid, obj1_objid - agregados));
 			}
 			player.quitarObjetos(obj1_objid, obj1_cant);
@@ -186,9 +186,11 @@ public class UserTrade {
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == player.getId()) {
 			Player targetClient = player.server.getClientById(this.destUsu);
-			targetClient.enviarMensaje(player.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
 			if (targetClient != null) {
-				targetClient.m_comUsu.sendCommerceEnded();
+				targetClient.enviarMensaje(player.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
+				if (targetClient != null) {
+					targetClient.m_comUsu.sendCommerceEnded();
+				}
 			}
 		}
 		sendCommerceEnded();
@@ -283,10 +285,8 @@ public class UserTrade {
 			return;
 		}
 		if (objid > 0 && this.cant > 0) {
-			ObjectInfo info = client.server.getObjectInfoStorage().getInfoObjeto(objid);
-			// destUsu.enviar(MSG_COMUSUINV, 1, objid, info.Nombre, cant, 0,
-			// info.GrhIndex, info.ObjType, info.MaxHIT, info.MinHIT,
-			// info.MaxDef, info.Valor / 3);
+			player.updateVentanaComercio(objid, cant);
 		}
 	}
+	
 }
