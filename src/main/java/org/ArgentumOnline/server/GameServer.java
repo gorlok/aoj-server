@@ -32,12 +32,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.forum.ForumManager;
@@ -401,7 +398,7 @@ public class GameServer implements Constants {
     
     private void loadMaps(boolean loadBackup) {
     	log.trace("loading maps");
-        this.maps = new Vector<Map>();
+        this.maps = new ArrayList<Map>(CANT_MAPAS);
         Map mapa;
         for (short i = 1; i <= CANT_MAPAS; i++) {
             mapa = new Map(i, this);
@@ -412,7 +409,6 @@ public class GameServer implements Constants {
     
     private void loadSpells() {
     	log.trace("loading spells");
-        this.spells = new Vector<Spell>();
         IniFile ini = new IniFile();
         try {
             ini.load(DATDIR + java.io.File.separator + "Hechizos.dat");
@@ -423,6 +419,7 @@ public class GameServer implements Constants {
         }
         int cant = ini.getShort("INIT", "NumeroHechizos");
         
+        this.spells = new ArrayList<Spell>(cant);
         for (int i = 0; i < cant; i++) {
             Spell hechizo = new Spell(i+1);
         	hechizo.load(ini);
@@ -441,7 +438,7 @@ public class GameServer implements Constants {
             e.printStackTrace();
         }
         short cant = ini.getShort("INIT", "NumQuests");
-        this.quests = new Vector<Quest>();        
+        this.quests = new ArrayList<Quest>(cant);
         for (short i = 1; i <= cant; i++) {
             Quest quest = new Quest(this, i);
             quest.load(ini);
@@ -998,7 +995,7 @@ public class GameServer implements Constants {
     }
     
     private void reSpawnOrigPosNpcs() {
-        List<Npc> spawnNPCs = new Vector<Npc>();
+        List<Npc> spawnNPCs = new ArrayList<Npc>();
         for (Npc npc: getNpcs()) {
             if (npc.isNpcActive()) {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {

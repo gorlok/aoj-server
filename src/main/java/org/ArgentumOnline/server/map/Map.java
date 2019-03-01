@@ -34,9 +34,9 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -101,9 +101,9 @@ public class Map implements Constants {
     
     MapCell cells[][] = new MapCell[MAPA_ANCHO][MAPA_ALTO];
     
-    Vector<MapCell> objects = new Vector<MapCell>();
-    Vector<Player> players = new Vector<Player>();
-    Vector<Npc> npcs = new Vector<Npc>();
+    List<MapCell> objects = new ArrayList<MapCell>();
+    List<Player> players = new ArrayList<Player>();
+    List<Npc> npcs = new ArrayList<Npc>();
     
     /** Creates a new instance of Map */
     public Map(short nroMapa, GameServer server) {

@@ -1,11 +1,11 @@
 package org.ArgentumOnline.server.gm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 public class Motd {
 	private static Logger log = LogManager.getLogger();
 	
-    private List<String> m_motd = new Vector<String>();
+    private List<String> m_motd = new ArrayList<String>();
     
     public Motd() {
 	}
@@ -85,7 +85,7 @@ public class Motd {
 		// Comando ZMOTD
 		String CRLF = "" + (char) 13 + (char) 10;
 		Log.logGM(client.getNick(), "ZMOTD " + s);
-		Vector<String> motd = new Vector<String>();
+		List<String> motd = new ArrayList<String>();
 		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
 			motd.add(st.nextToken());
 		}

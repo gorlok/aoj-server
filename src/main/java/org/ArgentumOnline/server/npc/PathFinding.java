@@ -25,7 +25,7 @@
  */
 package org.ArgentumOnline.server.npc;
 
-import java.util.Vector;
+import java.util.List;
 
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.aStar.AStar;
@@ -61,7 +61,7 @@ public class PathFinding {
     	init();
     }
     
-    public Vector<Node> seekPath(Npc npc) {
+    public List<Node> seekPath(Npc npc) {
     	GameServer server = GameServer.instance();
     	short m = npc.pos().map;
     	Map mapa = server.getMap(m);
