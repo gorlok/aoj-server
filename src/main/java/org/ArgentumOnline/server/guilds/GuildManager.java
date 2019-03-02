@@ -681,7 +681,7 @@ public class GuildManager {
             cliente.enviarMensaje("Para fundar un clan debes de ser nivel 20 o superior", FontType.FONTTYPE_GUILD);
             return false;
         }
-        if (cliente.stats().userSkills[Skill.SKILL_Liderazgo] < 90) {
+        if (cliente.stats().userSkills(Skill.SKILL_Liderazgo) < 90) {
             cliente.enviarMensaje("Para fundar un clan necesitás al menos 90 pts en liderazgo", FontType.FONTTYPE_GUILD);
             return false;
         }

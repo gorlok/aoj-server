@@ -731,7 +731,7 @@ public class UserInventory extends Inventory implements Constants {
     	for (short objid : this.server.getObjCarpintero()) {
             ObjectInfo info = findObj(objid);
             if (info.SkHerreria <= this.dueño.skillCarpinteriaEfectivo()) {
-            	validObjects.add(new CarpenterObjects_DATA(info.Nombre, info.Madera, objid));
+            	validObjects.add(new CarpenterObjects_DATA(info.Nombre, (short)info.Madera, objid));
             }
     	}
 

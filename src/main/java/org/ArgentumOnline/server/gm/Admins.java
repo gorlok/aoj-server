@@ -1093,7 +1093,7 @@ public class Admins {
 
 		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.stats().userSkills[i], FontType.FONTTYPE_INFO);
+			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.stats().userSkills(i), FontType.FONTTYPE_INFO);
 		}
 	}
 

@@ -158,6 +158,8 @@ public interface Constants {
     final static int MAPA_ALTO  = 100;
     final static int MAPA_ANCHO = 100;
     
+    final static int DUNGEON_NEWBIE_MAP = 37;
+    
     // Constantes de razas:
     final static int RAZA_HUMANO       = 0;
     final static int RAZA_ELFO         = 1;

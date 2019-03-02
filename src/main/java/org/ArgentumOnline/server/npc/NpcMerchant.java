@@ -62,9 +62,7 @@ public class NpcMerchant extends Npc {
 			dto = 1.0; // evitamos dividir por 0!
 		}
         for (byte i = 1; i <= this.m_inv.size(); i++) {
-        	
             if (this.m_inv.getObjeto(i).objid > 0) {
-            	
                 // Calculamos el porc de inflacion del npc
                 ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;

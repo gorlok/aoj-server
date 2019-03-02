@@ -633,7 +633,7 @@ public class Npc extends AbstractCharacter implements Constants {
         return this.m_NPCtype;
     }
     
-    public NpcStats getEstads() {
+    public NpcStats stats() {
         return this.m_estads;
     }
     
@@ -697,15 +697,15 @@ public class Npc extends AbstractCharacter implements Constants {
         // son 2/3 de la exp mientras esta vivo, el resto se
         // obtiene al matarlo.
         int expSinMorir = (2 * this.m_giveEXP ) / 3;
-        int totalNpcVida = getEstads().MaxHP;
+        int totalNpcVida = stats().MaxHP;
         if (totalNpcVida <= 0) {
 			return;
 		}
         if (daño < 0) {
 			daño = 0;
 		}
-        if (daño > getEstads().MinHP) {
-			daño = getEstads().MinHP;
+        if (daño > stats().MinHP) {
+			daño = stats().MinHP;
 		}
         int expADar = (daño * expSinMorir) / totalNpcVida;
         
@@ -1799,22 +1799,22 @@ public class Npc extends AbstractCharacter implements Constants {
     }
     
     private String estadoVidaExacta() {
-    	if (this.getEstads().MaxHP <= 0) {
+    	if (this.stats().MaxHP <= 0) {
 			return "";
 		}
-    	return "(" + this.getEstads().MinHP + "/" + this.getEstads().MaxHP + ")";    	
+    	return "(" + this.stats().MinHP + "/" + this.stats().MaxHP + ")";    	
     }
     
     public String estadoVida(Player cliente) {
-    	if (this.getEstads().MaxHP <= 0) {
+    	if (this.stats().MaxHP <= 0) {
 			return "";
 		}
     	//agush: con esto los gms ahora ven la vida de los npcs
     	if (!cliente.isGM() == false) {
 			return estadoVidaExacta();
 		}
-        short skSup = cliente.stats().getUserSkill(Skill.SKILL_Supervivencia);
-        double vidaPct = this.getEstads().MinHP / this.getEstads().MaxHP;
+        short skSup = cliente.stats().userSkills(Skill.SKILL_Supervivencia);
+        double vidaPct = this.stats().MinHP / this.stats().MaxHP;
         if (skSup < 11) {
         	return "(Dudoso)";
         } else if (skSup < 21) {

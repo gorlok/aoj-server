@@ -19,6 +19,7 @@ import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
+import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
@@ -202,6 +203,22 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case SafeToggle:
 			player.safeToggle();
+			break;
+			
+		case TrainList:
+			player.doEntrenar();
+			break;
+			
+		case Train:
+			player.userEntrenaConMascota(((TrainRequest)packet).petIndex);
+			break;
+			
+		case Heal:
+			player.doCurar();
+			break;
+			
+		case Resucitate:
+			player.doResucitar();
 			break;
 			
 		default:

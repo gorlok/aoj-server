@@ -64,21 +64,32 @@ public class UserStats extends AbstractCharStats {
 	public int ELV = 0; // Nivel
 	public int ELU = 0; // Exp. Max del nivel
 
-	public byte userSkills[] = new byte[Skill.MAX_SKILLS + 1]; // 0-index don't use. FIXME
+	private byte userSkills[] = new byte[Skill.MAX_SKILLS];
 	public byte userAttributes[] = new byte[NUMATRIBUTOS];
 	byte userAttributesBackup[] = new byte[NUMATRIBUTOS];
 
 	public int NPCsMuertos = 0;
 	public int SkillPts = 0; // Puntos de skills sin asignar.
 	
+	public byte[] skills() {
+		return this.userSkills;
+	}
+	
+	public byte userSkills(int skill) {
+		return this.userSkills[skill-1];
+	}
+	
+	public void userSkills(int skill, int value) {
+		this.userSkills[skill-1] = (byte) value;
+	}
 	
 	public boolean validateSkills() {
-		for (int i = 1; i < userSkills.length; i++) {
-			if (userSkills[i] < 0) {
+		for (int i = 1; i < Skill.MAX_SKILLS; i++) {
+			if (userSkills(i) < 0) {
 				return false;
 			}
-			if (userSkills[i] > 100) {
-				userSkills[i] = 100;
+			if (userSkills(i) > 100) {
+				userSkills(i, 100);
 			}
 		}
 		return true;
@@ -94,12 +105,6 @@ public class UserStats extends AbstractCharStats {
 	 */
 	public int getSkillPoints() {
 		return this.SkillPts;
-	}
-
-	public void setSkills(byte skills[]) {
-		for (int i = 0; i < skills.length; i++) {
-			this.userSkills[i] = skills[i];
-		}
 	}
 
 	public boolean atributosValidos() {
@@ -126,34 +131,26 @@ public class UserStats extends AbstractCharStats {
 	public boolean skillsValidos() {
 		int totalskpts = 0;
 		// Abs PREVINENE EL HACKEO DE LOS SKILLS %%%%%%%%%%%%%
-		for (int i = 1; i < this.userSkills.length; i++) {
-			totalskpts += Math.abs(this.userSkills[i]);
+		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
+			totalskpts += Math.abs(userSkills(i));
 		}
 		return totalskpts == 10;
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS SKILLS %%%%%%%%%%%%%
 	}
 
-	public byte getUserSkill(int skill) {
-		return this.userSkills[skill];
-	}
-
-	public void setUserSkill(int skill, byte value) {
-		this.userSkills[skill] = value;
-	}
-
 	public void addSkillPoints(int skill, byte cant) {
-		this.userSkills[skill] += cant;
-		if (this.userSkills[skill] > Skill.MAX_SKILL_POINTS) {
-			this.userSkills[skill] = Skill.MAX_SKILL_POINTS;
+		skills()[skill-1] += cant;
+		if (skills()[skill-1] > Skill.MAX_SKILL_POINTS) {
+			skills()[skill-1] = Skill.MAX_SKILL_POINTS;
 		}
 	}
 
 	public void subirSkills(byte[] incSkills) {
 		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
 			this.SkillPts -= incSkills[i];
-			this.userSkills[i] += incSkills[i];
-			if (this.userSkills[i] > 100) {
-				this.userSkills[i] = 100;
+			skills()[i-1] += incSkills[i];
+			if (skills()[i-1] > 100) {
+				skills()[i-1] = 100;
 			}
 		}
 	}

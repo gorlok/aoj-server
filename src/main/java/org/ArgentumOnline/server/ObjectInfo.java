@@ -103,7 +103,7 @@ public class ObjectInfo implements Constants {
     public short LingO;
     
     public short LingP;
-    public short Madera;
+    public int Madera;
     
     public short SkHerreria;
     public short SkCarpinteria;
@@ -395,7 +395,7 @@ public class ObjectInfo implements Constants {
         
         this.SkCarpinteria = ini.getShort(section, "SkCarpinteria");
         if (this.SkCarpinteria > 0) {
-            this.Madera  = ini.getShort(section, "Madera");
+            this.Madera  = ini.getInt(section, "Madera");
         }
 
         // Bebidas

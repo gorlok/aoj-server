@@ -92,7 +92,7 @@ public class Map implements Constants {
     short   m_terreno = TERRENO_BOSQUE;
     short   m_zona = ZONA_CAMPO;
     public boolean m_pk = false;
-    boolean m_restringir = false;
+    String m_restringir = ""; // Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
     public boolean m_backup = false;
     short   m_version = 0; // FIXME se usa?
     MapPos m_startPos = MapPos.empty(); // FIXME se usa?
@@ -188,6 +188,146 @@ public class Map implements Constants {
     }
     
     public boolean getForbbiden() {
+    	// Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
+    	
+/*
+Public Sub DoTileEvents(ByVal UserIndex As Integer, ByVal map As Integer, ByVal X As Integer, ByVal Y As Integer)
+'***************************************************
+'Autor: Pablo (ToxicWaste) & Unknown (orginal version)
+'Last Modification: 23/01/2007
+'Handles the Map passage of Users. Allows the existance
+'of exclusive maps for Newbies, Royal Army and Caos Legion members
+'and enables GMs to enter every map without restriction.
+'Uses: Mapinfo(map).Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
+'***************************************************
+    Dim nPos As WorldPos
+    Dim FxFlag As Boolean
+    
+On Error GoTo Errhandler
+    'Controla las salidas
+    If InMapBounds(map, X, Y) Then
+        With MapData(map, X, Y)
+            If .ObjInfo.ObjIndex > 0 Then
+                FxFlag = ObjData(.ObjInfo.ObjIndex).OBJType = eOBJType.otTeleport
+            End If
+            
+            If .TileExit.map > 0 And .TileExit.map <= NumMaps Then
+                '¿Es mapa de newbies?
+                If UCase$(MapInfo(.TileExit.map).Restringir) = "NEWBIE" Then
+                    '¿El usuario es un newbie?
+                    If EsNewbie(UserIndex) Or EsGM(UserIndex) Then
+                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
+                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
+                        Else
+                            Call ClosestLegalPos(.TileExit, nPos)
+                            If nPos.X <> 0 And nPos.Y <> 0 Then
+                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                            End If
+                        End If
+                    Else 'No es newbie
+                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para newbies.", FontTypeNames.FONTTYPE_INFO)
+                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
+        
+                        If nPos.X <> 0 And nPos.Y <> 0 Then
+                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, False)
+                        End If
+                    End If
+                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "ARMADA" Then '¿Es mapa de Armadas?
+                    '¿El usuario es Armada?
+                    If esArmada(UserIndex) Or EsGM(UserIndex) Then
+                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
+                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
+                        Else
+                            Call ClosestLegalPos(.TileExit, nPos)
+                            If nPos.X <> 0 And nPos.Y <> 0 Then
+                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                            End If
+                        End If
+                    Else 'No es armada
+                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para miembros del ejército Real", FontTypeNames.FONTTYPE_INFO)
+                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
+                        
+                        If nPos.X <> 0 And nPos.Y <> 0 Then
+                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                        End If
+                    End If
+                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "CAOS" Then '¿Es mapa de Caos?
+                    '¿El usuario es Caos?
+                    If esCaos(UserIndex) Or EsGM(UserIndex) Then
+                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
+                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
+                        Else
+                            Call ClosestLegalPos(.TileExit, nPos)
+                            If nPos.X <> 0 And nPos.Y <> 0 Then
+                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                            End If
+                        End If
+                    Else 'No es caos
+                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para miembros del ejército Oscuro.", FontTypeNames.FONTTYPE_INFO)
+                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
+                        
+                        If nPos.X <> 0 And nPos.Y <> 0 Then
+                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                        End If
+                    End If
+                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "FACCION" Then '¿Es mapa de faccionarios?
+                    '¿El usuario es Armada o Caos?
+                    If esArmada(UserIndex) Or esCaos(UserIndex) Or EsGM(UserIndex) Then
+                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
+                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
+                        Else
+                            Call ClosestLegalPos(.TileExit, nPos)
+                            If nPos.X <> 0 And nPos.Y <> 0 Then
+                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                            End If
+                        End If
+                    Else 'No es Faccionario
+                        Call WriteConsoleMsg(UserIndex, "Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontTypeNames.FONTTYPE_INFO)
+                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
+                        
+                        If nPos.X <> 0 And nPos.Y <> 0 Then
+                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                        End If
+                    End If
+                Else 'No es un mapa de newbies, ni Armadas, ni Caos, ni faccionario.
+                    If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
+                        Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
+                    Else
+                        Call ClosestLegalPos(.TileExit, nPos)
+                        If nPos.X <> 0 And nPos.Y <> 0 Then
+                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
+                        End If
+                    End If
+                End If
+                
+                'Te fusite del mapa. La criatura ya no es más tuya ni te reconoce como que vos la atacaste.
+                Dim aN As Integer
+                
+                aN = UserList(UserIndex).flags.AtacadoPorNpc
+                If aN > 0 Then
+                   Npclist(aN).Movement = Npclist(aN).flags.OldMovement
+                   Npclist(aN).Hostile = Npclist(aN).flags.OldHostil
+                   Npclist(aN).flags.AttackedBy = vbNullString
+                End If
+            
+                aN = UserList(UserIndex).flags.NPCAtacado
+                If aN > 0 Then
+                    If Npclist(aN).flags.AttackedFirstBy = UserList(UserIndex).name Then
+                        Npclist(aN).flags.AttackedFirstBy = vbNullString
+                    End If
+                End If
+                UserList(UserIndex).flags.AtacadoPorNpc = 0
+                UserList(UserIndex).flags.NPCAtacado = 0
+            End If
+        End With
+    End If
+Exit Sub
+
+Errhandler:
+    Call LogError("Error en DotileEvents. Error: " & Err.Number & " - Desc: " & Err.description)
+End Sub
+
+ */
     	return this.m_restringir;
     }
     
@@ -280,7 +420,7 @@ public class Map implements Constants {
         this.m_name = ini.getString(section, "Name");
         this.m_music = ini.getString(section, "MusicNum");
         this.m_pk = (ini.getInt(section, "PK") == 1);
-        this.m_restringir = (ini.getString(section, "Restringir").equals("Si"));
+        this.m_restringir = ini.getString(section, "Restringir");
         this.m_backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
         if (tipo_terreno.equals("BOSQUE")) {
@@ -959,7 +1099,7 @@ public class Map implements Constants {
             return;
         }
         int suerte = 0;
-        int skillSupervivencia = cliente.stats().getUserSkill(Skill.SKILL_Supervivencia);        
+        int skillSupervivencia = cliente.stats().userSkills(Skill.SKILL_Supervivencia);        
         if (skillSupervivencia == 0) {
 			suerte = 0;
 		} else if (skillSupervivencia < 6) {
@@ -1377,7 +1517,7 @@ public class Map implements Constants {
             ini.setValue(section, "StartPos", this.m_startPos.map + "-" + this.m_startPos.x + "-" + this.m_startPos.y);
             ini.setValue(section, "Terreno", TERRENOS[this.m_terreno]);
             ini.setValue(section, "Zona", ZONAS[this.m_zona]);
-            ini.setValue(section, "Restringir", (this.m_restringir ? "Si" : "No"));
+            ini.setValue(section, "Restringir", this.m_restringir);
             ini.setValue(section, "BackUp", this.m_backup);
             ini.setValue(section, "PK", this.m_pk);
             ini.store(datFileName);

@@ -187,8 +187,8 @@ public class UserStorage {
 			user.stats().userAttributesBackup[i] = user.stats().userAttributes[i];
 		}
 
-		for (int i = 1; i < user.stats().userSkills.length; i++) {
-			user.stats().userSkills[i] = (byte) ini.getShort("SKILLS", "SK" + i);
+		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
+			user.stats().userSkills(i, (byte) ini.getShort("SKILLS", "SK" + i));
 		}
 
 		for (int slot = 1; slot <= user.m_spells.getCount(); slot++) {
@@ -295,8 +295,8 @@ public class UserStorage {
 				}
 			}
 
-			for (int i = 1; i < user.stats().userSkills.length; i++) {
-				ini.setValue("SKILLS", "SK" + i, user.stats().userSkills[i]);
+			for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
+				ini.setValue("SKILLS", "SK" + i, user.stats().userSkills(i));
 			}
 
 			ini.setValue("CONTACTO", "Email", user.m_email);

@@ -27,7 +27,7 @@ public class NpcCashier extends Npc {
 			return;
 		}
 		Npc npc = server.getNpcById(client.flags().TargetNpc);
-		if (npc.pos().distance(m_pos) > 3) {
+		if (npc.pos().distance(pos()) > 3) {
 			client.enviarMensaje("Estas demasiado lejos del vendedor.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -43,7 +43,7 @@ public class NpcCashier extends Npc {
 	}
 
 	public void retirarOroBanco(Player client, int cant) {
-		if (this.pos().distance(m_pos) > 10) {
+		if (this.pos().distance(pos()) > 10) {
 			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -65,7 +65,7 @@ public class NpcCashier extends Npc {
 	}
 
 	public void depositarOroBanco(Player client, int cant) {
-		if (this.pos().distance(m_pos) > 10) {
+		if (this.pos().distance(pos()) > 10) {
 			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}

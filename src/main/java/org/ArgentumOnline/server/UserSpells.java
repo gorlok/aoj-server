@@ -739,7 +739,7 @@ public class UserSpells implements Constants {
 			client.enviarMensaje("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
 			return false;
 		}
-		if (client.stats().userSkills[Skill.SKILL_Magia] < hechizo.MinSkill) {
+		if (client.stats().userSkills(Skill.SKILL_Magia) < hechizo.MinSkill) {
 			client.enviarMensaje(
 					"No tienes suficientes puntos de magia para lanzar este hechizo.",
 					FontType.FONTTYPE_INFO);
