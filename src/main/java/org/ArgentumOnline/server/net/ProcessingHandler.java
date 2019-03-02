@@ -14,6 +14,7 @@ import org.ArgentumOnline.server.protocol.CommerceSellRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
+import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
@@ -223,6 +224,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case RequestAccountState:
 			player.doBalance();
+			break;
+			
+		case Gamble:
+			player.doApostar(((GambleRequest)packet).amount);
 			break;
 			
 		default:

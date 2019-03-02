@@ -13,8 +13,6 @@ import org.ArgentumOnline.server.util.Util;
  */
 public class NpcGambler extends Npc {
 
-	private GamblerStats gamblerManager;
-	
 	protected NpcGambler(int npc_number, GameServer server) {
 		super(npc_number, server);
 	}		
@@ -53,12 +51,12 @@ public class NpcGambler extends Npc {
 			player.stats().addGold( gold );
 			player.hablar(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
 			
-			this.gamblerManager.incrementLost(gold);
+			server.getGamblerStats().incrementLost(gold);
 		} else {
 			player.stats().addGold( -gold );
 			player.hablar(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
 			
-			this.gamblerManager.incrementWins(gold);
+			server.getGamblerStats().incrementWins(gold);
 		}
 		player.sendUpdateUserStats();
 	}

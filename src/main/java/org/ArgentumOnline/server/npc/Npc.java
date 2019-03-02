@@ -601,6 +601,10 @@ public class Npc extends AbstractCharacter implements Constants {
     	return getNPCtype() == Npc.NPCTYPE_SACERDOTE;
     }
     
+    public boolean esSacerdoteNewbies() {
+    	return getNPCtype() == Npc.NPCTYPE_SACERDOTE_NEWBIES;
+    }
+    
     public boolean esNoble() {
     	return getNPCtype() == Npc.NPCTYPE_NOBLE;
     }

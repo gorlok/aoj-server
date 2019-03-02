@@ -1,4 +1,8 @@
-[Main]
-Perdidas=140904642
-Jugadas=566166
-Ganancias=159278368
+;Archivo: dat/apuestas.dat
+;Ultima modificacion: 02/03/2019 18:30:57
+
+[MAIN]
+GANANCIAS=100
+JUGADAS=4
+PERDIDAS=700
+

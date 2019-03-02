@@ -68,7 +68,7 @@ public class GameServer implements Constants {
 	
 	public ManageServer manager = new ManageServer(this);
 	
-    private boolean useUPnP = true;
+    private boolean useUPnP = false; // FIXME configure this
 
     private HashMap<Short, Player> players = new HashMap<>();
     private HashMap<Integer, Npc> npcs = new HashMap<>();
@@ -358,7 +358,8 @@ public class GameServer implements Constants {
                     lastAutoSaveTimer = now;
                 }
                 if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
-                	System.out.println("fps: " + fps + " max-time: " + worstTime);
+                	System.out.println("fps: " + fps + " max-time: " + worstTime + 
+                			" Conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
                 	fps = 0;
                 	worstTime = 0;
                     pasarSegundo();

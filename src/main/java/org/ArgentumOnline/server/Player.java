@@ -71,6 +71,7 @@ import org.ArgentumOnline.server.protocol.DisconnectResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
 import org.ArgentumOnline.server.protocol.FameResponse;
+import org.ArgentumOnline.server.protocol.LevelUpResponse;
 import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
 import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
 import org.ArgentumOnline.server.protocol.MiniStatsResponse;
@@ -2053,10 +2054,15 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}		
-		if (!npc.esSacerdote()) {
+		if (!npc.esSacerdote() && !npc.esSacerdoteNewbies()) {
 			enviarMensaje("No poseo el poder de revivir a otros, mejor encuentra un sacerdote.", FontType.FONTTYPE_INFO);
 			return;
 		}
+		if (npc.esSacerdoteNewbies() && !esNewbie()) {
+			enviarMensaje("Lo siento, sólo puedo resucitar newbies.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		
 		if (isAlive()) {
 			enviarMensaje("¡JA! Debes estar muerto para resucitarte.", FontType.FONTTYPE_INFO);
 			return;
@@ -2077,7 +2083,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}		
-		if (!npc.esSacerdote()) {
+		if (!npc.esSacerdote() && !npc.esSacerdoteNewbies()) {
 			enviarMensaje("No poseo el poder para curar a otros, mejor encuentra un sacerdote.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2246,7 +2252,7 @@ public class Player extends AbstractCharacter {
 						if (checkNpcNear(npc, DISTANCE_CASHIER)) {
 							iniciarDeposito();
 						}
-					} else if (npc.esSacerdote()) {
+					} else if (npc.esSacerdote() || npc.esSacerdoteNewbies()) {
 						// Extensión de AOJ - 01/02/2007
 						// Doble clic sobre el sacerdote hace /RESUCITAR o /CURAR
 						if (isAlive()) {
@@ -3253,9 +3259,8 @@ public class Player extends AbstractCharacter {
 		sendPacket(new SendSkillsResponse(stats().skills()));
 	}
 
-	public void enviarSubirNivel(int pts) {
-		// FIXME
-		// enviar(MSG_SUNI, pts);
+	public void enviarSubirNivel(short skillPoints) {
+		sendPacket(new LevelUpResponse(skillPoints));
 	}
 
 	public void envenenar() {
@@ -3307,9 +3312,9 @@ public class Player extends AbstractCharacter {
 			boolean wasNewbie = esNewbie();
 			enviarSonido(SOUND_NIVEL);
 			enviarMensaje("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
-			int pts = (stats().ELV == 1) ? 10 : 5;
-			stats().SkillPts += pts;
-			enviarMensaje("Has ganado " + pts + " skillpoints.", FontType.FONTTYPE_INFO);
+			short skillPoints = (short) ((stats().ELV == 1) ? 10 : 5);
+			stats().SkillPts += skillPoints;
+			enviarMensaje("Has ganado " + skillPoints + " skillpoints.", FontType.FONTTYPE_INFO);
 			stats().ELV++;
 			stats().Exp -= stats().ELU;
 			if (wasNewbie && !esNewbie()) {
@@ -3319,7 +3324,7 @@ public class Player extends AbstractCharacter {
 			stats().ELU *= (stats().ELV < 11) ? 1.5 : ((stats().ELV < 25) ? 1.3 : 1.2);
 			clazz.clazz().subirEstads(this);
 			sendSkills();
-			enviarSubirNivel(pts);
+			enviarSubirNivel(skillPoints);
 			sendUpdateUserStats();
 		}
 	}
@@ -4422,7 +4427,6 @@ public class Player extends AbstractCharacter {
 		if (stats().MinHP < stats().MaxHP) {
 			if (m_counters.HPCounter < intervalo) {
 				m_counters.HPCounter++;
-				sendUpdateUserStats();
 			} else {
 				int mashit = Util.Azar(2, Util.porcentaje(stats().maxStamina, 5));
 				m_counters.HPCounter = 0;
@@ -4565,8 +4569,6 @@ public class Player extends AbstractCharacter {
 				int massta = Util.Azar(1, Util.porcentaje(stats().maxStamina, 5));
 				stats().aumentarStamina(massta);
 				sendUpdateUserStats();
-				// FIXME
-				// enviarMensaje("Te sientes menos cansado.", FontType.FONTTYPE_INFO);
 				return true;
 			}
 		}
@@ -4980,7 +4982,7 @@ public class Player extends AbstractCharacter {
 					}
 				}
 			} catch (java.io.IOException e) {
-				// FIXME
+				log.fatal("Error sendUserBovedaTxtFromChar", e);
 			}
 		} else {
 			enviarMensaje("Usuario inexistente: " + pj, FontType.FONTTYPE_INFO);
@@ -5027,7 +5029,7 @@ public class Player extends AbstractCharacter {
 							+ ini.getString("BAN", "Reason"), FONTTYPE_FIGHT);
 				}
 			} catch (java.io.IOException e) {
-				// FIXME
+				log.fatal("ERROR sendUserMiniStatsTxtFromChar", e);
 			}
 		} else {
 			enviarMensaje("El pj no existe: " + pj, FontType.FONTTYPE_INFO);
@@ -5052,7 +5054,7 @@ public class Player extends AbstractCharacter {
 					}
 				}
 			} catch (java.io.IOException e) {
-				// FIXME
+				log.fatal("ERROR sendUserInvTxtFromChar", e);
 			}
 		} else {
 			enviarMensaje("El pj no existe: " + pj, FontType.FONTTYPE_INFO);
@@ -5120,7 +5122,7 @@ public class Player extends AbstractCharacter {
 					.append(ini.getString("FACCIONES", "CiudMatados")).append(",");
 			return sb.toString();
 		} catch (java.io.IOException e) {
-			// FIXME
+			log.fatal("ERROR getChrInfo", e);
 		}
 		return null;
 	}
