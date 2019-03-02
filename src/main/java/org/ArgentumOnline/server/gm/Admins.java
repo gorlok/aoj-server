@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Factions;
-import org.ArgentumOnline.server.Factions.FactionArmors;
+import org.ArgentumOnline.server.GamblerStats;
+import org.ArgentumOnline.server.UserFaction;
+import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Player;
@@ -156,7 +157,7 @@ public class Admins {
 				}
             }
             
-            Factions.loadFactionArmors(ini);
+            UserFaction.loadFactionArmors(ini);
 			
 			log.warn("Admins recargados");			
         } catch (java.io.FileNotFoundException e) {
@@ -186,7 +187,7 @@ public class Admins {
 	public void doBanIP(Player admin, String s) {
 		// Ban x IP
 		// Comando /BANIP
-		var usuario = server.getUsuario(s);
+		var usuario = server.playerByUserName(s);
 		var ip = "";
 		if (usuario == null) {
 			Log.logGM(admin.getNick(), "hizo /BanIP " + s);
@@ -271,7 +272,7 @@ public class Admins {
 		if (s.length() == 0) {
 			return;
 		}
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -332,90 +333,90 @@ public class Admins {
 	public void doArmaduraImperial1(Player admin, short armadura) {
 		// Comando /AI1
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armadura);
 		}
 	}
 
 	public void doArmaduraImperial2(Player admin, short armadura) {
 		// Comando /AI2
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armadura);
 		}
 	}
 
 	public void doArmaduraImperial3(Player admin, short armadura) {
 		// Comando /AI3
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armadura);
 		}
 	}
 
 	public void doArmaduraImperial4(Player admin, short armadura) {
 		// Comando /AI4
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL);
+			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armadura);
 		}
 	}
 
 	public void doArmaduraImperial5(Player admin, short armadura) {
 		// Comando /AI5
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
+			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armadura);
 		}
 	}
 
 	public void doArmaduraCaos1(Player admin, short armadura) {
 		// Comando /AC1
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armadura);
 		}
 	}
 
 	public void doArmaduraCaos2(Player admin, short armadura) {
 		// Comando /AC2
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armadura);
 		}
 	}
 
 	public void doArmaduraCaos3(Player admin, short armadura) {
 		// Comando /AC3
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3);
+			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armadura);
 		}
 	}
 
 	public void doArmaduraCaos4(Player admin, short armadura) {
 		// Comando /AC4
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS);
+			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armadura);
 		}
 	}
 
 	public void doArmaduraCaos5(Player admin, short armadura) {
 		// Comando /AC5
 		if (armadura < 0) {
-			Factions.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
+			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
 		} else {
-			Factions.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armadura);
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armadura);
 		}
 	}
 
@@ -498,7 +499,7 @@ public class Admins {
 
 	public void doLluvia() {
 		// Comando /LLUVIA
-		if (server.estaLloviendo()) {
+		if (server.isRaining()) {
 			server.detenerLluvia();
 		} else {
 			server.iniciarLluvia();
@@ -515,7 +516,7 @@ public class Admins {
 
 	public void doNick2IP(Player admin, String userName) {
 		// Comando /NICK2IP
-		Player usuario = server.getUsuario(userName);
+		Player usuario = server.playerByUserName(userName);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -538,7 +539,7 @@ public class Admins {
 					FontType.FONTTYPE_WARNING);
 			return;
 		}
-		if (mapa.hayTeleport(x, y)) {
+		if (mapa.isTeleport(x, y)) {
 			admin.enviarMensaje("Lo siento, ya hay un teleport arriba del usuario. Prueba en otro lugar.", FontType.FONTTYPE_WARNING);
 			return;
 		}
@@ -547,7 +548,7 @@ public class Admins {
 			admin.enviarMensaje("Ups! Debes indicar coordenadas válidas.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		mapa.crearTeleport(x, y, dest_mapa, dest_x, dest_y);
+		mapa.createTeleport(x, y, dest_mapa, dest_x, dest_y);
 		Log.logGM(admin.getNick(), "Creó un teleport: " + admin.pos() + " que apunta a: " + dest_mapa + " " + dest_x + " " + dest_y);
 		admin.enviarMensaje("¡Teleport creado!", FontType.FONTTYPE_INFO);
 	}
@@ -567,18 +568,18 @@ public class Admins {
 		}
 		byte x = admin.flags().TargetX;
 		byte y = admin.flags().TargetY;
-		if (!mapa.hayTeleport(x, y)) {
+		if (!mapa.isTeleport(x, y)) {
 			admin.enviarMensaje("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.FONTTYPE_WARNING);
 			return;
 		}
 		Log.logGM(admin.getNick(), "Destruyó un teleport, con /DT mapa=" + m + " x=" + x + " y=" + y);
-		mapa.destruirTeleport(x, y);
+		mapa.destroyTeleport(x, y);
 	}
 
 	public void doMataNpc(Player admin) {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
-		Npc npc = server.getNpcById(admin.flags().TargetNpc);
+		Npc npc = server.npcById(admin.flags().TargetNpc);
 		if (npc == null) {
 			admin.enviarMensaje("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.FONTTYPE_INFO);
 			return;
@@ -590,7 +591,7 @@ public class Admins {
 	public void doCrearCriatura(Player admin, short indiceNpc) {
 		// Crear criatura, toma directamente el indice
 		// Comando /ACC indiceNpc
-		if (server.getNpcById(indiceNpc) != null) {
+		if (server.npcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, false);
 		} else {
 			admin.enviarMensaje("Indice de Npc invalido.", FontType.FONTTYPE_INFO);
@@ -600,7 +601,7 @@ public class Admins {
 	public void doCrearCriaturaRespawn(Player admin, short indiceNpc) {
 		// Crear criatura con respawn, toma directamente el indice
 		// Comando /RACC indiceNpc
-		if (server.getNpcById(indiceNpc) != null) {
+		if (server.npcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, true);
 		} else {
 			admin.enviarMensaje("Indice de Npc invalido.", FontType.FONTTYPE_INFO);
@@ -613,7 +614,7 @@ public class Admins {
 		// Informa cantidad, nombre y ubicación de las mascotas.
 		Player usuario;
 		if (!"".equals(s)) {
-			usuario = server.getUsuario(s);
+			usuario = server.playerByUserName(s);
 		} else {
 			usuario = admin;
 		}
@@ -670,7 +671,7 @@ public class Admins {
 			admin.enviarMensaje("Parámetros inválidos!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Player usuario = server.getUsuario(nick);
+		Player usuario = server.playerByUserName(nick);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -701,9 +702,9 @@ public class Admins {
 			usuario.infoChar().m_cabeza = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("CRI")) {
-			usuario.getFaccion().CriminalesMatados = valor;
+			usuario.userFaction().CriminalesMatados = valor;
 		} else if (accion.equalsIgnoreCase("CIU")) {
-			usuario.getFaccion().CiudadanosMatados = valor;
+			usuario.userFaction().CiudadanosMatados = valor;
 		} else if (accion.equalsIgnoreCase("LEVEL")) {
 			usuario.stats().ELV = valor;
 		} else {
@@ -720,7 +721,7 @@ public class Admins {
 			if (mapa.hayObjeto(admin.pos().x, admin.pos().y)) {
 				return;
 			}
-			if (mapa.hayTeleport(admin.pos().x, admin.pos().y)) {
+			if (mapa.isTeleport(admin.pos().x, admin.pos().y)) {
 				return;
 			}
 			if (findObj(objid) == null) {
@@ -757,7 +758,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/BLOQ " + admin.pos());
 		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
-			if (mapa.estaBloqueado(admin.pos().x, admin.pos().y)) {
+			if (mapa.isBlocked(admin.pos().x, admin.pos().y)) {
 				mapa.desbloquearTerreno(admin.pos().x, admin.pos().y);
 				admin.enviarMensaje("Posicion desbloqueada.", FontType.FONTTYPE_INFO);
 			} else {
@@ -828,7 +829,7 @@ public class Admins {
 		if (admin.flags().TargetNpc == 0) {
 			return;
 		}
-		Npc npc = server.getNpcById(admin.flags().TargetNpc);
+		Npc npc = server.npcById(admin.flags().TargetNpc);
 		npc.getInv().clear();
 		admin.enviarMensaje("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/RESETINV " + npc.toString());
@@ -853,7 +854,7 @@ public class Admins {
 		if (s.length() == 0) {
 			return;
 		}
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("El usuario esta offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -869,7 +870,7 @@ public class Admins {
 
 	public void doBan(Player admin, String nombre, String motivo) {
 		// Comando /BAN
-		Player usuario = server.getUsuario(nombre);
+		Player usuario = server.playerByUserName(nombre);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -907,7 +908,7 @@ public class Admins {
 		// Echar usuario
 		// Comando /ECHAR
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + s);
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -935,7 +936,7 @@ public class Admins {
 			admin.enviarMensaje("Error en el comando. Formato: /CARCEL minutos usuario", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		Player usuario = server.getUsuario(nombre);
+		Player usuario = server.playerByUserName(nombre);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -960,7 +961,7 @@ public class Admins {
 		// Comando /PERDON usuario
 		// Perdonar a un usuario. Volverlo cuidadano.
 		Log.logGM(admin.getNick(), "quizo /PERDON " + s);
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -983,7 +984,7 @@ public class Admins {
 		// Comando /CONDEN usuario
 		// Condenar a un usuario. Volverlo criminal.
 		Log.logGM(admin.getNick(), "quizo /CONDEN " + s);
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -1002,7 +1003,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "quizo /REVIVIR " + s);
 		Player usuario;
 		if (!s.equalsIgnoreCase("YO") && s.length() > 0) {
-			usuario = server.getUsuario(s);
+			usuario = server.playerByUserName(s);
 			if (usuario == null) {
 				admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
@@ -1042,7 +1043,7 @@ public class Admins {
 	public void doInvUser(Player admin, String s) {
 		// Inventario del usuario.
 		// Comando /INV
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -1050,11 +1051,11 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/INV " + s);
 
 		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
-		admin.enviarMensaje(" Tiene " + usuario.getInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
-		for (int i = 1; i <= usuario.getInv().size(); i++) {
-			if (usuario.getInv().getObjeto(i).objid > 0) {
-				ObjectInfo info = findObj(usuario.getInv().getObjeto(i).objid);
-				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getInv().getObjeto(i).cant,
+		admin.enviarMensaje(" Tiene " + usuario.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		for (int i = 1; i <= usuario.userInv().size(); i++) {
+			if (usuario.userInv().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(usuario.userInv().getObjeto(i).objid);
+				admin.enviarMensaje(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.userInv().getObjeto(i).cant,
 						FontType.FONTTYPE_INFO);
 			}
 		}
@@ -1063,7 +1064,7 @@ public class Admins {
 	public void doBovUser(Player admin, String s) {
 		// Boveda del usuario
 		// Comando /BOV
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -1084,7 +1085,7 @@ public class Admins {
 	public void doSkillsUser(Player admin, String s) {
 		// Skills del usuario
 		// Comando /SKILLS
-		Player usuario = server.getUsuario(s);
+		Player usuario = server.playerByUserName(s);
 		if (usuario == null) {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
@@ -1126,7 +1127,7 @@ public class Admins {
 		if (s.length() == 0) {
 			usuario = admin;
 		} else {
-			usuario = server.getUsuario(s);
+			usuario = server.playerByUserName(s);
 			if (usuario == null) {
 				admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
@@ -1179,7 +1180,7 @@ public class Admins {
 			if (admin.flags().Privilegios < 2) {
 				return;
 			}
-			usuario = server.getUsuario(nombre);
+			usuario = server.playerByUserName(nombre);
 		}
 		if (!Pos.isValid(x, y)) {
 			return;

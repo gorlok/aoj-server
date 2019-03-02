@@ -126,7 +126,7 @@ public class Guild {
     	// ToGuildMembers
         Player cliente;
         for (String member: this.members) {
-            cliente = this.server.getUsuario(member);
+            cliente = this.server.playerByUserName(member);
             cliente.enviarMensaje(mensaje, font);            
         }
     }
@@ -135,7 +135,7 @@ public class Guild {
     	// ToGuildMembers
         Player player;
         for (String member: this.members) {
-        	player = this.server.getUsuario(member);
+        	player = this.server.playerByUserName(member);
         	player.sendPacket(new PlayWaveResponse(sound, player.pos().x, player.pos().y));
         }
     }
@@ -428,7 +428,7 @@ public class Guild {
     public void removeMember(String name) {
         Player cliente;
         for (String member: this.members) {
-            cliente = this.server.getUsuario(member);
+            cliente = this.server.playerByUserName(member);
             if (cliente.getNick().equalsIgnoreCase(name)) {
             	this.members.remove(cliente.getNick());          
             }

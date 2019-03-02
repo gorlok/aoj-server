@@ -131,9 +131,9 @@ public class NpcMerchant extends Npc {
         // Sub NPCCompraItem(ByVal UserIndex As Integer, ByVal Item As Integer, ByVal Cantidad As Integer)
         // NPC COMPRA UN OBJ A UN USUARIO
         cliente.sendUpdateUserStats();
-        if (cliente.getInv().getObjeto(slot).cant > 0 && !cliente.getInv().getObjeto(slot).equipado) {
-            if (cant > 0 && cant > cliente.getInv().getObjeto(slot).cant) {
-                cant = cliente.getInv().getObjeto(slot).cant;
+        if (cliente.userInv().getObjeto(slot).cant > 0 && !cliente.userInv().getObjeto(slot).equipado) {
+            if (cant > 0 && cant > cliente.userInv().getObjeto(slot).cant) {
+                cant = cliente.userInv().getObjeto(slot).cant;
             }
             // Agregamos el obj que compro al inventario
             npcCompraObj(cliente, slot, cant);
@@ -143,7 +143,7 @@ public class NpcMerchant extends Npc {
             cliente.sendUpdateUserStats();
             enviarNpcInv(cliente);
             // Actualizamos la ventana de comercio
-            short objid = cliente.getInv().getObjeto(slot).objid;
+            short objid = cliente.userInv().getObjeto(slot).objid;
             cliente.updateVentanaComercio(objid, cant);
         }
     }
@@ -153,7 +153,7 @@ public class NpcMerchant extends Npc {
         if (cant < 1) {
 			return;
 		}
-        short objid = cliente.getInv().getObjeto(slot).objid;
+        short objid = cliente.userInv().getObjeto(slot).objid;
         ObjectInfo info = findObj(objid);
         if (info.esNewbie()) {
             cliente.enviarMensaje("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
@@ -185,7 +185,7 @@ public class NpcMerchant extends Npc {
                 // Menor que MAX_INV_OBJS
                 this.m_inv.getObjeto(slot_inv).objid = objid;
                 this.m_inv.getObjeto(slot_inv).cant += cant;
-                cliente.getInv().quitarUserInvItem(slot, cant);
+                cliente.userInv().quitarUserInvItem(slot, cant);
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);
@@ -196,7 +196,7 @@ public class NpcMerchant extends Npc {
                 cliente.enviarMensaje("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
             }
         } else {
-            cliente.getInv().quitarUserInvItem(slot, cant);
+            cliente.userInv().quitarUserInvItem(slot, cant);
             // Le sumamos al user el valor en oro del obj vendido
             //double monto = ((info.Valor / 3 + infla) * cant);
             double monto = ((info.Valor / 3) * cant);

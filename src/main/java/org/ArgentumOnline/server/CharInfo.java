@@ -25,8 +25,10 @@
  */
 package org.ArgentumOnline.server;
 
+import static org.ArgentumOnline.server.UserGender.GENERO_HOMBRE;
+
 import org.ArgentumOnline.server.map.MapPos.Heading;
-import org.ArgentumOnline.server.util.*;
+import org.ArgentumOnline.server.util.Util;
 
 /**
  * @author gorlok
@@ -110,29 +112,28 @@ public class CharInfo implements Constants {
 		this.m_dir = (byte) dir.ordinal();
 	}
 
-	public void cuerpoDesnudo(int raza, int genero) {
+	public void cuerpoDesnudo(UserRace raza, UserGender gender) {
 		switch (raza) {
 		case RAZA_HUMANO:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 21 : (short) 39;
+			this.m_cuerpo = (gender == GENERO_HOMBRE) ? (short) 21 : (short) 39;
 			break;
-		case RAZA_ELFO_OSCURO:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 32 : (short) 40;
+		case RAZA_DROW:
+			this.m_cuerpo = (gender == GENERO_HOMBRE) ? (short) 32 : (short) 40;
 			break;
 		case RAZA_ELFO:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 210 : (short) 259;
+			this.m_cuerpo = (gender == GENERO_HOMBRE) ? (short) 210 : (short) 259;
 			break;
 		case RAZA_ENANO:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 53 : (short) 60;
+			this.m_cuerpo = (gender == GENERO_HOMBRE) ? (short) 53 : (short) 60;
 			break;
 		case RAZA_GNOMO:
-			this.m_cuerpo = (genero == GENERO_HOMBRE) ? (short) 222 : (short) 260;
+			this.m_cuerpo = (gender == GENERO_HOMBRE) ? (short) 222 : (short) 260;
 			break;
 		}
 	}
 
-	public void cuerpoYCabeza(int raza, int genero) {
-		// DarCuerpoYCabeza
-		switch (genero) {
+	public void cuerpoYCabeza(UserRace raza, UserGender gender) {
+		switch (gender) {
 		case GENERO_HOMBRE:
 			switch (raza) {
 			case RAZA_HUMANO:
@@ -143,7 +144,7 @@ public class CharInfo implements Constants {
 				this.m_cabeza = (short) (Util.Azar(1, 4) + 100);
 				this.m_cuerpo = 2;
 				break;
-			case RAZA_ELFO_OSCURO:
+			case RAZA_DROW:
 				this.m_cabeza = (short) (Util.Azar(1, 3) + 200);
 				this.m_cuerpo = 3;
 				break;
@@ -161,6 +162,7 @@ public class CharInfo implements Constants {
 				break;
 			}
 			break;
+			
 		case GENERO_MUJER:
 			switch (raza) {
 			case RAZA_HUMANO:
@@ -171,7 +173,7 @@ public class CharInfo implements Constants {
 				this.m_cabeza = (short) (Util.Azar(1, 3) + 169);
 				this.m_cuerpo = 2;
 				break;
-			case RAZA_ELFO_OSCURO:
+			case RAZA_DROW:
 				this.m_cabeza = (short) (Util.Azar(1, 3) + 269);
 				this.m_cuerpo = 3;
 				break;

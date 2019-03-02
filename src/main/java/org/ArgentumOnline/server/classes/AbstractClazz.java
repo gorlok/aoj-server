@@ -25,167 +25,168 @@
  */
 package org.ArgentumOnline.server.classes;
 
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.UserFaction;
+import org.ArgentumOnline.server.UserFaction.FactionArmors;
+import org.ArgentumOnline.server.UserRace;
 import org.ArgentumOnline.server.UserStats;
-import org.ArgentumOnline.server.Factions.FactionArmors;
-import org.ArgentumOnline.server.Factions;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 
 /**
- * Abstract class base of character classes. 
+ * Abstract class base of character classes.
  *
  * @author gorlok
  */
 public abstract class AbstractClazz implements Constants {
-    
-    protected String name = null;
-    protected boolean magic = false;
-    
-    @Override
+
+	protected String name = null;
+	protected boolean magic = false;
+
+	@Override
 	public int hashCode() {
-        return this.name.hashCode();
-    }
-    
-    public String getName() {
-        return this.name;
-    }
-    
-    public boolean esMagica() {
-        return this.magic;
-    }
-    
-    public double modificadorEvasion() {
-        return 0.8;
-    }
+		return this.name.hashCode();
+	}
 
-    public double modificadorPoderAtaqueArmas() {
-        return 0.5;
-    }
-    
-    public double modificadorPoderAtaqueProyectiles() {
-        return 0.5;
-    }
-    
-    public double modicadorDañoClaseArmas() {
-        return 0.5;
-    }
-     
-    public double modicadorDañoClaseProyectiles() {
-        return 0.5;
-    }
-    
-    public double modEvasionDeEscudoClase() {
-        return 0.6;
-    }
-    
-    public double modDomar() {
-        return 10;
-    }
-    
-    public double modNavegacion() {
-        return 2.0;
-    }
-    
-    public double modFundicion() {
-        return 3.0;
-    }
-    
-    public double modCarpinteria() {
-        return 3.0;
-    }
-     
-    public double modHerreria() {
-        return 4.0;
-    }
+	public String getName() {
+		return this.name;
+	}
 
-    public short getEsfuerzoExcavar() {
-        return 5;
-    }
+	public boolean esMagica() {
+		return this.magic;
+	}
 
-    public short getEsfuerzoPescar() {
-        return 3;
-    }
-    
-    public short getEsfuerzoTalar() {
-        return 4;
-    }
+	public double modificadorEvasion() {
+		return 0.8;
+	}
 
-    public int getCantMinerales() {
-        return 1;
-    }
-    
-    public int getCantLeños() {
-        return 1;
-    }
-    
-    public int getManaInicial(int atribInteligencia) {
-        return 0;
-    }
+	public double modificadorPoderAtaqueArmas() {
+		return 0.5;
+	}
 
-    /** Incremento de salud al subir de nivel */
-    protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2);
-    }
-    
-    /** Incremento de mana al subir de nivel */
-    protected int getMejoraMana(UserStats estads) {
-        return 0;
-    }
-    
-    /** Incremento de stamina al subir de nivel */
-    protected int getMejoraStamina() {
-        return 15;
-    }
-    
-    /** Incremento de golpe al subir de nivel */
-    protected int getMejoraGolpe() {
-        return 2;
-    }
-    
-    /** Subir las estadísticas segun la clase */
-    public void subirEstads(Player cliente) {
-        UserStats estads = cliente.stats();
+	public double modificadorPoderAtaqueProyectiles() {
+		return 0.5;
+	}
 
-        // Las mejoras varian según las características de cada clase.
-        int aumentoSalud = getMejoraSalud(estads);
-        int aumentoMana = getMejoraMana(estads);
-        int aumentoStamina = getMejoraStamina();
-        int aumentoGolpe = getMejoraGolpe();
-        
-        if (aumentoSalud > 0) {
-            estads.addMaxHP(aumentoSalud);
-            estads.fullHP(); // Recupera la salud al 100%.
-            cliente.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
-        }
-        if (aumentoStamina > 0) {
-            estads.addMaxSTA(aumentoStamina);
-            cliente.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
-        }
-        if (aumentoMana > 0) {
-            estads.addMaxMANA(aumentoMana);
-            cliente.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
-        }
-        if (aumentoGolpe > 0) {
-            estads.addMaxHIT(aumentoGolpe);
-            estads.addMinHIT(aumentoGolpe);
-            cliente.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
-        }
-    }
-    
-    public short getArmaduraImperial(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
-        }
-        return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
-    }
+	public double modicadorDañoClaseArmas() {
+		return 0.5;
+	}
 
-    public short getArmaduraCaos(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
-        }
-        return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);
-    }
-    
+	public double modicadorDañoClaseProyectiles() {
+		return 0.5;
+	}
+
+	public double modEvasionDeEscudoClase() {
+		return 0.6;
+	}
+
+	public double modDomar() {
+		return 10;
+	}
+
+	public double modNavegacion() {
+		return 2.0;
+	}
+
+	public double modFundicion() {
+		return 3.0;
+	}
+
+	public double modCarpinteria() {
+		return 3.0;
+	}
+
+	public double modHerreria() {
+		return 4.0;
+	}
+
+	public short getEsfuerzoExcavar() {
+		return 5;
+	}
+
+	public short getEsfuerzoPescar() {
+		return 3;
+	}
+
+	public short getEsfuerzoTalar() {
+		return 4;
+	}
+
+	public int getCantMinerales() {
+		return 1;
+	}
+
+	public int getCantLeños() {
+		return 1;
+	}
+
+	public int getManaInicial(int atribInteligencia) {
+		return 0;
+	}
+
+	/** Incremento de salud al subir de nivel */
+	protected int getMejoraSalud(UserStats estads) {
+		return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2);
+	}
+
+	/** Incremento de mana al subir de nivel */
+	protected int getMejoraMana(UserStats estads) {
+		return 0;
+	}
+
+	/** Incremento de stamina al subir de nivel */
+	protected int getMejoraStamina() {
+		return 15;
+	}
+
+	/** Incremento de golpe al subir de nivel */
+	protected int getMejoraGolpe() {
+		return 2;
+	}
+
+	/** Subir las estadísticas segun la clase */
+	public void subirEstads(Player cliente) {
+		UserStats estads = cliente.stats();
+
+		// Las mejoras varian según las características de cada clase.
+		int aumentoSalud = getMejoraSalud(estads);
+		int aumentoMana = getMejoraMana(estads);
+		int aumentoStamina = getMejoraStamina();
+		int aumentoGolpe = getMejoraGolpe();
+
+		if (aumentoSalud > 0) {
+			estads.addMaxHP(aumentoSalud);
+			estads.fullHP(); // Recupera la salud al 100%.
+			cliente.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
+		}
+		if (aumentoStamina > 0) {
+			estads.addMaxSTA(aumentoStamina);
+			cliente.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
+		}
+		if (aumentoMana > 0) {
+			estads.addMaxMANA(aumentoMana);
+			cliente.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
+		}
+		if (aumentoGolpe > 0) {
+			estads.addMaxHIT(aumentoGolpe);
+			estads.addMinHIT(aumentoGolpe);
+			cliente.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public short getArmaduraImperial(Player cliente) {
+		if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+			return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
+		}
+		return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
+	}
+
+	public short getArmaduraCaos(Player cliente) {
+		if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+			return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
+		}
+		return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);
+	}
+
 }

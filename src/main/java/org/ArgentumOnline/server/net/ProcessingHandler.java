@@ -41,7 +41,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
 		var server = GameServer.instance();
-		var player = server.findClient(ctx.channel());
+		var player = server.findPlayer(ctx.channel());
 
 		// TODO
 		Gson gson = new Gson();
@@ -219,6 +219,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case Resucitate:
 			player.doResucitar();
+			break;
+			
+		case RequestAccountState:
+			player.doBalance();
 			break;
 			
 		default:

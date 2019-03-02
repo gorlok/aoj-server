@@ -77,12 +77,12 @@ public class MapPosTest {
 	void mapPosMirarDir() {
 		MapPos origin = MapPos.mxy(10, 10, 10);
 		
-		MapPos mp_north = origin.copy().moveToDir(Heading.NORTH);
-		MapPos mp_south = origin.copy().moveToDir(Heading.SOUTH);
-		MapPos mp_west = origin.copy().moveToDir(Heading.WEST);
-		MapPos mp_east = origin.copy().moveToDir(Heading.EAST);
+		MapPos mp_north = origin.copy().moveToHeading(Heading.NORTH);
+		MapPos mp_south = origin.copy().moveToHeading(Heading.SOUTH);
+		MapPos mp_west = origin.copy().moveToHeading(Heading.WEST);
+		MapPos mp_east = origin.copy().moveToHeading(Heading.EAST);
 		
-		MapPos same = origin.copy().moveToDir(Heading.NONE);
+		MapPos same = origin.copy().moveToHeading(Heading.NONE);
 		
 		assertEquals(MapPos.mxy(10, 10, 9), mp_north);
 		assertEquals(MapPos.mxy(10, 10, 11), mp_south);

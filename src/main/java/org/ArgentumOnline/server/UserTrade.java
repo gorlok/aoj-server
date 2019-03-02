@@ -54,7 +54,7 @@ public class UserTrade {
 	//origen: origen de la transaccion, originador del comando
 	//destino: receptor de la transaccion
 	public void iniciarComercioConUsuario(short target) {
-		Player targetPlayer = GameServer.instance().getClientById(target);
+		Player targetPlayer = GameServer.instance().playerById(target);
 		if (targetPlayer == null) {
 			return;
 		}
@@ -88,7 +88,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = player.server.getClientById(this.destUsu);
+		Player targetClient = player.server.playerById(this.destUsu);
 		if (this.destUsu != player.getId()) {
 			return;
 		}
@@ -185,7 +185,7 @@ public class UserTrade {
 		// Comando FINCOMUSU
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == player.getId()) {
-			Player targetClient = player.server.getClientById(this.destUsu);
+			Player targetClient = player.server.playerById(this.destUsu);
 			if (targetClient != null) {
 				targetClient.enviarMensaje(player.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
 				if (targetClient != null) {
@@ -201,7 +201,7 @@ public class UserTrade {
 		this.cant = 0;
 		this.destUsu = 0;
 		this.objeto = 0;
-		player.m_flags.Comerciando = false;
+		player.flags().Comerciando = false;
 		player.sendPacket(new UserCommerceEndResponse());
 	}
 
@@ -209,7 +209,7 @@ public class UserTrade {
 		// Comando COMUSUNO
 		// Rechazar el cambio
 		if (this.destUsu > 0) {
-			Player targetClient = player.server.getClientById(this.destUsu);
+			Player targetClient = player.server.playerById(this.destUsu);
 			targetClient.enviarMensaje(player.m_nick + " ha rechazado tu oferta.", FontType.FONTTYPE_TALK);
 			targetClient.m_comUsu.sendCommerceEnded();
 		}
@@ -225,9 +225,9 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = player.server.getClientById(this.destUsu);
+		Player targetClient = player.server.playerById(this.destUsu);
 		// sigue conectado el usuario ?
-		if (!targetClient.m_flags.UserLogged) {
+		if (!targetClient.flags().UserLogged) {
 			sendCommerceEnded();
 			return;
 		}
@@ -273,7 +273,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = client.server.getClientById(this.destUsu);
+		Player targetClient = client.server.playerById(this.destUsu);
 
 		short objid = 0;
 		if (this.objeto == Constants.FLAGORO) {

@@ -26,8 +26,9 @@
 package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.Player;
-import org.ArgentumOnline.server.Factions;
-import org.ArgentumOnline.server.Factions.FactionArmors;
+import org.ArgentumOnline.server.UserFaction;
+import org.ArgentumOnline.server.UserRace;
+import org.ArgentumOnline.server.UserFaction.FactionArmors;
 
 /** 
  * Class of bandit character.
@@ -71,18 +72,18 @@ public class BanditClass extends AbstractClazz {
     
     @Override
 	public short getArmaduraImperial(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
+        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+            return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
-        return Factions.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
+        return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
     }
     
     @Override
 	public short getArmaduraCaos(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
+        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+            return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
-        return Factions.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
+        return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
     }
     
 }

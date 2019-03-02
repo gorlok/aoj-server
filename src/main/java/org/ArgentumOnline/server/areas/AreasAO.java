@@ -173,7 +173,7 @@ public class AreasAO implements Constants {
     			
     			
     			if (user.getId() != tempInt && tempInt > 0) {
-    				Player other = this.server.getClientById(tempInt);
+    				Player other = this.server.playerById(tempInt);
     				user.sendPacket(other.createCC());
     				other.sendPacket(user.createCC());
     				
@@ -193,9 +193,9 @@ public class AreasAO implements Constants {
     				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
     				
     				if (obj.getInfo().objType == ObjType.Puertas) {
-    					user.enviarBQ(x, y, map.estaBloqueado(x, y));
+    					user.enviarBQ(x, y, map.isBlocked(x, y));
     					byte px = (byte) (x - 1);
-    					user.enviarBQ(x - 1, y, map.estaBloqueado(px, y));
+    					user.enviarBQ(x - 1, y, map.isBlocked(px, y));
     				}
     			}
     		}

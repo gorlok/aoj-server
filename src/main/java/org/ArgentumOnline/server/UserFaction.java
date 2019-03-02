@@ -37,7 +37,7 @@ import org.ArgentumOnline.server.util.Log;
 /**
  * @author gorlok
  */
-public class Factions implements Constants {
+public class UserFaction implements Constants {
 	
     ///////////////// Constantes públicas de la clase:
     public static final int EXP_AL_UNIRSE = 100000;
@@ -45,7 +45,6 @@ public class Factions implements Constants {
     
     ///////////////// Miembros de la CLASE ("globales"):
     public static enum FactionArmors {
-
         // FACCION IMPERIAL:
     	ARMADURA_IMPERIAL_1("Armadura Imperial 1"),
     	ARMADURA_IMPERIAL_2("Armadura Imperial 2"),
@@ -86,7 +85,7 @@ public class Factions implements Constants {
     public boolean RecibioArmaduraReal   = false;
     public boolean RecibioArmaduraCaos   = false;
     
-    public Factions(GameServer server, Player cliente) {
+    public UserFaction(GameServer server, Player cliente) {
     	this.server = server;
         this.cliente = cliente;
     }
@@ -176,7 +175,7 @@ public class Factions implements Constants {
         this.cliente.hablar(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
             short armadura = this.cliente.getClazz().clazz().getArmaduraImperial(this.cliente);
-            if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
+            if (this.cliente.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.cliente.pos().map);
                 mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
             }
@@ -223,7 +222,7 @@ public class Factions implements Constants {
         this.cliente.hablar(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
             short armadura = this.cliente.getClazz().clazz().getArmaduraCaos(this.cliente);
-            if (this.cliente.getInv().agregarItem(armadura, 1) < 1) {
+            if (this.cliente.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.cliente.pos().map);
                 mapa.tirarItemAlPiso(this.cliente.pos().x, this.cliente.pos().y, new InventoryObject(armadura, 1));
             }

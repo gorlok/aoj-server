@@ -81,11 +81,11 @@ public class MapPos extends Pos {
 	/**
 	 * Traslada la posición una unidad en la dirección indicada.
 	 * VB: HeadToPos
-	 * @param dir dirección del movimiento
+	 * @param heading dirección del movimiento
 	 * @return the same instance (fluent api)
 	 */
-	public MapPos moveToDir(Heading dir) {
-		switch (dir) {
+	public MapPos moveToHeading(Heading heading) {
+		switch (heading) {
 		case NONE:
 			// don't move
 			break;

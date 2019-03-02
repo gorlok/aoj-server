@@ -185,6 +185,10 @@ public class ObjectInfo implements Constants {
     public boolean esParaRazaEnana() {
         return this.flags.get(FLAG_RAZA_ENANA);
     }
+
+    public boolean esParaRazaDrow() {
+        return this.flags.get(FLAG_RAZA_DROW);
+    }
     
     public boolean esParaHombres() {
         return this.flags.get(FLAG_HOMBRE);

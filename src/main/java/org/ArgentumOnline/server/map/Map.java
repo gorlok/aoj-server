@@ -187,150 +187,6 @@ public class Map implements Constants {
 		trigger != MapCell.TRIGGER_BAJO_TECHO;
     }
     
-    public boolean getForbbiden() {
-    	// Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
-    	
-/*
-Public Sub DoTileEvents(ByVal UserIndex As Integer, ByVal map As Integer, ByVal X As Integer, ByVal Y As Integer)
-'***************************************************
-'Autor: Pablo (ToxicWaste) & Unknown (orginal version)
-'Last Modification: 23/01/2007
-'Handles the Map passage of Users. Allows the existance
-'of exclusive maps for Newbies, Royal Army and Caos Legion members
-'and enables GMs to enter every map without restriction.
-'Uses: Mapinfo(map).Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
-'***************************************************
-    Dim nPos As WorldPos
-    Dim FxFlag As Boolean
-    
-On Error GoTo Errhandler
-    'Controla las salidas
-    If InMapBounds(map, X, Y) Then
-        With MapData(map, X, Y)
-            If .ObjInfo.ObjIndex > 0 Then
-                FxFlag = ObjData(.ObjInfo.ObjIndex).OBJType = eOBJType.otTeleport
-            End If
-            
-            If .TileExit.map > 0 And .TileExit.map <= NumMaps Then
-                '¿Es mapa de newbies?
-                If UCase$(MapInfo(.TileExit.map).Restringir) = "NEWBIE" Then
-                    '¿El usuario es un newbie?
-                    If EsNewbie(UserIndex) Or EsGM(UserIndex) Then
-                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
-                        Else
-                            Call ClosestLegalPos(.TileExit, nPos)
-                            If nPos.X <> 0 And nPos.Y <> 0 Then
-                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                            End If
-                        End If
-                    Else 'No es newbie
-                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para newbies.", FontTypeNames.FONTTYPE_INFO)
-                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
-        
-                        If nPos.X <> 0 And nPos.Y <> 0 Then
-                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, False)
-                        End If
-                    End If
-                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "ARMADA" Then '¿Es mapa de Armadas?
-                    '¿El usuario es Armada?
-                    If esArmada(UserIndex) Or EsGM(UserIndex) Then
-                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
-                        Else
-                            Call ClosestLegalPos(.TileExit, nPos)
-                            If nPos.X <> 0 And nPos.Y <> 0 Then
-                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                            End If
-                        End If
-                    Else 'No es armada
-                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para miembros del ejército Real", FontTypeNames.FONTTYPE_INFO)
-                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
-                        
-                        If nPos.X <> 0 And nPos.Y <> 0 Then
-                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                        End If
-                    End If
-                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "CAOS" Then '¿Es mapa de Caos?
-                    '¿El usuario es Caos?
-                    If esCaos(UserIndex) Or EsGM(UserIndex) Then
-                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
-                        Else
-                            Call ClosestLegalPos(.TileExit, nPos)
-                            If nPos.X <> 0 And nPos.Y <> 0 Then
-                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                            End If
-                        End If
-                    Else 'No es caos
-                        Call WriteConsoleMsg(UserIndex, "Mapa exclusivo para miembros del ejército Oscuro.", FontTypeNames.FONTTYPE_INFO)
-                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
-                        
-                        If nPos.X <> 0 And nPos.Y <> 0 Then
-                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                        End If
-                    End If
-                ElseIf UCase$(MapInfo(.TileExit.map).Restringir) = "FACCION" Then '¿Es mapa de faccionarios?
-                    '¿El usuario es Armada o Caos?
-                    If esArmada(UserIndex) Or esCaos(UserIndex) Or EsGM(UserIndex) Then
-                        If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-                            Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
-                        Else
-                            Call ClosestLegalPos(.TileExit, nPos)
-                            If nPos.X <> 0 And nPos.Y <> 0 Then
-                                Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                            End If
-                        End If
-                    Else 'No es Faccionario
-                        Call WriteConsoleMsg(UserIndex, "Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontTypeNames.FONTTYPE_INFO)
-                        Call ClosestStablePos(UserList(UserIndex).Pos, nPos)
-                        
-                        If nPos.X <> 0 And nPos.Y <> 0 Then
-                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                        End If
-                    End If
-                Else 'No es un mapa de newbies, ni Armadas, ni Caos, ni faccionario.
-                    If LegalPos(.TileExit.map, .TileExit.X, .TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-                        Call WarpUserChar(UserIndex, .TileExit.map, .TileExit.X, .TileExit.Y, FxFlag)
-                    Else
-                        Call ClosestLegalPos(.TileExit, nPos)
-                        If nPos.X <> 0 And nPos.Y <> 0 Then
-                            Call WarpUserChar(UserIndex, nPos.map, nPos.X, nPos.Y, FxFlag)
-                        End If
-                    End If
-                End If
-                
-                'Te fusite del mapa. La criatura ya no es más tuya ni te reconoce como que vos la atacaste.
-                Dim aN As Integer
-                
-                aN = UserList(UserIndex).flags.AtacadoPorNpc
-                If aN > 0 Then
-                   Npclist(aN).Movement = Npclist(aN).flags.OldMovement
-                   Npclist(aN).Hostile = Npclist(aN).flags.OldHostil
-                   Npclist(aN).flags.AttackedBy = vbNullString
-                End If
-            
-                aN = UserList(UserIndex).flags.NPCAtacado
-                If aN > 0 Then
-                    If Npclist(aN).flags.AttackedFirstBy = UserList(UserIndex).name Then
-                        Npclist(aN).flags.AttackedFirstBy = vbNullString
-                    End If
-                End If
-                UserList(UserIndex).flags.AtacadoPorNpc = 0
-                UserList(UserIndex).flags.NPCAtacado = 0
-            End If
-        End With
-    End If
-Exit Sub
-
-Errhandler:
-    Call LogError("Error en DotileEvents. Error: " & Err.Number & " - Desc: " & Err.description)
-End Sub
-
- */
-    	return this.m_restringir;
-    }
-    
     //FIX BY AGUSH
     public boolean hayAgua(byte  x, byte y) {    	
     	if (x < MAPA_ANCHO && x > 0 &&
@@ -348,8 +204,8 @@ End Sub
 
     }
     
-    public boolean estaCliente(Player cliente) {
-        return this.players.contains(cliente);
+    public boolean hasPlayer(Player player) {
+        return this.players.contains(player);
     }
     
     public boolean intemperie(byte  x, byte y) {
@@ -504,7 +360,7 @@ End Sub
                 	byflags = reader.readByte();
                 	
                 	if ((byflags & 1) == 1) {
-                		this.cells[x][y].setBloqueado(true);
+                		this.cells[x][y].blocked(true);
                 	}
                     
                 	this.cells[x][y].setGrh(0, Util.leShort(reader.readShort()));
@@ -566,7 +422,7 @@ End Sub
 	            	byflags = reader.readByte();
 	            	
 	            	if ((byflags & 1) == 1) {
-						this.cells[x][y].setTeleport(MapPos.mxy(Util.leShort(reader.readShort())
+						this.cells[x][y].teleport(MapPos.mxy(Util.leShort(reader.readShort())
 								,Util.leShort(reader.readShort()), Util.leShort(reader.readShort())));
 	            	}
 	                
@@ -609,43 +465,34 @@ End Sub
         }
     }
     
-    public boolean entrar(Player player, byte  x, byte y) {
-        if (this.cells[x-1][y-1].getClienteId() != 0) {
+    public boolean enterMap(Player player, byte  x, byte y) {
+        if (this.cells[x-1][y-1].playerId() != 0) {
 			return false;
 		}
         this.players.add(player);
-        this.cells[x-1][y-1].setClienteId(player.getId());
+        this.cells[x-1][y-1].playerId(player.getId());
         enviarAlArea(x, y, player.getId(), player.createCC());
         player.pos().set(this.nroMapa, x, y);
         return true;
     }
     
-    public boolean salir(Player cliente) {
-        short x = cliente.pos().x;
-        short y = cliente.pos().y;
+    public boolean exitMap(Player player) {
+        short x = player.pos().x;
+        short y = player.pos().y;
         try {
-	        //if (estaCliente(cliente)) {
-	        	try {
-	        		this.areasData.sendToUserArea(cliente, new RemoveCharDialogResponse(cliente.getId()));
-	        		this.areasData.sendToUserArea(cliente, new CharacterRemoveResponse(cliente.getId()));
-	        	} finally {
-	        		this.players.remove(cliente);
-	        		// Nuevo sistema de areas by JAO
-	        		// FIXME
-	        		//this.areasData.userDisconnect(cliente);
-	        		this.areasData.resetUser(cliente);
-	        	}
-	        //} else {
-	            // El cliente no esta en el mapa.
-	            //return true;
-	        //}
+        	try {
+        		this.areasData.sendToUserArea(player, new RemoveCharDialogResponse(player.getId()));
+        		this.areasData.sendToUserArea(player, new CharacterRemoveResponse(player.getId()));
+        	} finally {
+        		this.players.remove(player);
+        		this.areasData.resetUser(player);
+        	}
         } finally {
-	        if (this.cells[x-1][y-1].getClienteId() != cliente.getId()) {
-	            // Hay una inconsistencia: no se encuentra donde deberia :-S
+	        if (this.cells[x-1][y-1].playerId() != player.getId()) {
+	        	log.fatal("INCONSISTENCIA: el jugador no se encuentra donde debería");
 	            return false;
-	        	//System.exit(1); // ERROR MUY FEO - FIXME
 	        }
-	        this.cells[x-1][y-1].setClienteId((short) 0);
+	        this.cells[x-1][y-1].playerId((short) 0);
         }
         return true;
     }
@@ -663,17 +510,17 @@ End Sub
     }
     
     public boolean isFree(byte  x, byte y) {
-        return (this.cells[x-1][y-1].getClienteId() == 0) && (this.cells[x-1][y-1].getNpc() == null);
+        return (this.cells[x-1][y-1].playerId() == 0) && (this.cells[x-1][y-1].getNpc() == null);
     }
     
-    public boolean estaBloqueado(byte  x, byte y) {
+    public boolean isBlocked(byte  x, byte y) {
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return true;
 		}
-        return this.cells[x-1][y-1].estaBloqueado();
+        return this.cells[x-1][y-1].isBlocked();
     }
     
-    public boolean entrar(Npc npc, byte  x, byte y) {
+    public boolean enterNpc(Npc npc, byte  x, byte y) {
         if (this.cells[x-1][y-1].getNpc() != null) {
 			return false;
 		}
@@ -685,13 +532,14 @@ End Sub
       
         this.areasData.loadNpc(npc);
         
+        // FIXME
 		//this.areasData.setNpcArea(npc);
 		//this.areasData.sendToArea(x, y, -1, serverPacketID.MSG_CCNPC, npc.ccParams());
         
         return true;
     }
     
-    public boolean salir(Npc npc) {
+    public boolean exitNpc(Npc npc) {
         byte x = npc.pos().x;
         byte y = npc.pos().y;
         try {
@@ -733,8 +581,7 @@ End Sub
                 		Player masterUser = (npc.getPetUserOwner());
                 		masterUser.quitarMascota(npc);
                 	}
-                	
-                	salir(npc);
+                	exitNpc(npc);
                 }
             }
         }
@@ -749,7 +596,7 @@ End Sub
         this.objects.add(this.cells[x-1][y-1]);
         short grhIndex = findObj(objid).GrhIndex;
         
-        if (DEBUG)
+        if (DEBUG) 
         	log.debug(grhIndex + "-" + x + "-" + y);
         
         this.areasData.sendToAreaByPos(this, x, y, new ObjectCreateResponse((byte)x ,(byte)y, (short)grhIndex));
@@ -757,21 +604,20 @@ End Sub
     }
     
     public void quitarObjeto(byte  x, byte y) {
-    	short obj = this.cells[x-1][y-1].getObjInd(); // ?
     	this.objects.remove(this.cells[x-1][y-1]);
         this.cells[x-1][y-1].quitarObjeto();
         enviarAlArea(x, y, new ObjectDeleteResponse(x,y));
     }
     
     public void bloquearTerreno(byte x, byte y) {
-        this.cells[x-1][y-1].setBloqueado(true);
-        this.cells[x-1][y-1].setModificado(true);
+        this.cells[x-1][y-1].blocked(true);
+        this.cells[x-1][y-1].modified(true);
         enviarAlArea(x, y, new BlockPositionResponse(x, y, (byte)1));
     }
     
     public void desbloquearTerreno(byte x, byte y) {
-        this.cells[x-1][y-1].setBloqueado(false);
-        this.cells[x-1][y-1].setModificado(true);
+        this.cells[x-1][y-1].blocked(false);
+        this.cells[x-1][y-1].modified(true);
         enviarAlArea(x, y, new BlockPositionResponse(x, y, (byte)0));
     }
     
@@ -782,13 +628,11 @@ End Sub
                 // Abrir puerta.
                 quitarObjeto(obj.x, obj.y);
                 ObjectInfo info = findObj(obj.getInfo().IndexAbierta);
-                //obj = agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             } else {
                 // Cerrar puerta
                 quitarObjeto(obj.x, obj.y);
                 ObjectInfo info = findObj(obj.getInfo().IndexCerrada);
-                //obj = agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             }
             obj = getObjeto(obj.x, obj.y);
@@ -853,13 +697,13 @@ End Sub
         if (y2 > 100) {
 			y2 = 100;
 		}
-        Player cliente;
+        Player player;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (this.cells[x-1][y-1].getClienteId() > 0) {
-                    cliente = this.server.getClientById(this.cells[x-1][y-1].getClienteId());
-                    if (cliente != null && (cliente.isGod() || cliente.isDemiGod())) {
-						cliente.sendPacket(packet);
+                if (this.cells[x-1][y-1].playerId() > 0) {
+                    player = this.server.playerById(this.cells[x-1][y-1].playerId());
+                    if (player != null && (player.isGod() || player.isDemiGod())) {
+						player.sendPacket(packet);
 					}
                 }
             }
@@ -885,8 +729,8 @@ End Sub
 		}
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (this.cells[x-1][y-1].getClienteId() == cli_id) {
-					return this.server.getClientById(this.cells[x-1][y-1].getClienteId());
+                if (this.cells[x-1][y-1].playerId() == cli_id) {
+					return this.server.playerById(this.cells[x-1][y-1].playerId());
 				}
             }
         }
@@ -920,16 +764,16 @@ End Sub
     public void enviarBQs(Player cliente) {
         for (int y = 0; y < MAPA_ALTO; y++) {
             for (int x = 0; x < MAPA_ANCHO; x++) {
-                if (this.cells[x][y].estaModificado()) {
-					cliente.enviarBQ(x+1, y+1, this.cells[x][y].estaBloqueado());
+                if (this.cells[x][y].isModified()) {
+					cliente.enviarBQ(x+1, y+1, this.cells[x][y].isBlocked());
 				}
             }
         }
     }
     
-    public void mover(Player cliente, byte x, byte y) {
-        this.cells[cliente.pos().x-1][cliente.pos().y-1].setClienteId((short) 0);
-        this.cells[x-1][y-1].setClienteId(cliente.getId());
+    public void movePlayer(Player cliente, byte x, byte y) {
+        this.cells[cliente.pos().x-1][cliente.pos().y-1].playerId((short) 0);
+        this.cells[x-1][y-1].playerId(cliente.getId());
         cliente.pos().set(this.nroMapa, x, y);
         
 		//JAO: Nuevo sistema de areas !!
@@ -938,24 +782,29 @@ End Sub
         this.areasData.checkUpdateNeededUser(cliente, cliente.infoChar().getDir());
     }
     
-    public boolean hayTeleport(byte  x, byte y) {
-        return this.cells[x-1][y-1].hayTeleport();
+    public boolean isTeleport(byte  x, byte y) {
+        return this.cells[x-1][y-1].isTeleport();
     }
     
-    public void crearTeleport(byte x, byte y, short dest_mapa, byte dest_x, byte dest_y) {
+    public boolean isTeleportObject(byte x, byte y) {
+    	return isTeleport(x, y) 
+    			&& hayObjeto(x, y) 
+				&& (getObjeto(x, y).getInfo().objType == ObjType.Teleport);    	
+    }
+    
+    public void createTeleport(byte x, byte y, short dest_mapa, byte dest_x, byte dest_y) {
         if (dest_mapa > 0 && dest_x > 0 && dest_y > 0) {
-			this.cells[x-1][y-1].setTeleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
+			this.cells[x-1][y-1].teleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
 		}
-        //Objeto obj = agregarObjeto(OBJ_TELEPORT, 1, x, y);
         agregarObjeto(OBJ_TELEPORT, 1, x, y);
     }
     
-    public void destruirTeleport(byte  x, byte y) {
-        if (!hayTeleport(x, y)) {
+    public void destroyTeleport(byte  x, byte y) {
+        if (!isTeleport(x, y)) {
 			return;
 		}
         quitarObjeto(x, y);
-        this.cells[x-1][y-1].setTeleport(null);
+        this.cells[x-1][y-1].teleport(null);
     }    
     
     public boolean hayObjeto(byte  x, byte y) {
@@ -963,7 +812,7 @@ End Sub
     }
     
     public boolean hayCliente(byte  x, byte y) {
-        return (this.cells[x-1][y-1].getClienteId() != 0 && getCliente(x, y) != null); // FIXME
+        return (this.cells[x-1][y-1].playerId() != 0 && getCliente(x, y) != null); // FIXME
     }
     
     public boolean hayNpc(byte  x, byte y) {
@@ -971,7 +820,7 @@ End Sub
     }
     
     public Player getCliente(byte  x, byte y) {
-        return this.server.getClientById(this.cells[x-1][y-1].getClienteId());
+        return this.server.playerById(this.cells[x-1][y-1].playerId());
     }
     
     public Npc getNpc(byte  x, byte y) {
@@ -1089,8 +938,8 @@ End Sub
         player.flags().TargetY = y;
     }
     
-    public MapPos getTeleport(byte  x, byte y) {
-        return this.cells[x-1][y-1].getTeleport();
+    public MapPos teleportTarget(byte  x, byte y) {
+        return this.cells[x-1][y-1].teleport();
     }
     
     public void accionParaRamita(byte x, byte y, Player cliente) {
@@ -1181,10 +1030,10 @@ End Sub
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
-        return !this.cells[x-1][y-1].estaBloqueado() &&
+        return !this.cells[x-1][y-1].isBlocked() &&
         !hayAgua(x,y) &&
         !hayObjeto(x, y) && 
-		!hayTeleport(x, y);
+		!isTeleport(x, y);
     }
     
     /** 
@@ -1230,13 +1079,13 @@ End Sub
 			return false;
 		}
         if (!puedeAgua) {
-            return !this.cells[pos.x-1][pos.y-1].estaBloqueado() &&
-            this.cells[pos.x-1][pos.y-1].getClienteId() == 0 &&
+            return !this.cells[pos.x-1][pos.y-1].isBlocked() &&
+            this.cells[pos.x-1][pos.y-1].playerId() == 0 &&
             this.cells[pos.x-1][pos.y-1].getNpc() == null &&
             !hayAgua(pos.x, pos.y);
         }
-        return !this.cells[pos.x-1][pos.y-1].estaBloqueado() &&
-        this.cells[pos.x-1][pos.y-1].getClienteId() == 0 &&
+        return !this.cells[pos.x-1][pos.y-1].isBlocked() &&
+        this.cells[pos.x-1][pos.y-1].playerId() == 0 &&
         this.cells[pos.x-1][pos.y-1].getNpc() == null &&
         hayAgua(pos.x, pos.y);
     }
@@ -1246,29 +1095,29 @@ End Sub
 			return false;
 		}
         if (!puedeAgua) {
-            return !this.cells[pos.x-1][pos.y-1].estaBloqueado() &&
-            this.cells[pos.x-1][pos.y-1].getClienteId() == 0 &&
+            return !this.cells[pos.x-1][pos.y-1].isBlocked() &&
+            this.cells[pos.x-1][pos.y-1].playerId() == 0 &&
             this.cells[pos.x-1][pos.y-1].getNpc() == null &&
             this.cells[pos.x-1][pos.y-1].getTrigger() != POSINVALIDA &&
             !hayAgua(pos.x, pos.y);
         }
-        return !this.cells[pos.x-1][pos.y-1].estaBloqueado() &&
-        this.cells[pos.x-1][pos.y-1].getClienteId() == 0 &&
+        return !this.cells[pos.x-1][pos.y-1].isBlocked() &&
+        this.cells[pos.x-1][pos.y-1].playerId() == 0 &&
         this.cells[pos.x-1][pos.y-1].getNpc() == null &&
         this.cells[pos.x-1][pos.y-1].getTrigger() != POSINVALIDA;
     }
     
     public boolean existIndex(MapPos pos) {
-        return this.cells[pos.x][pos.y].getClienteId() == 0;
+        return this.cells[pos.x][pos.y].playerId() == 0;
     }
     
     private boolean esPosLibrePj(byte  x, byte y, boolean navegando, boolean esAdmin) {
     	if (esAdmin) {
 			return esPosLibreAdmin(x, y); // Los Admins no respetan las leyes de la física :P
 		} else if (navegando) {
-			return esPosLibreConAgua(x, y) && !hayTeleport(x, y) && !estaBloqueado(x, y);
+			return esPosLibreConAgua(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
 		} else {
-			return esPosLibreSinAgua(x, y) && !hayTeleport(x, y) && !estaBloqueado(x, y);
+			return esPosLibreSinAgua(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
 		}
     }
     
@@ -1314,12 +1163,12 @@ End Sub
     	if (hayAgua(x, y)) {
         	// Si el npc puede estar sobre agua, comprobamos si es una posicion libre con agua
             if (esAguaValida) {
-				return esPosLibreConAgua(x, y) && !hayTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
+				return esPosLibreConAgua(x, y) && !isTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
 			}
     	} else {
             // Comprobamos si es una posición libre sin agua
             if (!esTierraInvalida) {
-				return esPosLibreSinAgua(x, y) && !hayTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
+				return esPosLibreSinAgua(x, y) && !isTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
 			}
     	}
         return false;
@@ -1367,8 +1216,8 @@ End Sub
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
-        return !this.cells[x-1][y-1].estaBloqueado() && 
-        this.cells[x-1][y-1].getClienteId() == 0 &&
+        return !this.cells[x-1][y-1].isBlocked() && 
+        this.cells[x-1][y-1].playerId() == 0 &&
         this.cells[x-1][y-1].getNpc() == null && 
         hayAgua(x,y);
     }
@@ -1377,8 +1226,8 @@ End Sub
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
-        return !this.cells[x-1][y-1].estaBloqueado() &&
-        this.cells[x-1][y-1].getClienteId() == 0 &&
+        return !this.cells[x-1][y-1].isBlocked() &&
+        this.cells[x-1][y-1].playerId() == 0 &&
         this.cells[x-1][y-1].getNpc() == null &&
         !hayAgua(x,y);
     }
@@ -1388,7 +1237,7 @@ End Sub
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
-        return this.cells[x-1][y-1].getClienteId() == 0 && this.cells[x-1][y-1].getNpc() == null;
+        return this.cells[x-1][y-1].playerId() == 0 && this.cells[x-1][y-1].getNpc() == null;
     }
     
     /** Devuelve la cantidad de enemigos que hay en el mapa */
@@ -1404,99 +1253,6 @@ End Sub
         }
         return cant;
     }
-    
-    public void doFX() {
-    	// FIXME
-    	/*
-        if (getCantUsuarios() > 0 && Util.Azar(1, 150) < 12) {
-            switch (this.m_terreno) {
-                case TERRENO_BOSQUE:
-                    int n = Util.Azar(1, 100);
-                    switch (this.m_zona) {
-                        case ZONA_CAMPO:
-                        case ZONA_CIUDAD:
-                            if (!this.server.estaLloviendo()) {
-                                if (n < 15) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE2));
-                                } else if (n < 30) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE));
-                                } else if (n <= 35) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO));
-                                } else if (n <= 40) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO2));
-                                } else if (n <= 45) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE3));
-                                }
-                            }
-                            break;
-                    }
-            }
-        }
-        */
-    }
-    
-    // Esto no hace falta por ahora, era para hacer funcionar a los teleports,
-    // y estoy haciendo que los teleports trabajen de otra manera.
-    //    public void doTileEvents(Cliente cliente) {
-    //        //Public Sub DoTileEvents(ByVal UserIndex As Integer, ByVal Map As Integer, ByVal X As Integer, ByVal Y As Integer)
-    //        boolean hayFX = false;
-    //        // Controla las salidas
-    //        if (cliente.getPos().isValid()) {
-    //            short x = cliente.getPos().x;
-    //            short y = cliente.getPos().y;
-    //            if (hayObjeto(x, y)) {
-    //                hayFX = (getObjeto(x, y).getInfo().ObjType == OBJTYPE_TELEPORT);
-    //            }
-    //            if (hayTeleport(x, y)) {
-    //                // ¿Es mapa de newbies?
-    //                if (m_restringir) {
-    //                    // ¿El usuario es un newbie?
-    //                    if (cliente.esNewbie()) {
-    //                        if (LegalPos(MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-    //                            If FxFlag Then // ¿FX?
-    //                                Call WarpUserChar(UserIndex, MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y, True)
-    //                            Else
-    //                                Call WarpUserChar(UserIndex, MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y)
-    //                            End If
-    //                        Else
-    //                            Call ClosestLegalPos(MapData(Map, X, Y).TileExit, nPos)
-    //                            If nPos.X <> 0 And nPos.Y <> 0 Then
-    //                                If FxFlag Then
-    //                                    Call WarpUserChar(UserIndex, nPos.Map, nPos.X, nPos.Y, True)
-    //                                Else
-    //                                    Call WarpUserChar(UserIndex, nPos.Map, nPos.X, nPos.Y)
-    //                                End If
-    //                            End If
-    //                        End If
-    //                    } else { // No es newbie
-    //                        Call SendData(ToIndex, UserIndex, 0, "||Mapa exclusivo para newbies." & FONTTYPE_INFO)
-    //                        Call ClosestLegalPos(UserList(UserIndex).Pos, nPos)
-    //                        If nPos.X <> 0 And nPos.Y <> 0 Then
-    //                                Call WarpUserChar(UserIndex, nPos.Map, nPos.X, nPos.Y)
-    //                        End If
-    //                    }
-    //                } else { // No es un mapa de newbies
-    //                    If LegalPos(MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y, PuedeAtravesarAgua(UserIndex)) Then
-    //                        If FxFlag Then
-    //                            Call WarpUserChar(UserIndex, MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y, True)
-    //                        Else
-    //                            Call WarpUserChar(UserIndex, MapData(Map, X, Y).TileExit.Map, MapData(Map, X, Y).TileExit.X, MapData(Map, X, Y).TileExit.Y)
-    //                        End If
-    //                    Else
-    //                        Call ClosestLegalPos(MapData(Map, X, Y).TileExit, nPos)
-    //                        If nPos.X <> 0 And nPos.Y <> 0 Then
-    //                            If FxFlag Then
-    //                                Call WarpUserChar(UserIndex, nPos.Map, nPos.X, nPos.Y, True)
-    //                            Else
-    //                                Call WarpUserChar(UserIndex, nPos.Map, nPos.X, nPos.Y)
-    //                            End If
-    //                        End If
-    //                    End If
-    //                }
-    //            }
-    //        }
-    //    }
-    
     
     //Agus: ARREGLAR ESTO MOMENTANEAMENTE DESACTIVADO
     // FIXME
@@ -1548,7 +1304,7 @@ End Sub
                 // leer detalle del archivo .map
                 for (int y = 0; y < MAPA_ALTO; y++) {
                     for (int x = 0; x < MAPA_ANCHO; x++) {
-                    	f.writeByte(this.cells[x][y].estaBloqueado() ? 1 : 0);
+                    	f.writeByte(this.cells[x][y].isBlocked() ? 1 : 0);
                         //f.writeShort(this.m_cells[x][y].hayAgua() ? Util.leShort((short)1505) : 0);
                         f.writeShort(0);
                         f.writeShort(0);
@@ -1582,10 +1338,10 @@ End Sub
                     for (short x = 0; x < MAPA_ANCHO; x++) {
                         // Es el destino a otro lugar (para teleports, etc.)
                         // Son cero (0) si no hay un Teleport en esta celda.
-                        if (this.cells[x][y].hayTeleport()) {
-                            f.writeShort(Util.leShort(this.cells[x][y].getTeleport().map));
-                            f.writeShort(Util.leShort(this.cells[x][y].getTeleport().x));
-                            f.writeShort(Util.leShort(this.cells[x][y].getTeleport().y));
+                        if (this.cells[x][y].isTeleport()) {
+                            f.writeShort(Util.leShort(this.cells[x][y].teleport().map));
+                            f.writeShort(Util.leShort(this.cells[x][y].teleport().x));
+                            f.writeShort(Util.leShort(this.cells[x][y].teleport().y));
                         } else {
                             f.writeShort(0);
                             f.writeShort(0);
@@ -1648,6 +1404,109 @@ End Sub
     public void construirAreaNpc(Player cliente, Npc npc) {
     	cliente.sendPacket(npc.createCC());
     }
+    
+    public void doFX() {
+    	// FIXME
+    	/*
+        if (getCantUsuarios() > 0 && Util.Azar(1, 150) < 12) {
+            switch (this.m_terreno) {
+                case TERRENO_BOSQUE:
+                    int n = Util.Azar(1, 100);
+                    switch (this.m_zona) {
+                        case ZONA_CAMPO:
+                        case ZONA_CIUDAD:
+                            if (!this.server.estaLloviendo()) {
+                                if (n < 15) {
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE2));
+                                } else if (n < 30) {
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE));
+                                } else if (n <= 35) {
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO));
+                                } else if (n <= 40) {
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO2));
+                                } else if (n <= 45) {
+                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE3));
+                                }
+                            }
+                            break;
+                    }
+            }
+        }
+        */
+    }
+
+    
+    @Deprecated
+    public void doTileEvents(Player cliente) {
+		// Esto no hace falta por ahora, era para hacer funcionar a los teleports,
+		// y estoy haciendo que los teleports trabajen de otra manera.
+    	//
+    	// En lugar de revisar cada X tiempo si hay alguien parado en un teleport, 
+    	// para teletransportarlo, desde la función mover disparamos el TP directamente.
+    }
+    
+
+    /**
+     * Handles the Map passage of Users. Allows the existance
+	 * of exclusive maps for Newbies, Royal Army and Caos Legion members
+	 * and enables GMs to enter every map without restriction.
+	 * Uses: Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
+     * @return true if passage is forbidden, false if passage is allowed
+     */
+    public boolean isForbbidenMap(Player player) {
+    	// ¿Es mapa de newbies?
+    	if ("NEWBIE".equalsIgnoreCase(m_restringir)) {
+    		if (player.esNewbie() || player.isGM()) {
+    			return false; // allowed
+    		} else {
+    			// no es un newbie/gm, "NO PASARÁS!"
+				player.enviarMensaje("Mapa exclusivo para newbies.", FontType.FONTTYPE_INFO);
+    			return true;
+    		}
+    	} 
+    	
+		// ¿Es mapa de Armadas?
+    	if ("ARMADA".equalsIgnoreCase(m_restringir)) {
+            // ¿El usuario es Armada?
+    		if (player.esArmada() || player.isGM()) {
+    			return false; // allowed
+    		} else {
+    			// no es un armada/gm, "NO PASARÁS!"
+				player.enviarMensaje("Mapa exclusivo para miembros del ejército Real", FontType.FONTTYPE_INFO);
+    			return true;
+    		}
+    	}
+    	
+		// ¿Es mapa de Caos?
+    	if ("CAOS".equalsIgnoreCase(m_restringir)) {
+            // ¿El usuario es Caos?
+    		if (player.esCaos() || player.isGM()) {
+    			return false; // allowed
+    		} else {
+    			// no es un caos/gm, "NO PASARÁS!"
+				player.enviarMensaje("Mapa exclusivo para miembros del ejército Oscuro.", FontType.FONTTYPE_INFO);
+    			return true;
+    		}
+    	}
+    	
+		// ¿Es mapa de faccionarios?
+    	if ("FACCION".equalsIgnoreCase(m_restringir)) {
+            // ¿El usuario es Caos?
+    		if (player.esArmada() || player.esCaos() || player.isGM()) {
+    			return false; // allowed
+    		} else {
+    			// no es un armada/caos/gm, "NO PASARÁS!"
+				player.enviarMensaje("Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontType.FONTTYPE_INFO);
+    			return true;
+    		}
+    	}
+    	
+    	// No es un mapa de newbies, ni Armadas, ni Caos, ni faccionario.
+    	// Adelante averturero
+    	return false; // allowed;
+    }
+    
+    
     
 }
 

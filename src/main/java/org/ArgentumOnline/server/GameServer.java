@@ -1,5 +1,5 @@
 /**    
- * AojServer.java
+ * GameServer.java
  *
  * Created on 6 de septiembre de 2003, 19:05
  * 
@@ -73,8 +73,8 @@ public class GameServer implements Constants {
     private HashMap<Short, Player> players = new HashMap<>();
     private HashMap<Integer, Npc> npcs = new HashMap<>();
     
-    private List<Player> m_clientes_eliminar = new LinkedList<>();
-    private List<Short> m_npcs_muertos = new LinkedList<>();
+    private List<Player> 	playersToDrop = new LinkedList<>();
+    private List<Short> 	deadNpcs = new LinkedList<>();
     
     private List<Spell> 	spells = new LinkedList<>();
     private List<Map> 		maps = new LinkedList<>();    
@@ -108,6 +108,7 @@ public class GameServer implements Constants {
     private NpcLoader npcLoader;
     private Admins admins;
     private ObjectInfoStorage objectInfoStorage;
+    private GamblerStats gamblerStats;
 
     private Feedback m_feedback = new Feedback();
     
@@ -121,6 +122,7 @@ public class GameServer implements Constants {
     	this.npcLoader = new NpcLoader(this);
     	this.admins = new Admins(this);
     	this.objectInfoStorage = new ObjectInfoStorage();
+    	this.gamblerStats = new GamblerStats();
     }
 
     private static GameServer instance = null;
@@ -131,6 +133,10 @@ public class GameServer implements Constants {
 		}
         return instance;
     }
+    
+    public GamblerStats getGamblerStats() {
+		return gamblerStats;
+	}
 
     public ObjectInfoStorage getObjectInfoStorage() {
 		return objectInfoStorage;
@@ -156,12 +162,12 @@ public class GameServer implements Constants {
 		return npcLoader;
 	}
     
-    public List<Player> getClientes() {
+    public List<Player> players() {
     	return this.players.values().stream()
     			.collect(Collectors.toList());
     }
     
-    public List<Npc> getNpcs() {
+    public List<Npc> npcs() {
     	return new ArrayList<Npc>(this.npcs.values());
     }
     
@@ -187,15 +193,15 @@ public class GameServer implements Constants {
 				.append(" segs.").toString();
 	}
     
-    public short getNextId() {
+    public short nextId() {
         return ++this.id;
     }
     
-    public boolean estaLloviendo() {
+    public boolean isRaining() {
         return this.m_lloviendo;
     }
     
-    public boolean estaHaciendoBackup() {
+    public boolean isDoingBackup() {
         return this.m_haciendoBackup;
     }
     
@@ -203,11 +209,11 @@ public class GameServer implements Constants {
         return this.trashCollector;
     }
     
-    public Quest getQuest(int n) {
+    public Quest quest(int n) {
         return this.quests.get(n - 1);
     }
     
-    public int getQuestCount() {
+    public int questCount() {
         return this.quests.size();
     }
     
@@ -232,14 +238,14 @@ public class GameServer implements Constants {
     }
     
     public List<String> getUsuariosConectados() {
-    	return getClientes().stream()
+    	return players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.map(Player::getNick)
 			    	.collect(Collectors.toList());
     }
     
     public void echarPjsNoPrivilegiados() {
-    	var users = getClientes().stream()
+    	var users = players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.collect(Collectors.toList());
     	
@@ -250,7 +256,7 @@ public class GameServer implements Constants {
     }
 	
     public List<String> getUsuariosTrabajando() {
-    	return getClientes().stream()
+    	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
@@ -263,14 +269,14 @@ public class GameServer implements Constants {
     }
     
     public List<String> getUsuariosConIP(String ip) {
-    	return getClientes().stream()
+    	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
     
     public List<String> getGMsOnline() {
-    	return getClientes().stream()
+    	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.isGM())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
@@ -282,7 +288,7 @@ public class GameServer implements Constants {
     
     /** Main loop of the game. */
     private void runGameLoop() {
-        loadAllData(loadBackup);
+        loadAll(loadBackup);
         
         //networkServer = NetworkServer.startServer(this);
         try {
@@ -358,7 +364,7 @@ public class GameServer implements Constants {
                     pasarSegundo();
                     lastPasarSegundoTimer = now;
                 }
-                eliminarClientes();
+                removeDropedPlayers();
 
                 long ellapsed = Util.millis() - now;
                 if (ellapsed > worstTime) worstTime = ellapsed;
@@ -377,18 +383,18 @@ public class GameServer implements Constants {
         }
     }
     
-    public synchronized void dropClient(Player client) {
-    	this.m_clientes_eliminar.add(client);
-    	// FIXME netty ?
+    public synchronized void dropPlayer(Player player) {
+    	player.closeConnection();
+    	this.playersToDrop.add(player);
     }
     
-    private synchronized void eliminarClientes() {
+    private synchronized void removeDropedPlayers() {
     	// La eliminación de m_clientes de la lista de m_clientes se hace aquí
     	// para evitar modificaciones concurrentes al hashmap, entre otras cosas.
-    	for (Player cliente: this.m_clientes_eliminar) {
+    	for (Player cliente: this.playersToDrop) {
             this.players.remove(cliente.getId());
     	}
-    	this.m_clientes_eliminar.clear();
+    	this.playersToDrop.clear();
     }
 
     private static String memoryStatus() {
@@ -447,8 +453,8 @@ public class GameServer implements Constants {
         }
     }
 
-    /** Load all initial data / Cargar todos los datos iniciales */
-    private void loadAllData(boolean loadBackup) {
+    /** Load all initial data */
+    private void loadAll(boolean loadBackup) {
     	log.trace("loadAllData started");
         objectInfoStorage.loadObjectsFromStorage();
         loadSpells();
@@ -471,13 +477,13 @@ public class GameServer implements Constants {
         return npc;
     }
 
-    public Player createClient(Channel channel) {
-        Player cliente = new Player(channel, this);
-        this.players.put(cliente.getId(), cliente);    	
-        return cliente;
+    public Player createPlayer(Channel channel) {
+        Player player = new Player(channel, this);
+        this.players.put(player.getId(), player);    	
+        return player;
     }
     
-    public Player findClient(Channel channel) {
+    public Player findPlayer(Channel channel) {
     	return this.players.values().stream()
 		    		.filter(p -> p.channel == channel)
 		    		.findFirst()
@@ -485,14 +491,14 @@ public class GameServer implements Constants {
     }
 
     public void deleteNpc(Npc npc) {
-        this.m_npcs_muertos.add(npc.getId());
+        this.deadNpcs.add(npc.getId());
     }
     
-    public Npc getNpcById(int npcId) {
+    public Npc npcById(int npcId) {
         return this.npcs.get(Integer.valueOf(npcId));
     }
     
-    public Player getClientById(short id) {
+    public Player playerById(short id) {
         return this.players.get(id);
     }
     
@@ -507,11 +513,11 @@ public class GameServer implements Constants {
 		return null;
     }
     
-    public Player getUsuario(String nombre) {
+    public Player playerByUserName(String nombre) {
     	if ("".equals(nombre)) {
 			return null;
 		}
-    	for (Player cliente: getClientes()) {
+    	for (Player cliente: players()) {
             if (cliente.getNick().equalsIgnoreCase(nombre)) {
                 return cliente;
             }
@@ -519,8 +525,8 @@ public class GameServer implements Constants {
         return null;
     }
     
-    public boolean usuarioYaConectado(Player cliente) {
-    	for (Player c: getClientes()) {
+    public boolean isPlayerAlreadyConnected(Player cliente) {
+    	for (Player c: players()) {
             if (cliente != c && cliente.getNick().equalsIgnoreCase(c.getNick())) {
                 return true;
             }
@@ -531,7 +537,7 @@ public class GameServer implements Constants {
     private void doAI() {
         // TIMER_AI_Timer()
         if (!this.m_haciendoBackup) {
-            var npcs = new ArrayList<Npc>(getNpcs());
+            var npcs = new ArrayList<Npc>(npcs());
             npcs.stream()
             	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
             	.forEach(npc -> {
@@ -549,14 +555,14 @@ public class GameServer implements Constants {
 	                    }
 	                }
             	});
-	        this.m_npcs_muertos.stream().map(npc -> npcs.remove(npc));
-	        this.m_npcs_muertos.clear();
+	        this.deadNpcs.stream().map(npc -> npcs.remove(npc));
+	        this.deadNpcs.clear();
         }
     }
 
     private void pasarSegundo() {
         var paraSalir = new LinkedList<Player>();
-        for (Player cli: getClientes()) {
+        for (Player cli: players()) {
             if (cli.m_counters.Saliendo) {
                 cli.m_counters.SalirCounter--;
                 if (cli.m_counters.SalirCounter <= 0) {
@@ -584,7 +590,7 @@ public class GameServer implements Constants {
         	// FIXME
             //enviarATodos(MSG_BKW);
             //enviarATodos(MSG_TALK, "Servidor> Grabando Personajes" + FontType.SERVER);
-            for (Player cli: getClientes()) {
+            for (Player cli: players()) {
                 if (cli.isLogged()) {
                     cli.userStorage.saveUserToStorage();
                 }
@@ -625,8 +631,9 @@ public class GameServer implements Constants {
     }
     
     private void gameTimer() {
+    	// This is like GameTimer_Timer
         // <<<<<< Procesa eventos de los usuarios >>>>>>
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
                 cli.procesarEventos();
             }
@@ -634,13 +641,13 @@ public class GameServer implements Constants {
     }
     
     private void npcAtacaTimer() {
-    	for (Npc npc: getNpcs()) {
+    	for (Npc npc: npcs()) {
             npc.setPuedeAtacar(true);
         }
     }
     
     private void timerOculto() {
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
                 if (cli.isHidden()) {
 					cli.doPermanecerOculto();
@@ -653,7 +660,7 @@ public class GameServer implements Constants {
         if (!this.m_lloviendo) {
 			return;
 		}
-        for (Player cli: getClientes()) {
+        for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
                 cli.efectoLluvia();
             }
@@ -661,7 +668,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarATodos(ServerPacket packet) {
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
@@ -669,7 +676,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarAAdmins(ServerPacket packet) {
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
@@ -677,7 +684,7 @@ public class GameServer implements Constants {
     }
     
     public void enviarMensajeAAdmins(String msg, FontType fuente) {
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
                 cli.enviarMensaje(msg, fuente);
             }
@@ -724,7 +731,7 @@ public class GameServer implements Constants {
     int segundos = 0;
     public void piqueteTimer() {
         this.segundos += 6;
-        for (Player cli: getClientes()) {
+        for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 Map mapa = getMap(cli.pos().map);
                 if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
@@ -750,7 +757,7 @@ public class GameServer implements Constants {
     }
     
     public void purgePenalties() {
-    	for (Player cli: getClientes()) {
+    	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.flags().UserLogged) {
                 if (cli.m_counters.Pena > 0) {
                     cli.m_counters.Pena--;
@@ -766,7 +773,7 @@ public class GameServer implements Constants {
     
     private void checkIdleUser() {
         // FIXME
-    	for (Player cliente: getClientes()) {
+    	for (Player cliente: players()) {
             if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
                 cliente.m_counters.IdleCount++;
                 if (cliente.m_counters.IdleCount >= IdleLimit) {
@@ -894,7 +901,7 @@ public class GameServer implements Constants {
     }
 
     public void enviarMensajeALosGMs(String msg) {
-        for (Player cli: getClientes()) {
+        for (Player cli: players()) {
             if (cli.isLogged() && cli.isGM()) {
                 cli.enviarMensaje(msg, FontType.FONTTYPE_GM);
             }
@@ -982,7 +989,7 @@ public class GameServer implements Constants {
         // Guardar los NPCs
         try {
             IniFile ini = new IniFile();
-            for (Npc npc: getNpcs()) {
+            for (Npc npc: npcs()) {
                 if (npc.getBackup()) {
                     npc.backup(ini);
                 }
@@ -997,7 +1004,7 @@ public class GameServer implements Constants {
     
     private void reSpawnOrigPosNpcs() {
         List<Npc> spawnNPCs = new ArrayList<Npc>();
-        for (Npc npc: getNpcs()) {
+        for (Npc npc: npcs()) {
             if (npc.isNpcActive()) {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
                     npc.quitarNPC(); // fixme, lo elimina del server??? revisar.

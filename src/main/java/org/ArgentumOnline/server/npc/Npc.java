@@ -111,7 +111,7 @@ public class Npc extends AbstractCharacter implements Constants {
     public final static short NPCTYPE_BANQUERO = 4;
     public final static short NPCTYPE_NOBLE = 5;
     public final static short NPCTYPE_DRAGON = 6;
-    public final static short NPCTYPE_TIMBERO = 7;
+    public final static short NPCTYPE_TIMBERO = 7; // GAMBLER
     public final static short NPCTYPE_GUARDIAS_CAOS = 8;
     public final static short NPCTYPE_SACERDOTE_NEWBIES = 9; // TODO PUEDE RESUCITAR SOLAMENTE A LOS NEWBIES
 
@@ -213,7 +213,7 @@ public class Npc extends AbstractCharacter implements Constants {
     	
         this.m_numero = npc_numero;
         this.m_inv = new Inventory(server, 20);
-        this.setId(server.getNextId());
+        this.setId(server.nextId());
         loadInfoNPC(this.m_numero, server.isLoadBackup());
     }
     
@@ -238,7 +238,7 @@ public class Npc extends AbstractCharacter implements Constants {
         }
 
         npc.pos().set(tmp.map, tmp.x, tmp.y);
-        mapa.entrar(npc, tmp.x, tmp.y);
+        mapa.enterNpc(npc, tmp.x, tmp.y);
         return npc;
     }
     
@@ -266,7 +266,7 @@ public class Npc extends AbstractCharacter implements Constants {
                 // Necesita ser respawned en un lugar especifico
                 npc.setPos(orig.copy());
                 
-                mapa.entrar(npc, orig.x, orig.y);
+                mapa.enterNpc(npc, orig.x, orig.y);
                 hayPosValida = true;
             } else {
                 orig.x = 0;
@@ -303,6 +303,10 @@ public class Npc extends AbstractCharacter implements Constants {
     
     public boolean isNpcGuard() {
     	return this.m_NPCtype == Npc.NPCTYPE_GUARDIAS;
+    }
+    
+    public boolean isGambler() {
+    	return this.m_NPCtype == Npc.NPCTYPE_TIMBERO;
     }
     
     // added by gorlok
@@ -822,7 +826,7 @@ public class Npc extends AbstractCharacter implements Constants {
         map.areasData.resetNpc(this);
         
         if (map != null && pos().isValid()) {
-            map.salir(this);
+            map.exitNpc(this);
         }
         
         map.enviarAlArea(pos().x, pos().y, new CharacterRemoveResponse(this.getId()));
@@ -834,7 +838,7 @@ public class Npc extends AbstractCharacter implements Constants {
         if (this.petUserOwner != null) {
         	this.petUserOwner.quitarMascota(this);
         }
-        Npc ownerNpc = this.server.getNpcById(this.petNpcOwnerId);
+        Npc ownerNpc = this.server.npcById(this.petNpcOwnerId);
         if (ownerNpc != null) {
         	if (ownerNpc.isTrainer()) {
         		((NpcTrainer)ownerNpc).removePet(this);
@@ -870,7 +874,7 @@ public class Npc extends AbstractCharacter implements Constants {
 		}
         this.m_lastMove = now;
         MapPos newPos = pos().copy();
-        newPos.moveToDir(dir);
+        newPos.moveToHeading(dir);
         Map mapa = this.server.getMap(newPos.map);
         if (mapa == null) {
 			return;
@@ -1048,7 +1052,7 @@ public class Npc extends AbstractCharacter implements Constants {
         		continue;
         	
             MapPos pos = pos().copy();
-            pos.moveToDir(dir);
+            pos.moveToHeading(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
@@ -1103,7 +1107,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	if (dir == Heading.NONE)
         		continue;
             MapPos pos = pos().copy();
-            pos.moveToDir(dir);
+            pos.moveToHeading(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
@@ -1130,7 +1134,7 @@ public class Npc extends AbstractCharacter implements Constants {
         	if (dir == Heading.NONE)
         		continue;
             MapPos pos = pos().copy();
-            pos.moveToDir(dir);
+            pos.moveToHeading(dir);
             if (pos.isValid()) {
                 if (mapa.hayCliente(pos.x, pos.y)) {
                     Player cliente = mapa.getCliente(pos.x, pos.y);
@@ -1192,7 +1196,7 @@ public class Npc extends AbstractCharacter implements Constants {
                         if (!cliente.isGM() && this.m_attackedBy.equalsIgnoreCase(cliente.getNick())) {
                             if (getPetUserOwner() != null) {
 		                        if (	!getPetUserOwner().isCriminal() && !cliente.isCriminal() && 
-		                        		(getPetUserOwner().tieneSeguro() || getPetUserOwner().getFaccion().ArmadaReal)) {
+		                        		(getPetUserOwner().hasSafeLock() || getPetUserOwner().userFaction().ArmadaReal)) {
 		                            getPetUserOwner().enviarMensaje("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.FONTTYPE_INFO);
 		                            this.m_attackedBy = "";
 		                            followMaster();

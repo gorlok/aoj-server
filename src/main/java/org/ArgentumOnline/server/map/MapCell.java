@@ -74,23 +74,17 @@ public class MapCell {
     private byte m_x;
     private byte m_y;
     
-    // del archivo .inf
-    //private WorldPos m_dest = null;
+    // teleport (del archivo .inf) 
     private short m_dest_mapa;
     private short m_dest_x;
     private short m_dest_y;
     
-    // Npc que esta en este bloque.
     private short m_npc;
     
-    // Indice del Objeto y cantidad que esta en este bloque.
-    // Es nulo si no hay objeto.
-    //private Objeto m_obj;
     private short m_obj_ind;
     private int m_obj_cant;
     
-    // Cliente que esta en este bloque.
-    private short m_clienteId = 0;
+    private short playerId = 0;
     
     private int grh[] = new int[4];
     
@@ -98,14 +92,6 @@ public class MapCell {
     	this.m_x = (byte)x;
     	this.m_y = (byte)y;
     }
-/*    
-    public Objeto getObj() {
-        return m_obj;
-    }
-    public void setObj(Objeto obj) {
-        this.m_obj = obj;
-    }
-    */
     
     public int getGrh(int val) {return this.grh[val];}
     
@@ -142,19 +128,19 @@ public class MapCell {
     }
     
     public Npc getNpc() {
-        return GameServer.instance().getNpcById(this.m_npc);
+        return GameServer.instance().npcById(this.m_npc);
     }
     
     public void setNpc(Npc npc) {
         this.m_npc = (npc == null) ? 0 : npc.getId();
     }
     
-    public short getClienteId() {
-        return this.m_clienteId;
+    public short playerId() {
+        return this.playerId;
     }
     
-    public void setClienteId(short id) {
-        this.m_clienteId = id;
+    public void playerId(short id) {
+        this.playerId = id;
     }
     
     public byte getTrigger() {
@@ -165,33 +151,31 @@ public class MapCell {
         this.m_trigger = value;
     }
     
-    public boolean estaModificado() {
+    public boolean isModified() {
         return this.m_flags.get(FLAG_MODIFIED);
     }
     
-    public boolean estaBloqueado() {
+    public boolean isBlocked() {
         return this.m_flags.get(FLAG_BLOQUED);
     }
     
-    public void setBloqueado(boolean estado) {
+    public void blocked(boolean estado) {
         this.m_flags.set(FLAG_BLOQUED, estado);
     }
     
-    public void setModificado(boolean estado) {
+    public void modified(boolean estado) {
         this.m_flags.set(FLAG_MODIFIED, estado);
     }
     
-    public boolean hayTeleport() {
-        //return (m_dest != null);
+    public boolean isTeleport() {
     	return (this.m_dest_mapa != 0 && this.m_dest_x != 0 && this.m_dest_y != 0);
     }
     
-    public MapPos getTeleport() {
-        //return m_dest;
+    public MapPos teleport() {
     	return MapPos.mxy(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
     }
     
-    public void setTeleport(MapPos dest) {
+    public void teleport(MapPos dest) {
     	if (dest != null) {
     		this.m_dest_mapa = dest.map;
     		this.m_dest_x = dest.x;
@@ -201,7 +185,6 @@ public class MapCell {
     		this.m_dest_x = 0;
     		this.m_dest_y = 0;    		
     	}    	
-        //this.m_dest = dest;
     }
     
 }

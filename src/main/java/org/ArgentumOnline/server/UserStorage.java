@@ -62,16 +62,16 @@ public class UserStorage {
 
 	private void loadUserInit(IniFile ini) 
 	throws java.io.IOException {
-		user.getFaccion().ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
-		user.getFaccion().FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
-		user.getFaccion().CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
-		user.getFaccion().CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
-		user.getFaccion().RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
-		user.getFaccion().RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
-		user.getFaccion().RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
-		user.getFaccion().RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
-		user.getFaccion().RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
-		user.getFaccion().RecompensasReal = ini.getShort("FACCIONES", "recReal");
+		user.userFaction().ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
+		user.userFaction().FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
+		user.userFaction().CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
+		user.userFaction().CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
+		user.userFaction().RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
+		user.userFaction().RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
+		user.userFaction().RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
+		user.userFaction().RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
+		user.userFaction().RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
+		user.userFaction().RecompensasReal = ini.getShort("FACCIONES", "recReal");
 
 		user.flags().Muerto = ini.getShort("FLAGS", "Muerto") == 1;
 		user.flags().Escondido = ini.getShort("FLAGS", "Escondido") == 1;
@@ -87,12 +87,12 @@ public class UserStorage {
 		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
 		user.counters().Pena = ini.getLong("COUNTERS", "Pena");
 		user.m_email = ini.getString("CONTACTO", "Email");
-		user.m_genero = (byte) ini.getShort("INIT", "Genero");
+		user.gender = UserGender.value(ini.getShort("INIT", "Genero"));
 		user.clazz = Clazz.findByName(ini.getString("INIT", "Clase").toUpperCase());
 		if (user.clazz == null) {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
-		user.m_raza = (byte) ini.getShort("INIT", "Raza");
+		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
 		user.m_hogar = (byte) ini.getShort("INIT", "Hogar");
 		user.infoChar().m_dir = (byte)ini.getShort("INIT", "Heading");
 
@@ -141,19 +141,19 @@ public class UserStorage {
 
 		// int cant = ini.getInt("Inventory", "CantidadItems");
 		// Lista de objetos del inventario del usuario.
-		for (int i = 0; i < user.getInv().size(); i++) {
+		for (int i = 0; i < user.userInv().size(); i++) {
 			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
-			user.getInv().setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
+			user.userInv().setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
 					Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken()) == 1));
 		}
-		user.getInv().setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
-		user.getInv().setArmaduraSlot(ini.getShort("Inventory", "ArmourEqpSlot"));
-		user.flags().Desnudo = (user.getInv().getArmaduraSlot() == 0);
-		user.getInv().setEscudoSlot(ini.getShort("Inventory", "EscudoEqpSlot"));
-		user.getInv().setCascoSlot(ini.getShort("Inventory", "CascoEqpSlot"));
-		user.getInv().setBarcoSlot(ini.getShort("Inventory", "BarcoSlot"));
-		user.getInv().setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
+		user.userInv().setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
+		user.userInv().setArmaduraSlot(ini.getShort("Inventory", "ArmourEqpSlot"));
+		user.flags().Desnudo = (user.userInv().getArmaduraSlot() == 0);
+		user.userInv().setEscudoSlot(ini.getShort("Inventory", "EscudoEqpSlot"));
+		user.userInv().setCascoSlot(ini.getShort("Inventory", "CascoEqpSlot"));
+		user.userInv().setBarcoSlot(ini.getShort("Inventory", "BarcoSlot"));
+		user.userInv().setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
 
 		int cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
@@ -253,16 +253,16 @@ public class UserStorage {
 
 			ini.setValue("COUNTERS", "Pena", user.counters().Pena);
 
-			ini.setValue("FACCIONES", "EjercitoReal", user.getFaccion().ArmadaReal);
-			ini.setValue("FACCIONES", "EjercitoCaos", user.getFaccion().FuerzasCaos);
-			ini.setValue("FACCIONES", "CiudMatados", user.getFaccion().CiudadanosMatados);
-			ini.setValue("FACCIONES", "CrimMatados", user.getFaccion().CriminalesMatados);
-			ini.setValue("FACCIONES", "rArCaos", user.getFaccion().RecibioArmaduraCaos);
-			ini.setValue("FACCIONES", "rArReal", user.getFaccion().RecibioArmaduraReal);
-			ini.setValue("FACCIONES", "rExCaos", user.getFaccion().RecibioExpInicialCaos);
-			ini.setValue("FACCIONES", "rExReal", user.getFaccion().RecibioExpInicialReal);
-			ini.setValue("FACCIONES", "recCaos", user.getFaccion().RecompensasCaos);
-			ini.setValue("FACCIONES", "recReal", user.getFaccion().RecompensasReal);
+			ini.setValue("FACCIONES", "EjercitoReal", user.userFaction().ArmadaReal);
+			ini.setValue("FACCIONES", "EjercitoCaos", user.userFaction().FuerzasCaos);
+			ini.setValue("FACCIONES", "CiudMatados", user.userFaction().CiudadanosMatados);
+			ini.setValue("FACCIONES", "CrimMatados", user.userFaction().CriminalesMatados);
+			ini.setValue("FACCIONES", "rArCaos", user.userFaction().RecibioArmaduraCaos);
+			ini.setValue("FACCIONES", "rArReal", user.userFaction().RecibioArmaduraReal);
+			ini.setValue("FACCIONES", "rExCaos", user.userFaction().RecibioExpInicialCaos);
+			ini.setValue("FACCIONES", "rExReal", user.userFaction().RecibioExpInicialReal);
+			ini.setValue("FACCIONES", "recCaos", user.userFaction().RecompensasCaos);
+			ini.setValue("FACCIONES", "recReal", user.userFaction().RecompensasReal);
 
 			ini.setValue("GUILD", "EsGuildLeader", user.guildUser.m_esGuildLeader);
 			ini.setValue("GUILD", "Echadas", user.guildUser.m_echadas);
@@ -301,8 +301,8 @@ public class UserStorage {
 
 			ini.setValue("CONTACTO", "Email", user.m_email);
 
-			ini.setValue("INIT", "Genero", user.m_genero);
-			ini.setValue("INIT", "Raza", user.m_raza);
+			ini.setValue("INIT", "Genero", user.gender.value());
+			ini.setValue("INIT", "Raza", user.race.value());
 			ini.setValue("INIT", "Hogar", user.m_hogar);
 			ini.setValue("INIT", "Clase", user.getClazz().clazz().getName());
 			ini.setValue("INIT", "Password", user.m_password);
@@ -369,24 +369,24 @@ public class UserStorage {
 			}
 			ini.setValue("BancoInventory", "CantidadItems", cant);
 
-			cant = user.getInv().size();
-			for (int i = 0; i < user.getInv().size(); i++) {
-				if (user.getInv().getObjeto(i + 1) == null) {
+			cant = user.userInv().size();
+			for (int i = 0; i < user.userInv().size(); i++) {
+				if (user.userInv().getObjeto(i + 1) == null) {
 					ini.setValue("Inventory", "Obj" + (i + 1), "0-0-0");
 					cant--;
 				} else {
-					ini.setValue("Inventory", "Obj" + (i + 1), user.getInv().getObjeto(i + 1).objid + "-"
-							+ user.getInv().getObjeto(i + 1).cant + "-" + (user.getInv().getObjeto(i + 1).equipado ? 1 : 0));
+					ini.setValue("Inventory", "Obj" + (i + 1), user.userInv().getObjeto(i + 1).objid + "-"
+							+ user.userInv().getObjeto(i + 1).cant + "-" + (user.userInv().getObjeto(i + 1).equipado ? 1 : 0));
 				}
 			}
 			ini.setValue("Inventory", "CantidadItems", cant);
-			ini.setValue("Inventory", "WeaponEqpSlot", user.getInv().getArmaSlot());
-			ini.setValue("Inventory", "ArmourEqpSlot", user.getInv().getArmaduraSlot());
-			ini.setValue("Inventory", "CascoEqpSlot", user.getInv().getCascoSlot());
-			ini.setValue("Inventory", "EscudoEqpSlot", user.getInv().getEscudoSlot());
-			ini.setValue("Inventory", "BarcoSlot", user.getInv().getBarcoSlot());
-			ini.setValue("Inventory", "MunicionSlot", user.getInv().getMunicionSlot());
-			ini.setValue("Inventory", "EspadaMataDragonesSlot", user.getInv().getEspadaMataDragonesSlot());
+			ini.setValue("Inventory", "WeaponEqpSlot", user.userInv().getArmaSlot());
+			ini.setValue("Inventory", "ArmourEqpSlot", user.userInv().getArmaduraSlot());
+			ini.setValue("Inventory", "CascoEqpSlot", user.userInv().getCascoSlot());
+			ini.setValue("Inventory", "EscudoEqpSlot", user.userInv().getEscudoSlot());
+			ini.setValue("Inventory", "BarcoSlot", user.userInv().getBarcoSlot());
+			ini.setValue("Inventory", "MunicionSlot", user.userInv().getMunicionSlot());
+			ini.setValue("Inventory", "EspadaMataDragonesSlot", user.userInv().getEspadaMataDragonesSlot());
 
 			// Reputacion
 			ini.setValue("REP", "Asesino", user.reputation().asesinoRep);

@@ -394,7 +394,7 @@ public class UserInventory extends Inventory implements Constants {
         switch (infoObj.objType) {
             case Weapon:
                 log.debug("es un arma");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.userFaction().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -430,7 +430,7 @@ public class UserInventory extends Inventory implements Constants {
                 
             case Anillo:
                 log.debug("es un anillo");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.userFaction().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -451,7 +451,7 @@ public class UserInventory extends Inventory implements Constants {
 
             case Flechas:
                 log.debug("son flechas");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.userFaction().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
@@ -477,8 +477,8 @@ public class UserInventory extends Inventory implements Constants {
 				}
                 // Nos aseguramos que puede usarla
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
-                    this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid) &&
-                    this.dueño.sexoPuedeUsarItem(objid) &&
+                    this.dueño.userFaction().faccionPuedeUsarItem(this.dueño, objid) &&
+                    this.dueño.genderCanUseItem(objid) &&
                     this.dueño.checkRazaUsaRopa(objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
@@ -556,7 +556,7 @@ public class UserInventory extends Inventory implements Constants {
 					return;
 				}
                 if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && 
-                		this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
+                		this.dueño.userFaction().faccionPuedeUsarItem(this.dueño, objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item

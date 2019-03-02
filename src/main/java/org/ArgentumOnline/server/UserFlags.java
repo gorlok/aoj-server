@@ -111,7 +111,7 @@ public class UserFlags {
     long CountSH = 0;
     boolean Trabajando = false;
     
-    byte UltimoMensaje = 0;
+    byte UltimoMensaje = 0; // FIXME hacer enum de mensajes y IDs... y para i18n también 
     
     short indexDuel = 0;
     

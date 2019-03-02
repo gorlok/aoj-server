@@ -24,7 +24,7 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		log.debug("=> opened client connection");
 		clients.add(ctx.channel());
-		server.createClient(ctx.channel());
+		server.createPlayer(ctx.channel());
 	}
 	
 	@Override

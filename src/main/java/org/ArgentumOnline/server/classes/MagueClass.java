@@ -27,8 +27,9 @@ package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.UserStats;
-import org.ArgentumOnline.server.Factions.FactionArmors;
-import org.ArgentumOnline.server.Factions;
+import org.ArgentumOnline.server.UserFaction.FactionArmors;
+import org.ArgentumOnline.server.UserFaction;
+import org.ArgentumOnline.server.UserRace;
 import org.ArgentumOnline.server.util.Util;
 
 /**
@@ -75,18 +76,18 @@ public class MagueClass extends AbstractClazz {
     
     @Override
 	public short getArmaduraImperial(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
+        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+            return UserFaction.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
         }
-        return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL);
+        return UserFaction.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL);
     }
     
     @Override
 	public short getArmaduraCaos(Player cliente) {
-        if (cliente.race() == RAZA_ENANO || cliente.race() == RAZA_GNOMO) {
-            return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
+        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+            return UserFaction.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
         }
-        return Factions.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS);
+        return UserFaction.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS);
     }
     
 }

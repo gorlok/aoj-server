@@ -49,12 +49,12 @@ public class UserQuest {
     }
     
     public Quest getQuest() {
-        return this.server.getQuest(this.m_nroQuest);
+        return this.server.quest(this.m_nroQuest);
     }
     
     public void checkNpcEnemigo(Player cliente, Npc npc) {
         if (this.m_enQuest && npc.esDeQuest()) {
-            Quest quest  = this.server.getQuest(this.m_nroQuest);
+            Quest quest  = this.server.quest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;
                 cliente.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);

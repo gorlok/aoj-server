@@ -160,26 +160,6 @@ public interface Constants {
     
     final static int DUNGEON_NEWBIE_MAP = 37;
     
-    // Constantes de razas:
-    final static int RAZA_HUMANO       = 0;
-    final static int RAZA_ELFO         = 1;
-    final static int RAZA_ELFO_OSCURO  = 2; // DROW
-    final static int RAZA_ENANO        = 3;
-    final static int RAZA_GNOMO        = 4;
-    
-    final static String nombreRaza[] = { "Humano", "Elfo", "Elfo Oscuro", "Enano", "Gnomo" };
-
-    // Constantes de genero:
-    final static int GENERO_HOMBRE  = 0;
-    final static int GENERO_MUJER   = 1;
-
-    // Modificadores de atributos por clase:
-    byte modificadorFuerza[]        = { 2, 0, 1, 3, -5 };
-    byte modificadorAgilidad[]      = { 1, 2, 2, 0, 3 };
-    byte modificadorConstitucion[]  = { 2, 0, 0, 3, 0 };
-    byte modificadorInteligencia[]  = { 1, 2, 2, -6, 3 };
-    byte modificadorCarisma[]       = { 0, 2, 2, 0, 0 };
-
 	public final String CHARFILES_FOLDER = "charfile";
     
     // Tamaño del tileset

@@ -29,6 +29,10 @@ public class NpcLoader {
     	if (npcType == Npc.NPCTYPE_ENTRENADOR)
     		return new NpcTrainer(npcNumber, server);
     	
+    	if (npcType == Npc.NPCTYPE_TIMBERO)
+    		return new NpcGambler(npcNumber, server);
+
+    	
     	if (comerciante)
     		return new NpcMerchant(npcNumber, server);
     		

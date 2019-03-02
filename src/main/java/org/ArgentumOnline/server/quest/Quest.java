@@ -142,7 +142,7 @@ public class Quest implements Constants {
 						"Debes terminar primero la quest que estás realizando para empezar otra!", npc.getId());
 				return;
 			}
-			if (cliente.getQuest().m_nroQuest >= this.server.getQuestCount()) {
+			if (cliente.getQuest().m_nroQuest >= this.server.questCount()) {
 				cliente.enviarHabla(COLOR_BLANCO, "Ya has realizados todas las quest!", npc.getId());
 				return;
 			}
@@ -155,13 +155,13 @@ public class Quest implements Constants {
 						npc.getId());
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
-				if (!cliente.getFaccion().ArmadaReal && !cliente.getFaccion().FuerzasCaos) {
+				if (!cliente.userFaction().ArmadaReal && !cliente.userFaction().FuerzasCaos) {
 					cliente.enviarHabla(COLOR_BLANCO,
 							"Debes matar " + this.Usuarios + " usuarios para recibir tu recompensa!", npc.getId());
-				} else if (cliente.getFaccion().ArmadaReal) {
+				} else if (cliente.userFaction().ArmadaReal) {
 					cliente.enviarHabla(COLOR_BLANCO,
 							"Debes matar " + this.Criminales + " criminales para recibir tu recompensa!", npc.getId());
-				} else if (cliente.getFaccion().FuerzasCaos) {
+				} else if (cliente.userFaction().FuerzasCaos) {
 					cliente.enviarHabla(COLOR_BLANCO,
 							"Debes matar " + this.Ciudadanos + " ciudadanos para recibir tu recompensa!", npc.getId());
 				}
@@ -198,7 +198,7 @@ public class Quest implements Constants {
 
 	public void recibirRecompensaQuest(Player cliente) {
 		try {
-			Npc npc = this.server.getNpcById(cliente.flags().TargetNpc);
+			Npc npc = this.server.npcById(cliente.flags().TargetNpc);
 			if (cliente.esNewbie()) {
 				cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
@@ -235,7 +235,7 @@ public class Quest implements Constants {
 						cliente.getQuest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+						if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(cliente.pos().map);
 							mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
 						}
@@ -249,9 +249,9 @@ public class Quest implements Constants {
 				}
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
-				if (!cliente.getFaccion().ArmadaReal && !cliente.getFaccion().FuerzasCaos) {
-					if (cliente.getFaccion().CiudadanosMatados
-							+ cliente.getFaccion().CriminalesMatados >= quest.Usuarios) {
+				if (!cliente.userFaction().ArmadaReal && !cliente.userFaction().FuerzasCaos) {
+					if (cliente.userFaction().CiudadanosMatados
+							+ cliente.userFaction().CriminalesMatados >= quest.Usuarios) {
 						if (quest.DaExp) {
 							cliente.stats().addExp(quest.Exp);
 							cliente.checkUserLevel();
@@ -271,7 +271,7 @@ public class Quest implements Constants {
 							cliente.getQuest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+							if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(cliente.pos().map);
 								mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -284,8 +284,8 @@ public class Quest implements Constants {
 					} else {
 						cliente.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
-				} else if (cliente.getFaccion().ArmadaReal) {
-					if (cliente.getFaccion().CriminalesMatados >= quest.Criminales) {
+				} else if (cliente.userFaction().ArmadaReal) {
+					if (cliente.userFaction().CriminalesMatados >= quest.Criminales) {
 						if (quest.DaExp) {
 							cliente.stats().addExp(quest.Exp);
 							cliente.checkUserLevel();
@@ -305,7 +305,7 @@ public class Quest implements Constants {
 							cliente.getQuest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+							if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(cliente.pos().map);
 								mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -318,8 +318,8 @@ public class Quest implements Constants {
 					} else {
 						cliente.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
-				} else if (cliente.getFaccion().FuerzasCaos) {
-					if (cliente.getFaccion().CiudadanosMatados >= quest.Ciudadanos) {
+				} else if (cliente.userFaction().FuerzasCaos) {
+					if (cliente.userFaction().CiudadanosMatados >= quest.Ciudadanos) {
 						if (quest.DaExp) {
 							cliente.stats().addExp(quest.Exp);
 							cliente.checkUserLevel();
@@ -339,7 +339,7 @@ public class Quest implements Constants {
 							cliente.getQuest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+							if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(cliente.pos().map);
 								mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -374,7 +374,7 @@ public class Quest implements Constants {
 						cliente.getQuest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+						if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(cliente.pos().map);
 							mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
 						}
@@ -407,7 +407,7 @@ public class Quest implements Constants {
 						cliente.getQuest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (cliente.getInv().agregarItem(quest.Obj, 1) < 1) {
+						if (cliente.userInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(cliente.pos().map);
 							mapa.tirarItemAlPiso(cliente.pos().x, cliente.pos().y, new InventoryObject(quest.Obj, 1));
 						}
@@ -429,7 +429,7 @@ public class Quest implements Constants {
 
 	public void checkNpcAmigo(Player cliente) {
 		if (cliente.getQuest().m_enQuest) {
-			Npc npc = this.server.getNpcById(cliente.flags().TargetNpc);
+			Npc npc = this.server.npcById(cliente.flags().TargetNpc);
 			if (npc.getNPCtype() == Npc.NPCTYPE_AMIGOQUEST) {
 				Quest quest = cliente.getQuest().getQuest();
 				if (quest.Objetivo == 3) {
@@ -449,7 +449,7 @@ public class Quest implements Constants {
 	}
 
 	public void sendInfoQuest(Player cliente) {
-		Npc npc = this.server.getNpcById(cliente.flags().TargetNpc);
+		Npc npc = this.server.npcById(cliente.flags().TargetNpc);
 		if (cliente.esNewbie()) {
 			cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 			return;
@@ -461,13 +461,13 @@ public class Quest implements Constants {
 					npc.getId());
 			break;
 		case 2:
-			if (!cliente.getFaccion().ArmadaReal && !cliente.getFaccion().FuerzasCaos) {
+			if (!cliente.userFaction().ArmadaReal && !cliente.userFaction().FuerzasCaos) {
 				cliente.hablar(COLOR_BLANCO, "Debes matar " + quest.Usuarios + " usuarios para recibir tu recompensa!",
 						npc.getId());
-			} else if (cliente.getFaccion().ArmadaReal) {
+			} else if (cliente.userFaction().ArmadaReal) {
 				cliente.hablar(COLOR_BLANCO,
 						"Debes matar " + quest.Criminales + " criminales para recibir tu recompensa!", npc.getId());
-			} else if (cliente.getFaccion().FuerzasCaos) {
+			} else if (cliente.userFaction().FuerzasCaos) {
 				cliente.hablar(COLOR_BLANCO,
 						"Debes matar " + quest.Ciudadanos + " ciudadanos para recibir tu recompensa!", npc.getId());
 			}
@@ -489,7 +489,7 @@ public class Quest implements Constants {
 	}
 
 	public void userSeRinde(Player cliente) {
-		Npc npc = this.server.getNpcById(cliente.flags().TargetNpc);
+		Npc npc = this.server.npcById(cliente.flags().TargetNpc);
 		try {
 			if (cliente.esNewbie()) {
 				cliente.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());

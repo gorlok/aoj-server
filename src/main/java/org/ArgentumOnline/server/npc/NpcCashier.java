@@ -15,31 +15,12 @@ public class NpcCashier extends Npc {
 		super(npc_numero, server);
 	}
 	
-	public void doBalance(Player client) {
+	public void balance(Player player) {
 		// Comando /BALANCE
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!client.checkAlive()) {
+		if (!player.checkAlive()) {
 			return;
 		}
-		// Se asegura que el target es un npc
-		if (client.flags().TargetNpc == 0) {
-			client.enviarMensaje("Primero tenes que seleccionar un personaje, hace clic izquierdo sobre el.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		Npc npc = server.getNpcById(client.flags().TargetNpc);
-		if (npc.pos().distance(pos()) > 3) {
-			client.enviarMensaje("Estas demasiado lejos del vendedor.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		if (!npc.isBankCashier() || !client.isAlive()) {
-			return;
-		}
-		if (!client.existePersonaje()) {
-			client.enviarMensaje("!!El personaje no existe, cree uno nuevo.", FontType.FONTTYPE_INFO);
-			client.doSALIR();
-			return;
-		}
-		client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", npc.getId());
+		player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", getId());
 	}
 
 	public void retirarOroBanco(Player client, int cant) {

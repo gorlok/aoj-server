@@ -134,15 +134,15 @@ public class GuildManager {
             	if (!guild.elections) {
             		guild.resetVotes();
             		guild.elections = true;
-            		guild.members.forEach(s -> enviarMensajeVotacion(this.server.getUsuario(s)));
+            		guild.members.forEach(s -> enviarMensajeVotacion(this.server.playerByUserName(s)));
             	} else {
                     if (guild.members.size() > 1) {
                     	// compute elections results
                         String newLeaderName = guild.nuevoLider();
                         String oldLeaderName = guild.leader;
                         guild.elections = false;
-                        Player newLeader = this.server.getUsuario(newLeaderName);
-                        Player oldLeader = this.server.getUsuario(guild.leader);
+                        Player newLeader = this.server.playerByUserName(newLeaderName);
+                        Player oldLeader = this.server.playerByUserName(guild.leader);
                         if (!oldLeaderName.equalsIgnoreCase(newLeaderName)) {
                         	if (oldLeader != null) {
                         		oldLeader.guildInfo().m_esGuildLeader = false;
@@ -195,7 +195,7 @@ public class GuildManager {
         }
         guild.removeEnemy(guildName);
         guild.removePeaceProposition(guildName);
-        Player userGuild = this.server.getUsuario(guildName);
+        Player userGuild = this.server.playerByUserName(guildName);
         if (userGuild != null) {
             userGuild.enviarMensaje("El clan firmó la paz con " + cliente.getNick(), FontType.FONTTYPE_GUILD);
         }
@@ -285,7 +285,7 @@ public class GuildManager {
         	cliente.enviarMensaje("No puedes echar al lider!", FontType.FONTTYPE_GUILD);
         	return;
         }
-        Player miembro = this.server.getUsuario(userName);
+        Player miembro = this.server.playerByUserName(userName);
         if (miembro == null) {
             cliente.enviarMensaje("El usuario no esta ONLINE.", FontType.FONTTYPE_GUILD);
             return;        	
@@ -313,7 +313,7 @@ public class GuildManager {
         	return;
         }
         // Comprobar si el usuario solicitante está online.
-        Player solicitante = this.server.getUsuario(userName);
+        Player solicitante = this.server.playerByUserName(userName);
         if (solicitante != null) {
         	// Esta online
         	solicitante.enviarMensaje("Tu solicitud ha sido rechazada.", FontType.FONTTYPE_GUILD);
@@ -335,7 +335,7 @@ public class GuildManager {
         	return;
         }
         // Comprobar si el usuario solicitante está online.
-        Player solicitante = this.server.getUsuario(userName);
+        Player solicitante = this.server.playerByUserName(userName);
         if (solicitante == null) {
             cliente.enviarMensaje("Solo podes aceptar solicitudes cuando el solicitante esta ONLINE.", FontType.FONTTYPE_GUILD);
         	return;
