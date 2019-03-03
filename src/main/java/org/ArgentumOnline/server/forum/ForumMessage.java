@@ -2,11 +2,11 @@
  * ForumMessage.java
  *
  * Created on 27 de marzo de 2004, 19:05
- * 
+ *
     AOJava Server
     Copyright (C) 2003-2007 Pablo Fernando Lillia (alias Gorlok)
     Web site: http://www.aojava.com.ar
-    
+
     This file is part of AOJava.
 
     AOJava is free software; you can redistribute it and/or modify
@@ -21,30 +21,29 @@
 
     You should have received a copy of the GNU General Public License
     along with Foobar; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.ArgentumOnline.server.forum;
 
 /**
- * @author  gorlok
+ * @author gorlok
  */
 public class ForumMessage {
-    
-    String m_title;
-    String m_body;
-        
-    /** Creates a new instance of ForumMessage */
-    public ForumMessage(String titulo, String texto) {
-        this.m_title = titulo;
-        this.m_body = texto;
-    }
 
-    public String getTitle() {
-        return this.m_title;
-    }
+	String title;
+	String body;
 
-    public String getBody() {
-        return this.m_body;
-    }
-    
+	public ForumMessage(String title, String text) {
+		this.title = title;
+		this.body = text;
+	}
+
+	public String getTitle() {
+		return this.title;
+	}
+
+	public String getBody() {
+		return this.body;
+	}
+
 }

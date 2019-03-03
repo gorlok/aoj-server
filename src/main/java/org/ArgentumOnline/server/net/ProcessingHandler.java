@@ -139,19 +139,19 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case UserCommerceOffer:
-			player.m_comUsu.userCommerceOffer(((UserCommerceOfferRequest)packet).slot, ((UserCommerceOfferRequest)packet).amount);
+			player.userTrade.userCommerceOffer(((UserCommerceOfferRequest)packet).slot, ((UserCommerceOfferRequest)packet).amount);
 			break;
 
 		case UserCommerceEnd:
-			player.m_comUsu.userCommerceEnd();
+			player.userTrade.userCommerceEnd();
 			break;
 		
 		case UserCommerceOk:
-			player.m_comUsu.userCommerceAccept();
+			player.userTrade.userCommerceAccept();
 			break;
 		
 		case UserCommerceReject:
-			player.m_comUsu.userCommerceReject();
+			player.userTrade.userCommerceReject();
 			break;
 			
 		case Meditate:

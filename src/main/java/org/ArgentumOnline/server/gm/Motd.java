@@ -93,7 +93,7 @@ public class Motd {
 		}
 		setMOTD(motd);
 		guardarMotd();
-		player.enviarMensaje("MOTD actualizado.", FontType.FONTTYPE_INFO);
+		player.sendMessage("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
 	public void doEnviarMOTD(Player player) {
@@ -103,7 +103,7 @@ public class Motd {
 		if (motd.isEmpty()) {
 			return;
 		}
-		player.enviarMensaje("Mensaje del día:", FontType.FONTTYPE_INFO);
+		player.sendMessage("Mensaje del día:", FontType.FONTTYPE_INFO);
 		for (String line : motd) {
 			player.sendPacket(new GuildChatResponse(line));
 		}

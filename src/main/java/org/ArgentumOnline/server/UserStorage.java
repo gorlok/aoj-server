@@ -40,7 +40,7 @@ public class UserStorage {
 	 */
 	void loadUserFromStorage() 
 	throws IOException {
-		IniFile ini = new IniFile(Player.getPjFile(user.m_nick));
+		IniFile ini = new IniFile(Player.getPjFile(user.userName));
 		
 		loadUserInit(ini);
 		loadUserStats(ini);
@@ -88,14 +88,14 @@ public class UserStorage {
 		}
 		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
 		user.counters().Pena = ini.getLong("COUNTERS", "Pena");
-		user.m_email = ini.getString("CONTACTO", "Email");
+		user.email = ini.getString("CONTACTO", "Email");
 		user.gender = UserGender.value(ini.getShort("INIT", "Genero"));
 		user.clazz = Clazz.findByName(ini.getString("INIT", "Clase").toUpperCase());
 		if (user.clazz == null) {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
-		user.m_hogar = (byte) ini.getShort("INIT", "Hogar");
+		user.homeland = (byte) ini.getShort("INIT", "Hogar");
 		user.infoChar().m_dir = (byte)ini.getShort("INIT", "Heading");
 
 		user.origChar().m_cabeza = ini.getShort("INIT", "Head");
@@ -105,8 +105,8 @@ public class UserStorage {
 		user.origChar().m_casco = ini.getShort("INIT", "Casco");
 		user.origChar().m_dir = (byte)(short)Heading.SOUTH.ordinal();
 
-		user.m_banned_by = ini.getString("BAN", "BannedBy");
-		user.m_banned_reason = ini.getString("BAN", "Reason");
+		user.bannedBy = ini.getString("BAN", "BannedBy");
+		user.bannedReason = ini.getString("BAN", "Reason");
 
 		if (user.isAlive()) {
 			user.infoChar().m_cabeza = user.origChar().m_cabeza;
@@ -123,7 +123,7 @@ public class UserStorage {
 			user.infoChar().m_casco = NingunCasco;
 		}
 
-		user.m_desc = ini.getString("INIT", "Desc");
+		user.description = ini.getString("INIT", "Desc");
 		{
 			StringTokenizer st = new StringTokenizer(ini.getString("INIT", "Position"), "-");
 			user.pos().set(
@@ -175,10 +175,10 @@ public class UserStorage {
 		user.guildUser.m_clanFundado = ini.getString("Guild", "ClanFundado");
 		user.guildUser.m_guildName = ini.getString("Guild", "GuildName");
 
-		user.m_quest.m_nroQuest = ini.getShort("QUEST", "NroQuest");
-		user.m_quest.m_recompensa = ini.getShort("QUEST", "Recompensa");
-		user.m_quest.m_enQuest = (ini.getShort("QUEST", "EnQuest") == 1);
-		user.m_quest.m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
+		user.quest().m_nroQuest = ini.getShort("QUEST", "NroQuest");
+		user.quest().m_recompensa = ini.getShort("QUEST", "Recompensa");
+		user.quest().m_enQuest = (ini.getShort("QUEST", "EnQuest") == 1);
+		user.quest().m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
 	}
 	
 	public static CharacterInfoResponse createCharacterInfoResponse(String userName) {
@@ -239,8 +239,8 @@ public class UserStorage {
 		user.stats().ELU = ini.getInt("STATS", "ELU");
 		user.stats().ELV = ini.getInt("STATS", "ELV");
 
-		for (int slot = 1; slot <= user.m_spells.getCount(); slot++) {
-			user.m_spells.setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
+		for (int slot = 1; slot <= user.spells().getCount(); slot++) {
+			user.spells().setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
 		}
 
 		user.stats().setGold(ini.getInt("STATS", "GLD"));
@@ -316,13 +316,13 @@ public class UserStorage {
 			ini.setValue("GUILD", "ClanesParticipo", user.guildUser.m_clanesParticipo);
 			ini.setValue("GUILD", "GuildPts", user.guildUser.m_guildPoints);
 
-			ini.setValue("QUEST", "NroQuest", user.m_quest.m_nroQuest);
-			ini.setValue("QUEST", "EnQuest", user.m_quest.m_enQuest);
-			ini.setValue("QUEST", "RealizoQuest", user.m_quest.m_realizoQuest);
-			ini.setValue("QUEST", "Recompensa", user.m_quest.m_recompensa);
+			ini.setValue("QUEST", "NroQuest", user.quest().m_nroQuest);
+			ini.setValue("QUEST", "EnQuest", user.quest().m_enQuest);
+			ini.setValue("QUEST", "RealizoQuest", user.quest().m_realizoQuest);
+			ini.setValue("QUEST", "Recompensa", user.quest().m_recompensa);
 
-			ini.setValue("BAN", "BannedBy", user.m_banned_by);
-			ini.setValue("BAN", "Reason", user.m_banned_reason);
+			ini.setValue("BAN", "BannedBy", user.bannedBy);
+			ini.setValue("BAN", "Reason", user.bannedReason);
 
 			// ¿Fueron modificados los atributos del usuario?
 			int i = 1;
@@ -339,14 +339,14 @@ public class UserStorage {
 				ini.setValue("SKILLS", "SK" + (i++), user.skills().get(skill));
 			}
 
-			ini.setValue("CONTACTO", "Email", user.m_email);
+			ini.setValue("CONTACTO", "Email", user.email);
 
 			ini.setValue("INIT", "Genero", user.gender.value());
 			ini.setValue("INIT", "Raza", user.race.value());
-			ini.setValue("INIT", "Hogar", user.m_hogar);
+			ini.setValue("INIT", "Hogar", user.homeland);
 			ini.setValue("INIT", "Clase", user.getClazz().clazz().getName());
-			ini.setValue("INIT", "Password", user.m_password);
-			ini.setValue("INIT", "Desc", user.m_desc);
+			ini.setValue("INIT", "Password", user.password);
+			ini.setValue("INIT", "Desc", user.description);
 			ini.setValue("INIT", "Heading", user.infoChar().m_dir);
 
 			if (user.flags().Muerto || user.flags().Invisible || user.flags().Navegando) {
@@ -434,8 +434,8 @@ public class UserStorage {
 
 			ini.setValue("REP", "Promedio", user.reputation().getPromedio());
 
-			for (int slot = 1; slot <= user.m_spells.getCount(); slot++) {
-				ini.setValue("HECHIZOS", "H" + slot, user.m_spells.getSpell(slot));
+			for (int slot = 1; slot <= user.spells().getCount(); slot++) {
+				ini.setValue("HECHIZOS", "H" + slot, user.spells().getSpell(slot));
 			}
 
 			var pets = user.getUserPets().getPets();
@@ -454,7 +454,7 @@ public class UserStorage {
 			}
 
 			// Guardar todo
-			ini.store(Player.getPjFile(user.m_nick));
+			ini.store(Player.getPjFile(user.userName));
 		} catch (Exception e) {
 			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
 		}

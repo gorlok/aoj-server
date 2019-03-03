@@ -872,7 +872,7 @@ public class Map implements Constants {
         // Ver si hay un objeto en los alrededores...
         MapObject obj = queryObject(x, y);
         if (obj != null) {
-            player.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+            player.sendMessage(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
             player.flags().TargetObj = obj.getInfo().ObjIndex;
             player.flags().TargetObjMap = this.mapNumber;
             player.flags().TargetObjX = obj.x;
@@ -884,17 +884,17 @@ public class Map implements Constants {
         Npc npc;
         if ((npc = queryNpc(x, y)) != null) {
             foundSomething = true;
-            if (npc.m_desc.length() > 0) {
-                player.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
+            if (npc.description.length() > 0) {
+                player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
             } 
             String msg = "";
             if (npc.getPetUserOwner() != null) {
-                msg = npc.m_name + " es mascota de " + npc.getPetUserOwner().getNick();
+                msg = npc.name + " es mascota de " + npc.getPetUserOwner().getNick();
             } else {
-                msg = npc.m_name;
+                msg = npc.name;
             }
             msg = msg + " " + npc.estadoVida(player);
-            player.enviarMensaje(msg, FontType.FONTTYPE_INFO);
+            player.sendMessage(msg, FontType.FONTTYPE_INFO);
             player.flags().TargetNpc = npc.getId();
             player.flags().TargetMap = this.mapNumber;
             player.flags().TargetX = x;
@@ -907,7 +907,7 @@ public class Map implements Constants {
         Player anotherPlayer;
         if ((anotherPlayer = queryPlayer(x, y)) != null) {
             if (!anotherPlayer.flags().AdminInvisible) {
-                player.enviarMensaje("Ves a " + anotherPlayer.getTagsDesc(), anotherPlayer.getTagColor());
+                player.sendMessage("Ves a " + anotherPlayer.getTagsDesc(), anotherPlayer.getTagColor());
                 player.flags().TargetUser = anotherPlayer.getId();
                 player.flags().TargetNpc = 0;
                 player.flags().TargetObj = 0;
@@ -929,7 +929,7 @@ public class Map implements Constants {
             player.flags().TargetMap = this.mapNumber;
             player.flags().TargetX = x;
             player.flags().TargetY = y;
-            player.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
+            player.sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
 
         // FIXME: REVISAR SI ESTO VA...
@@ -943,7 +943,7 @@ public class Map implements Constants {
     
     public void accionParaRamita(byte x, byte y, Player player) {
         if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+            player.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         int suerte = 0;
@@ -960,10 +960,10 @@ public class Map implements Constants {
         if (Util.Azar(1, suerte) == 1) {
         	quitarObjeto(x, y);
             agregarObjeto(FOGATA, 1, x, y);
-            player.enviarMensaje("Has prendido la fogata.", FontType.FONTTYPE_INFO);
+            player.sendMessage("Has prendido la fogata.", FontType.FONTTYPE_INFO);
          //   enviarAlArea(x, y, MSG_FO);
         } else {
-            player.enviarMensaje("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
+            player.sendMessage("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
         // Si no tiene hambre o sed quizas suba el skill supervivencia
         if (!player.flags().Hambre && !player.flags().Sed) {
@@ -973,7 +973,7 @@ public class Map implements Constants {
     
     public void accionParaForo(byte  x, byte y, Player player) {
         if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+            player.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         // ¿Hay mensajes?
@@ -987,7 +987,7 @@ public class Map implements Constants {
     
     public void accionParaPuerta(byte  x, byte y, Player player) {
         if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.enviarMensaje("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+            player.sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         MapObject obj = getObjeto(x, y);
@@ -998,7 +998,7 @@ public class Map implements Constants {
             abrirCerrarPuerta(obj);
             player.flags().TargetObj = obj.getInfo().ObjIndex;
         } else {
-            player.enviarMensaje("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
+            player.sendMessage("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
     }
     
@@ -1242,7 +1242,7 @@ public class Map implements Constants {
         for (Object element : this.npcs) {
             Npc npc = (Npc) element;
             // ¿esta vivo?
-            if (npc.isNpcActive() && npc.esHostil() && npc.m_estads.Alineacion == 2) {
+            if (npc.isNpcActive() && npc.esHostil() && npc.stats.Alineacion == 2) {
                 cant++;
             }
         }
@@ -1458,7 +1458,7 @@ public class Map implements Constants {
     			return false; // allowed
     		} else {
     			// no es un newbie/gm, "NO PASARÁS!"
-				player.enviarMensaje("Mapa exclusivo para newbies.", FontType.FONTTYPE_INFO);
+				player.sendMessage("Mapa exclusivo para newbies.", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	} 
@@ -1470,7 +1470,7 @@ public class Map implements Constants {
     			return false; // allowed
     		} else {
     			// no es un armada/gm, "NO PASARÁS!"
-				player.enviarMensaje("Mapa exclusivo para miembros del ejército Real", FontType.FONTTYPE_INFO);
+				player.sendMessage("Mapa exclusivo para miembros del ejército Real", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}
@@ -1482,7 +1482,7 @@ public class Map implements Constants {
     			return false; // allowed
     		} else {
     			// no es un caos/gm, "NO PASARÁS!"
-				player.enviarMensaje("Mapa exclusivo para miembros del ejército Oscuro.", FontType.FONTTYPE_INFO);
+				player.sendMessage("Mapa exclusivo para miembros del ejército Oscuro.", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}
@@ -1494,7 +1494,7 @@ public class Map implements Constants {
     			return false; // allowed
     		} else {
     			// no es un armada/caos/gm, "NO PASARÁS!"
-				player.enviarMensaje("Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontType.FONTTYPE_INFO);
+				player.sendMessage("Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}

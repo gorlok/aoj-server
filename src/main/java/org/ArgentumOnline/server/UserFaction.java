@@ -129,7 +129,7 @@ public class UserFaction implements Constants {
 				.append(" es ")
 				.append(factionArmors[factiorArmor.ordinal()])
 				.toString();
-		admin.enviarMensaje(msg, FontType.FONTTYPE_INFO);
+		admin.sendMessage(msg, FontType.FONTTYPE_INFO);
 	}
 	
 	public static void updateFactionArmor(Player admin, FactionArmors factiorArmor, short armorObjIdx) {
@@ -139,7 +139,7 @@ public class UserFaction implements Constants {
 				.append(factiorArmor.getName())
 				.append(" ha sido actualizada")
 				.toString();
-		admin.enviarMensaje(msg, FontType.FONTTYPE_INFO);
+		admin.sendMessage(msg, FontType.FONTTYPE_INFO);
 	}
 	
     
@@ -198,7 +198,7 @@ public class UserFaction implements Constants {
         }
         if (!this.RecibioExpInicialReal) {
             this.player.stats().addExp(EXP_AL_UNIRSE);
-            this.player.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.player.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialReal = true;
             this.player.checkUserLevel();
         }
@@ -245,7 +245,7 @@ public class UserFaction implements Constants {
         }
         if (!this.RecibioExpInicialCaos) {
             this.player.stats().addExp(EXP_AL_UNIRSE);
-            this.player.enviarMensaje("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.player.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialCaos = true;
             this.player.checkUserLevel();
         }
@@ -258,7 +258,7 @@ public class UserFaction implements Constants {
         } else {
             this.player.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.player.stats().addExp(EXP_X_100);
-            this.player.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
             this.player.checkUserLevel();
         }
@@ -270,7 +270,7 @@ public class UserFaction implements Constants {
         } else {
             this.player.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.player.stats().addExp(EXP_X_100);
-            this.player.enviarMensaje("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;
             this.player.checkUserLevel();
         }
@@ -278,12 +278,12 @@ public class UserFaction implements Constants {
 
     public void expulsarFaccionReal() {
         this.ArmadaReal = false;
-        this.player.enviarMensaje("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
+        this.player.sendMessage("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
     }
 
     public void expulsarFaccionCaos() {
         this.FuerzasCaos = false;
-        this.player.enviarMensaje("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
+        this.player.sendMessage("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
     }
 
     private final static String[] titulosReales = {

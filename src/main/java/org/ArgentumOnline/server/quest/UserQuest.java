@@ -58,7 +58,7 @@ public class UserQuest {
             Quest quest  = this.server.quest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;
-                player.enviarMensaje("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);
+                player.sendMessage("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);
             }
         }
     }
@@ -74,7 +74,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().hacerQuest(player, npc);
@@ -91,7 +91,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().recibirRecompensaQuest(player);
@@ -108,7 +108,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().sendInfoQuest(player);
@@ -125,7 +125,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().userSeRinde(player);
@@ -142,7 +142,7 @@ public class UserQuest {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.enviarMensaje("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		getQuest().checkNpcAmigo(player);

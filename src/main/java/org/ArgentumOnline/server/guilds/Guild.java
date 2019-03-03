@@ -126,7 +126,7 @@ public class Guild {
     	// ToGuildMembers
         for (String member: this.members) {
             this.server.playerByUserName(member)
-            	.enviarMensaje(message, font);            
+            	.sendMessage(message, font);            
         }
     }
     
@@ -488,19 +488,19 @@ public class Guild {
 
     public void computeVote(Player player, String member) {
         if (!this.elections) {
-            player.enviarMensaje("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
             return;
          }
          if (player.guildInfo().yaVoto()) {
-            player.enviarMensaje("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
             return;
          }
          if (!this.isMember(member)) {
-            player.enviarMensaje("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
             return;
          }
          this.ballotBox.addVote(member);
          player.guildInfo().voto();
-         player.enviarMensaje("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
+         player.sendMessage("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
     }
 }

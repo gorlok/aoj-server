@@ -91,7 +91,7 @@ public class GuildUser {
     }
     
     public void giveGuildPoints(int pts) {
-        this.player.enviarMensaje("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
+        this.player.sendMessage("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
         this.m_guildPoints += pts;
         if (this.m_guildPoints > 9000000) {
             this.m_guildPoints = 9000000;

@@ -25,13 +25,13 @@ public class NpcCashier extends Npc {
 
 	public void retirarOroBanco(Player player, int cant) {
 		if (this.pos().distance(pos()) > 10) {
-			player.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+			player.sendMessage("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		
 		if (!player.existePersonaje()) {
 			log.error("ERROR, no existe el personaje " + player.getNick());
-			player.enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
+			player.sendMessage("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
 			player.doSALIR();
 			return;
 		}
@@ -47,7 +47,7 @@ public class NpcCashier extends Npc {
 
 	public void depositarOroBanco(Player player, int cant) {
 		if (this.pos().distance(pos()) > 10) {
-			player.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+			player.sendMessage("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// ¿Se tiene dicha cantidad realmente?

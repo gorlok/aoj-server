@@ -1,12 +1,12 @@
-/**    
+/**
  * GameServer.java
  *
  * Created on 6 de septiembre de 2003, 19:05
- * 
+ *
     AOJava Server
     Copyright (C) 2003-2007 Pablo Fernando Lillia (alias Gorlok)
     Web site: http://www.aojava.com.ar
-    
+
     This file is part of AOJava.
 
     AOJava is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
     You should have received a copy of the GNU General Public License
     along with Foobar; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-    
+
  */
 package org.ArgentumOnline.server;
 
@@ -59,49 +59,49 @@ import org.apache.logging.log4j.Logger;
 
 import io.netty.channel.Channel;
 
-/** 
+/**
  * Server main class
  * @author gorlok
  */
 public class GameServer implements Constants {
 	private static Logger log = LogManager.getLogger();
-	
+
 	public ManageServer manager = new ManageServer(this);
-	
+
     private boolean useUPnP = false; // FIXME configure this
 
     private HashMap<Short, Player> players = new HashMap<>();
-    private HashMap<Integer, Npc> npcs = new HashMap<>();
-    
-    private List<Player> 	playersToDrop = new LinkedList<>();
-    private List<Short> 	deadNpcs = new LinkedList<>();
-    
-    private List<Spell> 	spells = new LinkedList<>();
-    private List<Map> 		maps = new LinkedList<>();    
-    private List<Quest> 	quests = new LinkedList<>();
-    
+    private HashMap<Short, Npc> npcs = new HashMap<>();
+
+	private List<Player> playersToDrop = new LinkedList<>();
+	private List<Short> deadNpcs = new LinkedList<>();
+
+	private List<Spell> spells = new LinkedList<>();
+	private List<Map> maps = new LinkedList<>();
+	private List<Quest> quests = new LinkedList<>();
+
     private List<MapPos> trashCollector = new LinkedList<>();
-    
-    private short[] m_armasHerrero;
-    private short[] m_armadurasHerrero;
-    private short[] m_objCarpintero;
-    
-    boolean m_corriendo = false;
-    boolean m_haciendoBackup = false;
-    
-    short id = 0;
-    
-    boolean m_lloviendo = false;
-    
-    private MapPos[] m_ciudades;
-    
+
+    private short[] armasHerrero;
+    private short[] armadurasHerrero;
+    private short[] objCarpintero;
+
+    boolean running = false;
+    boolean doingBackup = false;
+
+    private short lastId = 0;
+
+    boolean raining = false;
+
+    private MapPos[] cities;
+
     private long startTime = 0;
-    
+
     public static MapPos WP_PRISION = MapPos.mxy(66, 75, 47);
     public static MapPos WP_LIBERTAD = MapPos.mxy(66, 75, 65);
-    
-    private boolean m_showDebug = false;
-    
+
+    private boolean showDebug = false;
+
     private GuildManager guildManager;
     private Motd motd;
     private ForumManager forumManager;
@@ -110,10 +110,10 @@ public class GameServer implements Constants {
     private ObjectInfoStorage objectInfoStorage;
     private GamblerStats gamblerStats;
 
-    private Feedback m_feedback = new Feedback();
-    
+    private Feedback feedback = new Feedback();// FIXME
+
     private NettyServer ns;
-    
+
     private GameServer() {
     	this.ns = new NettyServer(Constants.SERVER_PORT);
     	this.guildManager = new GuildManager(this);
@@ -126,55 +126,55 @@ public class GameServer implements Constants {
     }
 
     private static GameServer instance = null;
-    
+
     public synchronized static GameServer instance() {
         if (instance == null) {
 			instance = new GameServer();
 		}
         return instance;
     }
-    
+
     public GamblerStats getGamblerStats() {
-		return gamblerStats;
+		return this.gamblerStats;
 	}
 
     public ObjectInfoStorage getObjectInfoStorage() {
-		return objectInfoStorage;
+		return this.objectInfoStorage;
 	}
-    
+
     public Admins getAdmins() {
-		return admins;
+		return this.admins;
 	}
-    
+
     public Motd getMotd() {
     	return this.motd;
     }
-    
+
     public GuildManager getGuildMngr() {
     	return this.guildManager;
     }
-    
+
     public ForumManager getForumManager() {
-		return forumManager;
+		return this.forumManager;
 	}
-    
+
     public NpcLoader getNpcLoader() {
-		return npcLoader;
+		return this.npcLoader;
 	}
-    
+
     public List<Player> players() {
     	return this.players.values().stream()
     			.collect(Collectors.toList());
     }
-    
+
     public List<Npc> npcs() {
-    	return new ArrayList<Npc>(this.npcs.values());
+    	return new ArrayList<>(this.npcs.values());
     }
-    
+
     public long runningTimeInSecs() {
         return (Util.millis() - this.startTime) / 1000;
     }
-    
+
 	public String calculateUptime() {
 		long tsegs = runningTimeInSecs();
 		long segs = tsegs % 60;
@@ -183,113 +183,121 @@ public class GameServer implements Constants {
 		long dias = horas / 24;
 
 		return new StringBuilder()
-				.append(dias)
-				.append(" días, ")
-				.append(horas)
-				.append(" horas, ")
-				.append(mins)
-				.append(" mins, ")
-				.append(segs)
-				.append(" segs.").toString();
+			.append(dias)
+			.append(" días, ")
+			.append(horas)
+			.append(" horas, ")
+			.append(mins)
+			.append(" mins, ")
+			.append(segs)
+			.append(" segs.").toString();
 	}
-    
+
     public short nextId() {
-        return ++this.id;
+    	do { 
+    		this.lastId++;
+    		if (this.lastId < 0) {
+    			// just in case, Java's short type is signed
+    			this.lastId = 1;
+    		}
+    	} while (players.containsKey(this.lastId) || npcs.containsKey(this.lastId));
+    	
+        return this.lastId;
     }
-    
+
     public boolean isRaining() {
-        return this.m_lloviendo;
+        return this.raining;
     }
-    
+
     public boolean isDoingBackup() {
-        return this.m_haciendoBackup;
+        return this.doingBackup;
     }
-    
+
     public List<MapPos> getTrashCollector() {
         return this.trashCollector;
     }
-    
+
     public Quest quest(int n) {
         return this.quests.get(n - 1);
     }
-    
+
     public int questCount() {
         return this.quests.size();
     }
-    
+
     public short[] getArmasHerrero() {
-        return this.m_armasHerrero;
+        return this.armasHerrero;
     }
-    
+
     public short[] getArmadurasHerrero() {
-        return this.m_armadurasHerrero;
+        return this.armadurasHerrero;
     }
-    
+
     public short[] getObjCarpintero() {
-        return this.m_objCarpintero;
+        return this.objCarpintero;
     }
-    
+
     public boolean isShowDebug() {
-    	return this.m_showDebug;
+    	return this.showDebug;
     }
-    
+
     public void setShowDebug(boolean value) {
-    	this.m_showDebug = value;
+    	this.showDebug = value;
     }
-    
+
     public List<String> getUsuariosConectados() {
     	return players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.map(Player::getNick)
 			    	.collect(Collectors.toList());
     }
-    
+
     public void echarPjsNoPrivilegiados() {
     	var users = players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
 			    	.collect(Collectors.toList());
-    	
+
     	users.forEach(c -> {
-	    	c.enviarMensaje("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.FONTTYPE_SERVER);
+	    	c.sendMessage("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.FONTTYPE_SERVER);
 	        c.doSALIR();
     	});
     }
-	
+
     public List<String> getUsuariosTrabajando() {
     	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
-    
+
     public void shutdown() {
-        this.m_corriendo = false;
+        this.running = false;
         this.ns.shutdown();
         System.out.println("=== Goodbye. Server closed. ===");
     }
-    
+
     public List<String> getUsuariosConIP(String ip) {
     	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
-    
+
     public List<String> getGMsOnline() {
     	return players().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.isGM())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
-    
+
     public boolean isLoadBackup() {
 		return loadBackup;
 	}
-    
+
     /** Main loop of the game. */
     private void runGameLoop() {
         loadAll(loadBackup);
-        
+
         //networkServer = NetworkServer.startServer(this);
         try {
         	if (this.useUPnP) {
@@ -308,13 +316,13 @@ public class GameServer implements Constants {
             long lastPurgarPenas = this.startTime;
             long lastAutoSaveTimer = this.startTime;
             long lastPasarSegundoTimer = this.startTime;
-            this.m_corriendo = true;
+            this.running = true;
             this.manager.start();
-            
+
             int fps = 0;
             long worstTime = 0;
         	// Main loop.
-            while (this.m_corriendo) {
+            while (this.running) {
                 fps++;
                 long now = Util.millis();
                 if ((now - lastNpcAI) > 400) {
@@ -338,11 +346,11 @@ public class GameServer implements Constants {
                     lastTimerOculto = now;
                 }
                 if ((now - lastLluviaTimer) > 1500) { // 60000 ??
-                    lluviaTimer();
+                    rainEffectTimer();
                     lastLluviaTimer = now;
                 }
                 if ((now - lastEventTimer) > 60000) {
-                    lluviaEvent();
+                    rainEvent();
                     lastEventTimer = now;
                 }
                 if ((now - lastPiqueteTimer) > 6000) {
@@ -351,6 +359,7 @@ public class GameServer implements Constants {
                 }
                 if ((now - lastPurgarPenas) > 60000) {
                     purgePenalties();
+                    checkIdleUser();
                     lastPurgarPenas = now;
                 }
                 if ((now - lastAutoSaveTimer) > 60000) {
@@ -358,7 +367,7 @@ public class GameServer implements Constants {
                     lastAutoSaveTimer = now;
                 }
                 if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
-                	System.out.println("fps: " + fps + " max-time: " + worstTime + 
+                	System.out.println("fps: " + fps + " max-time: " + worstTime +
                 			" Conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
                 	fps = 0;
                 	worstTime = 0;
@@ -383,12 +392,12 @@ public class GameServer implements Constants {
             log.info("Server apagado por doBackUp");
         }
     }
-    
+
     public synchronized void dropPlayer(Player player) {
     	player.closeConnection();
     	this.playersToDrop.add(player);
     }
-    
+
     private synchronized void removeDropedPlayers() {
     	// Se hace aqui para evitar problemas de concurrencia
     	for (Player player: this.playersToDrop) {
@@ -400,12 +409,12 @@ public class GameServer implements Constants {
     private static String memoryStatus() {
     	return  "total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
     			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
-				" KB"; 
+				" KB";
     }
-    
+
     private void loadMaps(boolean loadBackup) {
     	log.trace("loading maps");
-        this.maps = new ArrayList<Map>(CANT_MAPAS);
+        this.maps = new ArrayList<>(CANT_MAPAS);
         Map mapa;
         for (short i = 1; i <= CANT_MAPAS; i++) {
             mapa = new Map(i, this);
@@ -413,7 +422,7 @@ public class GameServer implements Constants {
             this.maps.add(mapa);
         }
     }
-    
+
     private void loadSpells() {
     	log.trace("loading spells");
         IniFile ini = new IniFile();
@@ -425,15 +434,15 @@ public class GameServer implements Constants {
             e.printStackTrace();
         }
         int cant = ini.getShort("INIT", "NumeroHechizos");
-        
-        this.spells = new ArrayList<Spell>(cant);
+
+        this.spells = new ArrayList<>(cant);
         for (int i = 0; i < cant; i++) {
             Spell hechizo = new Spell(i+1);
         	hechizo.load(ini);
             this.spells.add(hechizo);
         }
     }
-    
+
     private void loadQuests() {
     	log.trace("loading quests");
         IniFile ini = new IniFile();
@@ -445,7 +454,7 @@ public class GameServer implements Constants {
             e.printStackTrace();
         }
         short cant = ini.getShort("INIT", "NumQuests");
-        this.quests = new ArrayList<Quest>(cant);
+        this.quests = new ArrayList<>(cant);
         for (short i = 1; i <= cant; i++) {
             Quest quest = new Quest(this, i);
             quest.load(ini);
@@ -456,7 +465,7 @@ public class GameServer implements Constants {
     /** Load all initial data */
     private void loadAll(boolean loadBackup) {
     	log.trace("loadAllData started");
-        objectInfoStorage.loadObjectsFromStorage();
+        this.objectInfoStorage.loadObjectsFromStorage();
         loadSpells();
         loadMaps(loadBackup);
         loadQuests();
@@ -464,25 +473,25 @@ public class GameServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
-        admins.loadAdminsSpawnableCreatures();
-        admins.loadInvalidNamesList();
-        admins.loadAdmins();
-        motd.loadMotd();
+        this.admins.loadAdminsSpawnableCreatures();
+        this.admins.loadInvalidNamesList();
+        this.admins.loadAdmins();
+        this.motd.loadMotd();
         log.trace("loadAllData ended");
     }
-    
+
     public Npc createNpc(int npcNumber) {
         Npc npc = getNpcLoader().createNpc(npcNumber);
-        this.npcs.put(Integer.valueOf(npc.getId()), npc);
+        this.npcs.put(npc.getId(), npc);
         return npc;
     }
 
     public Player createPlayer(Channel channel) {
         Player player = new Player(channel, this);
-        this.players.put(player.getId(), player);    	
+        this.players.put(player.getId(), player);
         return player;
     }
-    
+
     public Player findPlayer(Channel channel) {
     	return this.players.values().stream()
 		    		.filter(p -> p.channel == channel)
@@ -493,26 +502,26 @@ public class GameServer implements Constants {
     public void deleteNpc(Npc npc) {
         this.deadNpcs.add(npc.getId());
     }
-    
-    public Npc npcById(int npcId) {
-        return this.npcs.get(Integer.valueOf(npcId));
+
+    public Npc npcById(short npcId) {
+        return this.npcs.get(npcId);
     }
-    
+
     public Player playerById(short id) {
         return this.players.get(id);
     }
-    
+
     public Spell getHechizo(int spell) {
         return this.spells.get(spell - 1);
     }
-    
+
     public Map getMap(int map) {
         if (map > 0 && map <= this.maps.size()) {
 			return this.maps.get(map - 1);
 		}
 		return null;
     }
-    
+
     public Player playerByUserName(String nombre) {
     	if ("".equals(nombre)) {
 			return null;
@@ -524,21 +533,21 @@ public class GameServer implements Constants {
         }
         return null;
     }
-    
+
     public boolean isPlayerAlreadyConnected(Player player) {
     	for (Player other: players()) {
-            if (player != other 
+            if (player != other
             		&& player.getNick().equalsIgnoreCase(other.getNick())) {
                 return true;
             }
         }
         return false;
     }
-    
+
     private void doAI() {
         // TIMER_AI_Timer()
-        if (!this.m_haciendoBackup) {
-            var npcs = new ArrayList<Npc>(npcs());
+        if (!this.doingBackup) {
+            var npcs = new ArrayList<>(npcs());
             npcs.stream()
             	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
             	.forEach(npc -> {
@@ -556,7 +565,7 @@ public class GameServer implements Constants {
 	                    }
 	                }
             	});
-	        this.deadNpcs.stream().map(npc -> npcs.remove(npc));
+	        this.deadNpcs.stream().map(npcId -> this.npcs.remove(npcId));
 	        this.deadNpcs.clear();
         }
     }
@@ -564,17 +573,17 @@ public class GameServer implements Constants {
     private void pasarSegundo() {
         var paraSalir = new LinkedList<Player>();
         for (Player cli: players()) {
-            if (cli.m_counters.Saliendo) {
-                cli.m_counters.SalirCounter--;
-                if (cli.m_counters.SalirCounter <= 0) {
+            if (cli.counters.Saliendo) {
+                cli.counters.SalirCounter--;
+                if (cli.counters.SalirCounter <= 0) {
                     paraSalir.add(cli);
                 } else {
-                	switch (cli.m_counters.SalirCounter) {
+                	switch (cli.counters.SalirCounter) {
                 		case 10:
-                			cli.enviarMensaje("En " + cli.m_counters.SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
+                			cli.sendMessage("En " + cli.counters.SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
                 			break;
                 		case 3:
-                			cli.enviarMensaje("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
+                			cli.sendMessage("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
                 			break;
                 	}
                 }
@@ -584,9 +593,9 @@ public class GameServer implements Constants {
             cli.doSALIR();
         }
     }
-        
+
     public void guardarUsuarios() {
-        this.m_haciendoBackup = true;
+        this.doingBackup = true;
         try {
         	// FIXME
             //enviarATodos(MSG_BKW);
@@ -599,30 +608,30 @@ public class GameServer implements Constants {
            // enviarATodos(MSG_TALK, "Servidor> Personajes Grabados" + FontType.SERVER);
           //  enviarATodos(MSG_BKW);
         } finally {
-            this.m_haciendoBackup = false;
+            this.doingBackup = false;
         }
     }
-    
+
     private void loadCities() {
     	log.trace("loading cities");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
-            this.m_ciudades = new MapPos[4];
-            this.m_ciudades[CIUDAD_NIX] = MapPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
-            this.m_ciudades[CIUDAD_ULLA] = MapPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
-            this.m_ciudades[CIUDAD_BANDER] = MapPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
-            this.m_ciudades[CIUDAD_LINDOS] = MapPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
+            this.cities = new MapPos[4];
+            this.cities[CIUDAD_NIX] = MapPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
+            this.cities[CIUDAD_ULLA] = MapPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
+            this.cities[CIUDAD_BANDER] = MapPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
+            this.cities[CIUDAD_LINDOS] = MapPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     public MapPos getCiudadPos(short ciudad) {
-        return this.m_ciudades[ciudad];
+        return this.cities[ciudad];
     }
-    
+
     private void FX_Timer() {
     	for (Map mapa: this.maps) {
             if ((Util.Azar(1, 150) < 12) && (mapa.getCantUsuarios() > 0)) {
@@ -630,7 +639,7 @@ public class GameServer implements Constants {
             }
         }
     }
-    
+
     private void gameTimer() {
     	// This is like GameTimer_Timer
         // <<<<<< Procesa eventos de los usuarios >>>>>>
@@ -640,13 +649,13 @@ public class GameServer implements Constants {
             }
         }
     }
-    
+
     private void npcAtacaTimer() {
     	for (Npc npc: npcs()) {
             npc.setPuedeAtacar(true);
         }
     }
-    
+
     private void timerOculto() {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
@@ -656,9 +665,9 @@ public class GameServer implements Constants {
             }
         }
     }
-    
-    private void lluviaTimer() {
-        if (!this.m_lloviendo) {
+
+    private void rainEffectTimer() {
+        if (!this.raining) {
 			return;
 		}
         for (Player cli: players()) {
@@ -667,68 +676,68 @@ public class GameServer implements Constants {
             }
         }
     }
-    
-    public void enviarATodos(ServerPacket packet) {
+
+    public void sendToAll(ServerPacket packet) {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
         }
     }
-    
-    public void enviarAAdmins(ServerPacket packet) {
+
+    public void sendToAdmins(ServerPacket packet) {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
         }
     }
-    
-    public void enviarMensajeAAdmins(String msg, FontType fuente) {
+
+    public void sendMessageToAdmins(String msg, FontType fuente) {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
-                cli.enviarMensaje(msg, fuente);
+                cli.sendMessage(msg, fuente);
             }
         }
     }
-    
+
     long minutosLloviendo = 0;
     long minutosSinLluvia = 0;
-    
-    public void iniciarLluvia() {
-        this.m_lloviendo = true;
+
+    public void rainStart() {
+        this.raining = true;
         this.minutosSinLluvia = 0;
-        enviarATodos(new RainToggleResponse());
+        sendToAll(new RainToggleResponse());
     }
-    
-    public void detenerLluvia() {
-        this.m_lloviendo = false;
+
+    public void rainStop() {
+        this.raining = false;
         this.minutosSinLluvia = 0;
-        enviarATodos(new RainToggleResponse());
+        sendToAll(new RainToggleResponse());
     }
-    
-    private void lluviaEvent() {
-        if (!this.m_lloviendo) {
+
+    private void rainEvent() {
+        if (!this.raining) {
             this.minutosSinLluvia++;
             if (this.minutosSinLluvia >= 15 && this.minutosSinLluvia < 1440) {
                 if (Util.Azar(1, 100) <= 10) {
-                    iniciarLluvia();
+                    rainStart();
                 }
             } else if (this.minutosSinLluvia >= 1440) {
-                iniciarLluvia();
+                rainStart();
             }
         } else {
             this.minutosLloviendo++;
             if (this.minutosLloviendo >= 5) {
-                detenerLluvia();
+                rainStop();
             } else {
                 if (Util.Azar(1, 100) <= 7) {
-                    detenerLluvia();
+                    rainStop();
                 }
             }
         }
     }
-    
+
     int segundos = 0;
     public void piqueteTimer() {
         this.segundos += 6;
@@ -736,19 +745,19 @@ public class GameServer implements Constants {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 Map mapa = getMap(cli.pos().map);
                 if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
-                    cli.m_counters.PiqueteC++;
-                    cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
-                    if (cli.m_counters.PiqueteC > 23) {
-                        cli.m_counters.PiqueteC = 0;
+                    cli.counters.PiqueteC++;
+                    cli.sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
+                    if (cli.counters.PiqueteC > 23) {
+                        cli.counters.PiqueteC = 0;
                         cli.sendToJail(3, null);
                     }
                 } else {
-                    if (cli.m_counters.PiqueteC > 0) {
-						cli.m_counters.PiqueteC = 0;
+                    if (cli.counters.PiqueteC > 0) {
+						cli.counters.PiqueteC = 0;
 					}
                 }
                 if (this.segundos >= 18) {
-                    cli.m_counters.Pasos = 0;
+                    cli.counters.Pasos = 0;
                 }
             }
         }
@@ -756,35 +765,34 @@ public class GameServer implements Constants {
 			this.segundos = 0;
 		}
     }
-    
+
     public void purgePenalties() {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.flags().UserLogged) {
-                if (cli.m_counters.Pena > 0) {
-                    cli.m_counters.Pena--;
-                    if (cli.m_counters.Pena < 1) {
-                        cli.m_counters.Pena = 0;
+                if (cli.counters.Pena > 0) {
+                    cli.counters.Pena--;
+                    if (cli.counters.Pena < 1) {
+                        cli.counters.Pena = 0;
                         cli.warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
-                        cli.enviarMensaje("Has sido liberado!", FontType.FONTTYPE_INFO);
+                        cli.sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
                     }
                 }
             }
         }
     }
-    
+
     private void checkIdleUser() {
-        // FIXME
     	for (Player player: players()) {
             if (player != null && player.getId() > 0 && player.isLogged()) {
-                player.m_counters.IdleCount++;
-                if (player.m_counters.IdleCount >= IdleLimit) {
+                player.counters.IdleCount++;
+                if (player.counters.IdleCount >= IdleLimit) {
                     player.enviarError("Demasiado tiempo inactivo. Has sido desconectado.");
                     player.doSALIR();
                 }
             }
         }
     }
-    
+
     long minutos = 0;
     long minsRunning = 0;
     long minutosLatsClean = 0;
@@ -792,7 +800,7 @@ public class GameServer implements Constants {
     long minsPjesSave = 0;
     long horas = 0;
     DailyStats dayStats = new DailyStats();
-    
+
     private void autoSaveTimer() {
         // fired every minute
         this.minsRunning++;
@@ -809,8 +817,6 @@ public class GameServer implements Constants {
         this.minutos++;
         if (this.minutos >= IntervaloMinutosWs) {
             doBackup();
-            ///////// FIXME
-            // aClon.VaciarColeccion();
             this.minutos = 0;
         }
         if (this.minutosLatsClean >= 15) {
@@ -821,25 +827,22 @@ public class GameServer implements Constants {
             this.minutosLatsClean++;
         }
         purgePenalties();
-        //checkIdleUser();
+        checkIdleUser();
         // <<<<<-------- Log the number of users online ------>>>
         log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
         // <<<<<-------- Log the number of users online ------>>>
     }
 
-    /**
-     * Cargar armas de herrería
-     */
     private void loadBlacksmithingWeapons() {
     	log.trace("loading blacksmithing weapons");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmas");
-            this.m_armasHerrero = new short[cant];
+            this.armasHerrero = new short[cant];
             log.debug("ArmasHerreria cantidad=" + cant);
             for (int i = 0; i < cant; i++) {
-                this.m_armasHerrero[i] = ini.getShort("Arma" + (i+1), "Index");
-                log.debug("ArmasHerrero[" + i + "]=" + m_armasHerrero[i]);
+                this.armasHerrero[i] = ini.getShort("Arma" + (i+1), "Index");
+                log.debug("ArmasHerrero[" + i + "]=" + this.armasHerrero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -854,10 +857,10 @@ public class GameServer implements Constants {
             IniFile ini = new IniFile(DATDIR + File.separator + "ArmadurasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmaduras");
             log.debug("ArmadurasHerrero cantidad=" + cant);
-            this.m_armadurasHerrero = new short[cant];
+            this.armadurasHerrero = new short[cant];
             for (int i = 0; i < cant; i++) {
-                this.m_armadurasHerrero[i] = ini.getShort("Armadura" + (i+1), "Index");
-                log.debug("ArmadurasHerrero[" + i + "]=" + m_armadurasHerrero[i]);
+                this.armadurasHerrero[i] = ini.getShort("Armadura" + (i+1), "Index");
+                log.debug("ArmadurasHerrero[" + i + "]=" + this.armadurasHerrero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -872,10 +875,10 @@ public class GameServer implements Constants {
             IniFile ini = new IniFile(DATDIR + File.separator + "ObjCarpintero.dat");
             short cant = ini.getShort("INIT", "NumObjs");
             log.debug("ObjCarpintero cantidad=" + cant);
-            this.m_objCarpintero = new short[cant];
+            this.objCarpintero = new short[cant];
             for (int i = 0; i < cant; i++) {
-                this.m_objCarpintero[i] = ini.getShort("Obj" + (i+1), "Index");
-                log.debug("ObjCarpintero[" + i + "]=" + m_objCarpintero[i]);
+                this.objCarpintero[i] = ini.getShort("Obj" + (i+1), "Index");
+                log.debug("ObjCarpintero[" + i + "]=" + this.objCarpintero[i]);
             }
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
@@ -883,7 +886,7 @@ public class GameServer implements Constants {
             e.printStackTrace();
         }
     }
-    
+
     public String[] readHelp() {
         String[] lineas = null;
         try {
@@ -904,7 +907,7 @@ public class GameServer implements Constants {
     public void enviarMensajeALosGMs(String msg) {
         for (Player cli: players()) {
             if (cli.isLogged() && cli.isGM()) {
-                cli.enviarMensaje(msg, FontType.FONTTYPE_GM);
+                cli.sendMessage(msg, FontType.FONTTYPE_GM);
             }
         }
     }
@@ -916,7 +919,7 @@ public class GameServer implements Constants {
         // Sub LogBan(ByVal BannedIndex As Integer, ByVal UserIndex As Integer, ByVal motivo As String)
         System.out.println(" BAN: " + bannedUser + " by " + gm + " reason: " + motivo);
     }
-    
+
     public void unBan(String usuario) {
         /////////// FIXME
         /////////// FIXME
@@ -924,11 +927,11 @@ public class GameServer implements Constants {
         // Public Function UnBan(ByVal Name As String) As Boolean
         System.out.println(" UNBAN: " + usuario);
     }
-  
+
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
     public void doBackup() {
     	// FIXME
-        this.m_haciendoBackup = true;
+        this.doingBackup = true;
         //enviarATodos(MSG_BKW);
       //  enviarATodos(MSG_TALK, "Servidor> Realizando WorldSave..." + FontType.SERVER);
         saveGuildsDB();
@@ -936,24 +939,24 @@ public class GameServer implements Constants {
         worldSave();
       //  enviarATodos(MSG_TALK, "Servidor> WorldSave terminado." + FontType.SERVER);
       //  enviarATodos(MSG_BKW);
-        /*********** FIXME 
+        /*********** FIXME
         estadisticasWeb.Informar(EVENTO_NUEVO_CLAN, 0)
          ******************/
-        this.m_haciendoBackup = false;
+        this.doingBackup = false;
         log.info("Backup completado con exito");
     }
-    
+
     private void saveGuildsDB() {
         /////////// FIXME
     }
-    
+
     public void limpiarMundo(Player cli) {
     	int cant = limpiarMundo();
         if (cli != null) {
-			cli.enviarMensaje("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.FONTTYPE_SERVER);
+			cli.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.FONTTYPE_SERVER);
 		}
     }
-    
+
     private int limpiarMundo() {
     	int cant = 0;
     	for (MapPos pos: this.trashCollector) {
@@ -964,7 +967,7 @@ public class GameServer implements Constants {
         this.trashCollector.clear();
         return cant;
     }
-    
+
     private synchronized void worldSave() {
     	// FIXME
         //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.FONTTYPE_INFO);
@@ -978,15 +981,15 @@ public class GameServer implements Constants {
 			}
         }
         // Guardar los m_mapas
-        this.m_feedback.init("Guardando m_mapas modificados", cant);
+        this.feedback.init("Guardando m_mapas modificados", cant);
         int i = 0;
         for (Map mapa: this.maps) {
             if (mapa.m_backup) {
                 mapa.saveMapData();
-                this.m_feedback.step("Mapa " + (++i));
+                this.feedback.step("Mapa " + (++i));
             }
         }
-        this.m_feedback.finish();
+        this.feedback.finish();
         // Guardar los NPCs
         try {
             IniFile ini = new IniFile();
@@ -1002,9 +1005,9 @@ public class GameServer implements Constants {
         }
         //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.FONTTYPE_INFO);
     }
-    
+
     private void reSpawnOrigPosNpcs() {
-        List<Npc> spawnNPCs = new ArrayList<Npc>();
+        List<Npc> spawnNPCs = new ArrayList<>();
         for (Npc npc: npcs()) {
             if (npc.isNpcActive()) {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
@@ -1018,7 +1021,7 @@ public class GameServer implements Constants {
         for (Npc npc: spawnNPCs) {
             npc.reSpawnNpc();
         }
-    }    
+    }
 
     private void saveDayStats() {
         SimpleDateFormat df_dia = new SimpleDateFormat("dd/MM/yyyy");
@@ -1028,9 +1031,8 @@ public class GameServer implements Constants {
         String dia = df_dia.format(fecha);
         String hora = df_hora.format(fecha);
         String filename = "logs" + File.separator + "stats-" + df_xml.format(fecha) + ".xml";
-        BufferedWriter f = null;
-        try {
-            f = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, true)));
+
+        try (BufferedWriter  f = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, true)))) {
             f.write("<stats>");
             f.write("<ao>");
             f.write("<dia>" + dia + "</dia>");
@@ -1039,18 +1041,11 @@ public class GameServer implements Constants {
             f.write("<max_user>" + this.dayStats.maxUsuarios + "</max_user>");
             f.write("</ao>");
             f.write("</stats>\n");
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
         } catch (java.io.IOException e) {
-            e.printStackTrace();    
-        } finally {
-            try { if (f != null) {
-				f.close();
-			} } 
-            catch (java.io.IOException e) { e.printStackTrace(); }
+            e.printStackTrace();
         }
     }
-    
+
 	public void showStatus() {
 		System.out.println("Server uptime: " + calculateUptime());
 		System.out.println("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());

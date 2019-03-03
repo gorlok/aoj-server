@@ -2,11 +2,11 @@
  * AbstractCharacter.java
  *
  * Created on 14 de septiembre de 2003, 21:15
- * 
+ *
     AOJava Server
     Copyright (C) 2003-2007 Pablo Fernando Lillia (alias Gorlok)
     Web site: http://www.aojava.com.ar
-    
+
     This file is part of AOJava.
 
     AOJava is free software; you can redistribute it and/or modify
@@ -21,46 +21,46 @@
 
     You should have received a copy of the GNU General Public License
     along with Foobar; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.map.MapPos;
 
-/** 
+/**
  * Character base class
  * @author gorlok
  */
 public abstract class AbstractCharacter implements Constants {
-    
+
 	/** Character universal id. */
 	private short id = 0;
-	
-    protected MapPos m_pos  = MapPos.empty();
-	
-    protected CharInfo m_infoChar = new CharInfo();
-    protected CharInfo m_origChar = new CharInfo();
-    
+
+    protected MapPos pos  = MapPos.empty();
+
+    protected CharInfo infoChar = new CharInfo();
+    protected CharInfo origChar = new CharInfo();
+
 	public short getId() {
-		return id;
+		return this.id;
 	}
-    
+
 	protected void setId(short id) {
 		this.id = id;
 	}
-    
+
     public CharInfo infoChar() {
-        return this.m_infoChar;
+        return this.infoChar;
     }
-    
+
     public CharInfo origChar() {
-    	return this.m_origChar;
+    	return this.origChar;
     }
-    
+
     public MapPos pos() {
-        return this.m_pos;
+        return this.pos;
     }
-    
+
     protected void setPos(MapPos newPos) {
     	pos().set(newPos.map, newPos.x, newPos.y);
     }

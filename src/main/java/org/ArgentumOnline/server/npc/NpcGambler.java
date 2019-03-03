@@ -76,7 +76,7 @@ public class NpcGambler extends Npc {
             	percentage = (int) (earnings * 100 / gamblerStats.getPerdidas()); 
             }
             
-            player.enviarMensaje(
+            player.sendMessage(
             		"Entradas: " + gamblerStats.getGanancias() +
             		" Salidas: " + gamblerStats.getPerdidas() +
             		" Ganancia Neta: " + earnings + " (" + percentage + "%)" +

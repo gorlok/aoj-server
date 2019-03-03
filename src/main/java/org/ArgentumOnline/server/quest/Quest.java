@@ -135,35 +135,35 @@ public class Quest implements Constants {
 	public void hacerQuest(Player player, Npc npc) {
 		try {
 			if (player.esNewbie()) {
-				player.enviarHabla(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
+				player.sendTalk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			if (player.getQuest().m_enQuest) {
-				player.enviarHabla(COLOR_BLANCO,
+			if (player.quest().m_enQuest) {
+				player.sendTalk(COLOR_BLANCO,
 						"Debes terminar primero la quest que estás realizando para empezar otra!", npc.getId());
 				return;
 			}
-			if (player.getQuest().m_nroQuest >= this.server.questCount()) {
-				player.enviarHabla(COLOR_BLANCO, "Ya has realizados todas las quest!", npc.getId());
+			if (player.quest().m_nroQuest >= this.server.questCount()) {
+				player.sendTalk(COLOR_BLANCO, "Ya has realizados todas las quest!", npc.getId());
 				return;
 			}
 			player.nextQuest();
-			Quest quest = player.getQuest().getQuest();
+			Quest quest = player.quest().getQuest();
 			int azar = 0;
 			switch (quest.Objetivo) {
 			case OBJETIVO_MATAR_NPCS:
-				player.enviarHabla(COLOR_BLANCO, "Debes matar " + this.NPCs + " npcs para recibir tu recompensa!",
+				player.sendTalk(COLOR_BLANCO, "Debes matar " + this.NPCs + " npcs para recibir tu recompensa!",
 						npc.getId());
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
 				if (!player.userFaction().ArmadaReal && !player.userFaction().FuerzasCaos) {
-					player.enviarHabla(COLOR_BLANCO,
+					player.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Usuarios + " usuarios para recibir tu recompensa!", npc.getId());
 				} else if (player.userFaction().ArmadaReal) {
-					player.enviarHabla(COLOR_BLANCO,
+					player.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Criminales + " criminales para recibir tu recompensa!", npc.getId());
 				} else if (player.userFaction().FuerzasCaos) {
-					player.enviarHabla(COLOR_BLANCO,
+					player.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Ciudadanos + " ciudadanos para recibir tu recompensa!", npc.getId());
 				}
 				break;
@@ -172,7 +172,7 @@ public class Quest implements Constants {
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
-				player.enviarHabla(COLOR_BLANCO,
+				player.sendTalk(COLOR_BLANCO,
 						"Debes encontrar a mi amigo npc para recibir tu recompensa! Pistas: Se puede encontrar en lugares característicos del juego, pero apresúrate!" +
 						" Si alguien que está haciendo este mismo tipo de quest, y lo encuentra antes, puedes perderlo. En tal caso deberás volver y hacerme clic, y poner /MERINDO",
 						npc.getId());
@@ -184,7 +184,7 @@ public class Quest implements Constants {
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
-				player.enviarHabla(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas "
+				player.sendTalk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas "
 						+ this.Pista[azar - 1]
 						+ " para recibir tu recompensa! PD: Si no te apresuras, y lo mata otro usuario, perderás esta quest. En tal caso deberás volver y hacerme clic, y poner /MERINDO",
 						npc.getId());
@@ -204,17 +204,17 @@ public class Quest implements Constants {
 				player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			if (player.getQuest().m_nroQuest <= 0) {
+			if (player.quest().m_nroQuest <= 0) {
 				player.hablar(COLOR_BLANCO, "No has empezado ninguna Quest!", npc.getId());
 				return;
 			}
-			if (player.getQuest().m_enQuest) {
-				if (player.getQuest().m_recompensa == player.getQuest().m_nroQuest) {
+			if (player.quest().m_enQuest) {
+				if (player.quest().m_recompensa == player.quest().m_nroQuest) {
 					player.hablar(COLOR_BLANCO, "Ya has recibido tu recompensa por esta Quest!", npc.getId());
 					return;
 				}
 			}
-			Quest quest = player.getQuest().getQuest();
+			Quest quest = player.quest().getQuest();
 			switch (quest.Objetivo) {
 			case OBJETIVO_MATAR_NPCS:
 				if (player.stats().NPCsMuertos >= quest.NPCs) {
@@ -223,17 +223,17 @@ public class Quest implements Constants {
 						player.checkUserLevel();
 						player.hablar(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
 						player.stats().addGold(quest.Oro);
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
 						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -241,9 +241,9 @@ public class Quest implements Constants {
 							mapa.tirarItemAlPiso(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
 						}
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 				} else {
 					player.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
@@ -259,17 +259,17 @@ public class Quest implements Constants {
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
 							player.stats().addGold(quest.Oro);
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
 							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -278,9 +278,9 @@ public class Quest implements Constants {
 										new InventoryObject(quest.Obj, 1));
 							}
 							player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 					} else {
 						player.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
@@ -293,17 +293,17 @@ public class Quest implements Constants {
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
 							player.stats().addGold(quest.Oro);
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
 							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -312,9 +312,9 @@ public class Quest implements Constants {
 										new InventoryObject(quest.Obj, 1));
 							}
 							player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 					} else {
 						player.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
@@ -327,17 +327,17 @@ public class Quest implements Constants {
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
 							player.stats().addGold(quest.Oro);
 							player.hablar(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
 							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -346,9 +346,9 @@ public class Quest implements Constants {
 										new InventoryObject(quest.Obj, 1));
 							}
 							player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.getQuest().m_realizoQuest = false;
-							player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-							player.getQuest().m_enQuest = false;
+							player.quest().m_realizoQuest = false;
+							player.quest().m_recompensa = player.quest().m_nroQuest;
+							player.quest().m_enQuest = false;
 						}
 					} else {
 						player.hablar(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
@@ -356,23 +356,23 @@ public class Quest implements Constants {
 				}
 				break;
 			case OBJETIVO_ENCONTRAR_NPC:
-				if (player.getQuest().m_realizoQuest) {
+				if (player.quest().m_realizoQuest) {
 					if (quest.DaExp) {
 						player.stats().addExp(quest.Exp);
 						player.checkUserLevel();
 						player.hablar(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
 						player.stats().addGold(quest.Oro);
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
 						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -380,32 +380,32 @@ public class Quest implements Constants {
 							mapa.tirarItemAlPiso(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
 						}
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 				} else {
 					player.hablar(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
 				}
 				break;
 			case OBJETIVO_MATAR_UN_NPC:
-				if (player.getQuest().m_realizoQuest) {
+				if (player.quest().m_realizoQuest) {
 					if (quest.DaExp) {
 						player.stats().addExp(quest.Exp);
 						player.checkUserLevel();
 						player.hablar(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
 						player.stats().addGold(quest.Oro);
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
 						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
@@ -413,9 +413,9 @@ public class Quest implements Constants {
 							mapa.tirarItemAlPiso(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
 						}
 						player.hablar(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.getQuest().m_realizoQuest = false;
-						player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-						player.getQuest().m_enQuest = false;
+						player.quest().m_realizoQuest = false;
+						player.quest().m_recompensa = player.quest().m_nroQuest;
+						player.quest().m_enQuest = false;
 					}
 				} else {
 					player.hablar(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
@@ -429,12 +429,12 @@ public class Quest implements Constants {
 	}
 
 	public void checkNpcAmigo(Player player) {
-		if (player.getQuest().m_enQuest) {
+		if (player.quest().m_enQuest) {
 			Npc npc = this.server.npcById(player.flags().TargetNpc);
 			if (npc.npcType() == NpcType.NPCTYPE_AMIGOQUEST) {
-				Quest quest = player.getQuest().getQuest();
+				Quest quest = player.quest().getQuest();
 				if (quest.Objetivo == 3) {
-					player.getQuest().m_realizoQuest = true;
+					player.quest().m_realizoQuest = true;
 					player.hablar(COLOR_BLANCO,
 							"Felicitaciones, me has encontrado, ahora debes volver con mi compañero por tu recompensa!",
 							npc.getId());
@@ -442,10 +442,10 @@ public class Quest implements Constants {
 					player.hablar(COLOR_BLANCO, "Yo correspondo a otra quest!", npc.getId());
 				}
 			} else {
-				player.enviarMensaje("Este npc no es de la quest jajaja!", FontType.FONTTYPE_INFO);
+				player.sendMessage("Este npc no es de la quest jajaja!", FontType.FONTTYPE_INFO);
 			}
 		} else {
-			player.enviarMensaje("No has comenzado ninguna quest!", FontType.FONTTYPE_INFO);
+			player.sendMessage("No has comenzado ninguna quest!", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -455,7 +455,7 @@ public class Quest implements Constants {
 			player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 			return;
 		}
-		Quest quest = player.getQuest().getQuest();
+		Quest quest = player.quest().getQuest();
 		switch (quest.Objetivo) {
 		case 1:
 			player.hablar(COLOR_BLANCO, "Debes matar " + quest.NPCs + " npcs para recibir tu recompensa!",
@@ -496,9 +496,9 @@ public class Quest implements Constants {
 				player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			player.getQuest().m_realizoQuest = false;
-			player.getQuest().m_recompensa = player.getQuest().m_nroQuest;
-			player.getQuest().m_enQuest = false;
+			player.quest().m_realizoQuest = false;
+			player.quest().m_recompensa = player.quest().m_nroQuest;
+			player.quest().m_enQuest = false;
 			player.hablar(COLOR_BLANCO,
 					"Te has rendido por lo tanto no has conseguido la recompensa, pero puedes continuar con la siguiente quest.",
 					npc.getId());

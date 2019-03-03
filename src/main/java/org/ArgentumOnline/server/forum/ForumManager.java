@@ -11,21 +11,21 @@ import org.ArgentumOnline.server.protocol.ShowForumFormResponse;
  * @author gorlok
  */
 public class ForumManager {
-	
-	private Map<String, Forum> m_foros = new HashMap<String, Forum>();
+
+	private Map<String, Forum> forum = new HashMap<>();
 
 	public void ponerMensajeForo(String foroId, String titulo, String texto) {
-		Forum forum = this.m_foros.get(foroId);
+		Forum forum = this.forum.get(foroId);
 		if (forum == null) {
-			this.m_foros.put(foroId, (forum = new Forum(foroId)));
+			this.forum.put(foroId, (forum = new Forum(foroId)));
 		}
 		forum.addMessage(titulo, texto);
 	}
 
 	public void enviarMensajesForo(String foroId, Player player) {
-		Forum forum = this.m_foros.get(foroId);
+		Forum forum = this.forum.get(foroId);
 		if (forum == null) {
-			this.m_foros.put(foroId, (forum = new Forum(foroId)));
+			this.forum.put(foroId, (forum = new Forum(foroId)));
 		}
 		// Enviar mensajes dejados en el foro:
 		for (int i = 1; i <= forum.messageCount(); i++) {

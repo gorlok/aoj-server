@@ -2,11 +2,11 @@
  * Forum.java
  *
  * Created on 27 de marzo de 2004, 18:55
- * 
+ *
     AOJava Server
     Copyright (C) 2003-2007 Pablo Fernando Lillia (alias Gorlok)
     Web site: http://www.aojava.com.ar
-    
+
     This file is part of AOJava.
 
     AOJava is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
     You should have received a copy of the GNU General Public License
     along with Foobar; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA 
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.ArgentumOnline.server.forum;
 
@@ -34,35 +34,35 @@ import java.util.List;
 public class Forum {
 
     final static int MAX_FORUM_MESSAGES = 35;
-    
+
     private String foroId;
-    private List<ForumMessage> m_messages = new ArrayList<ForumMessage>();
-    
+    private List<ForumMessage> messages = new ArrayList<>();
+
     /** Creates a new instance of Forum */
     public Forum(String foroId) {
         this.foroId = foroId;
     }
-    
+
     public String getForoId() {
         return this.foroId;
     }
-    
+
     public void addMessage(String titulo, String texto) {
-        if (this.m_messages.size() >= MAX_FORUM_MESSAGES) {
-            this.m_messages.remove(0);
+        if (this.messages.size() >= MAX_FORUM_MESSAGES) {
+            this.messages.remove(0);
         }
-        this.m_messages.add(new ForumMessage(titulo, texto));
+        this.messages.add(new ForumMessage(titulo, texto));
     }
-    
+
     public int messageCount() {
-        return this.m_messages.size();
+        return this.messages.size();
     }
-    
+
     public ForumMessage getMessage(int index) {
-        if (index > 0 && index <= this.m_messages.size()) {
-            return this.m_messages.get(index - 1);
+        if (index > 0 && index <= this.messages.size()) {
+            return this.messages.get(index - 1);
         }
         return null;
     }
-    
+
 }

@@ -106,9 +106,9 @@ public class GuildManager {
         if (this.createGuild(player, name)) {
             int n;
             if ((n = this.guildsCount()) == 1) {
-                player.enviarMensaje("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
+                player.sendMessage("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
             } else {
-                player.enviarMensaje("¡Felicidades! Has creado el clan número " + n + " de Argentum!!!.", FontType.FONTTYPE_INFO);
+                player.sendMessage("¡Felicidades! Has creado el clan número " + n + " de Argentum!!!.", FontType.FONTTYPE_INFO);
             }
             this.saveGuildsDB();
         }
@@ -160,7 +160,7 @@ public class GuildManager {
 	                        guild.messageToGuildMembers("El nuevo lider es " + newLeaderName, FontType.FONTTYPE_GUILD);
                         }
                         if (newLeader != null) {
-                            newLeader.enviarMensaje("¡¡¡Has ganado las elecciones, felicitaciones!!!", FontType.FONTTYPE_GUILD);
+                            newLeader.sendMessage("¡¡¡Has ganado las elecciones, felicitaciones!!!", FontType.FONTTYPE_GUILD);
                             newLeader.guildInfo().giveGuildPoints(400);
                         } else {
                     		Player.changeGuildPtsChr(newLeaderName, 400);                        
@@ -181,7 +181,7 @@ public class GuildManager {
             return;
         }
         if (!guild.isEnemy(player.guildInfo().getGuildName())) {
-            player.enviarMensaje("No estás en guerra con el clan.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("No estás en guerra con el clan.", FontType.FONTTYPE_GUILD);
             return;
         }
         guild.removeEnemy(player.guildInfo().getGuildName());
@@ -193,7 +193,7 @@ public class GuildManager {
         guild.removePeaceProposition(guildName);
         Player userGuild = this.server.playerByUserName(guildName);
         if (userGuild != null) {
-            userGuild.enviarMensaje("El clan firmó la paz con " + player.getNick(), FontType.FONTTYPE_GUILD);
+            userGuild.sendMessage("El clan firmó la paz con " + player.getNick(), FontType.FONTTYPE_GUILD);
         }
         guild.messageToGuildMembers("El clan firmó la paz con " +  guildName, FontType.FONTTYPE_GUILD);
     }
@@ -225,19 +225,19 @@ public class GuildManager {
             return;
         }
         if (!guild.isEnemy(player.guildInfo().getGuildName())) {
-            player.enviarMensaje("No estás en guerra con el clan.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("No estás en guerra con el clan.", FontType.FONTTYPE_GUILD);
             return;
         }
         if (guild.isAllie(player.guildInfo().getGuildName())) {
-            player.enviarMensaje("Ya estás en paz con el clan.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Ya estás en paz con el clan.", FontType.FONTTYPE_GUILD);
             return;
         }
         GuildRequest peaceoffer = new GuildRequest(player.guildInfo().getGuildName(), desc);
         if (!guild.includesPeaceOffer(peaceoffer.getUserName())) {
             guild.peacePropositions.add(peaceoffer);
-            player.enviarMensaje("La propuesta de paz ha sido entregada.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("La propuesta de paz ha sido entregada.", FontType.FONTTYPE_GUILD);
         } else {
-            player.enviarMensaje("Ya has enviado una propuesta de paz.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Ya has enviado una propuesta de paz.", FontType.FONTTYPE_GUILD);
         }
     }
     
@@ -274,20 +274,20 @@ public class GuildManager {
             return;
         }
         if (guild.founder.equalsIgnoreCase(userName)) {
-        	player.enviarMensaje("No puedes echar al miembro fundador!", FontType.FONTTYPE_GUILD);
+        	player.sendMessage("No puedes echar al miembro fundador!", FontType.FONTTYPE_GUILD);
         	return;
         }
         if (guild.leader.equalsIgnoreCase(userName)) {
-        	player.enviarMensaje("No puedes echar al lider!", FontType.FONTTYPE_GUILD);
+        	player.sendMessage("No puedes echar al lider!", FontType.FONTTYPE_GUILD);
         	return;
         }
         Player miembro = this.server.playerByUserName(userName);
         if (miembro == null) {
-            player.enviarMensaje("El usuario no esta ONLINE.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("El usuario no esta ONLINE.", FontType.FONTTYPE_GUILD);
             return;        	
         }
         // El usuario miembro está online.
-        miembro.enviarMensaje("Has sido expulsado del clan.", FontType.FONTTYPE_GUILD);
+        miembro.sendMessage("Has sido expulsado del clan.", FontType.FONTTYPE_GUILD);
         
 		getGuild(miembro).removeMember(miembro.getNick());
 		miembro.getGuildInfo().salirClan();
@@ -312,7 +312,7 @@ public class GuildManager {
         Player solicitante = this.server.playerByUserName(userName);
         if (solicitante != null) {
         	// Esta online
-        	solicitante.enviarMensaje("Tu solicitud ha sido rechazada.", FontType.FONTTYPE_GUILD);
+        	solicitante.sendMessage("Tu solicitud ha sido rechazada.", FontType.FONTTYPE_GUILD);
         	player.guildInfo().incSolicitudesRechazadas();
         }
         guild.joinRequest.remove(solicitud);
@@ -333,18 +333,18 @@ public class GuildManager {
         // Comprobar si el usuario solicitante está online.
         Player solicitante = this.server.playerByUserName(userName);
         if (solicitante == null) {
-            player.enviarMensaje("Solo podes aceptar solicitudes cuando el solicitante esta ONLINE.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Solo podes aceptar solicitudes cuando el solicitante esta ONLINE.", FontType.FONTTYPE_GUILD);
         	return;
         }
         if (solicitante.guildInfo().esGuildLeader()) {
-            player.enviarMensaje("No podés aceptar esa solicitud, el pesonaje es lider de otro clan.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("No podés aceptar esa solicitud, el pesonaje es lider de otro clan.", FontType.FONTTYPE_GUILD);
             return;
         }
         // Ingresarlo al clan.
         String guildName = player.guildInfo().getGuildName();
         solicitante.getGuildInfo().ingresarClan(guildName);
-        player.enviarMensaje("Felicitaciones, tu solicitud ha sido aceptada.", FontType.FONTTYPE_GUILD);
-        player.enviarMensaje("Ahora sos un miembro activo del clan " + player.guildInfo().getGuildName(), FontType.FONTTYPE_GUILD);
+        player.sendMessage("Felicitaciones, tu solicitud ha sido aceptada.", FontType.FONTTYPE_GUILD);
+        player.sendMessage("Ahora sos un miembro activo del clan " + player.guildInfo().getGuildName(), FontType.FONTTYPE_GUILD);
         player.guildInfo().giveGuildPoints(25);
         guild.addMember(solicitante.getNick());
         guild.joinRequest.remove(solicitud);
@@ -373,7 +373,7 @@ public class GuildManager {
 	
     private void solicitudIngresoClan(Player applicant, String guildName, String desc) {
     	if (applicant.esNewbie()) {
-           applicant.enviarMensaje("Los newbies no pueden conformar clanes.", FontType.FONTTYPE_GUILD);
+           applicant.sendMessage("Los newbies no pueden conformar clanes.", FontType.FONTTYPE_GUILD);
            return;
     	}
     	GuildRequest solicitud = new GuildRequest(applicant.getNick(), desc);
@@ -385,16 +385,16 @@ public class GuildManager {
         	return;
         }
         if (guild.solicitudesIncludes(applicant.getNick())) {
-            applicant.enviarMensaje("Tu solicitud ya fue recibida por el lider del clan, ahora debes esperar la respuesta.", FontType.FONTTYPE_GUILD);
+            applicant.sendMessage("Tu solicitud ya fue recibida por el lider del clan, ahora debes esperar la respuesta.", FontType.FONTTYPE_GUILD);
         	return;
         }
         // Nos aseguramos que se acumulen mas de 25 solicitudes pendientes.
         if (guild.joinRequest.size() > 25) {
-        	applicant.enviarMensaje("Hay demasiadas solicitudes pendientes de ingreso a este clan. Envia tu solicitud en otro momento.", FontType.FONTTYPE_GUILD);
+        	applicant.sendMessage("Hay demasiadas solicitudes pendientes de ingreso a este clan. Envia tu solicitud en otro momento.", FontType.FONTTYPE_GUILD);
         }
         applicant.guildInfo().incSolicitudes();
         guild.joinRequest.add(solicitud);
-        applicant.enviarMensaje("La solicitud será entregada al lider del clan, ahora debes esperar su respuesta.", FontType.FONTTYPE_GUILD);
+        applicant.sendMessage("La solicitud será entregada al lider del clan, ahora debes esperar su respuesta.", FontType.FONTTYPE_GUILD);
     }
 
     private void sendCharInfo(Player player, String userName) {
@@ -527,7 +527,7 @@ public class GuildManager {
             return;
         }
         guild.URL = newURL;
-        player.enviarMensaje("La direccion de la web ha sido actualizada", FontType.FONTTYPE_INFO);
+        player.sendMessage("La direccion de la web ha sido actualizada", FontType.FONTTYPE_INFO);
     }
 
     private void declareAllie(Player player, String guildName) {
@@ -546,11 +546,11 @@ public class GuildManager {
             return;
         }
         if (leaderGuild.isAllie(enemyGuild.guildName)) {
-            player.enviarMensaje("Estas en guerra con éste clan, antes debes firmar la paz.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Estas en guerra con éste clan, antes debes firmar la paz.", FontType.FONTTYPE_GUILD);
             return;
         }
         if (leaderGuild.isEnemy(enemyGuild.guildName)) {
-            player.enviarMensaje("Ya estas aliado con éste clan.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Ya estas aliado con éste clan.", FontType.FONTTYPE_GUILD);
             return;
         }
         leaderGuild.alliedGuilds.add(enemyGuild.guildName);
@@ -577,7 +577,7 @@ public class GuildManager {
             return;
         }
         if (leaderGuild.isEnemy(enemyGuild.guildName)) {
-            player.enviarMensaje("Tu clan ya esta en guerra con " + enemyGuild.guildName, FontType.FONTTYPE_GUILD);
+            player.sendMessage("Tu clan ya esta en guerra con " + enemyGuild.guildName, FontType.FONTTYPE_GUILD);
             return;
         }    
         leaderGuild.removeAllie(enemyGuild.guildName);
@@ -675,11 +675,11 @@ public class GuildManager {
     
     private boolean canCreateGuild(Player player) {
         if (player.stats().ELV < 20) {
-            player.enviarMensaje("Para fundar un clan debes de ser nivel 20 o superior", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Para fundar un clan debes de ser nivel 20 o superior", FontType.FONTTYPE_GUILD);
             return false;
         }
         if (player.skills().get(Skill.SKILL_Liderazgo) < 90) {
-            player.enviarMensaje("Para fundar un clan necesitás al menos 90 pts en liderazgo", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Para fundar un clan necesitás al menos 90 pts en liderazgo", FontType.FONTTYPE_GUILD);
             return false;
         }
         return true;
@@ -702,18 +702,18 @@ public class GuildManager {
         try {
             guild = new Guild(guildInfo, player.getNick(), (long) player.reputation().getPromedio());
         } catch (InvalidGuildNameException e) {
-            player.enviarMensaje("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
             return false;
         }
         if (existeGuild(guild.guildName)) {
-            player.enviarMensaje("Ya existe un clan con ese nombre.", FontType.FONTTYPE_GUILD);
+            player.sendMessage("Ya existe un clan con ese nombre.", FontType.FONTTYPE_GUILD);
             return false;
         }
         guild.members.add(player.getNick());
         addGuild(guild);
         player.guildInfo().fundarClan(guild.guildName);
-        this.server.enviarATodos(new PlayWaveResponse(Constants.SND_CREACIONCLAN, (byte)50, (byte)50));
-        this.server.enviarATodos(new GuildChatResponse("¡¡¡" + player.getNick() + " fundó el clan '" + guild.guildName + "'!!!"));
+        this.server.sendToAll(new PlayWaveResponse(Constants.SND_CREACIONCLAN, (byte)50, (byte)50));
+        this.server.sendToAll(new GuildChatResponse("¡¡¡" + player.getNick() + " fundó el clan '" + guild.guildName + "'!!!"));
         return true;
     }
 
@@ -734,7 +734,7 @@ public class GuildManager {
 	public void doFundarClan(Player player) {
 		// Comando /FUNDARCLAN
 		if (player.getGuildInfo().m_fundoClan) {
-			player.enviarMensaje("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		if (canCreateGuild(player)) {
@@ -760,9 +760,9 @@ public class GuildManager {
 		// Salir del clan.
 		// Comando /SALIRCLAN
 		if (player.getGuildInfo().esGuildLeader()) {
-			player.enviarMensaje("Eres líder del clan, no puedes salir del mismo.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Eres líder del clan, no puedes salir del mismo.", FontType.FONTTYPE_INFO);
 		} else if (!player.getGuildInfo().esMiembroClan()) {
-			player.enviarMensaje("No perteneces a ningún clan.", FontType.FONTTYPE_INFO);
+			player.sendMessage("No perteneces a ningún clan.", FontType.FONTTYPE_INFO);
 		} else {
 			getGuild(player).removeMember(player.getNick());
 			player.getGuildInfo().salirClan();
@@ -779,10 +779,10 @@ public class GuildManager {
 		if (player == null) {
 			return;
 		}
-		player.enviarMensaje("Hoy es la votación para elegir un nuevo lider del clan!!.", FontType.FONTTYPE_GUILD);
-		player.enviarMensaje("La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.", FontType.FONTTYPE_GUILD);
-		player.enviarMensaje("Para votar escribe /VOTO NICKNAME.", FontType.FONTTYPE_GUILD);
-		player.enviarMensaje("Solo se computarÁ un voto por miembro.", FontType.FONTTYPE_GUILD);
+		player.sendMessage("Hoy es la votación para elegir un nuevo lider del clan!!.", FontType.FONTTYPE_GUILD);
+		player.sendMessage("La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.", FontType.FONTTYPE_GUILD);
+		player.sendMessage("Para votar escribe /VOTO NICKNAME.", FontType.FONTTYPE_GUILD);
+		player.sendMessage("Solo se computarÁ un voto por miembro.", FontType.FONTTYPE_GUILD);
 	}
 
 	public void doAceptarOfertaPaz(Player player, String guildName) {

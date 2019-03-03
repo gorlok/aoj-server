@@ -58,8 +58,11 @@ public class UserStats extends AbstractCharStats {
 	int drinked = 0; // bebida (cuando llega a cero, muere)
 	int maxDrinked = 0; // máximo de bebida, totalmente hidratado y sin sed
 
+	/** Current Experience */
 	public int Exp = 0; // Experiencia
+	/** Level */
 	public int ELV = 0; // Nivel
+	/** Experience to Level Up */
 	public int ELU = 0; // Exp. Max del nivel
 
 	public int usuariosMatados = 0;

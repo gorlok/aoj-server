@@ -159,20 +159,20 @@ public abstract class AbstractClazz implements Constants {
 		if (aumentoSalud > 0) {
 			estads.addMaxHP(aumentoSalud);
 			estads.fullHP(); // Recupera la salud al 100%.
-			player.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoStamina > 0) {
 			estads.addMaxSTA(aumentoStamina);
-			player.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoMana > 0) {
 			estads.addMaxMANA(aumentoMana);
-			player.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoGolpe > 0) {
 			estads.addMaxHIT(aumentoGolpe);
 			estads.addMinHIT(aumentoGolpe);
-			player.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
+			player.sendMessage("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
 		}
 	}
 
