@@ -1,7 +1,7 @@
 package org.ArgentumOnline.server.npc;
 
-import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.util.IniFile;
 
 public class NpcLoader {
@@ -20,18 +20,17 @@ public class NpcLoader {
     public Npc createNpc(int npcNumber) {
         IniFile ini = getIniFile(npcNumber, this.server.isLoadBackup());
         String section = "NPC" + npcNumber;
-        short npcType = ini.getShort(section, "NpcType");
+        NpcType npcType = NpcType.value(ini.getShort(section, "NpcType"));
         boolean comerciante = (ini.getInt(section, "Comercia") == 1);        
     	
-    	if (npcType == Npc.NPCTYPE_BANQUERO)
+    	if (npcType == NpcType.NPCTYPE_BANQUERO)
     		return new NpcCashier(npcNumber, server);
     	
-    	if (npcType == Npc.NPCTYPE_ENTRENADOR)
+    	if (npcType == NpcType.NPCTYPE_ENTRENADOR)
     		return new NpcTrainer(npcNumber, server);
     	
-    	if (npcType == Npc.NPCTYPE_TIMBERO)
+    	if (npcType == NpcType.NPCTYPE_TIMBERO)
     		return new NpcGambler(npcNumber, server);
-
     	
     	if (comerciante)
     		return new NpcMerchant(npcNumber, server);

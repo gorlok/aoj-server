@@ -23,42 +23,42 @@ public class NpcCashier extends Npc {
 		player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", getId());
 	}
 
-	public void retirarOroBanco(Player client, int cant) {
+	public void retirarOroBanco(Player player, int cant) {
 		if (this.pos().distance(pos()) > 10) {
-			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		
-		if (!client.existePersonaje()) {
-			log.error("ERROR, no existe el personaje " + client.getNick());
-			client.enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
-			client.doSALIR();
+		if (!player.existePersonaje()) {
+			log.error("ERROR, no existe el personaje " + player.getNick());
+			player.enviarMensaje("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
+			player.doSALIR();
 			return;
 		}
-		if (cant > 0 && cant <= client.stats().getBankGold()) {
-			client.stats().addBankGold( -cant );
-			client.stats().addGold( cant );
-			client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+		if (cant > 0 && cant <= player.stats().getBankGold()) {
+			player.stats().addBankGold( -cant );
+			player.stats().addGold( cant );
+			player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
-			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
+			player.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.sendUpdateUserStats();
+		player.sendUpdateUserStats();
 	}
 
-	public void depositarOroBanco(Player client, int cant) {
+	public void depositarOroBanco(Player player, int cant) {
 		if (this.pos().distance(pos()) > 10) {
-			client.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("||Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// ¿Se tiene dicha cantidad realmente?
-		if (cant > 0 && cant <= client.stats().getGold()) {
-			client.stats().addBankGold( cant );
-			client.stats().addGold( -cant );
-			client.hablar(COLOR_BLANCO, "Tienes " + client.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+		if (cant > 0 && cant <= player.stats().getGold()) {
+			player.stats().addBankGold( cant );
+			player.stats().addGold( -cant );
+			player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
-			client.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
+			player.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
-		client.sendUpdateUserStats();
+		player.sendUpdateUserStats();
 	}
 
 

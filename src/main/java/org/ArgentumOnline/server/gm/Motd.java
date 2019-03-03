@@ -6,6 +6,8 @@ import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.protocol.GuildChatResponse;
+import org.ArgentumOnline.server.protocol.ShowMOTDEditionFormResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -61,14 +63,14 @@ public class Motd {
     	this.m_motd.addAll(motd);
     }
 
-	public void doIniciarCambiarMOTD(Player client) {
+	public void doIniciarCambiarMOTD(Player player) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
-		if (!client.isGod()) {
+		if (!player.isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(client.getNick(), "/MOTDCAMBIA");
+		Log.logGM(player.getNick(), "/MOTDCAMBIA");
 		StringBuffer sb = new StringBuffer();
 		List<String> motd = getMOTD();
 		if (!motd.isEmpty()) {
@@ -77,34 +79,33 @@ public class Motd {
 			}
 			sb.delete(sb.length() - 2, sb.length());
 		}
-		// enviar(MSG_ZMOTD, sb.toString());
+		player.sendPacket(new ShowMOTDEditionFormResponse(sb.toString()));
 	}
 
-	public void doFinCambiarMOTD(Player client, String s) {
+	public void doFinCambiarMOTD(Player player, String s) {
 		// Finalizar el cambio de MOTD
 		// Comando ZMOTD
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(client.getNick(), "ZMOTD " + s);
+		Log.logGM(player.getNick(), "ZMOTD " + s);
 		List<String> motd = new ArrayList<String>();
 		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
 			motd.add(st.nextToken());
 		}
 		setMOTD(motd);
 		guardarMotd();
-		client.enviarMensaje("MOTD actualizado.", FontType.FONTTYPE_INFO);
+		player.enviarMensaje("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
-	public void doEnviarMOTD(Player client) {
+	public void doEnviarMOTD(Player player) {
 		// Comando /MOTD
 		// Envia los mensajes del dia.
 		List<String> motd = getMOTD();
 		if (motd.isEmpty()) {
 			return;
 		}
-		client.enviarMensaje("Mensaje del dia:", FontType.FONTTYPE_INFO);
+		player.enviarMensaje("Mensaje del día:", FontType.FONTTYPE_INFO);
 		for (String line : motd) {
-			// enviar(MSG_MOTD, line);
-			// FIXME
+			player.sendPacket(new GuildChatResponse(line));
 		}
 	}
     

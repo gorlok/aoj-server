@@ -71,16 +71,16 @@ public class BanditClass extends AbstractClazz {
     }
     
     @Override
-	public short getArmaduraImperial(Player cliente) {
-        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraImperial(Player player) {
+        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
             return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
         return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
     }
     
     @Override
-	public short getArmaduraCaos(Player cliente) {
-        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraCaos(Player player) {
+        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
             return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
         return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);

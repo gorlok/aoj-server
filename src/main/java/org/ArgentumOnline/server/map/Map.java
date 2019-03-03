@@ -74,7 +74,7 @@ public class Map implements Constants {
     final static String FOLDER_WORLDBACKUP = "worldBackup";
     
     /** Número de mapa. */
-    private short nroMapa;
+    private short mapNumber;
     public AreasAO areasData = new AreasAO();
     
     // Cabecera archivo .map
@@ -108,7 +108,7 @@ public class Map implements Constants {
     /** Creates a new instance of Map */
     public Map(short nroMapa, GameServer server) {
     	this.server = server;
-        this.nroMapa = nroMapa;
+        this.mapNumber = nroMapa;
         
         this.areasData.initAreas(server, this);
         
@@ -124,7 +124,7 @@ public class Map implements Constants {
     }
     
     public int getNroMapa() {
-        return this.nroMapa;
+        return this.mapNumber;
     }
     
     public short getVersion() {
@@ -249,15 +249,15 @@ public class Map implements Constants {
     
     public void load(boolean loadBackup) {
         try {
-            loadDatFile("Mapa" + this.nroMapa + ".dat", loadBackup);
-            loadMapFile("Mapa" + this.nroMapa + ".map", loadBackup);
-            loadInfFile("Mapa" + this.nroMapa + ".inf", loadBackup);
+            loadDatFile("Mapa" + this.mapNumber + ".dat", loadBackup);
+            loadMapFile("Mapa" + this.mapNumber + ".map", loadBackup);
+            loadInfFile("Mapa" + this.mapNumber + ".inf", loadBackup);
         } catch (java.io.FileNotFoundException e) {
-            log.warn("Archivo de mapa %d faltante.", this.nroMapa);
+            log.warn("Archivo de mapa %d faltante.", this.mapNumber);
         } catch (java.io.IOException e) {
-            log.warn("Error leyendo archivo de mapa %d", this.nroMapa);
+            log.warn("Error leyendo archivo de mapa %d", this.mapNumber);
         } catch (Exception e) {
-        	log.warn("Error con mapa " + this.nroMapa, e);
+        	log.warn("Error con mapa " + this.mapNumber, e);
         }
     }
     
@@ -272,7 +272,7 @@ public class Map implements Constants {
 		} else {
 			ini.load(FOLDER_MAPS + File.separator + datFileName);			
 		}
-        String section = "Mapa" + this.nroMapa;
+        String section = "Mapa" + this.mapNumber;
         this.m_name = ini.getString(section, "Name");
         this.m_music = ini.getString(section, "MusicNum");
         this.m_pk = (ini.getInt(section, "PK") == 1);
@@ -433,10 +433,10 @@ public class Map implements Constants {
 	                        this.cells[x][y].setNpc(this.server.createNpc(npcId));
 	                        npc = this.cells[x][y].getNpc();
 	                        this.npcs.add(npc);
-	                        npc.pos().map = this.nroMapa;
+	                        npc.pos().map = this.mapNumber;
 	                        npc.pos().x = (byte) (x+1);
 	                        npc.pos().y = (byte) (y+1);
-	                        npc.getOrig().map = this.nroMapa;
+	                        npc.getOrig().map = this.mapNumber;
 	                        if (npc.respawnOrigPos()) {
 		                        npc.getOrig().x = (byte) (x+1);
 		                        npc.getOrig().y = (byte) (y+1);
@@ -472,7 +472,7 @@ public class Map implements Constants {
         this.players.add(player);
         this.cells[x-1][y-1].playerId(player.getId());
         enviarAlArea(x, y, player.getId(), player.createCC());
-        player.pos().set(this.nroMapa, x, y);
+        player.pos().set(this.mapNumber, x, y);
         return true;
     }
     
@@ -528,7 +528,7 @@ public class Map implements Constants {
         this.cells[x-1][y-1].setNpc(npc);
         this.npcs.add(npc);
         
-        npc.pos().set(this.nroMapa, x, y);
+        npc.pos().set(this.mapNumber, x, y);
       
         this.areasData.loadNpc(npc);
         
@@ -548,7 +548,7 @@ public class Map implements Constants {
         } finally {
             this.cells[x-1][y-1].setNpc(null);
 	        this.npcs.remove(npc);
-	        npc.pos().set(this.nroMapa, (short)0, (short)0);
+	        npc.pos().set(this.mapNumber, (short)0, (short)0);
         }
         return true;
     }
@@ -588,8 +588,8 @@ public class Map implements Constants {
     }    
     
     public boolean agregarObjeto(short objid, int cant, byte x, byte y) {
-    	if (hayObjeto(x, y)) {
-            log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.nroMapa + " x=" + x + " y=" + y);
+    	if (hasObject(x, y)) {
+            log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.mapNumber + " x=" + x + " y=" + y);
     		return false;
     	}
     	this.cells[x-1][y-1].setObj(objid, cant);
@@ -676,7 +676,6 @@ public class Map implements Constants {
     }
         
     public void enviarAlArea(byte pos_x, byte pos_y, int excepto, ServerPacket packet) {
-    	//areasData.sendToArea(pos_x, pos_y, excepto, msg, params);
     	areasData.sendToAreaButIndex(this, pos_x, pos_y, excepto, packet);
     }
     
@@ -737,8 +736,8 @@ public class Map implements Constants {
         return null;
     }
     
-    /** Enviarme los m_clients del mapa, sin contarme a mi */
-    public void enviarClientes(Player player) {
+    /** Enviarme los otros jugadores del mapa, sin contarme a mi */
+    public void sendOtherPlayers(Player player) {
     	for (Player otherPlayer : this.players) { 
     		if (!otherPlayer.equals(player)) {
     			player.sendPacket(otherPlayer.createCC());
@@ -747,39 +746,39 @@ public class Map implements Constants {
     }
     
     /** Enviarme los objetos del mapa. */
-    public void enviarObjetos(Player player) {
+    public void sendObjects(Player player) {
         for (MapCell object : this.objects) {
-            player.enviarObjeto(object.getObjInd(), object.getX(), object.getY());
+            player.sendObject(object.getObjInd(), object.getX(), object.getY());
         }
     }
     
     /** Enviarme los NPCs del mapa. */
-    public void enviarNPCs(Player player) {
+    public void sendNpcs(Player player) {
         for (Npc npc : this.npcs) {
             player.sendPacket(npc.createCC());
         }
     }
     
     /** Enviarme las posiciones bloqueadas del mapa. */
-    public void enviarBQs(Player cliente) {
+    public void sendBlockedPositions(Player player) {
         for (int y = 0; y < MAPA_ALTO; y++) {
             for (int x = 0; x < MAPA_ANCHO; x++) {
                 if (this.cells[x][y].isModified()) {
-					cliente.enviarBQ(x+1, y+1, this.cells[x][y].isBlocked());
+					player.sendBlockedPosition(x+1, y+1, this.cells[x][y].isBlocked());
 				}
             }
         }
     }
     
-    public void movePlayer(Player cliente, byte x, byte y) {
-        this.cells[cliente.pos().x-1][cliente.pos().y-1].playerId((short) 0);
-        this.cells[x-1][y-1].playerId(cliente.getId());
-        cliente.pos().set(this.nroMapa, x, y);
+    public void movePlayer(Player player, byte x, byte y) {
+        this.cells[player.pos().x-1][player.pos().y-1].playerId((short) 0);
+        this.cells[x-1][y-1].playerId(player.getId());
+        player.pos().set(this.mapNumber, x, y);
         
 		//JAO: Nuevo sistema de areas !!
-        this.areasData.sendToAreaButIndex(this, x, y, cliente.getId(),
-        		new CharacterMoveResponse(cliente.getId(), x, y));
-        this.areasData.checkUpdateNeededUser(cliente, cliente.infoChar().getDir());
+        this.areasData.sendToAreaButIndex(this, x, y, player.getId(),
+        		new CharacterMoveResponse(player.getId(), x, y));
+        this.areasData.checkUpdateNeededUser(player, player.infoChar().getDir());
     }
     
     public boolean isTeleport(byte  x, byte y) {
@@ -788,7 +787,7 @@ public class Map implements Constants {
     
     public boolean isTeleportObject(byte x, byte y) {
     	return isTeleport(x, y) 
-    			&& hayObjeto(x, y) 
+    			&& hasObject(x, y) 
 				&& (getObjeto(x, y).getInfo().objType == ObjType.Teleport);    	
     }
     
@@ -807,19 +806,19 @@ public class Map implements Constants {
         this.cells[x-1][y-1].teleport(null);
     }    
     
-    public boolean hayObjeto(byte  x, byte y) {
+    public boolean hasObject(byte  x, byte y) {
         return (this.cells[x-1][y-1].hayObjeto());
     }
     
-    public boolean hayCliente(byte  x, byte y) {
-        return (this.cells[x-1][y-1].playerId() != 0 && getCliente(x, y) != null); // FIXME
+    public boolean hasPlayer(byte  x, byte y) {
+        return (this.cells[x-1][y-1].playerId() != 0 && getPlayer(x, y) != null); // FIXME
     }
     
-    public boolean hayNpc(byte  x, byte y) {
+    public boolean hasNpc(byte  x, byte y) {
         return (this.cells[x-1][y-1].getNpc() != null);
     }
     
-    public Player getCliente(byte  x, byte y) {
+    public Player getPlayer(byte  x, byte y) {
         return this.server.playerById(this.cells[x-1][y-1].playerId());
     }
     
@@ -827,38 +826,38 @@ public class Map implements Constants {
         return this.cells[x-1][y-1].getNpc();
     }
     
-    public MapObject buscarObjeto(byte  x, byte y) {
+    public MapObject queryObject(byte  x, byte y) {
         // Ver si hay un objeto en los alrededores...
-        if (hayObjeto(x, y)) {
+        if (hasObject(x, y)) {
             return getObjeto(x, y);
         }
-        if (hayObjeto((byte) (x+1), y)) {
+        if (hasObject((byte) (x+1), y)) {
             return getObjeto((byte) (x+1), y);
         }
-        if (hayObjeto((byte) (x+1), (byte) (y+1))) {
+        if (hasObject((byte) (x+1), (byte) (y+1))) {
             return getObjeto((byte) (x+1), (byte) (y+1));
         }
-        if (hayObjeto(x, (byte) (y+1))) {
+        if (hasObject(x, (byte) (y+1))) {
             return getObjeto(x, (byte) (y+1));
         }
         return null;
     }
-    public Player buscarCliente(byte  x, byte y) {
-        // Ver si hay un cliente en los alrededores...
-        if (hayCliente(x, (byte) (y+1))) {
-            return getCliente(x, (byte) (y+1));
+    public Player queryPlayer(byte  x, byte y) {
+        // Ver si hay un jugador en los alrededores...
+        if (hasPlayer(x, (byte) (y+1))) {
+            return getPlayer(x, (byte) (y+1));
         }
-        if (hayCliente(x, y)) {
-            return getCliente(x, y);
+        if (hasPlayer(x, y)) {
+            return getPlayer(x, y);
         }
         return null;
     }
-    public Npc buscarNpc(byte  x, byte y) {
+    public Npc queryNpc(byte  x, byte y) {
         // Ver si hay un NPC en los alrededores...
-        if (hayNpc(x, (byte) (y+1))) {
+        if (hasNpc(x, (byte) (y+1))) {
             return getNpc(x, (byte) (y+1));
         }
-        if (hayNpc(x, y)) {
+        if (hasNpc(x, y)) {
             return getNpc(x, y);
         }
         return null;
@@ -868,23 +867,23 @@ public class Map implements Constants {
     	if (!player.pos().inRangoVision(x, y)) {
             return;
         }
-        boolean hayAlgo = false;
+        boolean foundSomething = false;
         
         // Ver si hay un objeto en los alrededores...
-        MapObject obj = buscarObjeto(x, y);
+        MapObject obj = queryObject(x, y);
         if (obj != null) {
             player.enviarMensaje(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
             player.flags().TargetObj = obj.getInfo().ObjIndex;
-            player.flags().TargetObjMap = this.nroMapa;
+            player.flags().TargetObjMap = this.mapNumber;
             player.flags().TargetObjX = obj.x;
             player.flags().TargetObjY = obj.y;
-            hayAlgo = true;
+            foundSomething = true;
         }
         
         // Ver si hay un Npc...
         Npc npc;
-        if ((npc = buscarNpc(x, y)) != null) {
-            hayAlgo = true;
+        if ((npc = queryNpc(x, y)) != null) {
+            foundSomething = true;
             if (npc.m_desc.length() > 0) {
                 player.enviarHabla(COLOR_BLANCO, npc.m_desc, npc.getId());
             } 
@@ -897,7 +896,7 @@ public class Map implements Constants {
             msg = msg + " " + npc.estadoVida(player);
             player.enviarMensaje(msg, FontType.FONTTYPE_INFO);
             player.flags().TargetNpc = npc.getId();
-            player.flags().TargetMap = this.nroMapa;
+            player.flags().TargetMap = this.mapNumber;
             player.flags().TargetX = x;
             player.flags().TargetY = y;
             player.flags().TargetUser = 0;
@@ -905,21 +904,21 @@ public class Map implements Constants {
         }
         
         // Ver si hay un jugador
-        Player cli;
-        if ((cli = buscarCliente(x, y)) != null) {
-            if (!cli.flags().AdminInvisible) {
-                player.enviarMensaje("Ves a " + cli.getTagsDesc(), cli.getTagColor());
-                player.flags().TargetUser = cli.getId();
+        Player anotherPlayer;
+        if ((anotherPlayer = queryPlayer(x, y)) != null) {
+            if (!anotherPlayer.flags().AdminInvisible) {
+                player.enviarMensaje("Ves a " + anotherPlayer.getTagsDesc(), anotherPlayer.getTagColor());
+                player.flags().TargetUser = anotherPlayer.getId();
                 player.flags().TargetNpc = 0;
                 player.flags().TargetObj = 0;
-                player.flags().TargetMap = this.nroMapa;
+                player.flags().TargetMap = this.mapNumber;
                 player.flags().TargetX = x;
                 player.flags().TargetY = y;
-                hayAlgo = true;
+                foundSomething = true;
             }
         }
         
-        if (!hayAlgo) {
+        if (!foundSomething) {
             player.flags().TargetNpc = 0;
             player.flags().TargetNpcTipo = 0;
             player.flags().TargetUser = 0;
@@ -927,10 +926,10 @@ public class Map implements Constants {
             player.flags().TargetObjMap = 0;
             player.flags().TargetObjX = 0;
             player.flags().TargetObjY = 0;
-            player.flags().TargetMap = this.nroMapa;
+            player.flags().TargetMap = this.mapNumber;
             player.flags().TargetX = x;
             player.flags().TargetY = y;
-            //cliente.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
+            player.enviarMensaje("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
 
         // FIXME: REVISAR SI ESTO VA...
@@ -942,13 +941,13 @@ public class Map implements Constants {
         return this.cells[x-1][y-1].teleport();
     }
     
-    public void accionParaRamita(byte x, byte y, Player cliente) {
-        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaRamita(byte x, byte y, Player player) {
+        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
+            player.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         int suerte = 0;
-        int skillSupervivencia = cliente.stats().userSkills(Skill.SKILL_Supervivencia);        
+        int skillSupervivencia = player.skills().get(Skill.SKILL_Supervivencia);        
         if (skillSupervivencia == 0) {
 			suerte = 0;
 		} else if (skillSupervivencia < 6) {
@@ -961,20 +960,20 @@ public class Map implements Constants {
         if (Util.Azar(1, suerte) == 1) {
         	quitarObjeto(x, y);
             agregarObjeto(FOGATA, 1, x, y);
-            cliente.enviarMensaje("Has prendido la fogata.", FontType.FONTTYPE_INFO);
+            player.enviarMensaje("Has prendido la fogata.", FontType.FONTTYPE_INFO);
          //   enviarAlArea(x, y, MSG_FO);
         } else {
-            cliente.enviarMensaje("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
+            player.enviarMensaje("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
         // Si no tiene hambre o sed quizas suba el skill supervivencia
-        if (!cliente.flags().Hambre && !cliente.flags().Sed) {
-			cliente.subirSkill(Skill.SKILL_Supervivencia);
+        if (!player.flags().Hambre && !player.flags().Sed) {
+			player.subirSkill(Skill.SKILL_Supervivencia);
 		}
     }
     
-    public void accionParaForo(byte  x, byte y, Player cliente) {
-        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaForo(byte  x, byte y, Player player) {
+        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
+            player.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         // ¿Hay mensajes?
@@ -983,12 +982,12 @@ public class Map implements Constants {
             return;
         }
         String foroId = obj.getInfo().ForoID;
-        this.server.getForumManager().enviarMensajesForo(foroId, cliente);
+        this.server.getForumManager().enviarMensajesForo(foroId, player);
     }
     
-    public void accionParaPuerta(byte  x, byte y, Player cliente) {
-        if (Util.distance(cliente.pos().x, cliente.pos().y, x, y) > 2) {
-            cliente.enviarMensaje("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaPuerta(byte  x, byte y, Player player) {
+        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
+            player.enviarMensaje("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         MapObject obj = getObjeto(x, y);
@@ -997,9 +996,9 @@ public class Map implements Constants {
 		}
         if (obj.getInfo().Clave == 0) {
             abrirCerrarPuerta(obj);
-            cliente.flags().TargetObj = obj.getInfo().ObjIndex;
+            player.flags().TargetObj = obj.getInfo().ObjIndex;
         } else {
-            cliente.enviarMensaje("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
+            player.enviarMensaje("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
     }
     
@@ -1032,7 +1031,7 @@ public class Map implements Constants {
 		}
         return !this.cells[x-1][y-1].isBlocked() &&
         !hayAgua(x,y) &&
-        !hayObjeto(x, y) && 
+        !hasObject(x, y) && 
 		!isTeleport(x, y);
     }
     
@@ -1041,7 +1040,7 @@ public class Map implements Constants {
      */
     public MapPos tilelibre(byte orig_x, byte orig_y) {
         if (esPosLibreObjeto(orig_x, orig_y)) {
-			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
+			return MapPos.mxy(this.mapNumber, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 15; radio++) {
             byte x1 = (byte) (orig_x - radio);
@@ -1052,22 +1051,22 @@ public class Map implements Constants {
             for (byte x = x1; x <= x2; x++) {
                 // lado superior
                 if (esPosLibreObjeto(x, y1)) {
-					return MapPos.mxy(this.nroMapa, x, y1);
+					return MapPos.mxy(this.mapNumber, x, y1);
 				}
                 // lado inferior
                 if (esPosLibreObjeto(x, y2)) {
-					return MapPos.mxy(this.nroMapa, x, y2);
+					return MapPos.mxy(this.mapNumber, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (byte y = (byte) (y1+1); y < y2; y++) {
                 // lado izquierdo
                 if (esPosLibreObjeto(x1, y)) {
-					return MapPos.mxy(this.nroMapa, x1, y);
+					return MapPos.mxy(this.mapNumber, x1, y);
 				}
                 // lado derecho
                 if (esPosLibreObjeto(x2, y)) {
-					return MapPos.mxy(this.nroMapa, x2, y);
+					return MapPos.mxy(this.mapNumber, x2, y);
 				}
             }
         }
@@ -1107,26 +1106,22 @@ public class Map implements Constants {
         this.cells[pos.x-1][pos.y-1].getTrigger() != POSINVALIDA;
     }
     
-    public boolean existIndex(MapPos pos) {
-        return this.cells[pos.x][pos.y].playerId() == 0;
-    }
-    
-    private boolean esPosLibrePj(byte  x, byte y, boolean navegando, boolean esAdmin) {
+    private boolean isFreePosForPlayer(byte  x, byte y, boolean navegando, boolean esAdmin) {
     	if (esAdmin) {
-			return esPosLibreAdmin(x, y); // Los Admins no respetan las leyes de la física :P
+			return isFreePosForAdmin(x, y); // Los Admins no respetan las leyes de la física :P
 		} else if (navegando) {
-			return esPosLibreConAgua(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
+			return isFreePosWithWater(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
 		} else {
-			return esPosLibreSinAgua(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
+			return isFreePosWithoutWater(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
 		}
     }
     
     /** 
-     * Busca una posicion válida para un PJ, y que sea lo más cercana a la posición original 
+     * Busca una posicion válida para un jugador, y que sea lo más cercana a la posición original 
      */
-    public MapPos closestLegalPosPj(byte orig_x, byte orig_y, boolean navegando, boolean esAdmin) {
-        if (esPosLibrePj(orig_x, orig_y, navegando, esAdmin)) {
-			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
+    public MapPos closestLegalPosPlayer(byte orig_x, byte orig_y, boolean navegando, boolean esAdmin) {
+        if (isFreePosForPlayer(orig_x, orig_y, navegando, esAdmin)) {
+			return MapPos.mxy(this.mapNumber, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             byte x1 = (byte) (orig_x - radio);
@@ -1136,39 +1131,39 @@ public class Map implements Constants {
             // Recorrer los lados superior e inferior del borde.
             for (byte x = x1; x <= x2; x++) {
                 // lado superior
-                if (esPosLibrePj(x, y1, navegando, esAdmin)) {
-					return MapPos.mxy(this.nroMapa, x, y1);
+                if (isFreePosForPlayer(x, y1, navegando, esAdmin)) {
+					return MapPos.mxy(this.mapNumber, x, y1);
 				}
                 // lado inferior
-                if (esPosLibrePj(x, y2, navegando, esAdmin)) {
-					return MapPos.mxy(this.nroMapa, x, y2);
+                if (isFreePosForPlayer(x, y2, navegando, esAdmin)) {
+					return MapPos.mxy(this.mapNumber, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (byte y = (byte) (y1+1); y < y2; y++) {
                 // lado izquierdo
-                if (esPosLibrePj(x1, y, navegando, esAdmin)) {
-					return MapPos.mxy(this.nroMapa, x1, y);
+                if (isFreePosForPlayer(x1, y, navegando, esAdmin)) {
+					return MapPos.mxy(this.mapNumber, x1, y);
 				}
                 // lado derecho
-                if (esPosLibrePj(x2, y, navegando, esAdmin)) {
-					return MapPos.mxy(this.nroMapa, x2, y);
+                if (isFreePosForPlayer(x2, y, navegando, esAdmin)) {
+					return MapPos.mxy(this.mapNumber, x2, y);
 				}
             }
         }
         return null;
     }
     
-    private boolean esPosLibreNpc(byte  x, byte y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
+    private boolean isFreePosForNpc(byte  x, byte y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
     	if (hayAgua(x, y)) {
         	// Si el npc puede estar sobre agua, comprobamos si es una posicion libre con agua
             if (esAguaValida) {
-				return esPosLibreConAgua(x, y) && !isTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
+				return isFreePosWithWater(x, y) && !isTeleport(x, y) && !hasObject(x, y) && testSpawnTriggerNpc(this.mapNumber, x, y, bajoTecho);
 			}
     	} else {
             // Comprobamos si es una posición libre sin agua
             if (!esTierraInvalida) {
-				return esPosLibreSinAgua(x, y) && !isTeleport(x, y) && !hayObjeto(x, y) && testSpawnTriggerNpc(this.nroMapa, x, y, bajoTecho);
+				return isFreePosWithoutWater(x, y) && !isTeleport(x, y) && !hasObject(x, y) && testSpawnTriggerNpc(this.mapNumber, x, y, bajoTecho);
 			}
     	}
         return false;
@@ -1178,8 +1173,8 @@ public class Map implements Constants {
      * Busca una posicion válida para un Npc, y que sea lo más cercana a la posición original 
      */
     public MapPos closestLegalPosNpc(byte orig_x, byte orig_y, boolean esAguaValida, boolean esTierraInvalida, boolean bajoTecho) {
-        if (esPosLibreNpc(orig_x, orig_y, esAguaValida, esTierraInvalida, bajoTecho)) {
-			return MapPos.mxy(this.nroMapa, orig_x, orig_y);
+        if (isFreePosForNpc(orig_x, orig_y, esAguaValida, esTierraInvalida, bajoTecho)) {
+			return MapPos.mxy(this.mapNumber, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
             byte x1 = (byte) (orig_x - radio);
@@ -1189,30 +1184,30 @@ public class Map implements Constants {
             // Recorrer los lados superior e inferior del borde.
             for (byte x = x1; x <= x2; x++) {
                 // lado superior
-                if (esPosLibreNpc(x, y1, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return MapPos.mxy(this.nroMapa, x, y1);
+                if (isFreePosForNpc(x, y1, esAguaValida, esTierraInvalida, bajoTecho)) {
+					return MapPos.mxy(this.mapNumber, x, y1);
 				}
                 // lado inferior
-                if (esPosLibreNpc(x, y2, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return MapPos.mxy(this.nroMapa, x, y2);
+                if (isFreePosForNpc(x, y2, esAguaValida, esTierraInvalida, bajoTecho)) {
+					return MapPos.mxy(this.mapNumber, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (byte y = (byte) (y1+1); y < y2; y++) {
                 // lado izquierdo
-                if (esPosLibreNpc(x1, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return MapPos.mxy(this.nroMapa, x1, y);
+                if (isFreePosForNpc(x1, y, esAguaValida, esTierraInvalida, bajoTecho)) {
+					return MapPos.mxy(this.mapNumber, x1, y);
 				}
                 // lado derecho
-                if (esPosLibreNpc(x2, y, esAguaValida, esTierraInvalida, bajoTecho)) {
-					return MapPos.mxy(this.nroMapa, x2, y);
+                if (isFreePosForNpc(x2, y, esAguaValida, esTierraInvalida, bajoTecho)) {
+					return MapPos.mxy(this.mapNumber, x2, y);
 				}
             }
         }
         return null;
     }
     
-    private boolean esPosLibreConAgua(byte  x, byte y) {
+    private boolean isFreePosWithWater(byte  x, byte y) {
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
@@ -1222,7 +1217,7 @@ public class Map implements Constants {
         hayAgua(x,y);
     }
     
-    private boolean esPosLibreSinAgua(byte  x, byte y) {
+    private boolean isFreePosWithoutWater(byte  x, byte y) {
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
@@ -1232,7 +1227,7 @@ public class Map implements Constants {
         !hayAgua(x,y);
     }
     
-    private boolean esPosLibreAdmin(byte  x, byte y) {
+    private boolean isFreePosForAdmin(byte  x, byte y) {
     	// Los Admins no respetan las leyes de la física :P
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
@@ -1241,7 +1236,7 @@ public class Map implements Constants {
     }
     
     /** Devuelve la cantidad de enemigos que hay en el mapa */
-    public int getCantHostiles() {
+    public int getHostilesCount() {
         // NPCHostiles
         int cant = 0;
         for (Object element : this.npcs) {
@@ -1267,7 +1262,7 @@ public class Map implements Constants {
         // Escribir archivo .dat
         try {
             IniFile ini = new IniFile();
-            String section = "Mapa" + this.nroMapa;
+            String section = "Mapa" + this.mapNumber;
             ini.setValue(section, "Name", this.m_name);
             ini.setValue(section, "MusicNum", this.m_music);
             ini.setValue(section, "StartPos", this.m_startPos.map + "-" + this.m_startPos.x + "-" + this.m_startPos.y);
@@ -1278,7 +1273,7 @@ public class Map implements Constants {
             ini.setValue(section, "PK", this.m_pk);
             ini.store(datFileName);
         } catch (Exception e) {
-            log.fatal("ERROR GUARDANDO MAPA " + this.nroMapa, e);
+            log.fatal("ERROR GUARDANDO MAPA " + this.mapNumber, e);
         }
     }
     
@@ -1317,7 +1312,7 @@ public class Map implements Constants {
                 f.close();
             }
         } catch (java.io.IOException e) {
-            log.fatal("ERROR EN saveMapFile " + this.nroMapa, e);
+            log.fatal("ERROR EN saveMapFile " + this.mapNumber, e);
         }
     }
     
@@ -1358,7 +1353,7 @@ public class Map implements Constants {
                         } else {
                             f.writeInt(0);
                         }
-                        f.writeShort(0); // Indice del cliente que esta en este bloque.
+                        f.writeShort(0); // Indice del jugador que esta en este bloque.
                         f.writeShort(0); // Saltear 2 bytes de relleno...
                     }
                 }
@@ -1366,7 +1361,7 @@ public class Map implements Constants {
                 f.close();
             }
         } catch (java.io.IOException e) {
-            log.fatal("ERROR EN saveInfFile " + this.nroMapa, e);
+            log.fatal("ERROR EN saveInfFile " + this.mapNumber, e);
         }
     }
     
@@ -1389,55 +1384,58 @@ public class Map implements Constants {
 		}
         for (byte y = y1; y <= y2; y++) {
             for (byte x = x1; x <= x2; x++) {
-                if (hayObjeto(x, y) && getObjeto(x, y).getInfo().itemNoEsDeMapa()) {
+                if (hasObject(x, y) && getObjeto(x, y).getInfo().itemNoEsDeMapa()) {
                     quitarObjeto(x, y);
                 }
             }
         }
     }    
     
-    public void construirAreaObj(Player cliente, byte  x, byte y) {
+    public void construirAreaObj(Player player, byte  x, byte y) {
     	MapObject obj = getObjeto(x,y);
-    	if (obj != null) cliente.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
+    	if (obj != null) player.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
     }
     
-    public void construirAreaNpc(Player cliente, Npc npc) {
-    	cliente.sendPacket(npc.createCC());
+    public void construirAreaNpc(Player player, Npc npc) {
+    	player.sendPacket(npc.createCC());
     }
     
     public void doFX() {
-    	// FIXME
-    	/*
         if (getCantUsuarios() > 0 && Util.Azar(1, 150) < 12) {
+        	byte sound = -1;
             switch (this.m_terreno) {
                 case TERRENO_BOSQUE:
                     int n = Util.Azar(1, 100);
                     switch (this.m_zona) {
                         case ZONA_CAMPO:
                         case ZONA_CIUDAD:
-                            if (!this.server.estaLloviendo()) {
+                            if (!this.server.isRaining()) {
                                 if (n < 15) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE2));
+                                	sound = Constants.SND_AVE2;
                                 } else if (n < 30) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE));
+                                	sound = Constants.SND_AVE;
                                 } else if (n <= 35) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO));
+                                	sound = Constants.SND_GRILLO;
                                 } else if (n <= 40) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_GRILLO2));
+                                	sound = Constants.SND_GRILLO2;
                                 } else if (n <= 45) {
-                                	enviarATodos(new PlayWaveResponse(Constants.SND_AVE3));
+                                	sound = Constants.SND_AVE3;
                                 }
                             }
                             break;
                     }
             }
+            if (sound > -1) {
+                for (Player player : this.players) {
+            		player.sendPacket(new PlayWaveResponse(sound, player.pos().x, player.pos().y));
+                }
+            }
         }
-        */
     }
 
     
     @Deprecated
-    public void doTileEvents(Player cliente) {
+    public void doTileEvents(Player player) {
 		// Esto no hace falta por ahora, era para hacer funcionar a los teleports,
 		// y estoy haciendo que los teleports trabajen de otra manera.
     	//
@@ -1507,6 +1505,4 @@ public class Map implements Constants {
     }
     
     
-    
 }
-

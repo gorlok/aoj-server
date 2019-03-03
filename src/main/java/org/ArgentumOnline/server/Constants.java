@@ -44,17 +44,6 @@ public interface Constants {
 	final static int DISTANCE_FACTION = 10; // FACCIONARIO
     
     /*
-    Public Type tAPuestas
-        Ganancias As Long
-        Perdidas As Long
-        Jugadas As Long
-    End Type
-    Public Apuestas As tAPuestas
-
-    Public EstadisticasWeb As New clsEstadisticasIPC
-
-    Public IntervaloUserPuedeUsar As Long
-
     Public DeNoche As Boolean
 
     Public Type TCPESStats
@@ -215,15 +204,6 @@ public interface Constants {
     final static byte AdicionalSTPescador = 20;
     final static byte AdicionalSTMinero   = 25;
     
-    //// ATRIBUTOS
-    final static int NUMATRIBUTOS = 5;
-    final static int ATRIB_FUERZA  = 0;
-    final static int ATRIB_AGILIDAD = 1;
-    final static int ATRIB_INTELIGENCIA = 2;
-    final static int ATRIB_CARISMA = 3;
-    final static int ATRIB_CONSTITUCION = 4;
-    
-    
     // Estadisticas
     final static int STAT_MAXELV = 99;
     final static int STAT_MAXHP  = 999;
@@ -249,9 +229,6 @@ public interface Constants {
     final static int MAXREP = 6000000;
     final static int MAX_GOLD = 90000000;
     final static int MAXEXP = 99999999;
-    
-    final static int MAXATRIBUTOS = 35;
-    final static int MINATRIBUTOS = 6;
     
     
     final static short OBJ_INDEX_HACHA_LEÑADOR = 127;
@@ -379,15 +356,5 @@ End Enum
     // PECES_POSIBLES
     final static int PESCADOS_RED[] = { 139, 544, 545, 546 };
     
-    // <------------------SUB-CATEGORIAS----------------->
-    /*
-    final static int SUBTYPE_ARMADURA = 0;
-    final static int SUBTYPE_CASCO = 1;
-    final static int SUBTYPE_ESCUDO = 2;
-    final static int SUBTYPE_CAÑA = 138;
-    final static int SUBTYPE_MATADRAGONES = 1;
-    */
-    
-
 }
 

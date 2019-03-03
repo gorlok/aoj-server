@@ -26,6 +26,7 @@
 package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.UserRace;
@@ -75,7 +76,7 @@ public class WarriorClass extends AbstractClazz {
     /** Incremento de salud al subir de nivel */
     @Override
 	protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2) + AdicionalHPGuerrero;
+        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
     }
     
     /** Incremento de stamina al subir de nivel */
@@ -91,16 +92,16 @@ public class WarriorClass extends AbstractClazz {
     }
     
     @Override
-	public short getArmaduraImperial(Player cliente) {
-        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraImperial(Player player) {
+        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
         	return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
         }
         return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
     }
     
     @Override
-	public short getArmaduraCaos(Player cliente) {
-        if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraCaos(Player player) {
+        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
             return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
         }
         return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);

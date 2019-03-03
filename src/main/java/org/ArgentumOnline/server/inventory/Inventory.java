@@ -25,14 +25,16 @@
  */
 package org.ArgentumOnline.server.inventory;
 
+import java.util.Arrays;
+import java.util.Iterator;
+
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
 
 /**
- *
  * @author gorlok
  */
-public class Inventory {
+public class Inventory implements Iterable<InventoryObject> {
     
     protected InventoryObject objs[] = null;
     
@@ -45,12 +47,10 @@ public class Inventory {
         this.objs = new InventoryObject[size];
         reset();
     }
-    
 	
 	protected ObjectInfo findObj(int oid) {
 		return this.server.getObjectInfoStorage().getInfoObjeto(oid);		
 	}
-    
     
     public boolean isSlotValid(int slot) {
     	return slot >= 1 && slot <= size();
@@ -113,5 +113,10 @@ public class Inventory {
         }
         return cant;
     }
+
+	@Override
+	public Iterator<InventoryObject> iterator() {
+		return Arrays.asList(this.objs).iterator();
+	}
     
 }

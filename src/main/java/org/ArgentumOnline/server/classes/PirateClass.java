@@ -25,6 +25,7 @@
  */
 package org.ArgentumOnline.server.classes;
 
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.util.Util;
 
@@ -76,7 +77,7 @@ public class PirateClass extends AbstractClazz {
     /** Incremento de salud al subir de nivel */
     @Override
 	protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2) + AdicionalHPGuerrero;
+        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
     }
     
     /** Incremento de stamina al subir de nivel */

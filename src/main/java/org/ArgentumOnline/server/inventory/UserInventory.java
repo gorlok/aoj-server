@@ -33,6 +33,7 @@ import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.net.BlacksmithArmors_DATA;
@@ -281,7 +282,7 @@ public class UserInventory extends Inventory implements Constants {
             byte x = this.dueño.pos().x;
             byte y = this.dueño.pos().y;
             short objid = this.objs[slot-1].objid;
-            if (!mapa.hayObjeto(x, y)) {
+            if (!mapa.hasObject(x, y)) {
                 if (this.objs[slot-1].equipado) {
 					desequipar(slot);
 				}
@@ -391,6 +392,7 @@ public class UserInventory extends Inventory implements Constants {
         log.debug("CascoAnim: " + infoObj.CascoAnim);
         log.debug("ShieldAnim: " + infoObj.ShieldAnim);
         
+        // FIXME revisar
         switch (infoObj.objType) {
             case Weapon:
                 log.debug("es un arma");
@@ -588,32 +590,9 @@ public class UserInventory extends Inventory implements Constants {
                     this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
-
-                /* FIXME esto va??
-            case OBJTYPE_HERRAMIENTAS:
-                log.debug("es una herramienta");
-                if (infoObj.clasePuedeUsarItem(this.dueño.getClazz()) && this.dueño.getFaccion().faccionPuedeUsarItem(this.dueño, objid)) {
-                    // Si esta equipado lo quita
-                    if (obj_inv.equipado) {
-                        // Quitamos del inv el item
-                        desequipar(slot);
-                        return;
-                    }
-                    // Quitamos el elemento anterior
-                    if (tieneHerramientaEquipada()) {
-                        desequipar(this.herramientaSlot);
-                    }
-                    this.objs[slot-1].equipado = true;
-                    this.herramientaEquipada = true;
-                    this.herramientaSlot = slot;
-                } else {
-                    this.dueño.enviarMensaje("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
-                }
-                break;
-                */
         }
         // Actualiza
-        log.debug("actualizar inventario del cliente");
+        log.debug("actualizar inventario del usuario");
         this.dueño.enviarInventario();
     }
     
@@ -843,12 +822,12 @@ public class UserInventory extends Inventory implements Constants {
                     case 1: // Modif la agilidad
                         this.dueño.flags().DuracionEfecto = info.DuracionEfecto;
                         // Usa el item
-                        this.dueño.stats().aumentarAtributo(ATRIB_AGILIDAD, Util.Azar(info.MinModificador, info.MaxModificador));
+                        this.dueño.stats().attr().modify(Attribute.AGILIDAD, Util.Azar(info.MinModificador, info.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
                         this.dueño.flags().DuracionEfecto = info.DuracionEfecto;
                         // Usa el item
-                        this.dueño.stats().aumentarAtributo(ATRIB_FUERZA, Util.Azar(info.MinModificador, info.MaxModificador));
+                        this.dueño.stats().attr().modify(Attribute.FUERZA, Util.Azar(info.MinModificador, info.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
                         // Usa el item

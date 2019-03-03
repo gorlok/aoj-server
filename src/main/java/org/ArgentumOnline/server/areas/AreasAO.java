@@ -16,7 +16,7 @@ import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 
 /** 
  * Areas class
- * Esta clase realiza el manejo de áreas para enviar datos a los clientes
+ * Esta clase realiza el manejo de áreas para enviar datos a los usuarios
  * Idea original: Juan Martín Sotuyo Dodero (Maraxus)
  * Implementado y adaptado a Java: Juan Agustín Oliva (JAO) -> juancho_isap14@hotmail.com
  */
@@ -168,8 +168,8 @@ public class AreasAO implements Constants {
     	for(byte x = (byte) minX; x < maxX;x++) {
     		for(byte y = (byte) minY; y < maxY; y++) {
     			
-    			if (map.hayCliente(x, y)) {
-    				tempInt = map.getCliente(x, y).getId();
+    			if (map.hasPlayer(x, y)) {
+    				tempInt = map.getPlayer(x, y).getId();
     			
     			
     			if (user.getId() != tempInt && tempInt > 0) {
@@ -183,19 +183,19 @@ public class AreasAO implements Constants {
     			
     			}
     			
-    			if (map.hayNpc(x, y)) {
+    			if (map.hasNpc(x, y)) {
     				user.sendPacket(map.getNpc(x, y).createCC());
     			}
     			
-    			if (map.hayObjeto(x, y)) {
+    			if (map.hasObject(x, y)) {
     				MapObject obj = map.getObjeto(x, y);
  
     				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
     				
     				if (obj.getInfo().objType == ObjType.Puertas) {
-    					user.enviarBQ(x, y, map.isBlocked(x, y));
+    					user.sendBlockedPosition(x, y, map.isBlocked(x, y));
     					byte px = (byte) (x - 1);
-    					user.enviarBQ(x - 1, y, map.isBlocked(px, y));
+    					user.sendBlockedPosition(x - 1, y, map.isBlocked(px, y));
     				}
     			}
     		}
@@ -290,8 +290,8 @@ public class AreasAO implements Constants {
     		
     		for(byte x = (byte) minX; x < maxX;x++) {
         		for(byte y = (byte) minY; y < maxY; y++) {
-        			if (map.hayCliente(x, y)) {
-        				Player jao = map.getCliente(x, y);
+        			if (map.hasPlayer(x, y)) {
+        				Player jao = map.getPlayer(x, y);
         				
         				jao.sendPacket(npc.createCC());
         				
@@ -344,7 +344,7 @@ public class AreasAO implements Constants {
 	
 	/**
 	 * JAO: Enviamos la área según la posición que se pase por el parámetro. Este método se utiliza frecuentemente
-	 * para enviar al cliente los objetos en el piso
+	 * para enviar al usuarios los objetos en el piso
 	 */
 	public void sendToAreaByPos(Map map, int areaX, int areaY, ServerPacket packet) {
 		areaX = (int) Math.pow(2, areaX / 9);

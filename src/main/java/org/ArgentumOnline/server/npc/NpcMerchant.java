@@ -19,7 +19,6 @@ public class NpcMerchant extends Npc {
 	protected void leerNpc(IniFile ini, int npc_ind) {
 		super.leerNpc(ini, npc_ind);
 		
-        //Inventario
         loadInventario(ini);
 	}	
 
@@ -54,10 +53,9 @@ public class NpcMerchant extends Npc {
         }
     }        
 	
-    public void enviarNpcInv(Player cliente) {
-        // Sub EnviarNpcInv(ByVal UserIndex As Integer, ByVal NpcIndex As Integer)
+    public void enviarNpcInv(Player player) {
         // Enviamos el inventario del npc con el cual el user va a comerciar...
-        double dto = cliente.descuento();
+        double dto = player.descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
@@ -67,7 +65,7 @@ public class NpcMerchant extends Npc {
                 ObjectInfo info = findObj(this.m_inv.getObjeto(i).objid);
                 double infla = (this.m_inflacion *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
-                cliente.sendPacket(new ChangeNPCInventorySlotResponse( 
+                player.sendPacket(new ChangeNPCInventorySlotResponse( 
                 		i, 
                 		info.Nombre, 
                 		(short) this.m_inv.getObjeto(i).cant, 
@@ -79,34 +77,33 @@ public class NpcMerchant extends Npc {
                 		info.MinHIT, 
                 		info.MaxDef));
             } else {
-                cliente.sendPacket(new ChangeNPCInventorySlotResponse(
+                player.sendPacket(new ChangeNPCInventorySlotResponse(
                 		(byte) i, "Nada", (short) 0, 0, (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0));
             }
         }
     }
     
-    public void venderItem(Player cliente, short slot, int cant) {
-        // Sub NPCVentaItem(ByVal UserIndex As Integer, ByVal i As Integer, ByVal Cantidad As Integer, ByVal NpcIndex As Integer)
+    public void venderItem(Player player, short slot, int cant) {
         if (cant < 1) {
 			return;
 		}
         // NPC VENDE UN OBJ A UN USUARIO
-        cliente.sendUpdateUserStats();
+        player.sendUpdateUserStats();
         // Calculamos el valor unitario
         if (this.m_inv.getObjeto(slot).objid == 0) {
 			return;
 		}
         // Calculamos el porc de inflacion del npc
         ObjectInfo info = findObj(this.m_inv.getObjeto(slot).objid);
-        double dto = cliente.descuento();
+        double dto = player.descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
         double infla = (this.m_inflacion * info.Valor) / 100;
         double val = (info.Valor + infla) / dto;
         
-        if (cliente.stats().getGold() < (val * cant)) {
-            cliente.enviarMensaje("No tienes suficiente oro.", FontType.FONTTYPE_INFO);
+        if (player.stats().getGold() < (val * cant)) {
+            player.enviarMensaje("No tienes suficiente oro.", FontType.FONTTYPE_INFO);
             return;
         }
         
@@ -115,54 +112,52 @@ public class NpcMerchant extends Npc {
                 cant = this.m_inv.getObjeto(slot).cant;
             }
             // Agregamos el obj que compro al inventario
-            cliente.userCompraObj(this, slot, cant);
+            player.userCompraObj(this, slot, cant);
             // Actualizamos el inventario del usuario
-            cliente.enviarInventario();
+            player.enviarInventario();
             // Actualizamos el oro
-            cliente.sendUpdateUserStats();
+            player.sendUpdateUserStats();
             // Actualizamos la ventana de comercio
-            enviarNpcInv(cliente);
+            enviarNpcInv(player);
             short objid = this.m_inv.getObjeto(slot).objid;
-            cliente.updateVentanaComercio(objid, cant);
+            player.updateVentanaComercio(objid, cant);
         }
     }
 
-    public void comprarItem(Player cliente, short slot, int cant) {
-        // Sub NPCCompraItem(ByVal UserIndex As Integer, ByVal Item As Integer, ByVal Cantidad As Integer)
+    public void comprarItem(Player player, short slot, int cant) {
         // NPC COMPRA UN OBJ A UN USUARIO
-        cliente.sendUpdateUserStats();
-        if (cliente.userInv().getObjeto(slot).cant > 0 && !cliente.userInv().getObjeto(slot).equipado) {
-            if (cant > 0 && cant > cliente.userInv().getObjeto(slot).cant) {
-                cant = cliente.userInv().getObjeto(slot).cant;
+        player.sendUpdateUserStats();
+        if (player.userInv().getObjeto(slot).cant > 0 && !player.userInv().getObjeto(slot).equipado) {
+            if (cant > 0 && cant > player.userInv().getObjeto(slot).cant) {
+                cant = player.userInv().getObjeto(slot).cant;
             }
             // Agregamos el obj que compro al inventario
-            npcCompraObj(cliente, slot, cant);
+            npcCompraObj(player, slot, cant);
             // Actualizamos el inventario del usuario
-            cliente.enviarInventario();
+            player.enviarInventario();
             // Actualizamos el oro
-            cliente.sendUpdateUserStats();
-            enviarNpcInv(cliente);
+            player.sendUpdateUserStats();
+            enviarNpcInv(player);
             // Actualizamos la ventana de comercio
-            short objid = cliente.userInv().getObjeto(slot).objid;
-            cliente.updateVentanaComercio(objid, cant);
+            short objid = player.userInv().getObjeto(slot).objid;
+            player.updateVentanaComercio(objid, cant);
         }
     }
     
-    public void npcCompraObj(Player cliente, short slot, int cant) {
-        // Sub NpcCompraObj(ByVal UserIndex As Integer, ByVal objIndex As Integer, ByVal Cantidad As Integer)
+    public void npcCompraObj(Player player, short slot, int cant) {
         if (cant < 1) {
 			return;
 		}
-        short objid = cliente.userInv().getObjeto(slot).objid;
+        short objid = player.userInv().getObjeto(slot).objid;
         ObjectInfo info = findObj(objid);
         if (info.esNewbie()) {
-            cliente.enviarMensaje("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
+            player.enviarMensaje("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
             return;
         }
         if (this.m_tipoItems != OBJ_INDEX_CUALQUIERA) {
             // ¿Son los items con los que comercia el npc?
             if (this.m_tipoItems != info.objType.value()) {
-                cliente.enviarMensaje("No me interesa comprar ese objeto.", FontType.FONTTYPE_WARNING);
+                player.enviarMensaje("No me interesa comprar ese objeto.", FontType.FONTTYPE_WARNING);
                 return;
             }
         }
@@ -185,27 +180,26 @@ public class NpcMerchant extends Npc {
                 // Menor que MAX_INV_OBJS
                 this.m_inv.getObjeto(slot_inv).objid = objid;
                 this.m_inv.getObjeto(slot_inv).cant += cant;
-                cliente.userInv().quitarUserInvItem(slot, cant);
+                player.userInv().quitarUserInvItem(slot, cant);
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);
-                cliente.stats().addGold((int) monto);
+                player.stats().addGold((int) monto);
                 // tal vez suba el skill comerciar ;-)
-                cliente.subirSkill(Skill.SKILL_Comerciar);
+                player.subirSkill(Skill.SKILL_Comerciar);
             } else {
-                cliente.enviarMensaje("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
+                player.enviarMensaje("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
             }
         } else {
-            cliente.userInv().quitarUserInvItem(slot, cant);
+            player.userInv().quitarUserInvItem(slot, cant);
             // Le sumamos al user el valor en oro del obj vendido
             //double monto = ((info.Valor / 3 + infla) * cant);
             double monto = ((info.Valor / 3) * cant);
-            cliente.stats().addGold((int) monto);
+            player.stats().addGold((int) monto);
         }
     }
 
     public void quitarNpcInvItem(short slot, int cant) {
-        // Sub QuitarNpcInvItem(ByVal NpcIndex As Integer, ByVal Slot As Byte, ByVal Cantidad As Integer)
         short objid = this.m_inv.getObjeto(slot).objid;
         // Quita un Obj
         ObjectInfo info = findObj(objid);
@@ -237,14 +231,12 @@ public class NpcMerchant extends Npc {
     }
 
     private void cargarInvent() {
-        // Sub CargarInvent(ByVal NpcIndex As Integer)
         // Vuelve a cargar el inventario del npc NpcIndex
         IniFile ini = this.server.getNpcLoader().getIniFile(this.m_numero, false);
         loadInventario(ini);
     }
 
     private boolean quedanItems(short objid) {
-        // Function QuedanItems(ByVal NpcIndex As Integer, ByVal objIndex As Integer) As Boolean
         for (int i = 1; i <= MAX_INVENTORY_SLOTS; i++) {
             if (this.m_inv.getObjeto(i).objid == objid) {
                 return true;
@@ -284,6 +276,5 @@ public class NpcMerchant extends Npc {
         }
         return 0;
     }
-    
 	
 }

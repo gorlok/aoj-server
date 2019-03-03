@@ -37,7 +37,7 @@ public class UserTrade {
 
 	short destUsu = 0; // El otro Usuario
 
-	short objeto = 0; // Indice del inventario a comerciar, que objeto desea dar
+	short objectSlot = 0; // Indice del inventario a comerciar, que objeto desea dar
 
 	// El tipo de datos de Cant ahora es Long (antes Integer)
 	// asi se puede comerciar con oro > 32k
@@ -88,7 +88,7 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = player.server.playerById(this.destUsu);
+		Player targetPlayer = player.server.playerById(this.destUsu);
 		if (this.destUsu != player.getId()) {
 			return;
 		}
@@ -100,7 +100,7 @@ public class UserTrade {
 		boolean terminarAhora = false;
 		short obj1_objid = 0;
 		int obj1_cant = 0;
-		if (this.objeto == Constants.FLAGORO) {
+		if (this.objectSlot == Constants.FLAGORO) {
 			obj1_objid = Constants.OBJ_ORO;
 			if (this.cant > player.m_estads.getGold()) {
 				player.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
@@ -108,8 +108,8 @@ public class UserTrade {
 			}
 		} else {
 			obj1_cant = this.cant;
-			obj1_objid = player.m_inv.getObjeto(this.objeto).objid;
-			if (obj1_cant > player.m_inv.getObjeto(this.objeto).cant) {
+			obj1_objid = player.m_inv.getObjeto(this.objectSlot).objid;
+			if (obj1_cant > player.m_inv.getObjeto(this.objectSlot).cant) {
 				player.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
@@ -117,31 +117,31 @@ public class UserTrade {
 
 		short obj2_objid = 0;
 		int obj2_cant = 0;
-		if (this.objeto == Constants.FLAGORO) {
+		if (this.objectSlot == Constants.FLAGORO) {
 			obj2_objid = Constants.OBJ_ORO;
-			if (this.cant > targetClient.m_estads.getGold()) {
-				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
+			if (this.cant > targetPlayer.m_estads.getGold()) {
+				targetPlayer.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		} else {
 			obj2_cant = this.cant;
-			obj2_objid = targetClient.m_inv.getObjeto(this.objeto).objid;
-			if (obj2_cant > targetClient.m_inv.getObjeto(this.objeto).cant) {
-				targetClient.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
+			obj2_objid = targetPlayer.m_inv.getObjeto(this.objectSlot).objid;
+			if (obj2_cant > targetPlayer.m_inv.getObjeto(this.objectSlot).cant) {
+				targetPlayer.enviarMensaje("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
 		}
 		// Por si las moscas...
 		if (terminarAhora) {
 			sendCommerceEnded();
-			targetClient.m_comUsu.sendCommerceEnded();
+			targetPlayer.m_comUsu.sendCommerceEnded();
 			return;
 		}
 		// pone el oro directamente en la billetera
-		if (this.objeto == Constants.FLAGORO) {
+		if (this.objectSlot == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
-			targetClient.m_estads.addGold(-this.cant);
-			targetClient.sendUpdateUserStats();
+			targetPlayer.m_estads.addGold(-this.cant);
+			targetPlayer.sendUpdateUserStats();
 			// y se la doy al otro
 			player.m_estads.addGold(this.cant);
 			player.sendUpdateUserStats();
@@ -154,42 +154,42 @@ public class UserTrade {
 				mapa.tirarItemAlPiso(player.pos().x, player.pos().y,
 						new InventoryObject(obj2_objid, obj2_cant - agregados));
 			}
-			targetClient.quitarObjetos(obj2_objid, obj2_cant);
+			targetPlayer.quitarObjetos(obj2_objid, obj2_cant);
 		}
 		// pone el oro directamente en la billetera
-		if (this.objeto == Constants.FLAGORO) {
+		if (this.objectSlot == Constants.FLAGORO) {
 			// quito la cantidad de oro ofrecida
 			player.m_estads.addGold(-this.cant); // restar
 			player.sendUpdateUserStats();
 			// y se la doy al otro
-			targetClient.m_estads.addGold(this.cant); // sumar
-			targetClient.sendUpdateUserStats();
+			targetPlayer.m_estads.addGold(this.cant); // sumar
+			targetPlayer.sendUpdateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
-			int agregados = targetClient.m_inv.agregarItem(obj1_objid, obj1_objid);
+			int agregados = targetPlayer.m_inv.agregarItem(obj1_objid, obj1_objid);
 			if (agregados < obj1_cant) {
 				// Tiro al piso los items que no se agregaron al inventario.
-				Map mapa = player.server.getMap(targetClient.pos().map);
-				mapa.tirarItemAlPiso(targetClient.pos().x, targetClient.pos().y,
+				Map mapa = player.server.getMap(targetPlayer.pos().map);
+				mapa.tirarItemAlPiso(targetPlayer.pos().x, targetPlayer.pos().y,
 						new InventoryObject(obj1_objid, obj1_objid - agregados));
 			}
 			player.quitarObjetos(obj1_objid, obj1_cant);
 		}
 		player.enviarInventario();
-		targetClient.enviarInventario();
+		targetPlayer.enviarInventario();
 		sendCommerceEnded();
-		targetClient.m_comUsu.sendCommerceEnded();
+		targetPlayer.m_comUsu.sendCommerceEnded();
 	}
 
 	public void userCommerceEnd() {
 		// Comando FINCOMUSU
 		// Salir del modo comercio Usuario
 		if (this.destUsu > 0 && this.destUsu == player.getId()) {
-			Player targetClient = player.server.playerById(this.destUsu);
-			if (targetClient != null) {
-				targetClient.enviarMensaje(player.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
-				if (targetClient != null) {
-					targetClient.m_comUsu.sendCommerceEnded();
+			Player targetPlayer = player.server.playerById(this.destUsu);
+			if (targetPlayer != null) {
+				targetPlayer.enviarMensaje(player.m_nick + " ha dejado de comerciar con vos.", FontType.FONTTYPE_TALK);
+				if (targetPlayer != null) {
+					targetPlayer.m_comUsu.sendCommerceEnded();
 				}
 			}
 		}
@@ -200,7 +200,7 @@ public class UserTrade {
 		this.acepto = false;
 		this.cant = 0;
 		this.destUsu = 0;
-		this.objeto = 0;
+		this.objectSlot = 0;
 		player.flags().Comerciando = false;
 		player.sendPacket(new UserCommerceEndResponse());
 	}
@@ -209,9 +209,9 @@ public class UserTrade {
 		// Comando COMUSUNO
 		// Rechazar el cambio
 		if (this.destUsu > 0) {
-			Player targetClient = player.server.playerById(this.destUsu);
-			targetClient.enviarMensaje(player.m_nick + " ha rechazado tu oferta.", FontType.FONTTYPE_TALK);
-			targetClient.m_comUsu.sendCommerceEnded();
+			Player targetPlayer = player.server.playerById(this.destUsu);
+			targetPlayer.enviarMensaje(player.m_nick + " ha rechazado tu oferta.", FontType.FONTTYPE_TALK);
+			targetPlayer.m_comUsu.sendCommerceEnded();
 		}
 		player.enviarMensaje("Has rechazado la oferta del otro usuario.", FontType.FONTTYPE_TALK);
 		sendCommerceEnded();
@@ -225,17 +225,19 @@ public class UserTrade {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = player.server.playerById(this.destUsu);
+		Player targetPlayer = player.server.playerById(this.destUsu);
 		// sigue conectado el usuario ?
-		if (!targetClient.flags().UserLogged) {
+		if (!targetPlayer.flags().UserLogged) {
 			sendCommerceEnded();
 			return;
 		}
+		
 		// esta vivo ?
-		if (!targetClient.isAlive()) {
+		if (!targetPlayer.isAlive()) {
 			sendCommerceEnded();
 			return;
 		}
+		
 		// Tiene la cantidad que se ofrece ??
 		if (slot == Constants.FLAGORO) {
 			// oro de la billetera
@@ -250,11 +252,13 @@ public class UserTrade {
 				return;
 			}
 		}
-		if (this.objeto > 0) {
+		
+		if (this.objectSlot > 0) {
 			player.enviarMensaje("No puedes cambiar tu oferta.", FontType.FONTTYPE_TALK);
 			return;
 		}
-		this.objeto = slot;
+		
+		this.objectSlot = slot;
 		this.cant = amount;
 		if (this.destUsu != player.getId()) {
 			sendCommerceEnded();
@@ -263,29 +267,30 @@ public class UserTrade {
 		if (this.acepto) {
 			// NO NO NO vos te estas pasando de listo...
 			this.acepto = false;
-			targetClient.enviarMensaje(player.m_nick + " ha cambiado su oferta.", FontType.FONTTYPE_TALK);
+			targetPlayer.enviarMensaje(player.m_nick + " ha cambiado su oferta.", FontType.FONTTYPE_TALK);
 		}
+		
 		// Es la ofrenda de respuesta :)
-		targetClient.m_comUsu.recibirObjetoTransaccion(targetClient);
+		targetPlayer.m_comUsu.recibirObjetoTransaccion();
 	}
 
-	void recibirObjetoTransaccion(Player client) {
+	void recibirObjetoTransaccion() {
 		if (this.destUsu == 0) {
 			return;
 		}
-		Player targetClient = client.server.playerById(this.destUsu);
+		Player targetPlayer = player.server.playerById(this.destUsu);
 
 		short objid = 0;
-		if (this.objeto == Constants.FLAGORO) {
+		if (this.objectSlot == Constants.FLAGORO) {
 			objid = Constants.OBJ_ORO;
 		} else {
-			objid = targetClient.m_inv.getObjeto(this.objeto).objid;
+			objid = targetPlayer.m_inv.getObjeto(this.objectSlot).objid;
 		}
 		if (this.cant <= 0 || objid <= 0) {
 			return;
 		}
 		if (objid > 0 && this.cant > 0) {
-			player.updateVentanaComercio(objid, cant);
+			this.player.updateVentanaComercio(objid, cant);
 		}
 	}
 	

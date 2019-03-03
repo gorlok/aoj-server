@@ -122,16 +122,15 @@ public class Guild {
     	this.codex[slot-1] = msg;
     }
     
-    public void enviarMensaje(String mensaje, FontType font) {
+    public void messageToGuildMembers(String message, FontType font) {
     	// ToGuildMembers
-        Player cliente;
         for (String member: this.members) {
-            cliente = this.server.playerByUserName(member);
-            cliente.enviarMensaje(mensaje, font);            
+            this.server.playerByUserName(member)
+            	.enviarMensaje(message, font);            
         }
     }
     
-    public void enviarSonido(byte sound) {
+    public void sendPlayWave(byte sound) {
     	// ToGuildMembers
         Player player;
         for (String member: this.members) {
@@ -426,11 +425,11 @@ public class Guild {
     }
 
     public void removeMember(String name) {
-        Player cliente;
+        Player player;
         for (String member: this.members) {
-            cliente = this.server.playerByUserName(member);
-            if (cliente.getNick().equalsIgnoreCase(name)) {
-            	this.members.remove(cliente.getNick());          
+            player = this.server.playerByUserName(member);
+            if (player.getNick().equalsIgnoreCase(name)) {
+            	this.members.remove(player.getNick());          
             }
         }
     }
@@ -487,21 +486,21 @@ public class Guild {
         return this.ballotBox.getWinner();
     }
 
-    public void computeVote(Player cliente, String vote) {
+    public void computeVote(Player player, String member) {
         if (!this.elections) {
-            cliente.enviarMensaje("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
+            player.enviarMensaje("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
             return;
          }
-         if (cliente.guildInfo().yaVoto()) {
-            cliente.enviarMensaje("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
+         if (player.guildInfo().yaVoto()) {
+            player.enviarMensaje("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
             return;
          }
-         if (!this.isMember(vote)) {
-            cliente.enviarMensaje("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
+         if (!this.isMember(member)) {
+            player.enviarMensaje("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
             return;
          }
-         this.ballotBox.addVote(vote);
-         cliente.guildInfo().voto();
-         cliente.enviarMensaje("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
+         this.ballotBox.addVote(member);
+         player.guildInfo().voto();
+         player.enviarMensaje("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
     }
 }

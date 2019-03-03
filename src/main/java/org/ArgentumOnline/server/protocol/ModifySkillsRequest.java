@@ -16,7 +16,7 @@ public class ModifySkillsRequest extends ClientPacket {
 	}
 	public static ModifySkillsRequest decode(ByteBuf in) {    
 		try {                                   
-			byte[] skills = readBytes(in, Skill.MAX_SKILLS);
+			byte[] skills = readBytes(in, Skill.values().length);
 			return new ModifySkillsRequest(skills);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        

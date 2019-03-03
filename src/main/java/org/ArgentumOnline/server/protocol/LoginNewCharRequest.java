@@ -65,7 +65,7 @@ public class LoginNewCharRequest extends ClientPacket {
 			byte race = readByte(in);
 			byte gender = readByte(in);
 			byte clazz = readByte(in);
-			byte[] skills = readBytes(in, Skill.MAX_SKILLS);
+			byte[] skills = readBytes(in, Skill.values().length);
 			String email = readStr(in);
 			byte homeland = readByte(in);
 			return new LoginNewCharRequest(userName,password,version1,version2,version3,versionGrafs,versionWavs,versionMidis,versionInits,versionMapas,versionAoExe,versionExtras,race,gender,clazz,skills,email,homeland);                  

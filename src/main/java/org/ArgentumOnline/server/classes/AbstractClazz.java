@@ -31,6 +31,7 @@ import org.ArgentumOnline.server.UserFaction;
 import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.UserRace;
 import org.ArgentumOnline.server.UserStats;
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 
@@ -127,7 +128,7 @@ public abstract class AbstractClazz implements Constants {
 
 	/** Incremento de salud al subir de nivel */
 	protected int getMejoraSalud(UserStats estads) {
-		return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2);
+		return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 	}
 
 	/** Incremento de mana al subir de nivel */
@@ -146,8 +147,8 @@ public abstract class AbstractClazz implements Constants {
 	}
 
 	/** Subir las estadísticas segun la clase */
-	public void subirEstads(Player cliente) {
-		UserStats estads = cliente.stats();
+	public void subirEstads(Player player) {
+		UserStats estads = player.stats();
 
 		// Las mejoras varian según las características de cada clase.
 		int aumentoSalud = getMejoraSalud(estads);
@@ -158,32 +159,32 @@ public abstract class AbstractClazz implements Constants {
 		if (aumentoSalud > 0) {
 			estads.addMaxHP(aumentoSalud);
 			estads.fullHP(); // Recupera la salud al 100%.
-			cliente.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoStamina > 0) {
 			estads.addMaxSTA(aumentoStamina);
-			cliente.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoMana > 0) {
 			estads.addMaxMANA(aumentoMana);
-			cliente.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoGolpe > 0) {
 			estads.addMaxHIT(aumentoGolpe);
 			estads.addMinHIT(aumentoGolpe);
-			cliente.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
 		}
 	}
 
-	public short getArmaduraImperial(Player cliente) {
-		if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraImperial(Player player) {
+		if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
 			return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 		}
 		return UserFaction.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
 	}
 
-	public short getArmaduraCaos(Player cliente) {
-		if (cliente.race() == UserRace.RAZA_ENANO || cliente.race() == UserRace.RAZA_GNOMO) {
+	public short getArmaduraCaos(Player player) {
+		if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
 			return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 		}
 		return UserFaction.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);

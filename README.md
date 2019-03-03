@@ -5,6 +5,8 @@ A Java implementation of Argentum Online's server.
 
 Work in progress. Not even alpha. __Here be dragons__.
 
+AO's binary protocol: v0.12.3
+
 (PROPER README to be written)
 
 ## Requirements to build

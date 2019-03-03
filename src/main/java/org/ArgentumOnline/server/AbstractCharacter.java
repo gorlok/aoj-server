@@ -28,7 +28,7 @@ package org.ArgentumOnline.server;
 import org.ArgentumOnline.server.map.MapPos;
 
 /** 
- * Character base class. Superclass of the clients and the NPCs.
+ * Character base class
  * @author gorlok
  */
 public abstract class AbstractCharacter implements Constants {

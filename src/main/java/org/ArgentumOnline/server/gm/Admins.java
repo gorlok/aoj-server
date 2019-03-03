@@ -11,14 +11,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.GamblerStats;
-import org.ArgentumOnline.server.UserFaction;
-import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
+import org.ArgentumOnline.server.UserFaction;
+import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.SpawnListResponse;
@@ -277,7 +276,7 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (admin.warpUser(usuario.pos().map, usuario.pos().x, usuario.pos().y, true)) {
+		if (admin.warpMe(usuario.pos().map, usuario.pos().x, usuario.pos().y, true)) {
 			if (!admin.flags().AdminInvisible) {
 				usuario.enviarMensaje(admin.getNick() + " se ha trasportado hacia donde te encuentras.", FontType.FONTTYPE_INFO);
 			}
@@ -534,7 +533,7 @@ public class Admins {
 		// Se creara el Teleport una celda arriba de la posicion del GM.
 		byte x = admin.pos().x;
 		byte y = (byte) (admin.pos().y - 1);
-		if (mapa.hayObjeto(x, y)) {
+		if (mapa.hasObject(x, y)) {
 			admin.enviarMensaje("Lo siento, no hay lugar para crear un teleport arriba del usuario. Prueba en otro lugar.",
 					FontType.FONTTYPE_WARNING);
 			return;
@@ -718,7 +717,7 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
 		Map mapa = server.getMap(admin.pos().map);
 		if (mapa != null) {
-			if (mapa.hayObjeto(admin.pos().x, admin.pos().y)) {
+			if (mapa.hasObject(admin.pos().x, admin.pos().y)) {
 				return;
 			}
 			if (mapa.isTeleport(admin.pos().x, admin.pos().y)) {
@@ -860,7 +859,7 @@ public class Admins {
 			return;
 		}
 		Log.logGM(admin.getNick(), "Hizo /SUM " + s);
-		if (usuario.warpUser(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
+		if (usuario.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
 			admin.enviarMensaje(usuario.getNick() + " ha sido trasportado.", FontType.FONTTYPE_INFO);
 			usuario.enviarMensaje("Has sido trasportado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "/SUM " + usuario.getNick() + 
@@ -954,7 +953,7 @@ public class Admins {
 			admin.enviarMensaje("No puedes encarcelar por mas de 30 minutos!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		usuario.encarcelar(minutos, admin.getNick());
+		usuario.sendToJail(minutos, admin.getNick());
 	}
 
 	public void doPerdonar(Player admin, String s) {
@@ -1014,7 +1013,7 @@ public class Admins {
 		if (usuario.isAlive()) {
 			admin.enviarMensaje(usuario.getNick() + " no esta muerto!", FontType.FONTTYPE_INFO);
 		} else {
-			usuario.revivirUsuario();
+			usuario.revive();
 			usuario.enviarMensaje(admin.getNick() + " te ha resucitado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "Resucitó a " + usuario.getNick());
 		}
@@ -1093,8 +1092,8 @@ public class Admins {
 		Log.logGM(admin.getNick(), "/SKILLS " + s);
 
 		admin.enviarMensaje(usuario.getNick(), FontType.FONTTYPE_INFO);
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			admin.enviarMensaje(" " + Skill.skillsNames[i] + " = " + usuario.stats().userSkills(i), FontType.FONTTYPE_INFO);
+		for (Skill skill : Skill.values()) {
+			admin.enviarMensaje(" " + skill + " = " + usuario.skills().get(skill), FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -1154,7 +1153,7 @@ public class Admins {
 
 	public void doTeleploc(Player admin) {
 		// Comando /TELEPLOC
-		if (admin.warpUser(admin.flags().TargetMap, admin.flags().TargetX, admin.flags().TargetY, true)) {
+		if (admin.warpMe(admin.flags().TargetMap, admin.flags().TargetX, admin.flags().TargetY, true)) {
 			Log.logGM(admin.getNick(), "hizo un /TELEPLOC a x=" + admin.flags().TargetX + 
 					" y=" + admin.flags().TargetY + " mapa=" + admin.flags().TargetMap);
 		}
@@ -1189,7 +1188,7 @@ public class Admins {
 			admin.enviarMensaje("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.warpUser(m, x, y, true)) {
+		if (usuario.warpMe(m, x, y, true)) {
 			usuario.enviarMensaje(usuario.getNick() + " transportado.", FontType.FONTTYPE_INFO);
 			Log.logGM(admin.getNick(), "Transportó con un /TELEP a " + usuario.getNick() + 
 					" hacia el mapa=" + m + " x=" + x + " y=" + y);

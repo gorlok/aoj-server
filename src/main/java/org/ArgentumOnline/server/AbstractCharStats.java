@@ -26,12 +26,10 @@
 package org.ArgentumOnline.server;
 
 /**
- * Estadisticas básicas, de salud, golpe y usuarios matados.
+ * Estadisticas básicas, de salud y golpe.
  * @author gorlok
  */
 public abstract class AbstractCharStats implements Constants {
-    
-    public int usuariosMatados = 0;
     
     /** Health Points (SALUD): Maximo de salud */
     public int MaxHP = 0;
@@ -88,11 +86,6 @@ public abstract class AbstractCharStats implements Constants {
         if (this.MinHIT > STAT_MAXHIT) {
 			this.MinHIT = STAT_MAXHIT;
 		}
-    }
-    
-    /** Incrementar estadística de usuarios matados */
-    public void incUsuariosMatados() {
-        this.usuariosMatados++;
     }
     
 }

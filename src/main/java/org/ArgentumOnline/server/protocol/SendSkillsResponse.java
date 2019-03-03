@@ -16,7 +16,7 @@ public class SendSkillsResponse extends ServerPacket {
 	}
 	public static SendSkillsResponse decode(ByteBuf in) {    
 		try {                                   
-			byte[] skills = readBytes(in, Skill.MAX_SKILLS);
+			byte[] skills = readBytes(in, Skill.values().length);
 			return new SendSkillsResponse(skills);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        

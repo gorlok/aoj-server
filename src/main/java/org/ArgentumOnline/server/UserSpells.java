@@ -27,6 +27,7 @@ package org.ArgentumOnline.server;
 
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.npc.Npc;
@@ -47,12 +48,12 @@ public class UserSpells implements Constants {
 	
 	short m_hechizos[] = new short[MAX_HECHIZOS];
 	
-	private Player client;
+	private Player player;
 	private GameServer server;
 	
-	public UserSpells(GameServer server, Player client) {
+	public UserSpells(GameServer server, Player player) {
 		this.server = server;
-		this.client = client;
+		this.player = player;
 	}
 	
 	public int getCount() {
@@ -91,29 +92,29 @@ public class UserSpells implements Constants {
 			return;
 		}
 		if (isSlotEmpty(slot)) {
-			client.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) 0, "(Vacío)"));
+			player.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) 0, "(Vacío)"));
 			return;
 		}
 		Spell spell = server.getHechizo(getSpell(slot));
-		client.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) spell.getId(), spell.getName()));
+		player.sendPacket(new ChangeSpellSlotResponse((byte) slot, (short) spell.getId(), spell.getName()));
 	}
 
 	public void sendMeSpellInfo(short slot) {
 		if (slot < 1 || slot > MAX_HECHIZOS) {
-			client.enviarMensaje("¡Primero selecciona el hechizo.!", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("¡Primero selecciona el hechizo.!", FontType.FONTTYPE_INFO);
 		} else {
 			int numHechizo = m_hechizos[slot - 1];
 			if (numHechizo > 0) {
 				Spell hechizo = server.getHechizo(numHechizo);
-				client.enviarMensaje("||%%%%%%%%%%%% INFO DEL HECHIZO %%%%%%%%%%%%",
+				player.enviarMensaje("||%%%%%%%%%%%% INFO DEL HECHIZO %%%%%%%%%%%%",
 					FontType.FONTTYPE_INFO);
-				client.enviarMensaje("||Nombre: " + hechizo.Nombre, FontType.FONTTYPE_INFO);
-				client.enviarMensaje("||Descripcion: " + hechizo.Desc, FontType.FONTTYPE_INFO);
-				client.enviarMensaje("||Skill requerido: " + hechizo.MinSkill
+				player.enviarMensaje("||Nombre: " + hechizo.Nombre, FontType.FONTTYPE_INFO);
+				player.enviarMensaje("||Descripcion: " + hechizo.Desc, FontType.FONTTYPE_INFO);
+				player.enviarMensaje("||Skill requerido: " + hechizo.MinSkill
 						+ " de magia.", FontType.FONTTYPE_INFO);
-				client.enviarMensaje("||Mana necesario: " + hechizo.ManaRequerido,
+				player.enviarMensaje("||Mana necesario: " + hechizo.ManaRequerido,
 					FontType.FONTTYPE_INFO);
-				client.enviarMensaje("||%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
+				player.enviarMensaje("||%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
 					FontType.FONTTYPE_INFO);
 			}
 		}
@@ -128,8 +129,8 @@ public class UserSpells implements Constants {
 		
 		System.out.println(" " + slot + "");
 		
-		client.flags().Hechizo = m_hechizos[slot - 1];
-		log.info("doLanzarHechizo =====> " + client.flags().Hechizo);
+		player.flags().Hechizo = m_hechizos[slot - 1];
+		log.info("doLanzarHechizo =====> " + player.flags().Hechizo);
 	}
 
 	public boolean tieneHechizo(int numHechizo) {
@@ -151,23 +152,23 @@ public class UserSpells implements Constants {
 	}
 
 	public void agregarHechizo(int slot) {
-		int oid = client.userInv().getObjeto(slot).objid;
+		int oid = player.userInv().getObjeto(slot).objid;
 		ObjectInfo objHechizo = server.getObjectInfoStorage().getInfoObjeto(oid);
 		short numHechizo = objHechizo.HechizoIndex;
 		if (!tieneHechizo(numHechizo)) {
 			// Buscamos un slot vacio
 			int slotLibre = slotLibreHechizos();
 			if (slotLibre == 0) {
-				client.enviarMensaje("No tienes espacio para más hechizos.",
+				player.enviarMensaje("No tienes espacio para más hechizos.",
 					FontType.FONTTYPE_INFO);
 			} else {
 				// Actualizamos la lista de hechizos,
 				changeUserHechizo(slotLibre, numHechizo);
 				// y quitamos el item del inventario.
-				client.userInv().quitarUserInvItem(slot, 1);
+				player.userInv().quitarUserInvItem(slot, 1);
 			}
 		} else {
-			client.enviarMensaje("Ya tienes ese hechizo.", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("Ya tienes ese hechizo.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -175,7 +176,7 @@ public class UserSpells implements Constants {
 		if (direction == 1) {
 			// Move spell upward
 			if (slot == 1) {
-				client.enviarMensaje("No puedes mover el hechizo en esa direccion.",
+				player.enviarMensaje("No puedes mover el hechizo en esa direccion.",
 					FontType.FONTTYPE_INFO);
 				return;
 			}
@@ -187,7 +188,7 @@ public class UserSpells implements Constants {
 		} else if (direction == 2) {
 			// Move spell downward
 			if (slot == MAX_HECHIZOS) {
-				client.enviarMensaje("No puedes mover el hechizo en esa direccion.",
+				player.enviarMensaje("No puedes mover el hechizo en esa direccion.",
 					FontType.FONTTYPE_INFO);
 				return;
 			}
@@ -203,28 +204,28 @@ public class UserSpells implements Constants {
 		if (puedeLanzar(hechizo)) {
 			switch (hechizo.Target) {
 			case uUsuarios:
-				if (client.flags().TargetUser > 0) {
+				if (player.flags().TargetUser > 0) {
 					handleHechizoUsuario(hechizo);
 				} else {
-					client.enviarMensaje("Este hechizo actua solo sobre usuarios.",
+					player.enviarMensaje("Este hechizo actua solo sobre usuarios.",
 						FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uNPC:
-				if (client.flags().TargetNpc > 0) {
+				if (player.flags().TargetNpc > 0) {
 					handleHechizoNPC(hechizo);
 				} else {
-					client.enviarMensaje("Este hechizo solo afecta a los npcs.",
+					player.enviarMensaje("Este hechizo solo afecta a los npcs.",
 						FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uUsuariosYnpc:
-				if (client.flags().TargetUser > 0) {
+				if (player.flags().TargetUser > 0) {
 					handleHechizoUsuario(hechizo);
-				} else if (client.flags().TargetNpc > 0) {
+				} else if (player.flags().TargetNpc > 0) {
 					handleHechizoNPC(hechizo);
 				} else {
-					client.enviarMensaje("Target inválido.", FontType.FONTTYPE_INFO);
+					player.enviarMensaje("Target inválido.", FontType.FONTTYPE_INFO);
 				}
 				break;
 			case uTerreno:
@@ -232,12 +233,12 @@ public class UserSpells implements Constants {
 				break;
 			}
 		}
-		client.flags().Trabajando = false;
+		player.flags().Trabajando = false;
 	}
 
 	public boolean hechizoEstadoUsuario() {
-		Spell hechizo = server.getHechizo(client.flags().Hechizo);
-		Player targetUser = server.playerById(client.flags().TargetUser);
+		Spell hechizo = server.getHechizo(player.flags().Hechizo);
+		Player targetUser = server.playerById(player.flags().TargetUser);
 		if (hechizo.Invisibilidad == 1) {
 			targetUser.flags().Invisible = true;
 			//mapa.enviarATodos(MSG_NOVER, targetUser.m_id, 1);
@@ -245,11 +246,11 @@ public class UserSpells implements Constants {
 			return true;
 		}
 		if (hechizo.Envenena == 1) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Envenenado = true;
 			infoHechizo();
@@ -261,11 +262,11 @@ public class UserSpells implements Constants {
 			return true;
 		}
 		if (hechizo.Maldicion == 1) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Maldicion = true;
 			infoHechizo();
@@ -283,11 +284,11 @@ public class UserSpells implements Constants {
 		}
 		if (hechizo.isParaliza()) {
 			if (!targetUser.flags().Paralizado) {
-				if (!client.puedeAtacar(targetUser)) {
+				if (!player.puedeAtacar(targetUser)) {
 					return false;
 				}
-				if (client != targetUser) {
-					client.usuarioAtacadoPorUsuario(targetUser);
+				if (player != targetUser) {
+					player.usuarioAtacadoPorUsuario(targetUser);
 				}
 				targetUser.flags().Paralizado = true;
 				targetUser.m_counters.Paralisis = IntervaloParalizado;
@@ -307,24 +308,24 @@ public class UserSpells implements Constants {
 		if (hechizo.Revivir == 1) {
 			if (!targetUser.isAlive()) {
 				if (!targetUser.isCriminal()) {
-					if (client != targetUser) {
-						client.m_reputacion.incNoble(500);
-						client.enviarMensaje(
+					if (player != targetUser) {
+						player.m_reputacion.incNoble(500);
+						player.enviarMensaje(
 								"¡Los Dioses te sonrien, has ganado 500 puntos de nobleza!.",
 								FontType.FONTTYPE_INFO);
 					}
 				}
-				targetUser.revivirUsuario();
+				targetUser.revive();
 			}
 			infoHechizo();
 			return true;
 		}
 		if (hechizo.Ceguera == 1) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Ceguera = true;
 			targetUser.m_counters.Ceguera = IntervaloParalizado;
@@ -333,11 +334,11 @@ public class UserSpells implements Constants {
 			return true;
 		}
 		if (hechizo.Estupidez == 1) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Estupidez = true;
 			targetUser.m_counters.Ceguera = IntervaloParalizado;
@@ -356,7 +357,7 @@ public class UserSpells implements Constants {
 		}
 		if (hechizo.Envenena == 1) {
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
+				player.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			infoHechizo();
@@ -370,7 +371,7 @@ public class UserSpells implements Constants {
 		}
 		if (hechizo.Maldicion == 1) {
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
+				player.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			infoHechizo();
@@ -394,7 +395,7 @@ public class UserSpells implements Constants {
 				npc.paralizar();
 				return true;
 			}
-			client.enviarMensaje("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
+			player.enviarMensaje("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
 		}
 		if (hechizo.RemoverParalisis == 1) {
 			if (npc.estaParalizado()) {
@@ -402,7 +403,7 @@ public class UserSpells implements Constants {
 				npc.desparalizar();
 				return true;
 			}
-			client.enviarMensaje("El npc no está paralizado.", FONTTYPE_FIGHT);
+			player.enviarMensaje("El npc no está paralizado.", FONTTYPE_FIGHT);
 		}
 		return false;
 	}
@@ -412,26 +413,26 @@ public class UserSpells implements Constants {
 		if (hechizo.SubeHP == 1) {
 			// Curar la salud
 			int cura = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-			cura += Util.porcentaje(cura, 3 * client.stats().ELV);
+			cura += Util.porcentaje(cura, 3 * player.stats().ELV);
 			infoHechizo();
 			npc.m_estads.addMinHP(cura);
-			client.enviarMensaje("Has curado " + cura
+			player.enviarMensaje("Has curado " + cura
 					+ " puntos de salud a la criatura.", FONTTYPE_FIGHT);
 			return true;
 		} else if (hechizo.SubeHP == 2) {
 			// Dañar la salud
 			if (!npc.getAttackable()) {
-				client.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
+				player.enviarMensaje("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			if (npc.getPetUserOwner() != null
-					&& (client.flags().Seguro || client.userFaction().ArmadaReal)) {
+					&& (player.flags().Seguro || player.userFaction().ArmadaReal)) {
 				if (!npc.getPetUserOwner().isCriminal()) {
-					if (client.userFaction().ArmadaReal) {
-						client.enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
+					if (player.userFaction().ArmadaReal) {
+						player.enviarMensaje("Los soldados del Ejercito Real tienen prohibido atacar a ciudadanos y sus mascotas.",
 							FontType.FONTTYPE_WARNING);
 					} else {
-						client.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
+						player.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
 							FontType.FONTTYPE_WARNING);
 					}
 					return false;
@@ -439,25 +440,25 @@ public class UserSpells implements Constants {
 			}
 			
 			//FIX by AGUSH: we check if user can attack to guardians
-			if (npc.isNpcGuard() && client.hasSafeLock()) {
-				client.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
+			if (npc.isNpcGuard() && player.hasSafeLock()) {
+				player.enviarMensaje("Tienes el seguro activado. Presiona la tecla *.",
 						FontType.FONTTYPE_INFO);
 				return false;
 			}
 			
 			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-			daño += Util.porcentaje(daño, 3 * client.stats().ELV);
+			daño += Util.porcentaje(daño, 3 * player.stats().ELV);
 			infoHechizo();
-			client.npcAtacado(npc);
+			player.npcAtacado(npc);
 			if (npc.getSonidoAtaqueExitoso() > 0) {
-				client.enviarSonido(npc.getSonidoAtaqueExitoso());
+				player.enviarSonido(npc.getSonidoAtaqueExitoso());
 			}
 			npc.m_estads.quitarHP(daño);
-			client.enviarMensaje("Le has causado " + daño
+			player.enviarMensaje("Le has causado " + daño
 					+ " puntos de daño a la criatura!", FONTTYPE_FIGHT);
-			npc.calcularDarExp(client, daño);
+			npc.calcularDarExp(player, daño);
 			if (npc.m_estads.MinHP < 1) {
-				npc.muereNpc(client);
+				npc.muereNpc(player);
 			}
 			return true;
 		}
@@ -465,45 +466,45 @@ public class UserSpells implements Constants {
 	}
 
 	public boolean hechizoPropUsuario() {
-		Spell hechizo = server.getHechizo(client.flags().Hechizo);
-		Player targetUser = server.playerById(client.flags().TargetUser);
+		Spell hechizo = server.getHechizo(player.flags().Hechizo);
+		Player targetUser = server.playerById(player.flags().TargetUser);
 		// Hambre
 		if (hechizo.SubeHam == 1) {
 			// Aumentar hambre
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinHam, hechizo.MaxHam);
 			targetUser.m_estads.aumentarHambre(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has restaurado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de hambre a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
+				targetUser.enviarMensaje(player.getNick() + " te ha restaurado "
 						+ daño + " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has restaurado " + daño
+				player.enviarMensaje("Te has restaurado " + daño
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			targetUser.enviarEstadsHambreSed();
 			return true;
 		} else if (hechizo.SubeHam == 2) {
 			// Quitar hambre
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinHam, hechizo.MaxHam);
 			targetUser.m_estads.quitarHambre(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has quitado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has quitado " + daño
 						+ " puntos de hambre a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
+				targetUser.enviarMensaje(player.getNick() + " te ha quitado " + daño
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has quitado " + daño
+				player.enviarMensaje("Te has quitado " + daño
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			targetUser.enviarEstadsHambreSed();
@@ -518,35 +519,35 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinSed, hechizo.MaxSed);
 			targetUser.m_estads.aumentarSed(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has restaurado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de sed a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
+				targetUser.enviarMensaje(player.getNick() + " te ha restaurado "
 						+ daño + " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has restaurado " + daño
+				player.enviarMensaje("Te has restaurado " + daño
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeSed == 2) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinSed, hechizo.MaxSed);
 			targetUser.m_estads.quitarSed(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has quitado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has quitado " + daño
 						+ " puntos de sed a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
+				targetUser.enviarMensaje(player.getNick() + " te ha quitado " + daño
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje(
+				player.enviarMensaje(
 					"Te has quitado " + daño + " puntos de sed.",
 					FONTTYPE_FIGHT);
 			}
@@ -561,21 +562,21 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.m_estads.aumentarAtributo(ATRIB_AGILIDAD, daño);
+			targetUser.stats().attr().modify(Attribute.AGILIDAD, daño);
 			targetUser.flags().TomoPocion = true;
 			return true;
 		} else if (hechizo.SubeAgilidad == 2) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.m_estads.disminuirAtributo(ATRIB_AGILIDAD, daño);
+			targetUser.stats().attr().modify(Attribute.AGILIDAD, -daño);
 			return true;
 		}
 		// <-------- Fuerza ---------->
@@ -583,65 +584,65 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.m_estads.aumentarAtributo(ATRIB_FUERZA, daño);
+			targetUser.stats().attr().modify(Attribute.FUERZA, daño);
 			targetUser.flags().TomoPocion = true;
 			return true;
 		} else if (hechizo.SubeFuerza == 2) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.m_estads.disminuirAtributo(ATRIB_FUERZA, daño);
+			targetUser.stats().attr().modify(Attribute.FUERZA, -daño);
 			return true;
 		}
 		// Salud
 		if (hechizo.SubeHP == 1) {
 			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-			daño += Util.porcentaje(daño, 3 * client.stats().ELV);
+			daño += Util.porcentaje(daño, 3 * player.stats().ELV);
 			infoHechizo();
 			targetUser.m_estads.addMinHP(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has restaurado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de vida a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
+				targetUser.enviarMensaje(player.getNick() + " te ha restaurado "
 						+ daño + " puntos de vida.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has restaurado " + daño
+				player.enviarMensaje("Te has restaurado " + daño
 						+ " puntos de vida.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeHP == 2) {
-			if (client == targetUser) {
-				client.enviarMensaje("No puedes atacarte a ti mismo.",
+			if (player == targetUser) {
+				player.enviarMensaje("No puedes atacarte a ti mismo.",
 					FONTTYPE_FIGHT);
 				return false;
 			}
 			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-			daño += Util.porcentaje(daño, 3 * client.stats().ELV);
-			if (!client.puedeAtacar(targetUser)) {
+			daño += Util.porcentaje(daño, 3 * player.stats().ELV);
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			targetUser.m_estads.quitarHP(daño);
-			client.enviarMensaje("Le has quitado " + daño + " puntos de vida a "
+			player.enviarMensaje("Le has quitado " + daño + " puntos de vida a "
 					+ targetUser.m_nick, FONTTYPE_FIGHT);
-			targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
+			targetUser.enviarMensaje(player.getNick() + " te ha quitado " + daño
 					+ " puntos de vida.", FONTTYPE_FIGHT);
 			// Muere
 			if (targetUser.m_estads.MinHP < 1) {
-				client.contarMuerte(targetUser);
+				player.contarMuerte(targetUser);
 				targetUser.m_estads.MinHP = 0;
-				client.actStats(targetUser);
+				player.actStats(targetUser);
 				targetUser.userDie();
 			}
 			return true;
@@ -651,34 +652,34 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinMana, hechizo.MaxMana);
 			targetUser.m_estads.aumentarMana(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has restaurado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de mana a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
+				targetUser.enviarMensaje(player.getNick() + " te ha restaurado "
 						+ daño + " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has restaurado " + daño
+				player.enviarMensaje("Te has restaurado " + daño
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeMana == 2) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinMana, hechizo.MaxMana);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has quitado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has quitado " + daño
 						+ " puntos de mana a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
+				targetUser.enviarMensaje(player.getNick() + " te ha quitado " + daño
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has quitado " + daño
+				player.enviarMensaje("Te has quitado " + daño
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			targetUser.m_estads.quitarMana(daño);
@@ -689,34 +690,34 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinSta, hechizo.MaxSta);
 			targetUser.m_estads.aumentarStamina(daño);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has restaurado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has restaurado " + daño
 						+ " puntos de energia a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha restaurado "
+				targetUser.enviarMensaje(player.getNick() + " te ha restaurado "
 						+ daño + " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has restaurado " + daño
+				player.enviarMensaje("Te has restaurado " + daño
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			return true;
 		} else if (hechizo.SubeSta == 2) {
-			if (!client.puedeAtacar(targetUser)) {
+			if (!player.puedeAtacar(targetUser)) {
 				return false;
 			}
-			if (client != targetUser) {
-				client.usuarioAtacadoPorUsuario(targetUser);
+			if (player != targetUser) {
+				player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinSta, hechizo.MaxSta);
-			if (client != targetUser) {
-				client.enviarMensaje("Le has quitado " + daño
+			if (player != targetUser) {
+				player.enviarMensaje("Le has quitado " + daño
 						+ " puntos de energia a " + targetUser.m_nick,
 					FONTTYPE_FIGHT);
-				targetUser.enviarMensaje(client.getNick() + " te ha quitado " + daño
+				targetUser.enviarMensaje(player.getNick() + " te ha quitado " + daño
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje("Te has quitado " + daño
+				player.enviarMensaje("Te has quitado " + daño
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			targetUser.m_estads.quitarStamina(daño);
@@ -726,28 +727,28 @@ public class UserSpells implements Constants {
 	}
 
 	public boolean puedeLanzar(Spell hechizo) {
-		if (!client.checkAlive("No puedes lanzar hechizos porque estas muerto.")) {
+		if (!player.checkAlive("No puedes lanzar hechizos porque estas muerto.")) {
 			return false;
 		}
-		MapPos targetPos = MapPos.mxy(client.flags().TargetMap,
-			client.flags().TargetX, client.flags().TargetY);
-		if (client.pos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
-			client.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+		MapPos targetPos = MapPos.mxy(player.flags().TargetMap,
+			player.flags().TargetX, player.flags().TargetY);
+		if (player.pos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
+			player.enviarMensaje("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 			return false;
 		}
-		if (client.stats().mana < hechizo.ManaRequerido) {
-			client.enviarMensaje("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
+		if (player.stats().mana < hechizo.ManaRequerido) {
+			player.enviarMensaje("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
 			return false;
 		}
-		if (client.stats().userSkills(Skill.SKILL_Magia) < hechizo.MinSkill) {
-			client.enviarMensaje(
+		if (player.skills().get(Skill.SKILL_Magia) < hechizo.MinSkill) {
+			player.enviarMensaje(
 					"No tienes suficientes puntos de magia para lanzar este hechizo.",
 					FontType.FONTTYPE_INFO);
 			return false;
 		}
-		if (client.stats().stamina == 0
-				|| client.stats().stamina < hechizo.StaRequerida) {
-			client.enviarMensaje("Estas muy cansado para lanzar este hechizo.",
+		if (player.stats().stamina == 0
+				|| player.stats().stamina < hechizo.StaRequerida) {
+			player.enviarMensaje("Estas muy cansado para lanzar este hechizo.",
 				FontType.FONTTYPE_INFO);
 			return false;
 		}
@@ -755,25 +756,25 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoInvocacion() {
-		if (client.getUserPets().isFullPets()) {
-			client.enviarMensaje("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
+		if (player.getUserPets().isFullPets()) {
+			player.enviarMensaje("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		
-		Map mapa = server.getMap(client.pos().map);
+		Map mapa = server.getMap(player.pos().map);
 		
 		if (mapa.esZonaSegura()) {
-			client.enviarMensaje("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
+			player.enviarMensaje("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
 			return false;
 		}
 		
 		boolean exito = false;
-		MapPos targetPos = MapPos.mxy(client.flags().TargetMap,
-			client.flags().TargetX, client.flags().TargetY);
-		Spell hechizo = server.getHechizo(client.flags().Hechizo);
+		MapPos targetPos = MapPos.mxy(player.flags().TargetMap,
+			player.flags().TargetX, player.flags().TargetY);
+		Spell hechizo = server.getHechizo(player.flags().Hechizo);
 		for (int i = 0; i < hechizo.Cant; i++) {
 			// Considero que hubo exito si se pudo invocar alguna criatura.
-			exito = exito || (client.crearMascotaInvocacion(hechizo.NumNpc, targetPos) != null); 
+			exito = exito || (player.crearMascotaInvocacion(hechizo.NumNpc, targetPos) != null); 
 		}
 		infoHechizo();
 		return exito;
@@ -787,16 +788,16 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(Skill.SKILL_Magia);
-			client.stats().quitarMana(hechizo.ManaRequerido);
-			client.stats().quitarStamina(hechizo.StaRequerida);
-			client.sendUpdateUserStats();
+			player.subirSkill(Skill.SKILL_Magia);
+			player.stats().quitarMana(hechizo.ManaRequerido);
+			player.stats().quitarStamina(hechizo.StaRequerida);
+			player.sendUpdateUserStats();
 		}
 	}
 
 	private void handleHechizoUsuario(Spell hechizo) {
 		boolean exito = false;
-		Player target = server.playerById(client.flags().TargetUser);
+		Player target = server.playerById(player.flags().TargetUser);
 		if (target == null || target.isGM()) {
 			return;
 		}
@@ -809,17 +810,17 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(Skill.SKILL_Magia);
-			client.stats().quitarMana(hechizo.ManaRequerido);
-			client.stats().quitarStamina(hechizo.StaRequerida);
-			client.sendUpdateUserStats();
-			client.flags().TargetUser = 0;
+			player.subirSkill(Skill.SKILL_Magia);
+			player.stats().quitarMana(hechizo.ManaRequerido);
+			player.stats().quitarStamina(hechizo.StaRequerida);
+			player.sendUpdateUserStats();
+			player.flags().TargetUser = 0;
 		}
 	}
 
 	private void handleHechizoNPC(Spell hechizo) {
 		boolean exito = false;
-		Npc targetNPC = server.npcById(client.flags().TargetNpc);
+		Npc targetNPC = server.npcById(player.flags().TargetNpc);
 		switch (hechizo.Tipo) {
 		case uEstado: // Afectan estados (por ejem : Envenenamiento)
 			exito = hechizoEstadoNPC(targetNPC, hechizo);
@@ -829,38 +830,38 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			client.subirSkill(Skill.SKILL_Magia);
-			client.flags().TargetNpc = 0;
-			client.stats().quitarMana(hechizo.ManaRequerido);
-			client.stats().quitarStamina(hechizo.StaRequerida);
-			client.sendUpdateUserStats();
+			player.subirSkill(Skill.SKILL_Magia);
+			player.flags().TargetNpc = 0;
+			player.stats().quitarMana(hechizo.ManaRequerido);
+			player.stats().quitarStamina(hechizo.StaRequerida);
+			player.sendUpdateUserStats();
 		}
 	}
 
 	public void infoHechizo() {
-		Map mapa = server.getMap(client.pos().map);
-		Spell hechizo = server.getHechizo(client.flags().Hechizo);
-		client.decirPalabrasMagicas(hechizo.PalabrasMagicas);
-		client.enviarSonido(hechizo.WAV);
-		if (client.flags().TargetUser > 0) {
-			mapa.sendCreateFX(client.pos().x, client.pos().y, client.flags().TargetUser,
+		Map mapa = server.getMap(player.pos().map);
+		Spell hechizo = server.getHechizo(player.flags().Hechizo);
+		player.decirPalabrasMagicas(hechizo.PalabrasMagicas);
+		player.enviarSonido(hechizo.WAV);
+		if (player.flags().TargetUser > 0) {
+			mapa.sendCreateFX(player.pos().x, player.pos().y, player.flags().TargetUser,
 				hechizo.FXgrh, hechizo.loops);
-		} else if (client.flags().TargetNpc > 0) {
-			mapa.sendCreateFX(client.pos().x, client.pos().y, client.flags().TargetNpc,
+		} else if (player.flags().TargetNpc > 0) {
+			mapa.sendCreateFX(player.pos().x, player.pos().y, player.flags().TargetNpc,
 				hechizo.FXgrh, hechizo.loops);
 		}
-		if (client.flags().TargetUser > 0) {
-			if (client.getId() != client.flags().TargetUser) {
-				Player target = server.playerById(client.flags().TargetUser);
-				client.enviarMensaje(hechizo.HechiceroMsg + " " + target.m_nick,
+		if (player.flags().TargetUser > 0) {
+			if (player.getId() != player.flags().TargetUser) {
+				Player target = server.playerById(player.flags().TargetUser);
+				player.enviarMensaje(hechizo.HechiceroMsg + " " + target.m_nick,
 					FONTTYPE_FIGHT);
-				target.enviarMensaje(client.getNick() + " " + hechizo.TargetMsg,
+				target.enviarMensaje(player.getNick() + " " + hechizo.TargetMsg,
 					FONTTYPE_FIGHT);
 			} else {
-				client.enviarMensaje(hechizo.PropioMsg, FONTTYPE_FIGHT);
+				player.enviarMensaje(hechizo.PropioMsg, FONTTYPE_FIGHT);
 			}
-		} else if (client.flags().TargetNpc > 0) {
-			client.enviarMensaje(hechizo.HechiceroMsg + "la criatura.",
+		} else if (player.flags().TargetNpc > 0) {
+			player.enviarMensaje(hechizo.HechiceroMsg + "la criatura.",
 				FONTTYPE_FIGHT);
 		}
 	}

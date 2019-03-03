@@ -33,7 +33,7 @@ import org.ArgentumOnline.server.util.FontType;
  */
 public class GuildUser {
     
-	Player cliente;
+	Player player;
     public String  m_guildName = "";
     public long    m_solicitudes = 0;
     public long    m_solicitudesRechazadas = 0;
@@ -46,8 +46,8 @@ public class GuildUser {
     public long    m_clanesParticipo = 0;
     public long    m_guildPoints = 0;
     
-    public GuildUser(Player cliente) {
-        this.cliente = cliente;
+    public GuildUser(Player player) {
+        this.player = player;
     }
     
 	public void ingresarClan(String guildName) {
@@ -91,7 +91,7 @@ public class GuildUser {
     }
     
     public void giveGuildPoints(int pts) {
-        this.cliente.enviarMensaje("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
+        this.player.enviarMensaje("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
         this.m_guildPoints += pts;
         if (this.m_guildPoints > 9000000) {
             this.m_guildPoints = 9000000;

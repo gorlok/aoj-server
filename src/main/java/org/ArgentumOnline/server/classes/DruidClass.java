@@ -26,6 +26,7 @@
 package org.ArgentumOnline.server.classes;
 
 import org.ArgentumOnline.server.UserStats;
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.Util;
 
 /**
@@ -77,13 +78,13 @@ public class DruidClass extends AbstractClazz {
     /** Incremento de salud al subir de nivel */
     @Override
 	protected int getMejoraSalud(UserStats estads) {
-        return Util.Azar(4, estads.userAttributes[ATRIB_CONSTITUCION] / 2);
+        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
     }
     
     /** Incremento de mana al subir de nivel */
     @Override
 	protected int getMejoraMana(UserStats estads) {
-        return 2 * estads.userAttributes[ATRIB_INTELIGENCIA];
+        return 2 * estads.attr().get(Attribute.INTELIGENCIA);
     }
     
     /** Incremento de stamina al subir de nivel */

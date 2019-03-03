@@ -1,7 +1,6 @@
 package org.ArgentumOnline.server;
 
 import static org.ArgentumOnline.server.Constants.IntervaloParalizado;
-import static org.ArgentumOnline.server.Constants.NUMATRIBUTOS;
 import static org.ArgentumOnline.server.Constants.NingunArma;
 import static org.ArgentumOnline.server.Constants.NingunCasco;
 import static org.ArgentumOnline.server.Constants.NingunEscudo;
@@ -12,11 +11,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
 import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,11 +48,11 @@ public class UserStorage {
 			user.enviarError("Error en el personaje.");
 			throw new RuntimeException("Error en el personaje." + user.getNick());
 		}
-		loadUserReputacion(ini);
+		loadUserReputacion(ini, user.reputation());
 	}
 	
 	private boolean validateChr() {
-		return user.infoChar().validateChr() && user.stats().validateSkills();
+		return user.infoChar().validateChr() && user.skills().validateSkills();
 	}
 	
 	public String loadPasswordFromStorage(String nick) 
@@ -130,7 +132,6 @@ public class UserStorage {
 					Short.parseShort(st.nextToken())); // y
 		}
 
-		// int banco_cant = ini.getInt("BancoInventory", "CantidadItems");
 		// Lista de objetos en el banco.
 		for (int i = 0; i < user.getBankInventory().size(); i++) {
 			String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
@@ -139,7 +140,6 @@ public class UserStorage {
 					new InventoryObject(Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken())));
 		}
 
-		// int cant = ini.getInt("Inventory", "CantidadItems");
 		// Lista de objetos del inventario del usuario.
 		for (int i = 0; i < user.userInv().size(); i++) {
 			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
@@ -180,16 +180,64 @@ public class UserStorage {
 		user.m_quest.m_enQuest = (ini.getShort("QUEST", "EnQuest") == 1);
 		user.m_quest.m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
 	}
+	
+	public static CharacterInfoResponse createCharacterInfoResponse(String userName) {
+		// ¿Existe el personaje?
+		if (!Util.existeArchivo(Player.getPjFile(userName))) {
+			return null;
+		}
+		try {
+			IniFile ini = new IniFile(Player.getPjFile(userName));
+			
+			Reputation tmpReputation = new Reputation();
+			loadUserReputacion(ini, tmpReputation);
+			
+			/*
+        'Get previous guilds
+        Miembro = .GetValue("GUILD", "Miembro")
+        If Len(Miembro) > 400 Then
+            Miembro = ".." & Right$(Miembro, 400)
+        End If
+			 */
+			return new CharacterInfoResponse(
+					userName, 
+					(byte)(ini.getShort("INIT", "Raza")),
+					Clazz.findByName(ini.getString("INIT", "Clase")).id(), 
+					(byte)(ini.getShort("INIT", "Genero")), 
+					(byte)ini.getInt("STATS", "ELV"), 
+					ini.getInt("STATS", "GLD"), 
+					ini.getInt("STATS", "BANCO"), 
+					(int)tmpReputation.getPromedio(), 
+					""/* FIXME previousPetitions GetValue("GUILD", "Pedidos") */, 
+					ini.getString("Guild", "GuildName"), 
+					"" /* FIXME previousGuilds */, 
+					(byte) ini.getShort("FACCIONES", "EjercitoReal"), 
+					(byte) ini.getShort("FACCIONES", "EjercitoCaos"), 
+					(int)ini.getLong("FACCIONES", "CiudMatados"), 
+					(int)ini.getLong("FACCIONES", "CrimMatados"));			
+		} catch (java.io.IOException e) {
+			log.fatal("ERROR getChrInfo", e);
+		}
+		return null;
+	}
 
 	private void loadUserStats(IniFile ini) {
-		for (int i = 0; i < NUMATRIBUTOS; i++) {
-			user.stats().userAttributes[i] = (byte) ini.getShort("ATRIBUTOS", "AT" + (i + 1));
-			user.stats().userAttributesBackup[i] = user.stats().userAttributes[i];
+		
+		int i = 1;
+		for (Attribute attr : Attribute.values()) {
+			user.stats().attr().set(attr, ini.getShort("ATRIBUTOS", "AT" + (i++)));
 		}
+		user.stats().attr().backupAttributes();
 
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			user.stats().userSkills(i, (byte) ini.getShort("SKILLS", "SK" + i));
+		i = 1;
+		for (Skill skill : Skill.values()) {
+			user.skills().set(skill, ini.getShort("SKILLS", "SK" + (i++)));
 		}
+		user.skills().SkillPts = ini.getInt("STATS", "SkillPtsLibres");
+
+		user.stats().Exp = ini.getInt("STATS", "EXP");
+		user.stats().ELU = ini.getInt("STATS", "ELU");
+		user.stats().ELV = ini.getInt("STATS", "ELV");
 
 		for (int slot = 1; slot <= user.m_spells.getCount(); slot++) {
 			user.m_spells.setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
@@ -216,25 +264,17 @@ public class UserStorage {
 		user.stats().maxEaten = ini.getInt("STATS", "MaxHAM");
 		user.stats().eaten = ini.getInt("STATS", "MinHAM");
 
-		user.stats().SkillPts = ini.getInt("STATS", "SkillPtsLibres");
-
-		user.stats().Exp = ini.getInt("STATS", "EXP");
-		user.stats().ELU = ini.getInt("STATS", "ELU");
-		user.stats().ELV = ini.getInt("STATS", "ELV");
-
 		user.stats().usuariosMatados = ini.getInt("MUERTES", "UserMuertes");
-		// user.getEstads().criminalesMatados = ini.getInt("MUERTES",
-		// "CrimMuertes");
 		user.stats().NPCsMuertos = ini.getInt("MUERTES", "NpcsMuertes");
 	}
 
-	private void loadUserReputacion(IniFile ini) {
-		user.reputation().asesinoRep = ini.getDouble("REP", "Asesino");
-		user.reputation().bandidoRep = ini.getDouble("REP", "Bandido");
-		user.reputation().burguesRep = ini.getDouble("REP", "Burguesia");
-		user.reputation().ladronRep = ini.getDouble("REP", "Ladrones");
-		user.reputation().nobleRep = ini.getDouble("REP", "Nobles");
-		user.reputation().plebeRep = ini.getDouble("REP", "Plebe");
+	private static void loadUserReputacion(IniFile ini, Reputation reputation) {
+		reputation.asesinoRep = ini.getDouble("REP", "Asesino");
+		reputation.bandidoRep = ini.getDouble("REP", "Bandido");
+		reputation.burguesRep = ini.getDouble("REP", "Burguesia");
+		reputation.ladronRep = ini.getDouble("REP", "Ladrones");
+		reputation.nobleRep = ini.getDouble("REP", "Nobles");
+		reputation.plebeRep = ini.getDouble("REP", "Plebe");
 	}
 
 	public void saveUserToStorage() {
@@ -285,18 +325,18 @@ public class UserStorage {
 			ini.setValue("BAN", "Reason", user.m_banned_reason);
 
 			// ¿Fueron modificados los atributos del usuario?
-			if (!user.flags().TomoPocion) {
-				for (int i = 0; i < user.stats().userAttributes.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.stats().userAttributes[i]);
-				}
-			} else {
-				for (int i = 0; i < user.stats().userAttributes.length; i++) {
-					ini.setValue("ATRIBUTOS", "AT" + (i + 1), user.stats().userAttributesBackup[i]);
+			int i = 1;
+			for (Attribute attr : Attribute.values()) {
+				if (!user.flags().TomoPocion) {
+					ini.setValue("ATRIBUTOS", "AT" + (i++), user.stats().attr().get(attr));
+				} else {
+					ini.setValue("ATRIBUTOS", "AT" + (i++), user.stats().attr().getBackup(attr));
 				}
 			}
 
-			for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-				ini.setValue("SKILLS", "SK" + i, user.stats().userSkills(i));
+			i = 1;
+			for (Skill skill : Skill.values()) {
+				ini.setValue("SKILLS", "SK" + (i++), user.skills().get(skill));
 			}
 
 			ini.setValue("CONTACTO", "Email", user.m_email);
@@ -346,40 +386,36 @@ public class UserStorage {
 			ini.setValue("STATS", "MaxHAM", user.stats().maxEaten);
 			ini.setValue("STATS", "MinHAM", user.stats().eaten);
 
-			ini.setValue("STATS", "SkillPtsLibres", user.stats().SkillPts);
+			ini.setValue("STATS", "SkillPtsLibres", user.skills().SkillPts);
 
 			ini.setValue("STATS", "EXP", user.stats().Exp);
 			ini.setValue("STATS", "ELV", user.stats().ELV);
 			ini.setValue("STATS", "ELU", user.stats().ELU);
 
 			ini.setValue("MUERTES", "UserMuertes", user.stats().usuariosMatados);
-			// ini.setValue("MUERTES", "CrimMuertes",
-			// user.getEstads().criminalesMatados);
 			ini.setValue("MUERTES", "NpcsMuertes", user.stats().NPCsMuertos);
 
-			int cant = user.getBankInventory().size();
-			for (int i = 0; i < user.getBankInventory().size(); i++) {
-				if (user.getBankInventory().getObjeto(i + 1) == null) {
-					ini.setValue("BancoInventory", "Obj" + (i + 1), "0-0");
-					cant--;
+			i = 1;
+			for (InventoryObject invObj : user.getBankInventory()) {
+				if (invObj.estaVacio()) {
+					ini.setValue("BancoInventory", "Obj" + (i++), "0-0");
 				} else {
-					ini.setValue("BancoInventory", "Obj" + (i + 1),
-							user.getBankInventory().getObjeto(i + 1).objid + "-" + user.getBankInventory().getObjeto(i + 1).cant);
+					ini.setValue("BancoInventory", "Obj" + (i++), invObj.objid + "-" + invObj.cant);
 				}
 			}
-			ini.setValue("BancoInventory", "CantidadItems", cant);
+			ini.setValue("BancoInventory", "CantidadItems", user.getBankInventory().size());
 
-			cant = user.userInv().size();
-			for (int i = 0; i < user.userInv().size(); i++) {
-				if (user.userInv().getObjeto(i + 1) == null) {
-					ini.setValue("Inventory", "Obj" + (i + 1), "0-0-0");
-					cant--;
+			i = 1;
+			for (InventoryObject invObj : user.userInv()) {
+				if (invObj.estaVacio()) {
+					ini.setValue("Inventory", "Obj" + (i++), "0-0-0");
 				} else {
-					ini.setValue("Inventory", "Obj" + (i + 1), user.userInv().getObjeto(i + 1).objid + "-"
-							+ user.userInv().getObjeto(i + 1).cant + "-" + (user.userInv().getObjeto(i + 1).equipado ? 1 : 0));
+					ini.setValue("Inventory", "Obj" + (i++), 
+						invObj.objid + "-" + invObj.cant + "-" + (invObj.equipado ? 1 : 0));
 				}
 			}
-			ini.setValue("Inventory", "CantidadItems", cant);
+			ini.setValue("Inventory", "CantidadItems", user.userInv().size());
+			
 			ini.setValue("Inventory", "WeaponEqpSlot", user.userInv().getArmaSlot());
 			ini.setValue("Inventory", "ArmourEqpSlot", user.userInv().getArmaduraSlot());
 			ini.setValue("Inventory", "CascoEqpSlot", user.userInv().getCascoSlot());

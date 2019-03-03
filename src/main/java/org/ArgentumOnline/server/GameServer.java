@@ -390,10 +390,9 @@ public class GameServer implements Constants {
     }
     
     private synchronized void removeDropedPlayers() {
-    	// La eliminación de m_clientes de la lista de m_clientes se hace aquí
-    	// para evitar modificaciones concurrentes al hashmap, entre otras cosas.
-    	for (Player cliente: this.playersToDrop) {
-            this.players.remove(cliente.getId());
+    	// Se hace aqui para evitar problemas de concurrencia
+    	for (Player player: this.playersToDrop) {
+            this.players.remove(player.getId());
     	}
     	this.playersToDrop.clear();
     }
@@ -518,17 +517,18 @@ public class GameServer implements Constants {
     	if ("".equals(nombre)) {
 			return null;
 		}
-    	for (Player cliente: players()) {
-            if (cliente.getNick().equalsIgnoreCase(nombre)) {
-                return cliente;
+    	for (Player player: players()) {
+            if (player.getNick().equalsIgnoreCase(nombre)) {
+                return player;
             }
         }
         return null;
     }
     
-    public boolean isPlayerAlreadyConnected(Player cliente) {
-    	for (Player c: players()) {
-            if (cliente != c && cliente.getNick().equalsIgnoreCase(c.getNick())) {
+    public boolean isPlayerAlreadyConnected(Player player) {
+    	for (Player other: players()) {
+            if (player != other 
+            		&& player.getNick().equalsIgnoreCase(other.getNick())) {
                 return true;
             }
         }
@@ -740,7 +740,7 @@ public class GameServer implements Constants {
                     cli.enviarMensaje("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
                     if (cli.m_counters.PiqueteC > 23) {
                         cli.m_counters.PiqueteC = 0;
-                        cli.encarcelar(3, null);
+                        cli.sendToJail(3, null);
                     }
                 } else {
                     if (cli.m_counters.PiqueteC > 0) {
@@ -764,7 +764,7 @@ public class GameServer implements Constants {
                     cli.m_counters.Pena--;
                     if (cli.m_counters.Pena < 1) {
                         cli.m_counters.Pena = 0;
-                        cli.warpUser(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
+                        cli.warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
                         cli.enviarMensaje("Has sido liberado!", FontType.FONTTYPE_INFO);
                     }
                 }
@@ -774,12 +774,12 @@ public class GameServer implements Constants {
     
     private void checkIdleUser() {
         // FIXME
-    	for (Player cliente: players()) {
-            if (cliente != null && cliente.getId() > 0 && cliente.isLogged()) {
-                cliente.m_counters.IdleCount++;
-                if (cliente.m_counters.IdleCount >= IdleLimit) {
-                    cliente.enviarError("Demasiado tiempo inactivo. Has sido desconectado.");
-                    cliente.doSALIR();
+    	for (Player player: players()) {
+            if (player != null && player.getId() > 0 && player.isLogged()) {
+                player.m_counters.IdleCount++;
+                if (player.m_counters.IdleCount >= IdleLimit) {
+                    player.enviarError("Demasiado tiempo inactivo. Has sido desconectado.");
+                    player.doSALIR();
                 }
             }
         }

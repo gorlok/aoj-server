@@ -25,9 +25,7 @@
  */
 package org.ArgentumOnline.server;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -64,95 +62,13 @@ public class UserStats extends AbstractCharStats {
 	public int ELV = 0; // Nivel
 	public int ELU = 0; // Exp. Max del nivel
 
-	private byte userSkills[] = new byte[Skill.MAX_SKILLS];
-	public byte userAttributes[] = new byte[NUMATRIBUTOS];
-	byte userAttributesBackup[] = new byte[NUMATRIBUTOS];
-
+	public int usuariosMatados = 0;
 	public int NPCsMuertos = 0;
-	public int SkillPts = 0; // Puntos de skills sin asignar.
 	
-	public byte[] skills() {
-		return this.userSkills;
-	}
-	
-	public byte userSkills(int skill) {
-		return this.userSkills[skill-1];
-	}
-	
-	public void userSkills(int skill, int value) {
-		this.userSkills[skill-1] = (byte) value;
-	}
-	
-	public boolean validateSkills() {
-		for (int i = 1; i < Skill.MAX_SKILLS; i++) {
-			if (userSkills(i) < 0) {
-				return false;
-			}
-			if (userSkills(i) > 100) {
-				userSkills(i, 100);
-			}
-		}
-		return true;
-	}
+	UserAttributes attr = new UserAttributes();
 
-	public void setSkillPoints(int val) {
-		this.SkillPts = val;
-	}
-
-	/**
-	 * Esto se guardaba en el array de skills, en la posición cero.
-	 * @return
-	 */
-	public int getSkillPoints() {
-		return this.SkillPts;
-	}
-
-	public boolean atributosValidos() {
-		for (byte element : this.userAttributes) {
-			if (element > 18 || element < 1) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public void saveAtributos() {
-		for (int i = 0; i < this.userAttributes.length; i++) {
-			this.userAttributesBackup[i] = this.userAttributes[i];
-		}
-	}
-
-	public void restoreAtributos() {
-		for (int i = 0; i < this.userAttributes.length; i++) {
-			this.userAttributes[i] = this.userAttributesBackup[i];
-		}
-	}
-
-	public boolean skillsValidos() {
-		int totalskpts = 0;
-		// Abs PREVINENE EL HACKEO DE LOS SKILLS %%%%%%%%%%%%%
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			totalskpts += Math.abs(userSkills(i));
-		}
-		return totalskpts == 10;
-		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS SKILLS %%%%%%%%%%%%%
-	}
-
-	public void addSkillPoints(int skill, byte cant) {
-		skills()[skill-1] += cant;
-		if (skills()[skill-1] > Skill.MAX_SKILL_POINTS) {
-			skills()[skill-1] = Skill.MAX_SKILL_POINTS;
-		}
-	}
-
-	public void subirSkills(byte[] incSkills) {
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			this.SkillPts -= incSkills[i];
-			skills()[i-1] += incSkills[i];
-			if (skills()[i-1] > 100) {
-				skills()[i-1] = 100;
-			}
-		}
+	public UserAttributes attr() {
+		return this.attr;
 	}
 	
 	public int getBankGold() {
@@ -223,6 +139,10 @@ public class UserStats extends AbstractCharStats {
 			this.maxMana = STAT_MAXMAN;
 		}
 	}
+	
+	public void incUsuariosMatados() {
+		this.usuariosMatados++;
+	}
 
 	public void incNPCsMuertos() {
 		this.NPCsMuertos++;
@@ -284,36 +204,12 @@ public class UserStats extends AbstractCharStats {
 		}
 	}
 
-	public void aumentarAtributo(int atributo, int cant) {
-		int tmp = this.userAttributes[atributo] + cant;
-		if (tmp > MAXATRIBUTOS) {
-			tmp = MAXATRIBUTOS;
-		}
-		this.userAttributes[atributo] = (byte) tmp;
-	}
-
-	public void disminuirAtributo(int atributo, int cant) {
-		int tmp = this.userAttributes[atributo] - cant;
-		if (tmp < MINATRIBUTOS) {
-			tmp = MINATRIBUTOS;
-		}
-		this.userAttributes[atributo] = (byte) tmp;
-	}
-
-	public Object[] getAtribs() {
-		List<Object> atribs = new LinkedList<Object>();
-		for (byte b : this.userAttributes) {
-			atribs.add(b);
-		}
-		return atribs.toArray();
-	}
-
 	public void inicializarEstads(Clazz clase) {
 		// Salud
-		this.MaxHP = 15 + Util.Azar(1, this.userAttributes[ATRIB_CONSTITUCION] / 3);
+		this.MaxHP = 15 + Util.Azar(1, attr.get(Attribute.CONSTITUCION) / 3);
 		this.MinHP = this.MaxHP;
 		// Stamina
-		int agil = Util.Azar(1, this.userAttributes[ATRIB_AGILIDAD] / 6);
+		int agil = Util.Azar(1, attr.get(Attribute.AGILIDAD) / 6);
 		if (agil < 2) {
 			agil = 2;
 		}
@@ -326,7 +222,7 @@ public class UserStats extends AbstractCharStats {
 		this.maxEaten = 100;
 		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.maxMana = clase.clazz().getManaInicial(this.userAttributes[ATRIB_INTELIGENCIA]);
+		this.maxMana = clase.clazz().getManaInicial(attr.get(Attribute.INTELIGENCIA));
 		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;
