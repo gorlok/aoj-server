@@ -189,5 +189,7 @@ Página del proyecto: http://aojava.sourceforge.net
 Página del desarrollo: http://sourceforge.net/projects/aojava
 
 ---------------------------------------------------------------------------------------
+Project started on 6 de septiembre de 2003, 19:05
+
 Ultima actualización: 24/feb/2004
 <pfl/>
