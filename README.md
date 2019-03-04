@@ -3,6 +3,8 @@ An implementation of Argentum Online using Java.
 
 Argentum Online (a.k.a. AO) is an 2D MMORPG from Argentina.
 
+Read more about Argentum Online on [official wiki community](http://wiki.comunidadargentum.com/) (in Spanish).
+
 # Argentum Online Server
  
 __Here be dragons__

@@ -107,7 +107,7 @@ public class UserStorage {
 		user.counters().Pena = ini.getLong("COUNTERS", "Pena");
 		user.email = ini.getString("CONTACTO", "Email");
 		user.gender = UserGender.value(ini.getShort("INIT", "Genero"));
-		user.clazz = Clazz.findByName(ini.getString("INIT", "Clase").toUpperCase());
+		user.clazz = Clazz.value(ini.getInt("INIT", "Clase"));
 		if (user.clazz == null) {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
@@ -219,7 +219,7 @@ public class UserStorage {
 			return new CharacterInfoResponse(
 					userName, 
 					(byte)(ini.getShort("INIT", "Raza")),
-					Clazz.findByName(ini.getString("INIT", "Clase")).id(), 
+					(byte)(ini.getInt("INIT", "Clase")), 
 					(byte)(ini.getShort("INIT", "Genero")), 
 					(byte)ini.getInt("STATS", "ELV"), 
 					ini.getInt("STATS", "GLD"), 
@@ -361,7 +361,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Genero", user.gender.value());
 			ini.setValue("INIT", "Raza", user.race.value());
 			ini.setValue("INIT", "Hogar", user.homeland);
-			ini.setValue("INIT", "Clase", user.getClazz().clazz().getName());
+			ini.setValue("INIT", "Clase", user.clazz().id());
 			ini.setValue("INIT", "Password", user.password);
 			ini.setValue("INIT", "Desc", user.description);
 			ini.setValue("INIT", "Heading", user.infoChar().heading);

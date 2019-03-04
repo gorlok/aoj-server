@@ -197,11 +197,12 @@ public interface Constants {
     final static byte AdicionalSTMinero   = 25;
     
     // Estadisticas
-    final static int STAT_MAXELV = 99;
+    final static int STAT_MAXELV = 255;
     final static int STAT_MAXHP  = 999;
     final static int STAT_MAXSTA = 999;
     final static int STAT_MAXMAN = 2000;
-    final static int STAT_MAXHIT = 99;
+    final static int STAT_MAXHIT_UNDER36 = 99;
+    final static int STAT_MAXHIT_OVER36 = 999;
     final static int STAT_MAXDEF = 99;
     
     //// NPCs

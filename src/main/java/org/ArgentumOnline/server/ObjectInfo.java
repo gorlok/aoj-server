@@ -422,8 +422,8 @@ public class ObjectInfo implements Constants {
 	            this.objType != ObjType.Barcos;
     }
 
-    public boolean clasePuedeUsarItem(Clazz clase) {
-        return !this.clasesProhibidas.contains(clase.clazz().getName().toUpperCase());
+    public boolean clasePuedeUsarItem(Clazz clazz) {
+        return !this.clasesProhibidas.contains(clazz.getName().toUpperCase());
     }
     
 

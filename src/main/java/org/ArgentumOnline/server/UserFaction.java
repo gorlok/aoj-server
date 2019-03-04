@@ -181,7 +181,7 @@ public class UserFaction implements Constants {
         this.RecompensasReal = (short) (this.CriminalesMatados / 100);
         this.player.hablar(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
-            short armadura = this.player.getClazz().clazz().getArmaduraImperial(this.player);
+            short armadura = this.player.clazz().getArmaduraImperial(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
                 mapa.tirarItemAlPiso(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
@@ -228,7 +228,7 @@ public class UserFaction implements Constants {
         this.RecompensasCaos = (short) (this.CiudadanosMatados / 100);
         this.player.hablar(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
-            short armadura = this.player.getClazz().clazz().getArmaduraCaos(this.player);
+            short armadura = this.player.clazz().getArmaduraCaos(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
                 mapa.tirarItemAlPiso(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));

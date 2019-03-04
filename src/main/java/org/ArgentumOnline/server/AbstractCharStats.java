@@ -65,18 +65,24 @@ public abstract class AbstractCharStats implements Constants {
     }
 
     /** Aumentar máximo de GOLPE */
-    public void addMaxHIT(int cant) {
+    public void addMaxHIT(int cant, int level) {
         this.MaxHIT += cant;
-        if (this.MaxHIT > STAT_MAXHIT) {
-			this.MaxHIT = STAT_MAXHIT;
+        
+        int max = (level < 36) ? Constants.STAT_MAXHIT_UNDER36 : Constants.STAT_MAXHIT_OVER36;
+
+        if (this.MaxHIT > max) {
+			this.MaxHIT = max;
 		}
     }
 
     /** Aumentar GOLPE actual */
-    public void addMinHIT(int cant) {
+    public void addMinHIT(int cant, int level) {
         this.MinHIT += cant;
-        if (this.MinHIT > STAT_MAXHIT) {
-			this.MinHIT = STAT_MAXHIT;
+        
+        int max = (level < 36) ? Constants.STAT_MAXHIT_UNDER36 : Constants.STAT_MAXHIT_OVER36;
+        
+        if (this.MinHIT > max) {
+			this.MinHIT = max;
 		}
     }
     

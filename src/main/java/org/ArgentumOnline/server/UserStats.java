@@ -199,7 +199,7 @@ public class UserStats extends AbstractCharStats {
 		}
 	}
 
-	public void inicializarEstads(Clazz clase) {
+	public void inicializarEstads(Clazz clazz) {
 		// Salud
 		this.MaxHP = 15 + Util.Azar(1, attr.get(Attribute.CONSTITUCION) / 3);
 		this.MinHP = this.MaxHP;
@@ -217,7 +217,7 @@ public class UserStats extends AbstractCharStats {
 		this.maxEaten = 100;
 		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.maxMana = clase.clazz().getManaInicial(attr.get(Attribute.INTELIGENCIA));
+		this.maxMana = clazz.getManaInicial(attr.get(Attribute.INTELIGENCIA));
 		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;

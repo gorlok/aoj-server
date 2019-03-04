@@ -28,7 +28,6 @@ import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
 import org.ArgentumOnline.server.classes.Clazz;
-import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -273,7 +272,7 @@ public class Player extends AbstractCharacter {
 		return getNick() != null && !getNick().isEmpty();
 	}
 
-	public Clazz getClazz() {
+	public Clazz clazz() {
 		return this.clazz;
 	}
 
@@ -1272,7 +1271,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void doNavega() {
-		double modNave = this.clazz.clazz().modNavegacion();
+		double modNave = this.clazz().modNavegacion();
 		ObjectInfo barco = this.userInv.getBarco();
 		if (skills().get(Skill.SKILL_Navegacion) / modNave < barco.MinSkill) {
 			sendMessage("No tenes suficientes conocimientos para usar este barco.", FontType.FONTTYPE_INFO);
@@ -1418,7 +1417,7 @@ public class Player extends AbstractCharacter {
 		if (flags().TargetObjInvIndex > 0) {
 			ObjectInfo info = findObj(flags().TargetObjInvIndex);
 			if (info.objType == ObjType.Minerales
-					&& info.MinSkill <= skills().get(Skill.SKILL_Mineria) / this.clazz.clazz().modFundicion()) {
+					&& info.MinSkill <= skills().get(Skill.SKILL_Mineria) / this.clazz().modFundicion()) {
 				doLingotes();
 			} else {
 				sendMessage("No tenes conocimientos de mineria suficientes para trabajar este mineral.",
@@ -1429,7 +1428,7 @@ public class Player extends AbstractCharacter {
 
 	private double calcularPoderDomador() {
 		return stats().attr().get(Attribute.CARISMA) *
-				(skills().get(Skill.SKILL_Domar) / this.clazz.clazz().modDomar())
+				(skills().get(Skill.SKILL_Domar) / this.clazz().modDomar())
 					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3)
 					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3)
 					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3);
@@ -1475,13 +1474,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doMineria() {
-		stats().quitarStamina(this.clazz.clazz().getEsfuerzoExcavar());
+		stats().quitarStamina(this.clazz().getEsfuerzoExcavar());
 		if (suerteMineria()) {
 			if (flags().TargetObj == 0) {
 				return;
 			}
 			short objid = findObj(flags().TargetObj).MineralIndex;
-			int cant = this.clazz.clazz().getCantMinerales();
+			int cant = this.clazz().getCantMinerales();
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
@@ -1506,9 +1505,9 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doTalar() {
-		stats().quitarStamina(this.clazz.clazz().getEsfuerzoTalar());
+		stats().quitarStamina(this.clazz().getEsfuerzoTalar());
 		if (suerteTalar()) {
-			int cant = this.clazz.clazz().getCantLeños();
+			int cant = this.clazz().getCantLeños();
 			short objid = Leña;
 			Map mapa = this.server.getMap(pos().map);
 			int agregados = this.userInv.agregarItem(objid, cant);
@@ -1634,7 +1633,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doPescarCaña() {
-		stats().quitarStamina(this.clazz.clazz().getEsfuerzoPescar());
+		stats().quitarStamina(this.clazz().getEsfuerzoPescar());
 		if (suertePescarCaña()) {
 			Map mapa = this.server.getMap(pos().map);
 			if (this.userInv.agregarItem(OBJ_PESCADO, 1) < 1) {
@@ -1658,7 +1657,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doPescarRed() {
-		stats().quitarStamina(this.clazz.clazz().getEsfuerzoPescar());
+		stats().quitarStamina(this.clazz().getEsfuerzoPescar());
 		int skills = skills().get(Skill.SKILL_Pesca);
 		if (skills == 0) {
 			return;
@@ -3267,7 +3266,7 @@ public class Player extends AbstractCharacter {
 		sendPacket(new SendSkillsResponse(skills().skills()));
 	}
 
-	public void enviarSubirNivel(short skillPoints) {
+	public void sendLevelUp(short skillPoints) {
 		sendPacket(new LevelUpResponse(skillPoints));
 	}
 
@@ -3312,35 +3311,53 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void checkUserLevel() {
-		// ¿Alcanzo el maximo nivel?
-		if (stats().ELV == STAT_MAXELV) {
-			stats().Exp = 0;
-			stats().ELU = 0;
-			return;
-		}
 		while (stats().Exp >= stats().ELU) {
-			// La exp alcanzó el máximo del nivel, entonces sube de nivel.
+
+			// ¿Alcanzo el maximo nivel?
+			if (stats().ELV == STAT_MAXELV) {
+				stats().Exp = 0;
+				stats().ELU = 0;
+				return;
+			}
+			
+			// Acumuló la experiencia necesaria para subir de nivel
 			boolean wasNewbie = esNewbie();
 			sendWave(SOUND_NIVEL);
 			sendMessage("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
-			short skillPoints = (short) ((stats().ELV == 1) ? 10 : 5);
+			
+			int skillPoints = (stats().ELV == 1) ? 10 : 5;
 			skills().SkillPts += skillPoints;
 			sendMessage("Has ganado " + skillPoints + " skillpoints.", FontType.FONTTYPE_INFO);
+			
 			stats().ELV++;
 			stats().Exp -= stats().ELU;
-			if (wasNewbie && !esNewbie()) {
-				this.userInv.quitarObjsNewbie();
-				salirDeDN();
-			}
-			stats().ELU *= (stats().ELV < 11) ? 1.5 : ((stats().ELV < 25) ? 1.3 : 1.2);
-			this.clazz.clazz().subirEstads(this);
+			
+            if (stats().ELV < 15) {
+            	stats().ELU *= 1.4;
+            } else if (stats().ELV < 21) {
+            	stats().ELU *= 1.35;
+            } else if (stats().ELV < 33) {
+            	stats().ELU *= 1.3;
+            } else if (stats().ELV < 41) {
+            	stats().ELU *= 1.225;
+            } else {
+            	stats().ELU *= 1.175;
+            }
+			
+			this.clazz().subirEstads(this);
 			sendSkills();
-			enviarSubirNivel(skillPoints);
+			sendLevelUp((short)skillPoints);
+			
+			if (wasNewbie && !esNewbie()) {
+				userInv().quitarObjsNewbie();
+				quitDungeonNewbie();
+			}
+			
 			sendUpdateUserStats();
 		}
 	}
 
-	private void salirDeDN() {
+	private void quitDungeonNewbie() {
 		// Si el usuario dejó de ser Newbie, y estaba en el Dungeon Newbie
 		// es transportado a su hogar de origen.
 		if (pos().map == DUNGEON_NEWBIE_MAP) {
@@ -3350,22 +3367,22 @@ public class Player extends AbstractCharacter {
 	}
 
 	public long poderEvasionEscudo() {
-		return (long) ((skills().get(Skill.SKILL_Defensa) * this.clazz.clazz().modEvasionDeEscudoClase()) / 2);
+		return (long) ((skills().get(Skill.SKILL_Defensa) * this.clazz().modEvasionDeEscudoClase()) / 2);
 	}
 
 	public double poderEvasion() {
 		double tmp = 0;
 		if (skills().get(Skill.SKILL_Tacticas) < 31) {
-			tmp = skills().get(Skill.SKILL_Tacticas) * this.clazz.clazz().modificadorEvasion();
+			tmp = skills().get(Skill.SKILL_Tacticas) * this.clazz().modificadorEvasion();
 		} else if (skills().get(Skill.SKILL_Tacticas) < 61) {
 			tmp = (skills().get(Skill.SKILL_Tacticas) + stats().attr().get(Attribute.AGILIDAD))
-					* this.clazz.clazz().modificadorEvasion();
+					* this.clazz().modificadorEvasion();
 		} else if (skills().get(Skill.SKILL_Tacticas) < 91) {
 			tmp = (skills().get(Skill.SKILL_Tacticas) + (2 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorEvasion();
+					* this.clazz().modificadorEvasion();
 		} else {
 			tmp = (skills().get(Skill.SKILL_Tacticas) + (3 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorEvasion();
+					* this.clazz().modificadorEvasion();
 		}
 		return (tmp + (2.5 * Util.Max(stats().ELV - 12, 0)));
 	}
@@ -3373,16 +3390,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueArma() {
 		double tmp = 0;
 		if (skills().get(Skill.SKILL_Armas) < 31) {
-			tmp = skills().get(Skill.SKILL_Armas) * this.clazz.clazz().modificadorPoderAtaqueArmas();
+			tmp = skills().get(Skill.SKILL_Armas) * this.clazz().modificadorPoderAtaqueArmas();
 		} else if (skills().get(Skill.SKILL_Armas) < 61) {
 			tmp = ((skills().get(Skill.SKILL_Armas) + stats().attr().get(Attribute.AGILIDAD))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas());
+					* this.clazz().modificadorPoderAtaqueArmas());
 		} else if (skills().get(Skill.SKILL_Armas) < 91) {
 			tmp = ((skills().get(Skill.SKILL_Armas) + (2 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas());
+					* this.clazz().modificadorPoderAtaqueArmas());
 		} else {
 			tmp = ((skills().get(Skill.SKILL_Armas) + (3 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas());
+					* this.clazz().modificadorPoderAtaqueArmas());
 		}
 		return tmp + (2.5 * Util.Max(stats().ELV - 12, 0));
 	}
@@ -3390,16 +3407,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueProyectil() {
 		double tmp = 0;
 		if (skills().get(Skill.SKILL_Proyectiles) < 31) {
-			tmp = (skills().get(Skill.SKILL_Proyectiles) * this.clazz.clazz().modificadorPoderAtaqueProyectiles());
+			tmp = (skills().get(Skill.SKILL_Proyectiles) * this.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (skills().get(Skill.SKILL_Proyectiles) < 61) {
 			tmp = ((skills().get(Skill.SKILL_Proyectiles) + stats().attr().get(Attribute.AGILIDAD))
-					* this.clazz.clazz().modificadorPoderAtaqueProyectiles());
+					* this.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (skills().get(Skill.SKILL_Proyectiles) < 91) {
 			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (2 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueProyectiles());
+					* this.clazz().modificadorPoderAtaqueProyectiles());
 		} else {
 			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (3 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueProyectiles());
+					* this.clazz().modificadorPoderAtaqueProyectiles());
 		}
 		return (tmp + (2.5 * Util.Max(stats().ELV - 12, 0)));
 	}
@@ -3407,16 +3424,16 @@ public class Player extends AbstractCharacter {
 	public double poderAtaqueWresterling() {
 		double tmp = 0;
 		if (skills().get(Skill.SKILL_Wresterling) < 31) {
-			tmp = (skills().get(Skill.SKILL_Wresterling) * this.clazz.clazz().modificadorPoderAtaqueArmas());
+			tmp = (skills().get(Skill.SKILL_Wresterling) * this.clazz().modificadorPoderAtaqueArmas());
 		} else if (skills().get(Skill.SKILL_Wresterling) < 61) {
 			tmp = (skills().get(Skill.SKILL_Wresterling) + stats().attr().get(Attribute.AGILIDAD))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas();
+					* this.clazz().modificadorPoderAtaqueArmas();
 		} else if (skills().get(Skill.SKILL_Wresterling) < 91) {
 			tmp = (skills().get(Skill.SKILL_Wresterling) + (2 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas();
+					* this.clazz().modificadorPoderAtaqueArmas();
 		} else {
 			tmp = (skills().get(Skill.SKILL_Wresterling) + (3 * stats().attr().get(Attribute.AGILIDAD)))
-					* this.clazz.clazz().modificadorPoderAtaqueArmas();
+					* this.clazz().modificadorPoderAtaqueArmas();
 		}
 		return tmp + (2.5 * Util.Max(stats().ELV - 12, 0));
 	}
@@ -3487,7 +3504,7 @@ public class Player extends AbstractCharacter {
 				// Usa la mata dragones?
 				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) { // Usa la
 					// matadragones?
-					modifClase = this.clazz.clazz().modicadorDañoClaseArmas();
+					modifClase = this.clazz().modicadorDañoClaseArmas();
 					if (npc.npcType() == NpcType.NPCTYPE_DRAGON) { // Ataca
 						// dragon?
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
@@ -3498,7 +3515,7 @@ public class Player extends AbstractCharacter {
 					}
 				} else { // daño comun
 					if (arma.esProyectil()) {
-						modifClase = this.clazz.clazz().modicadorDañoClaseProyectiles();
+						modifClase = this.clazz().modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
@@ -3507,19 +3524,19 @@ public class Player extends AbstractCharacter {
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
-						modifClase = this.clazz.clazz().modicadorDañoClaseArmas();
+						modifClase = this.clazz().modicadorDañoClaseArmas();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 					}
 				}
 			} else { // Ataca usuario
 				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) {
-					modifClase = this.clazz.clazz().modicadorDañoClaseArmas();
+					modifClase = this.clazz().modicadorDañoClaseArmas();
 					dañoArma = 1; // Si usa la espada matadragones daño es 1
 					dañoMaxArma = 1;
 				} else {
 					if (arma.esProyectil()) {
-						modifClase = this.clazz.clazz().modicadorDañoClaseProyectiles();
+						modifClase = this.clazz().modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 						if (arma.esMunicion()) {
@@ -3528,7 +3545,7 @@ public class Player extends AbstractCharacter {
 							dañoMaxArma = arma.MaxHIT;
 						}
 					} else {
-						modifClase = this.clazz.clazz().modicadorDañoClaseArmas();
+						modifClase = this.clazz().modicadorDañoClaseArmas();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
 					}
@@ -4192,7 +4209,7 @@ public class Player extends AbstractCharacter {
 		this.stats().inicializarEstads(this.clazz);
 
 		// Inicializar hechizos:
-		if (this.clazz.clazz().esMagica()) {
+		if (this.clazz().isMagickal()) {
 			this.spells.setSpell(1, HECHIZO_DARDO_MAGICO);
 		}
 
@@ -5046,7 +5063,7 @@ public class Player extends AbstractCharacter {
 		if (usuario == null) {
 			return;
 		}
-		sendMessage("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz.clazz().getName(), FontType.FONTTYPE_INFOBOLD);
+		sendMessage("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz().getName(), FontType.FONTTYPE_INFOBOLD);
 		sendMessage(
 				"CiudadanosMatados: " + usuario.userFaction().CiudadanosMatados +
 				" CriminalesMatados: "+ usuario.userFaction().CriminalesMatados +
@@ -5174,7 +5191,7 @@ public class Player extends AbstractCharacter {
 	 * @return valor del skill efectivo
 	 */
 	public double skillHerreriaEfectivo() {
-		return this.skills().get(Skill.SKILL_Herreria) / this.clazz.clazz().modHerreria();
+		return this.skills().get(Skill.SKILL_Herreria) / this.clazz().modHerreria();
 	}
 
 	/**
@@ -5182,7 +5199,7 @@ public class Player extends AbstractCharacter {
 	 * @return valor del skill efectivo
 	 */
 	public double skillCarpinteriaEfectivo() {
-		return this.skills().get(Skill.SKILL_Carpinteria) / this.clazz.clazz().modCarpinteria();
+		return this.skills().get(Skill.SKILL_Carpinteria) / this.clazz().modCarpinteria();
 	}
 
 	public void agregarHechizo(int slot) {
