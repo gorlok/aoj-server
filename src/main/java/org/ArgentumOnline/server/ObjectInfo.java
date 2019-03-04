@@ -21,7 +21,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
@@ -423,7 +422,7 @@ public class ObjectInfo implements Constants {
     }
 
     public boolean clasePuedeUsarItem(Clazz clazz) {
-        return !this.clasesProhibidas.contains(clazz.getName().toUpperCase());
+        return !this.clasesProhibidas.contains(clazz.toString().toUpperCase());
     }
     
 

@@ -18,7 +18,6 @@
 package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.UserAttributes.Attribute;
-import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

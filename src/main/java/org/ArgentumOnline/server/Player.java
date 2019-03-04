@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
-import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -5063,7 +5062,7 @@ public class Player extends AbstractCharacter {
 		if (usuario == null) {
 			return;
 		}
-		sendMessage("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz().getName(), FontType.FONTTYPE_INFOBOLD);
+		sendMessage("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz().toString(), FontType.FONTTYPE_INFOBOLD);
 		sendMessage(
 				"CiudadanosMatados: " + usuario.userFaction().CiudadanosMatados +
 				" CriminalesMatados: "+ usuario.userFaction().CriminalesMatados +

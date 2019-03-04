@@ -15,15 +15,10 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server.classes;
+package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.UserAttributes.Attribute;
-import org.ArgentumOnline.server.UserFaction;
 import org.ArgentumOnline.server.UserFaction.FactionArmors;
-import org.ArgentumOnline.server.UserRace;
-import org.ArgentumOnline.server.UserStats;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 
@@ -50,6 +45,13 @@ public enum Clazz {
 
 	private boolean magic = false;
 
+    // HP adicionales cuando sube de nivel
+    final static byte AdicionalHPGuerrero = 2 ;
+    final static byte AdicionalSTLadron   = 3;
+    final static byte AdicionalSTLeñador  = 23;
+    final static byte AdicionalSTPescador = 20;
+    final static byte AdicionalSTMinero   = 25;
+    
 	private Clazz(String name, boolean magic) {
 		this.name = name;
 		this.magic = magic;
@@ -66,8 +68,9 @@ public enum Clazz {
 	public static Clazz value(int i) {
 		return values[i-1];
 	}
-
-	public String getName() {
+	
+	@Override
+	public String toString() {
 		return this.name;
 	}
 
@@ -414,21 +417,21 @@ public enum Clazz {
 		case Fisher:
 			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 		case Hunter:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + Constants.AdicionalHPGuerrero;
+			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
 		case Lumberjack:
 			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 		case Mage:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + Constants.AdicionalHPGuerrero / 2;
+			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero / 2;
 		case Miner:
 			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 		case Paladin:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + Constants.AdicionalHPGuerrero;
+			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
 		case Pirate:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + Constants.AdicionalHPGuerrero;
+			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
 		case Thief:
 			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 		case Warrior:
-	        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + Constants.AdicionalHPGuerrero;
+	        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
 	    default:
 	    	return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
 		}
@@ -466,22 +469,22 @@ public enum Clazz {
 		case Druid:
 			return 15;
 		case Fisher:
-			return 15 + Constants.AdicionalSTPescador;
+			return 15 + AdicionalSTPescador;
 		case Hunter:
 			return 15;
 		case Lumberjack:
-			return 15 + Constants.AdicionalSTLeñador;
+			return 15 + AdicionalSTLeñador;
 		case Mage:
-	        int valor = 15 - Constants.AdicionalSTLadron / 2;
+	        int valor = 15 - AdicionalSTLadron / 2;
 	        return (valor < 1) ? 5 : valor;
 		case Miner:
-			return 15 + Constants.AdicionalSTMinero;
+			return 15 + AdicionalSTMinero;
 		case Paladin:
 			return 15;
 		case Pirate:
 			return 15;
 		case Thief:
-			return 15 + Constants.AdicionalSTLadron;
+			return 15 + AdicionalSTLadron;
 		case Warrior:
 	        return 15;
 	    default:

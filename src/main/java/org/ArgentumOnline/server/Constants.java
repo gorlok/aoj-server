@@ -189,13 +189,6 @@ public interface Constants {
     final static byte uMaterializa = 3;
     final static byte uInvocacion = 4;
     
-    // HP adicionales cuando sube de nivel
-    final static byte AdicionalHPGuerrero = 2 ;
-    final static byte AdicionalSTLadron   = 3;
-    final static byte AdicionalSTLeñador  = 23;
-    final static byte AdicionalSTPescador = 20;
-    final static byte AdicionalSTMinero   = 25;
-    
     // Estadisticas
     final static int STAT_MAXELV = 255;
     final static int STAT_MAXHP  = 999;

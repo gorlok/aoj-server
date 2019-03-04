@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.UserAttributes.Attribute;
-import org.ArgentumOnline.server.classes.Clazz;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.npc.Npc;
