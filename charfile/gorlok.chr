@@ -1,5 +1,5 @@
 ;Archivo: charfile/gorlok.chr
-;Ultima modificacion: 02/03/2019 18:41:04
+;Ultima modificacion: 03/03/2019 23:23:57
 
 [ATRIBUTOS]
 AT1=11
@@ -147,7 +147,7 @@ HEADING=3
 HOGAR=0
 LASTIP=192.168.0.186
 PASSWORD=a
-POSITION=1-53-78
+POSITION=1-52-70
 RAZA=1
 
 [INVENTORY]

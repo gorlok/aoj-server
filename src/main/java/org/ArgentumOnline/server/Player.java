@@ -28,6 +28,7 @@ import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
 import org.ArgentumOnline.server.classes.Clazz;
+import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -63,6 +64,7 @@ import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.DiceRollResponse;
 import org.ArgentumOnline.server.protocol.DisconnectResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
+import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
 import org.ArgentumOnline.server.protocol.FameResponse;
 import org.ArgentumOnline.server.protocol.LevelUpResponse;
@@ -1278,40 +1280,40 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!flags().Navegando) {
-			this.infoChar.m_cabeza = 0;
+			this.infoChar.head = 0;
 			if (isAlive()) {
-				this.infoChar.m_cuerpo = barco.Ropaje;
+				this.infoChar.body = barco.Ropaje;
 			} else {
-				this.infoChar.m_cuerpo = OBJ_INDEX_FRAGATA_FANTASMAL;
+				this.infoChar.body = OBJ_INDEX_FRAGATA_FANTASMAL;
 			}
-			this.infoChar.m_escudo = NingunEscudo;
-			this.infoChar.m_arma = NingunArma;
-			this.infoChar.m_casco = NingunCasco;
+			this.infoChar.shield = NingunEscudo;
+			this.infoChar.weapon = NingunArma;
+			this.infoChar.helmet = NingunCasco;
 			flags().Navegando = true;
 		} else {
 			flags().Navegando = false;
 			if (isAlive()) {
-				this.infoChar.m_cabeza = this.origChar.m_cabeza;
+				this.infoChar.head = this.origChar.head;
 				if (this.userInv.tieneArmaduraEquipada()) {
-					this.infoChar.m_cuerpo = this.userInv.getArmadura().Ropaje;
+					this.infoChar.body = this.userInv.getArmadura().Ropaje;
 				} else {
-					cuerpoDesnudo();
+					undress();
 				}
 				if (this.userInv.tieneEscudoEquipado()) {
-					this.infoChar.m_escudo = this.userInv.getEscudo().ShieldAnim;
+					this.infoChar.shield = this.userInv.getEscudo().ShieldAnim;
 				}
 				if (this.userInv.tieneArmaEquipada()) {
-					this.infoChar.m_arma = this.userInv.getArma().WeaponAnim;
+					this.infoChar.weapon = this.userInv.getArma().WeaponAnim;
 				}
 				if (this.userInv.tieneCascoEquipado()) {
-					this.infoChar.m_casco = this.userInv.getCasco().CascoAnim;
+					this.infoChar.helmet = this.userInv.getCasco().CascoAnim;
 				}
 			} else {
-				this.infoChar.m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
-				this.infoChar.m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
-				this.infoChar.m_escudo = NingunEscudo;
-				this.infoChar.m_arma = NingunArma;
-				this.infoChar.m_casco = NingunCasco;
+				this.infoChar.body = OBJ_INDEX_CUERPO_MUERTO;
+				this.infoChar.head = OBJ_INDEX_CABEZA_MUERTO;
+				this.infoChar.shield = NingunEscudo;
+				this.infoChar.weapon = NingunArma;
+				this.infoChar.helmet = NingunCasco;
 			}
 		}
 		sendCharacterChange();
@@ -1793,7 +1795,7 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				if (mapa.hayAgua(x, y)) {
-					enviarSonido(SOUND_PESCAR);
+					sendWave(SOUND_PESCAR);
 					switch (this.userInv.getArma().ObjIndex) {
 					case OBJ_INDEX_CAÑA:
 						doPescarCaña();
@@ -1863,7 +1865,7 @@ public class Player extends AbstractCharacter {
 					}
 					// ¿Hay un arbol donde cliqueo?
 					if (obj.getInfo().objType == ObjType.Arboles) {
-						enviarSonido(SOUND_TALAR);
+						sendWave(SOUND_TALAR);
 						doTalar();
 					}
 				} else {
@@ -1893,7 +1895,7 @@ public class Player extends AbstractCharacter {
 					}
 					// ¿Hay un yacimiento donde cliqueo?
 					if (obj.getInfo().objType == ObjType.Yacimiento) {
-						enviarSonido(SOUND_MINERO);
+						sendWave(SOUND_MINERO);
 						doMineria();
 					} else {
 						sendMessage("Ahi no hay ningun yacimiento.", FontType.FONTTYPE_INFO);
@@ -2040,20 +2042,20 @@ public class Player extends AbstractCharacter {
 			this.counters.tInicioMeditar = Util.millis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
 			sendMessage("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.FONTTYPE_INFO);
-			this.infoChar.m_loops = LoopAdEternum;
+			this.infoChar.loops = LoopAdEternum;
 			if (stats().ELV < 15) {
 				sendCreateFX(FXMEDITARCHICO, LoopAdEternum);
-				this.infoChar.m_fx = FXMEDITARCHICO;
+				this.infoChar.fx = FXMEDITARCHICO;
 			} else if (stats().ELV < 30) {
 				sendCreateFX(FXMEDITARMEDIANO, LoopAdEternum);
-				this.infoChar.m_fx = FXMEDITARMEDIANO;
+				this.infoChar.fx = FXMEDITARMEDIANO;
 			} else {
 				sendCreateFX(FXMEDITARGRANDE, LoopAdEternum);
-				this.infoChar.m_fx = FXMEDITARGRANDE;
+				this.infoChar.fx = FXMEDITARGRANDE;
 			}
 		} else {
-			this.infoChar.m_fx = 0;
-			this.infoChar.m_loops = 0;
+			this.infoChar.fx = 0;
+			this.infoChar.loops = 0;
 			sendCreateFX(0, 0);
 		}
 	}
@@ -2120,7 +2122,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void changeHeading(byte heading) {
-		this.infoChar.m_dir = heading;
+		this.infoChar.heading = heading;
 		sendCharacterChange();
 	}
 
@@ -2391,8 +2393,8 @@ public class Player extends AbstractCharacter {
 			flags().Meditando = false;
 			sendPacket(new MeditateToggleResponse());
 			sendMessage("Dejas de meditar.", FontType.FONTTYPE_INFO);
-			this.infoChar.m_fx = 0;
-			this.infoChar.m_loops = 0;
+			this.infoChar.fx = 0;
+			this.infoChar.loops = 0;
 			sendCreateFX(0, 0);
 		}
 		if (flags().Oculto) {
@@ -2419,7 +2421,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		infoChar().setDir(heading);
+		infoChar().heading(heading);
 		MapPos newPos = pos().copy().moveToHeading(heading);
 		if (newPos.isValid()
 				&& map.isFree(newPos.x, newPos.y)
@@ -2661,7 +2663,7 @@ public class Player extends AbstractCharacter {
 		if (withFX) {
 			sendCreateFX(1, 0);
 			if (flags().UserLogged) { // No hacer sonido en el LOGIN.
-				enviarSonido(SND_WARP);
+				sendWave(SND_WARP);
 			}
 		}
 
@@ -2707,8 +2709,8 @@ public class Player extends AbstractCharacter {
 		if (stats().eaten <= 0) {
 			stats().eaten = 10;
 		}
-		this.infoChar.m_cabeza = this.origChar.m_cabeza;
-		cuerpoDesnudo();
+		this.infoChar.head = this.origChar.head;
+		undress();
 		sendCharacterChange();
 		sendUpdateUserStats();
 		sendUpdateHungerAndThirst();
@@ -2746,7 +2748,7 @@ public class Player extends AbstractCharacter {
 			map.enviarAlArea(x, y, new SetInvisibleResponse(getId(), (byte)1));
 		}
 		if (withFX && !flags().AdminInvisible) {
-			enviarSonido(SND_WARP);
+			sendWave(SND_WARP);
 			sendCreateFX(FXWARP, 0);
 		}
 		warpPets();
@@ -2884,7 +2886,7 @@ public class Player extends AbstractCharacter {
 		if (!flags().Paralizado) {
 			flags().Paralizado = true;
 			counters().Paralisis = IntervaloParalizado;
-			enviarSonido(hechizo.WAV);
+			sendWave(hechizo.WAV);
 			sendCreateFX(hechizo.FXgrh, hechizo.loops);
 			sendPacket(new ParalizeOKResponse());
 		}
@@ -2930,19 +2932,19 @@ public class Player extends AbstractCharacter {
 
 		Object[] params = {
 				(short)getId(),
-				(short)this.infoChar.getCuerpo(),
-				(short)this.infoChar.getCabeza(),
+				(short)this.infoChar.body(),
+				(short)this.infoChar.head(),
 
-				(byte)this.infoChar.getDir(),
+				(byte)this.infoChar.heading(),
 				(byte)pos().x,
 				(byte)pos().y,
 
-				(short)this.infoChar.getArma(),
-				(short)this.infoChar.getEscudo(),
-				(short)this.infoChar.getCasco(),
+				(short)this.infoChar.weapon(),
+				(short)this.infoChar.shield(),
+				(short)this.infoChar.helmet(),
 
-				(short)this.infoChar.getFX(),
-				(short)this.infoChar.getLoops(),
+				(short)this.infoChar.fx(),
+				(short)this.infoChar.loops(),
 
 				this.userName + tag(),
 				(byte)crimi,
@@ -2974,16 +2976,16 @@ public class Player extends AbstractCharacter {
 	public CharacterCreateResponse createCC() {
 		return new CharacterCreateResponse(
 				getId(),
-				this.infoChar.getCuerpo(),
-				this.infoChar.getCabeza(),
-				this.infoChar.getDir(),
+				this.infoChar.body(),
+				this.infoChar.head(),
+				this.infoChar.heading(),
 
 				pos().x, pos().y,
-				this.infoChar.getArma(),
-				this.infoChar.getEscudo(),
-				this.infoChar.getCasco(),
-				this.infoChar.getFX(),
-				this.infoChar.m_loops,
+				this.infoChar.weapon(),
+				this.infoChar.shield(),
+				this.infoChar.helmet(),
+				this.infoChar.fx(),
+				this.infoChar.loops,
 				this.userName + tag(),
 				(byte) (this.isCriminal() ? 1 : 0),
 				(byte)flags().Privilegios);
@@ -3005,24 +3007,24 @@ public class Player extends AbstractCharacter {
 		sendPacket(new BlockPositionResponse((byte)x, (byte)y, bq));
 	}
 
-	public void cuerpoDesnudo() {
+	public void undress() {
 		if (this.flags().Mimetizado) {
-			this.mimetizadoChar.cuerpoDesnudo(this.race, this.gender);
+			this.mimetizadoChar.undress(this.race, this.gender);
 		} else {
-			this.infoChar.cuerpoDesnudo(this.race, this.gender);
+			this.infoChar.undress(this.race, this.gender);
 		}
 		flags().Desnudo = true;
 	}
 
-	public void quitarMascota(Npc npc) {
+	public void removePet(Npc pet) {
 		if ( !getUserPets().hasPets()) {
 			return;
 		}
 
-		getUserPets().removePet(npc);
+		getUserPets().removePet(pet);
 	}
 
-	public void enviarSonido(int sonido) {
+	public void sendWave(int sonido) {
 		Map mapa = this.server.getMap(pos().map);
 		// Sonido
 		if (mapa != null) {
@@ -3036,7 +3038,7 @@ public class Player extends AbstractCharacter {
 		}
 		Map mapa = this.server.getMap(pos().map);
 		// Sonido
-		enviarSonido(SND_USERMUERTE);
+		sendWave(SND_USERMUERTE);
 		// Quitar el dialogo del usuario muerto
 		// mapa.enviarAlArea(pos().x, pos().y, MSG_QDL, m_id);
 		stats().MinHP = 0;
@@ -3094,19 +3096,19 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		// << Reseteamos los posibles FX sobre el personaje >>
-		if (this.infoChar.m_loops == LoopAdEternum) {
-			this.infoChar.m_fx = 0;
-			this.infoChar.m_loops = 0;
+		if (this.infoChar.loops == LoopAdEternum) {
+			this.infoChar.fx = 0;
+			this.infoChar.loops = 0;
 		}
 		// << Cambiamos la apariencia del char >>
 		if (!flags().Navegando) {
-			this.infoChar.m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
-			this.infoChar.m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
-			this.infoChar.m_escudo = NingunEscudo;
-			this.infoChar.m_arma = NingunArma;
-			this.infoChar.m_casco = NingunCasco;
+			this.infoChar.body = OBJ_INDEX_CUERPO_MUERTO;
+			this.infoChar.head = OBJ_INDEX_CABEZA_MUERTO;
+			this.infoChar.shield = NingunEscudo;
+			this.infoChar.weapon = NingunArma;
+			this.infoChar.helmet = NingunCasco;
 		} else {
-			this.infoChar.m_cuerpo = OBJ_INDEX_FRAGATA_FANTASMAL;
+			this.infoChar.body = OBJ_INDEX_FRAGATA_FANTASMAL;
 		}
 
 		getUserPets().removeAll();
@@ -3319,7 +3321,7 @@ public class Player extends AbstractCharacter {
 		while (stats().Exp >= stats().ELU) {
 			// La exp alcanzó el máximo del nivel, entonces sube de nivel.
 			boolean wasNewbie = esNewbie();
-			enviarSonido(SOUND_NIVEL);
+			sendWave(SOUND_NIVEL);
 			sendMessage("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
 			short skillPoints = (short) ((stats().ELV == 1) ? 10 : 5);
 			skills().SkillPts += skillPoints;
@@ -3465,7 +3467,7 @@ public class Player extends AbstractCharacter {
 			boolean rechazo = (Util.Azar(1, 100) <= probRechazo);
 			if (rechazo) {
 				// Se rechazo el ataque con el escudo
-				enviarSonido(SND_ESCUDO);
+				sendWave(SND_ESCUDO);
 				// enviar(MSG_7);
 				subirSkill(Skill.SKILL_Defensa);
 			}
@@ -3554,7 +3556,7 @@ public class Player extends AbstractCharacter {
 			sendPacket(new UserHitNPCResponse(daño));
 			npc.calcularDarExp(this, daño);
 		} else {
-			enviarSonido(SOUND_SWING);
+			sendWave(SOUND_SWING);
 			sendPacket(new UserSwingResponse());
 		}
 		if (npc.stats().MinHP > 0) {
@@ -3685,13 +3687,13 @@ public class Player extends AbstractCharacter {
 		npcAtacado(npc);
 		if (userImpactoNpc(npc)) {
 			if (npc.getSonidoAtaqueExitoso() > 0) {
-				enviarSonido(npc.getSonidoAtaqueExitoso());
+				sendWave(npc.getSonidoAtaqueExitoso());
 			} else {
-				enviarSonido(SND_IMPACTO2);
+				sendWave(SND_IMPACTO2);
 			}
 			userDañoNpc(npc);
 		} else {
-			enviarSonido(SOUND_SWING);
+			sendWave(SOUND_SWING);
 			sendPacket(new UserSwingResponse());
 		}
 	}
@@ -3740,10 +3742,10 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			MapPos attackPos = pos().copy();
-			attackPos.moveToHeading(Heading.value(this.infoChar.getDir()));
+			attackPos.moveToHeading(Heading.value(this.infoChar.heading()));
 			// Exit if not legal
 			if (!attackPos.isValid()) {
-				enviarSonido(SOUND_SWING);
+				sendWave(SOUND_SWING);
 				return;
 			}
 			Map mapa = this.server.getMap(pos().map);
@@ -3770,7 +3772,7 @@ public class Player extends AbstractCharacter {
 				sendUpdateUserStats();
 				return;
 			}
-			enviarSonido(SOUND_SWING);
+			sendWave(SOUND_SWING);
 			sendUpdateUserStats();
 			flags().Trabajando = false;
 		} else {
@@ -3813,7 +3815,7 @@ public class Player extends AbstractCharacter {
 				boolean huboRechazo = (Util.Azar(1, 100) <= probRechazo);
 				if (huboRechazo) {
 					// Se rechazo el ataque con el escudo!
-					enviarSonido(SND_ESCUDO);
+					sendWave(SND_ESCUDO);
 					// enviar(MSG_8);
 					// victima.enviar(MSG_7);
 					victima.subirSkill(Skill.SKILL_Defensa);
@@ -3844,13 +3846,13 @@ public class Player extends AbstractCharacter {
 		}
 		usuarioAtacadoPorUsuario(victima);
 		if (usuarioImpacto(victima)) {
-			enviarSonido(SND_IMPACTO);
+			sendWave(SND_IMPACTO);
 			if (!victima.isSailing()) {
 				victima.sendCreateFX(FXSANGRE, 0);
 			}
 			userDañoUser(victima);
 		} else {
-			enviarSonido(SOUND_SWING);
+			sendWave(SOUND_SWING);
 			// FIXME
 			// enviar(MSG_U1);
 			// victima.enviar(MSG_U3, m_nick);
@@ -4180,11 +4182,11 @@ public class Player extends AbstractCharacter {
 		this.skills().SkillPts = 10;
 
 		this.password = password;
-		this.infoChar.setDir(Heading.SOUTH);
-		this.infoChar.cuerpoYCabeza(race(), gender());
-		this.infoChar.m_arma = NingunArma;
-		this.infoChar.m_escudo = NingunEscudo;
-		this.infoChar.m_casco = NingunCasco;
+		this.infoChar.heading(Heading.SOUTH);
+		this.infoChar.ramdonBodyAndHead(race(), gender());
+		this.infoChar.weapon = NingunArma;
+		this.infoChar.shield = NingunEscudo;
+		this.infoChar.helmet = NingunCasco;
 		this.origChar = new CharInfo(this.infoChar);
 
 		this.stats().inicializarEstads(this.clazz);
@@ -4270,14 +4272,14 @@ public class Player extends AbstractCharacter {
 			flags().TargetNpc = 0;
 			flags().TargetObj = 0;
 			flags().TargetUser = 0;
-			this.infoChar.m_fx = 0;
+			this.infoChar.fx = 0;
 
 			if (this.server.isPlayerAlreadyConnected(this)) {
 				enviarError("Perdon, pero ya esta conectado.");
 				return;
 			}
 
-			// ¿Es el passwd valido?
+			// ¿Es el password valido?
 			if (!this.password.equals(this.userStorage.loadPasswordFromStorage(this.userName))) {
 				enviarError("Clave incorrecta.");
 				return;
@@ -4302,27 +4304,34 @@ public class Player extends AbstractCharacter {
 
 
 			if (this.userInv.getEscudoSlot() == 0) {
-				this.infoChar.m_escudo = NingunEscudo;
+				this.infoChar.shield = NingunEscudo;
 			}
 			if (this.userInv.getCascoSlot() == 0) {
-				this.infoChar.m_casco = NingunCasco;
+				this.infoChar.helmet = NingunCasco;
 			}
 			if (this.userInv.getArmaSlot() == 0) {
-				this.infoChar.m_arma = NingunArma;
+				this.infoChar.weapon = NingunArma;
 			}
 
 			if (flags().Navegando) {
-				this.infoChar.m_cuerpo = !isAlive() ? OBJ_INDEX_FRAGATA_FANTASMAL : this.userInv.getBarco().Ropaje;
-				this.infoChar.m_cabeza = 0;
-				this.infoChar.m_arma = NingunArma;
-				this.infoChar.m_escudo = NingunEscudo;
-				this.infoChar.m_casco = NingunCasco;
+				this.infoChar.body = !isAlive() ? OBJ_INDEX_FRAGATA_FANTASMAL : this.userInv.getBarco().Ropaje;
+				this.infoChar.head = 0;
+				this.infoChar.weapon = NingunArma;
+				this.infoChar.shield = NingunEscudo;
+				this.infoChar.helmet = NingunCasco;
 			}
 
 			enviarInventario();
-			this.spells.enviarHechizos();
-			sendUpdateUserStats();
-
+			spells().enviarHechizos();
+			
+			if (isParalized()) {
+				sendPacket(new ParalizeOKResponse());
+			}
+			
+			if (flags().Estupidez) {
+				sendPacket(new DumbResponse());
+			}
+			
 			if (pos().map == 0) {
 				// Posicion de comienzo
 				if (this.homeland == CIUDAD_NIX) {
@@ -4339,12 +4348,13 @@ public class Player extends AbstractCharacter {
 				}
 			}
 
+			sendUserIndexInServer();
+			
 			if (!enterIntoMap(pos().map, pos().x, pos().y, true, true)) {
-				enviarError("No pudo ingresar al mapa");
+				enviarError("Se encuenta en un mapa invalido.");
 				return;
 			}
-
-			// agush ;-)
+			
 			if (this.server.isRaining()) {
 				sendPacket(new RainToggleResponse());
 			}
@@ -4355,10 +4365,25 @@ public class Player extends AbstractCharacter {
 				sendPacket(new SafeModeOffResponse());
 				flags().Seguro = false;
 			}
-
-			sendUserIndexInServer();
+			
 			sendCharIndexInServer();
+			
+			checkUserLevel();
+			sendUpdateUserStats();
+			sendUpdateHungerAndThirst();
+			
+			server.getMotd().doEnviarMOTD(this);
+			
+			sendCreateFX(FXWARP, 0);
+
+			// FIXME respawn pets
+			// FIXME conectar clan
+			
 			sendLogged();
+			
+			// FIXME modGuilds.SendGuildNews(UserIndex)
+			
+			sendPositionUpdate();
 
 			flags().UserLogged = true;
 
@@ -4480,8 +4505,8 @@ public class Player extends AbstractCharacter {
 			sendMessage("Has terminado de meditar.", FontType.FONTTYPE_INFO);
 			sendPacket(new MeditateToggleResponse());
 			flags().Meditando = false;
-			this.infoChar.m_fx = 0;
-			this.infoChar.m_loops = 0;
+			this.infoChar.fx = 0;
+			this.infoChar.loops = 0;
 			sendCreateFX(0, 0);
 			return;
 		}
@@ -4597,7 +4622,7 @@ public class Player extends AbstractCharacter {
 			if (pet.getContadores().TiempoExistencia > 0) {
 				pet.getContadores().TiempoExistencia--;
 				if (pet.getContadores().TiempoExistencia == 0) {
-					quitarMascota(pet);
+					removePet(pet);
 					pet.muereNpc(null);
 				}
 			}
@@ -4895,7 +4920,7 @@ public class Player extends AbstractCharacter {
 			}
 			subirSkill(Skill.SKILL_Herreria);
 			enviarInventario();
-			enviarSonido(MARTILLOHERRERO);
+			sendWave(MARTILLOHERRERO);
 			flags().Trabajando = true;
 		}
 	}
@@ -4924,7 +4949,7 @@ public class Player extends AbstractCharacter {
 			}
 			subirSkill(Skill.SKILL_Carpinteria);
 			enviarInventario();
-			enviarSonido(LABUROCARPINTERO);
+			sendWave(LABUROCARPINTERO);
 			flags().Trabajando = true;
 		}
 	}

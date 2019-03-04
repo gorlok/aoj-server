@@ -87,7 +87,7 @@ public interface Constants {
     final static int IntervaloCerrarConexion = 10; // 10 segundos.
     final static int IntervaloMinutosWs = 30; // Minutos cada WorldSave
     
-    final static int IdleLimit = 5; // Minutos que un usuario puede estar ocioso.
+    final static int IdleLimit = 30; // FIXME 5 Minutos que un usuario puede estar ocioso.
     
     final static int TIEMPO_INICIO_MEDITAR = 3000; // milisegs.
     final static int TIEMPO_SACAR_TEXTO_ENCIMA = 1000; // milisegs.

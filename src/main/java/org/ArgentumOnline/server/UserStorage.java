@@ -113,31 +113,31 @@ public class UserStorage {
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
 		user.homeland = (byte) ini.getShort("INIT", "Hogar");
-		user.infoChar().m_dir = (byte)ini.getShort("INIT", "Heading");
+		user.infoChar().heading = (byte)ini.getShort("INIT", "Heading");
 
-		user.origChar().m_cabeza = ini.getShort("INIT", "Head");
-		user.origChar().m_cuerpo = ini.getShort("INIT", "Body");
-		user.origChar().m_arma = ini.getShort("INIT", "Arma");
-		user.origChar().m_escudo = ini.getShort("INIT", "Escudo");
-		user.origChar().m_casco = ini.getShort("INIT", "Casco");
-		user.origChar().m_dir = (byte)(short)Heading.SOUTH.ordinal();
+		user.origChar().head = ini.getShort("INIT", "Head");
+		user.origChar().body = ini.getShort("INIT", "Body");
+		user.origChar().weapon = ini.getShort("INIT", "Arma");
+		user.origChar().shield = ini.getShort("INIT", "Escudo");
+		user.origChar().helmet = ini.getShort("INIT", "Casco");
+		user.origChar().heading = (byte)(short)Heading.SOUTH.ordinal();
 
 		user.bannedBy = ini.getString("BAN", "BannedBy");
 		user.bannedReason = ini.getString("BAN", "Reason");
 
 		if (user.isAlive()) {
-			user.infoChar().m_cabeza = user.origChar().m_cabeza;
-			user.infoChar().m_cuerpo = user.origChar().m_cuerpo;
-			user.infoChar().m_arma = user.origChar().m_arma;
-			user.infoChar().m_escudo = user.origChar().m_escudo;
-			user.infoChar().m_casco = user.origChar().m_casco;
-			user.infoChar().m_dir = user.origChar().m_dir;
+			user.infoChar().head = user.origChar().head;
+			user.infoChar().body = user.origChar().body;
+			user.infoChar().weapon = user.origChar().weapon;
+			user.infoChar().shield = user.origChar().shield;
+			user.infoChar().helmet = user.origChar().helmet;
+			user.infoChar().heading = user.origChar().heading;
 		} else {
-			user.infoChar().m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
-			user.infoChar().m_cuerpo = OBJ_INDEX_CUERPO_MUERTO;
-			user.infoChar().m_arma = NingunArma;
-			user.infoChar().m_escudo = NingunEscudo;
-			user.infoChar().m_casco = NingunCasco;
+			user.infoChar().head = OBJ_INDEX_CABEZA_MUERTO;
+			user.infoChar().body = OBJ_INDEX_CUERPO_MUERTO;
+			user.infoChar().weapon = NingunArma;
+			user.infoChar().shield = NingunEscudo;
+			user.infoChar().helmet = NingunCasco;
 		}
 
 		user.description = ini.getString("INIT", "Desc");
@@ -364,19 +364,19 @@ public class UserStorage {
 			ini.setValue("INIT", "Clase", user.getClazz().clazz().getName());
 			ini.setValue("INIT", "Password", user.password);
 			ini.setValue("INIT", "Desc", user.description);
-			ini.setValue("INIT", "Heading", user.infoChar().m_dir);
+			ini.setValue("INIT", "Heading", user.infoChar().heading);
 
 			if (user.flags().Muerto || user.flags().Invisible || user.flags().Navegando) {
-				ini.setValue("INIT", "Head", user.origChar().m_cabeza);
-				ini.setValue("INIT", "Body", user.origChar().m_cuerpo);
+				ini.setValue("INIT", "Head", user.origChar().head);
+				ini.setValue("INIT", "Body", user.origChar().body);
 			} else {
-				ini.setValue("INIT", "Head", user.infoChar().m_cabeza);
-				ini.setValue("INIT", "Body", user.infoChar().m_cuerpo);
+				ini.setValue("INIT", "Head", user.infoChar().head);
+				ini.setValue("INIT", "Body", user.infoChar().body);
 			}
 
-			ini.setValue("INIT", "Arma", user.infoChar().m_arma);
-			ini.setValue("INIT", "Escudo", user.infoChar().m_escudo);
-			ini.setValue("INIT", "Casco", user.infoChar().m_casco);
+			ini.setValue("INIT", "Arma", user.infoChar().weapon);
+			ini.setValue("INIT", "Escudo", user.infoChar().shield);
+			ini.setValue("INIT", "Casco", user.infoChar().helmet);
 			ini.setValue("INIT", "LastIP", user.getIP());
 			ini.setValue("INIT", "Position", user.pos().map + "-" + user.pos().x + "-" + user.pos().y);
 
@@ -467,7 +467,7 @@ public class UserStorage {
 
 			// Devuelve el head de muerto
 			if (!user.isAlive()) {
-				user.infoChar().m_cabeza = OBJ_INDEX_CABEZA_MUERTO;
+				user.infoChar().head = OBJ_INDEX_CABEZA_MUERTO;
 			}
 
 			// Guardar todo

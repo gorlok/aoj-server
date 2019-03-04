@@ -496,7 +496,7 @@ public class Map implements Constants {
         this.cells[npc.pos().x-1][npc.pos().y-1].setNpc(null);
         this.cells[x-1][y-1].setNpc(npc);
         
-        this.areasData.checkUpdateNeededNpc(npc, npc.infoChar().getDir());
+        this.areasData.checkUpdateNeededNpc(npc, npc.infoChar().heading());
         this.areasData.sendToNPCArea(npc, new CharacterMoveResponse(npc.getId(), x, y));
         
     }
@@ -571,7 +571,7 @@ public class Map implements Constants {
                 	//agush: fix mascotas ;-)
                 	if (npc.getPetUserOwner() != null) {
                 		Player masterUser = (npc.getPetUserOwner());
-                		masterUser.quitarMascota(npc);
+                		masterUser.removePet(npc);
                 	}
                 	exitNpc(npc);
                 }
@@ -770,7 +770,7 @@ public class Map implements Constants {
 		//JAO: Nuevo sistema de areas !!
         this.areasData.sendToAreaButIndex(this, x, y, player.getId(),
         		new CharacterMoveResponse(player.getId(), x, y));
-        this.areasData.checkUpdateNeededUser(player, player.infoChar().getDir());
+        this.areasData.checkUpdateNeededUser(player, player.infoChar().heading());
     }
     
     public boolean isTeleport(byte  x, byte y) {

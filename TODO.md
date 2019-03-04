@@ -17,3 +17,6 @@
 	* web app patterfly? angular?
 * competableFuture Async
 
+* role masters
+* add SeguroResu
+* chatColor in user flags

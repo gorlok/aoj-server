@@ -658,19 +658,19 @@ End Enum
     public CharacterCreateResponse createCC() {
     	return new CharacterCreateResponse(
 			getId(),
-			this.infoChar.getCuerpo(),
-			this.infoChar.getCabeza(),
+			this.infoChar.body(),
+			this.infoChar.head(),
 
-			this.infoChar.getDir(),
+			this.infoChar.heading(),
 			pos().x,
 			pos().y,
 
-			this.infoChar.getArma(),
-			this.infoChar.getEscudo(),
-			this.infoChar.getCasco(),
+			this.infoChar.weapon(),
+			this.infoChar.shield(),
+			this.infoChar.helmet(),
 
-			this.infoChar.getFX(),
-			this.infoChar.getLoops(),
+			this.infoChar.fx(),
+			this.infoChar.loops(),
 
 			"",
 			(byte)0,
@@ -838,7 +838,7 @@ End Enum
         this.npcInv.clear();
 
         if (this.petUserOwner != null) {
-        	this.petUserOwner.quitarMascota(this);
+        	this.petUserOwner.removePet(this);
         }
         Npc ownerNpc = this.server.npcById(this.petNpcOwnerId);
         if (ownerNpc != null) {
@@ -899,7 +899,7 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.setDir(dir);
+                this.infoChar.heading(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
                 //enviarMP(); FIXME
@@ -921,7 +921,7 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.setDir(dir);
+                this.infoChar.heading(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
                 //enviarMP(); // FIXME
@@ -1027,7 +1027,7 @@ End Enum
         // ChangeNPCChar
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
-            this.infoChar.setDir(dir);
+            this.infoChar.heading(dir);
             mapa.enviarAlArea(pos().x, pos().y, createCC());
         }
     }
@@ -1469,14 +1469,14 @@ End Enum
         Spell hechizo = this.server.getHechizo(spell);
         if (hechizo.SubeHP == 1) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-            player.enviarSonido(hechizo.WAV);
+            player.sendWave(hechizo.WAV);
             player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
             player.stats().addMinHP(daño);
             player.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             player.sendUpdateUserStats();
         } else if (hechizo.SubeHP == 2) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-            player.enviarSonido(hechizo.WAV);
+            player.sendWave(hechizo.WAV);
             player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
             player.stats().quitarHP(daño);
             player.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
@@ -1683,9 +1683,9 @@ End Enum
         }
         ini.setValue(section, "Name", this.name);
         ini.setValue(section, "Desc", this.description);
-        ini.setValue(section, "Head", this.infoChar.m_cabeza);
-        ini.setValue(section, "Body", this.infoChar.m_cuerpo);
-        ini.setValue(section, "Heading", this.infoChar.m_dir);
+        ini.setValue(section, "Head", this.infoChar.head);
+        ini.setValue(section, "Body", this.infoChar.body);
+        ini.setValue(section, "Heading", this.infoChar.heading);
         ini.setValue(section, "Movement", this.movement);
         ini.setValue(section, "TipoItems", this.tipoItems);
         ini.setValue(section, "GiveEXP", this.giveEXP);
@@ -1734,9 +1734,9 @@ End Enum
         }
         this.isQuest = (ini.getShort(section, "DeQuest") == 1);
 
-        this.infoChar.m_cuerpo   = ini.getShort(section, "Body");
-        this.infoChar.m_cabeza   = ini.getShort(section, "Head");
-        this.infoChar.m_dir      = (byte)ini.getShort(section, "Heading");
+        this.infoChar.body   = ini.getShort(section, "Body");
+        this.infoChar.head   = ini.getShort(section, "Head");
+        this.infoChar.heading      = (byte)ini.getShort(section, "Heading");
 
         this.flags.set(FLAG_ENVENENA, ini.getInt(section, "Veneno") == 1);
         this.flags.set(FLAG_ATACABLE, ini.getInt(section, "Attackable") == 1);
@@ -1800,7 +1800,7 @@ End Enum
     }
 
     public short getHeading() {
-    	return this.infoChar.m_dir;
+    	return this.infoChar.heading;
     }
 
     private String estadoVidaExacta() {

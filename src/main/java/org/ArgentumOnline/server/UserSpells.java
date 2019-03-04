@@ -442,7 +442,7 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			this.player.npcAtacado(npc);
 			if (npc.getSonidoAtaqueExitoso() > 0) {
-				this.player.enviarSonido(npc.getSonidoAtaqueExitoso());
+				this.player.sendWave(npc.getSonidoAtaqueExitoso());
 			}
 			npc.stats.quitarHP(daño);
 			this.player.sendMessage("Le has causado " + daño
@@ -833,7 +833,7 @@ public class UserSpells implements Constants {
 		Map mapa = this.server.getMap(this.player.pos().map);
 		Spell hechizo = this.server.getHechizo(this.player.flags().Hechizo);
 		this.player.decirPalabrasMagicas(hechizo.PalabrasMagicas);
-		this.player.enviarSonido(hechizo.WAV);
+		this.player.sendWave(hechizo.WAV);
 		if (this.player.flags().TargetUser > 0) {
 			mapa.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetUser,
 				hechizo.FXgrh, hechizo.loops);

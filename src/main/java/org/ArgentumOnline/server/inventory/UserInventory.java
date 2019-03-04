@@ -307,7 +307,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.armaSlot = 0;
                 this.armaEquipada = false;
                 if (!this.dueño.flags().Mimetizado) {
-	                this.dueño.infoChar().m_arma = NingunArma;
+	                this.dueño.infoChar().weapon = NingunArma;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
@@ -328,7 +328,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.armaduraSlot = 0;
                 this.armaduraEquipada = false;
-                this.dueño.cuerpoDesnudo();
+                this.dueño.undress();
                 this.dueño.sendCharacterChange();
                 break;
                 
@@ -337,7 +337,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.cascoSlot = 0;
                 this.cascoEquipado = false;
                 if (!this.dueño.flags().Mimetizado) {
-	                this.dueño.infoChar().m_casco = NingunCasco;
+	                this.dueño.infoChar().helmet = NingunCasco;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
@@ -347,7 +347,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.escudoSlot = 0;
                 this.escudoEquipado = false;
                 if (!this.dueño.flags().Mimetizado) {
-	                this.dueño.infoChar().m_escudo = NingunEscudo;
+	                this.dueño.infoChar().shield = NingunEscudo;
 	                this.dueño.sendCharacterChange();
                 }
                 break;
@@ -405,13 +405,13 @@ public class UserInventory extends Inventory implements Constants {
                     // Sonido
                     if (!this.dueño.flags().AdminInvisible) {
                         // El sonido solo se envia si no lo produce un admin invisible
-                    	this.dueño.enviarSonido(SOUND_SACARARMA);
+                    	this.dueño.sendWave(SOUND_SACARARMA);
                     }
                     
                     if (this.dueño.flags().Mimetizado) {
-                        this.dueño.mimetizeChar().m_arma = infoObj.WeaponAnim; 
+                        this.dueño.mimetizeChar().weapon = infoObj.WeaponAnim; 
                     } else {
-	                    this.dueño.infoChar().m_arma = infoObj.WeaponAnim;
+	                    this.dueño.infoChar().weapon = infoObj.WeaponAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                     
@@ -478,7 +478,7 @@ public class UserInventory extends Inventory implements Constants {
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
                         desequipar(slot);
-                        this.dueño.cuerpoDesnudo();
+                        this.dueño.undress();
                         if (!this.dueño.flags().Mimetizado) {
                         	this.dueño.sendCharacterChange();
                         }
@@ -494,9 +494,9 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaduraSlot = slot;
                     
                     if (this.dueño.flags().Mimetizado) {
-                    	this.dueño.mimetizeChar().m_cuerpo = infoObj.Ropaje;
+                    	this.dueño.mimetizeChar().body = infoObj.Ropaje;
                     } else {
-	                    this.dueño.infoChar().m_cuerpo = infoObj.Ropaje;
+	                    this.dueño.infoChar().body = infoObj.Ropaje;
 	                    this.dueño.sendCharacterChange();
                     }
                     this.dueño.flags().Desnudo = false;
@@ -516,9 +516,9 @@ public class UserInventory extends Inventory implements Constants {
                         // Quitamos del inv el item
                         desequipar(slot);
                         if (this.dueño.flags().Mimetizado) {
-                        	this.dueño.mimetizeChar().m_casco = NingunCasco;
+                        	this.dueño.mimetizeChar().helmet = NingunCasco;
                         } else {
-                            this.dueño.infoChar().m_casco = NingunCasco;
+                            this.dueño.infoChar().helmet = NingunCasco;
                         	this.dueño.sendCharacterChange();
                         }
                         return;
@@ -533,9 +533,9 @@ public class UserInventory extends Inventory implements Constants {
                     this.cascoSlot = slot;
                     
                     if (this.dueño.flags().Mimetizado) {
-                    	this.dueño.mimetizeChar().m_casco = infoObj.CascoAnim;
+                    	this.dueño.mimetizeChar().helmet = infoObj.CascoAnim;
                     } else {
-	                    this.dueño.infoChar().m_casco = infoObj.CascoAnim;
+	                    this.dueño.infoChar().helmet = infoObj.CascoAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                     
@@ -556,9 +556,9 @@ public class UserInventory extends Inventory implements Constants {
                         // Quitamos del inv el item
                         desequipar(slot);
                         if (this.dueño.flags().Mimetizado) {
-                        	this.dueño.mimetizeChar().m_escudo = NingunEscudo;
+                        	this.dueño.mimetizeChar().shield = NingunEscudo;
                         } else {
-                            this.dueño.infoChar().m_escudo = NingunEscudo;
+                            this.dueño.infoChar().shield = NingunEscudo;
                         	this.dueño.sendCharacterChange();
                         }
                         return;
@@ -573,9 +573,9 @@ public class UserInventory extends Inventory implements Constants {
                     this.escudoSlot = slot;
                     
                     if (this.dueño.flags().Mimetizado) {
-                    	this.dueño.mimetizeChar().m_escudo = infoObj.ShieldAnim;
+                    	this.dueño.mimetizeChar().shield = infoObj.ShieldAnim;
                     } else {
-	                    this.dueño.infoChar().m_escudo = infoObj.ShieldAnim;
+	                    this.dueño.infoChar().shield = infoObj.ShieldAnim;
 	                    this.dueño.sendCharacterChange();
                     }
                 } else {
@@ -769,7 +769,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.flags().Hambre = false;
                 this.dueño.sendUpdateHungerAndThirst();
                 // Sonido
-                this.dueño.enviarSonido(SOUND_COMIDA);
+                this.dueño.sendWave(SOUND_COMIDA);
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
                 break;
@@ -840,7 +840,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-                this.dueño.enviarSonido(SND_BEBER);
+                this.dueño.sendWave(SND_BEBER);
                 this.dueño.sendUpdateUserStats();
                 break;
             case Bebidas:
@@ -852,7 +852,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.sendUpdateHungerAndThirst();
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-                this.dueño.enviarSonido(SND_BEBER);
+                this.dueño.sendWave(SND_BEBER);
                 break;
             case Llaves:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
@@ -977,7 +977,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                this.dueño.enviarSonido(info.Snd1);
+                this.dueño.sendWave(info.Snd1);
                 break;
             case Barcos:
                 short m = this.dueño.pos().map;

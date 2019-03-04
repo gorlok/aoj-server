@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -358,8 +359,8 @@ public class GameServer implements Constants {
                     lastAutoSaveTimer = now;
                 }
                 if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
-                	System.out.println("fps: " + fps + " max-time: " + worstTime +
-                			" Conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
+                	System.out.format("fps: %2d   max-time: %3dms    online: %3d    gm: %3d\n", 
+                			fps, worstTime, getUsuariosConectados().size(), getGMsOnline().size());
                 	fps = 0;
                 	worstTime = 0;
                     pasarSegundo();
@@ -794,6 +795,10 @@ public class GameServer implements Constants {
 
     private void autoSaveTimer() {
         // fired every minute
+    	
+    	SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+    	System.out.println("[autoSaveTimer] " + df.format(new Date()));
+    	
         this.minsRunning++;
         if (this.minsRunning == 60) {
             this.horas++;

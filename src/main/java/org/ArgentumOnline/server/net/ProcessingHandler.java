@@ -65,8 +65,23 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		Gson gson = new Gson();
 		log.debug("processing handler " + packet.getClass().getCanonicalName());
 		System.out.println("<<< procesando paquete " + packet.getClass().getCanonicalName() + " " + gson.toJson(packet));
+
 		
-		switch (((ClientPacket)packet).id()) {
+		player.counters().resetIdleCount();
+		
+		ClientPacket clientPacket = (ClientPacket)packet;
+		// Does the packet requires a logged user?
+		if (clientPacket.id() != ClientPacketID.LoginExistingChar &&
+			clientPacket.id() != ClientPacketID.LoginNewChar &&
+			clientPacket.id() != ClientPacketID.ThrowDices) {
+				
+	        // Is the user actually logged?
+	        if ( ! player.isLogged() ) {
+	        	player.doSALIR();
+	        }
+		}
+		
+		switch (clientPacket.id()) {
 		case LoginExistingChar:
 			handleLoginExistingChar((LoginExistingCharRequest)packet, player);
 			break;

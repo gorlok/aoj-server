@@ -310,15 +310,15 @@ public class Admins {
 		if (!admin.flags().AdminInvisible) {
 			admin.flags().AdminInvisible = true;
 			admin.flags().Invisible = true;
-			admin.flags().OldBody = admin.infoChar().m_cuerpo;
-			admin.flags().OldHead = admin.infoChar().m_cabeza;
-			admin.infoChar().m_cuerpo = 0;
-			admin.infoChar().m_cabeza = 0;
+			admin.flags().OldBody = admin.infoChar().body;
+			admin.flags().OldHead = admin.infoChar().head;
+			admin.infoChar().body = 0;
+			admin.infoChar().head = 0;
 		} else {
 			admin.flags().AdminInvisible = false;
 			admin.flags().Invisible = false;
-			admin.infoChar().m_cuerpo = admin.flags().OldBody;
-			admin.infoChar().m_cabeza = admin.flags().OldHead;
+			admin.infoChar().body = admin.flags().OldBody;
+			admin.infoChar().head = admin.flags().OldHead;
 		}
 		admin.sendCharacterChange();
 	}
@@ -704,10 +704,10 @@ public class Admins {
 						FontType.FONTTYPE_INFO);
 			}
 		} else if (accion.equalsIgnoreCase("BODY")) {
-			usuario.infoChar().m_cuerpo = (short) valor;
+			usuario.infoChar().body = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("HEAD")) {
-			usuario.infoChar().m_cabeza = (short) valor;
+			usuario.infoChar().head = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("CRI")) {
 			usuario.userFaction().CriminalesMatados = valor;
