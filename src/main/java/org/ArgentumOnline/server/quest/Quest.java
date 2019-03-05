@@ -126,7 +126,7 @@ public class Quest implements Constants {
 
 	public void hacerQuest(Player player, Npc npc) {
 		try {
-			if (player.esNewbie()) {
+			if (player.isNewbie()) {
 				player.sendTalk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
@@ -192,7 +192,7 @@ public class Quest implements Constants {
 	public void recibirRecompensaQuest(Player player) {
 		try {
 			Npc npc = this.server.npcById(player.flags().TargetNpc);
-			if (player.esNewbie()) {
+			if (player.isNewbie()) {
 				player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
@@ -443,7 +443,7 @@ public class Quest implements Constants {
 
 	public void sendInfoQuest(Player player) {
 		Npc npc = this.server.npcById(player.flags().TargetNpc);
-		if (player.esNewbie()) {
+		if (player.isNewbie()) {
 			player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 			return;
 		}
@@ -484,7 +484,7 @@ public class Quest implements Constants {
 	public void userSeRinde(Player player) {
 		Npc npc = this.server.npcById(player.flags().TargetNpc);
 		try {
-			if (player.esNewbie()) {
+			if (player.isNewbie()) {
 				player.hablar(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}

@@ -36,6 +36,7 @@ import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
+import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
@@ -267,6 +268,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			handleForumPost(((ForumPostRequest)packet), player);
 			break;
 			
+		case RequestFame:
+			player.sendFame();
+			break;
+		
+		case RequestAtributes:
+			player.sendUserAttributes();
+			break;
+			
+		case ModifySkills:
+			player.skills().subirSkills(((ModifySkillsRequest)packet).skills);
+			break;
+			
 		default:
 			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 		}
@@ -286,7 +299,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleLoginNewChar(LoginNewCharRequest packet, Player player) {
-		player.connectNewUser(packet.userName, packet.email, packet.race, 
+		player.connectNewUser(packet.userName, packet.password, packet.race,
 				packet.gender, packet.clazz, packet.email, packet.homeland);
 	}
 

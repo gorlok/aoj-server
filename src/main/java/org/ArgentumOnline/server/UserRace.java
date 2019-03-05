@@ -22,11 +22,11 @@ package org.ArgentumOnline.server;
  */
 public enum UserRace {
 	
-	RAZA_HUMANO ("Humano", 2, 1, 2, 1, 0),
-	RAZA_ELFO 	("Elfo", 0, 2, 0, 2, 2),
-	RAZA_DROW   ("Elfo Oscuro", 1, 2, 0, 2, 2),
-	RAZA_ENANO	("Enano", 3, 0, 3, -6, 0),
-	RAZA_GNOMO	("Gnomo", -5, 3, 0, 3, 0);
+	/*1*/ RAZA_HUMANO ("Humano", 2, 1, 2, 1, 0),
+	/*2*/ RAZA_ELFO 	("Elfo", 0, 2, 0, 2, 2),
+	/*3*/ RAZA_DROW   ("Elfo Oscuro", 1, 2, 0, 2, 2),
+	/*4*/ RAZA_ENANO	("Enano", 3, 0, 3, -6, 0),
+	/*5*/ RAZA_GNOMO	("Gnomo", -5, 3, 0, 3, 0);
 
 	private String name;
     private int modificadorFuerza;
@@ -51,7 +51,7 @@ public enum UserRace {
 	
 	private static final UserRace[] VALUES = UserRace.values();
 	public static UserRace value(int value) {
-		return VALUES[value];
+		return VALUES[value-1];
 	}
 	
 	public String toString() {
@@ -59,7 +59,7 @@ public enum UserRace {
 	}
 	
 	public byte value() {
-		return (byte) this.ordinal();
+		return (byte) (this.ordinal()+1);
 	}
 
 	public String getName() {

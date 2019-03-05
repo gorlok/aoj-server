@@ -996,7 +996,7 @@ public class Admins {
 			admin.sendMessage("Usuario offline. No tiene perdón.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.esNewbie()) {
+		if (usuario.isNewbie()) {
 			if (usuario.reputation().esIntachable()) {
 				admin.sendMessage("No hay que perdonarle a " + usuario.getNick(), FontType.FONTTYPE_INFO);
 				return;

@@ -918,16 +918,16 @@ public class Player extends AbstractCharacter {
 		sendPacket(new BankEndResponse());
 	}
 
-	public void cambiarPasswd(String s) {
+	public void cambiarPasswd(String newPassword) {
 		// Comando /PASSWD
-		s = s.trim();
-		if (s.length() < 6) {
+		newPassword = newPassword.trim();
+		if (newPassword.length() < 6) {
 			sendMessage("El password debe tener al menos 6 caracteres.", FontType.FONTTYPE_INFO);
-		} else if (s.length() > 20) {
+		} else if (newPassword.length() > 20) {
 			sendMessage("El password puede tener hasta 20 caracteres.", FontType.FONTTYPE_INFO);
 		} else {
 			sendMessage("El password ha sido cambiado. ¡Cuídalo!", FontType.FONTTYPE_INFO);
-			this.password = s;
+			this.password = newPassword;
 		}
 	}
 
@@ -2070,7 +2070,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("No poseo el poder de revivir a otros, mejor encuentra un sacerdote.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (npc.esSacerdoteNewbies() && !esNewbie()) {
+		if (npc.esSacerdoteNewbies() && !isNewbie()) {
 			sendMessage("Lo siento, sólo puedo resucitar newbies.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -3078,7 +3078,7 @@ public class Player extends AbstractCharacter {
 		// << Si es zona de trigger 6, no pierde el inventario >>
 		if ( !map.isArenaZone(pos().x, pos().y) ) {
 			// << Si es newbie no pierde el inventario >>
-			if ( !esNewbie() || isCriminal()) {
+			if ( !isNewbie() || isCriminal()) {
 				tirarTodo();
 			} else {
 				tirarTodosLosItemsNoNewbies();
@@ -3233,33 +3233,32 @@ public class Player extends AbstractCharacter {
 	public void userAsignaSkill(Skill skill, int amount) {
 		if (skills().get(skill) >= Skill.MAX_SKILL_POINTS
 				|| skills().get(skill) + (amount) > 100
-				|| skills().SkillPts < amount) {
+				|| skills().freeSkillPts < amount) {
 			return;
 		}
 
 		skills().addSkillPoints(skill, (byte) amount);
-		skills().SkillPts -= amount;
+		skills().freeSkillPts -= amount;
 	}
 
-	public boolean esNewbie() {
+	public boolean isNewbie() {
 		return stats().ELV <= LimiteNewbie;
 	}
 
-	public boolean esArmada() {
+	public boolean isRoyalArmy() {
 		return this.faction.ArmadaReal;
 	}
 
-	public boolean esCaos() {
+	public boolean isDarkLegion() {
 		return this.faction.FuerzasCaos;
 	}
 
 	public void sendSkills() {
 		// Comando ESKI
 		sendPacket(new SendSkillsResponse(skills().skills()));
-	}
-
-	public void sendLevelUp(short skillPoints) {
-		sendPacket(new LevelUpResponse(skillPoints));
+		if (skills().freeSkillPts > 0) {
+			sendPacket(new LevelUpResponse((short) skills().freeSkillPts));
+		}
 	}
 
 	public void envenenar() {
@@ -3304,7 +3303,7 @@ public class Player extends AbstractCharacter {
 
 	public void checkUserLevel() {
 		while (stats().Exp >= stats().ELU) {
-			boolean wasNewbie = esNewbie();
+			boolean wasNewbie = isNewbie();
 
 			// ¿Alcanzo el maximo nivel?
 			if (stats().ELV == STAT_MAXELV) {
@@ -3318,7 +3317,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
 			
 			int skillPoints = (stats().ELV == 1) ? 10 : 5;
-			skills().SkillPts += skillPoints;
+			skills().freeSkillPts += skillPoints;
 			sendMessage("Has ganado " + skillPoints + " skillpoints.", FontType.FONTTYPE_INFO);
 			
 			stats().ELV++;
@@ -3338,9 +3337,8 @@ public class Player extends AbstractCharacter {
 			
 			clazz().subirEstads(this);
 			sendSkills();
-			sendLevelUp((short)skillPoints);
 			
-			if (wasNewbie && !esNewbie()) {
+			if (!isNewbie() && wasNewbie) {
 				userInv().quitarObjsNewbie();
 				quitDungeonNewbie();
 			}
@@ -3352,7 +3350,8 @@ public class Player extends AbstractCharacter {
 	private void quitDungeonNewbie() {
 		// Si el usuario dejó de ser Newbie, y estaba en el Dungeon Newbie
 		// es transportado a su hogar de origen.
-		if (pos().map == DUNGEON_NEWBIE_MAP) {
+		Map map = server.getMap(pos().map);
+		if (map != null && map.isNewbieMap()) {
 			MapPos ciudad = this.server.getCiudadPos(this.homeland);
 			warpMe(ciudad.map, ciudad.x, ciudad.y, true);
 		}
@@ -3958,7 +3957,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void contarMuerte(Player usuarioMuerto) {
-		if (usuarioMuerto.esNewbie()) {
+		if (usuarioMuerto.isNewbie()) {
 			return;
 		}
 		if (duelStatus(usuarioMuerto) == DuelStatus.DUEL_ALLOWED) {
@@ -4190,7 +4189,7 @@ public class Player extends AbstractCharacter {
 		// }
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		modifyAttributesByRace();
-		this.skills().SkillPts = 10;
+		this.skills().freeSkillPts = 10;
 
 		this.password = password;
 		this.infoChar.heading(Heading.SOUTH);
@@ -4385,7 +4384,6 @@ public class Player extends AbstractCharacter {
 			
 			server.getMotd().sendMOTD(this);
 			
-			sendCreateFX(FXWARP, 0);
 
 			// FIXME respawn pets
 			// FIXME conectar clan
@@ -4394,9 +4392,14 @@ public class Player extends AbstractCharacter {
 			
 			// FIXME modGuilds.SendGuildNews(UserIndex)
 			
+			if (skills().freeSkillPts > 0) {
+				sendSkills();
+			}			
+			
 			sendPositionUpdate();
-
 			flags().UserLogged = true;
+
+			sendCreateFX(FXWARP, 0);
 
 		} catch (Exception e) {
 			log.fatal("ERROR EN connectUser(), nick=" + this.userName, e);
@@ -4610,17 +4613,15 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean recStamina(int intervalo) {
-		// TODO revisar
-		Map map = this.server.getMap(pos().map);
-		if (!map.isOutdoor(pos().x,  pos().y)) {
-			return false;
-		}
-		
 		if (stats().stamina < stats().maxStamina) {
-			if (this.counters.STACounter < intervalo) {
-				this.counters.STACounter++;
+			if (counters().STACounter < intervalo) {
+				counters().STACounter++;
 			} else {
-				this.counters.STACounter = 0;
+				counters().STACounter = 0;
+				if (flags().Desnudo) {
+					// Desnudo no sube energía.
+					return false;
+				}
 				int massta = Util.Azar(1, Util.porcentaje(stats().maxStamina, 5));
 				stats().aumentarStamina(massta);
 				sendUpdateUserStats();
@@ -4742,7 +4743,7 @@ public class Player extends AbstractCharacter {
 	public String getTagsDesc() {
 		var msg = new StringBuilder()
 				.append(getNick());
-		if (esNewbie()) {
+		if (isNewbie()) {
 			msg.append(" <NEWBIE>");
 		}
 		msg.append(getTituloFaccion());

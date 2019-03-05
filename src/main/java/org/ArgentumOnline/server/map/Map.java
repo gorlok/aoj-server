@@ -1420,8 +1420,8 @@ public class Map implements Constants {
      */
     public boolean isForbbidenMap(Player player) {
     	// ¿Es mapa de newbies?
-    	if ("NEWBIE".equalsIgnoreCase(restricted)) {
-    		if (player.esNewbie() || player.isGM()) {
+    	if (isNewbieMap()) {
+    		if (player.isNewbie() || player.isGM()) {
     			return false; // allowed
     		} else {
     			// no es un newbie/gm, "NO PASARÁS!"
@@ -1431,9 +1431,9 @@ public class Map implements Constants {
     	} 
     	
 		// ¿Es mapa de Armadas?
-    	if ("ARMADA".equalsIgnoreCase(restricted)) {
+    	if (isRoyalArmyMap()) {
             // ¿El usuario es Armada?
-    		if (player.esArmada() || player.isGM()) {
+    		if (player.isRoyalArmy() || player.isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/gm, "NO PASARÁS!"
@@ -1443,9 +1443,9 @@ public class Map implements Constants {
     	}
     	
 		// ¿Es mapa de Caos?
-    	if ("CAOS".equalsIgnoreCase(restricted)) {
+    	if (isDarkLegionMap()) {
             // ¿El usuario es Caos?
-    		if (player.esCaos() || player.isGM()) {
+    		if (player.isDarkLegion() || player.isGM()) {
     			return false; // allowed
     		} else {
     			// no es un caos/gm, "NO PASARÁS!"
@@ -1455,9 +1455,9 @@ public class Map implements Constants {
     	}
     	
 		// ¿Es mapa de faccionarios?
-    	if ("FACCION".equalsIgnoreCase(restricted)) {
+    	if (isFactionMap()) {
             // ¿El usuario es Caos?
-    		if (player.esArmada() || player.esCaos() || player.isGM()) {
+    		if (player.isRoyalArmy() || player.isDarkLegion() || player.isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/caos/gm, "NO PASARÁS!"
@@ -1470,6 +1470,22 @@ public class Map implements Constants {
     	// Adelante averturero
     	return false; // allowed;
     }
+
+	public boolean isFactionMap() {
+		return "FACCION".equalsIgnoreCase(restricted);
+	}
+
+	public boolean isDarkLegionMap() {
+		return "CAOS".equalsIgnoreCase(restricted);
+	}
+
+	public boolean isRoyalArmyMap() {
+		return "ARMADA".equalsIgnoreCase(restricted);
+	}
+
+	public boolean isNewbieMap() {
+		return "NEWBIE".equalsIgnoreCase(restricted);
+	}
     
     
 }

@@ -341,7 +341,7 @@ public class GuildManager {
 	
     public void requestMembership(Player applicant, String guildName, String desc) {
     	// SOLICITUD
-    	if (applicant.esNewbie()) {
+    	if (applicant.isNewbie()) {
            applicant.sendMessage("Los newbies no pueden conformar clanes.", FontType.FONTTYPE_GUILD);
            return;
     	}

@@ -249,7 +249,7 @@ public class UserStorage {
 		for (Skill skill : Skill.values()) {
 			user.skills().set(skill, ini.getShort("SKILLS", "SK" + (i++)));
 		}
-		user.skills().SkillPts = ini.getInt("STATS", "SkillPtsLibres");
+		user.skills().freeSkillPts = ini.getInt("STATS", "SkillPtsLibres");
 
 		user.stats().Exp = ini.getInt("STATS", "EXP");
 		user.stats().ELU = ini.getInt("STATS", "ELU");
@@ -402,7 +402,7 @@ public class UserStorage {
 			ini.setValue("STATS", "MaxHAM", user.stats().maxEaten);
 			ini.setValue("STATS", "MinHAM", user.stats().eaten);
 
-			ini.setValue("STATS", "SkillPtsLibres", user.skills().SkillPts);
+			ini.setValue("STATS", "SkillPtsLibres", user.skills().freeSkillPts);
 
 			ini.setValue("STATS", "EXP", user.stats().Exp);
 			ini.setValue("STATS", "ELV", user.stats().ELV);

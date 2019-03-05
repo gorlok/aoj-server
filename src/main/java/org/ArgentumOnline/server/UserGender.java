@@ -19,16 +19,16 @@ package org.ArgentumOnline.server;
 
 public enum UserGender {
 	
-    GENERO_HOMBRE,
-    GENERO_MUJER;
+    /* 1 */ GENERO_HOMBRE,
+    /* 2 */ GENERO_MUJER;
     
 	private static final UserGender[] VALUES = UserGender.values();
 	public static UserGender value(int value) {
-		return VALUES[value];
+		return VALUES[value-1];
 	}
 	
 	public byte value() {
-		return (byte) this.ordinal();
+		return (byte) (this.ordinal()+1);
 	}
     
 }

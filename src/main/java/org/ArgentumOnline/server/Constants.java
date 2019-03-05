@@ -100,7 +100,7 @@ public interface Constants {
 
     final static short FLAGORO = 21; // JAO: MAX_INVENTORY_SLOTS + 1
     
-    final static int LimiteNewbie = 8;
+    final static int LimiteNewbie = 12;
     
     final static String DATDIR = "dat";
     final static String GUILDDIR = "guilds";
@@ -139,8 +139,6 @@ public interface Constants {
     final static int YMaxMapSize = 100;
     final static int MAPA_ALTO  = 100;
     final static int MAPA_ANCHO = 100;
-    
-    final static int DUNGEON_NEWBIE_MAP = 37;
     
 	public final String CHARFILES_FOLDER = "charfile";
     

@@ -23,7 +23,7 @@ package org.ArgentumOnline.server;
 public class UserSkills {
 	
 	// Puntos de skills sin asignar.
-	public int SkillPts = 0; 
+	public int freeSkillPts = 0; 
 
 	private byte userSkills[] = new byte[Skill.values().length];
 
@@ -52,11 +52,11 @@ public class UserSkills {
 	}
 
 	public void setSkillPoints(int val) {
-		this.SkillPts = val;
+		this.freeSkillPts = val;
 	}
 
 	public int getSkillPoints() {
-		return this.SkillPts;
+		return this.freeSkillPts;
 	}
 
 	public boolean skillsValidos() {
@@ -78,11 +78,11 @@ public class UserSkills {
 		for (Skill skill : Skill.values()) {
 			byte points = incSkills[skill.value()];
 			
-			this.SkillPts -= points;
+			this.freeSkillPts -= points;
 			
 			skills()[skill.value()] += points;
 			if (skills()[skill.value()] > 100) {
-				this.SkillPts += (skills()[skill.value()] - 100); // devuelvo los sobrantes
+				this.freeSkillPts += (skills()[skill.value()] - 100); // devuelvo los sobrantes
 				skills()[skill.value()] = 100;
 			}
 		}

@@ -374,7 +374,7 @@ public class UserInventory extends Inventory implements Constants {
         ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
         short objid = this.objs[slot-1].objid;
         log.debug("equipar slot " + slot);
-        if (infoObj.esNewbie() && !this.dueño.esNewbie()) {
+        if (infoObj.esNewbie() && !this.dueño.isNewbie()) {
             this.dueño.sendMessage("Solo los newbies pueden usar este objeto.", FontType.FONTTYPE_INFO);
             return;
         }
@@ -749,7 +749,7 @@ public class UserInventory extends Inventory implements Constants {
 			return;
 		}
         ObjectInfo info = findObj(obj.objid);
-        if (info.esNewbie() && !this.dueño.esNewbie()) {
+        if (info.esNewbie() && !this.dueño.isNewbie()) {
             this.dueño.sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
