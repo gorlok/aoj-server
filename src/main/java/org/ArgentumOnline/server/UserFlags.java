@@ -88,6 +88,19 @@ public class UserFlags {
     public short AtacadoPorNpc = 0;
     public short AtacadoPorUser = 0;
     
+    /*
+Public Enum PlayerType
+    User = &H1
+    Consejero = &H2
+    SemiDios = &H4
+    Dios = &H8
+    Admin = &H10
+    RoleMaster = &H20
+    ChaosCouncil = &H40
+    RoyalCouncil = &H80
+End Enum
+	FIXME
+     */
     public short Privilegios = 0;
     
     public short ValCoDe = 0;

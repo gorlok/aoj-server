@@ -116,8 +116,6 @@ import io.netty.channel.Channel;
 public class Player extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
 
-	private final static int SKILL_FundirMetal = 88;
-
 	Channel channel = null;
 
 	String userName = "";
@@ -1589,7 +1587,7 @@ public class Player extends AbstractCharacter {
 
 	private void doRobar(Player victima) {
 		Map mapa = this.server.getMap(pos().map);
-		if (!mapa.isSafeMap() || duelStatus(victima) != DuelStatus.DUEL_MISSING) {
+		if (mapa.isSafeMap() || duelStatus(victima) != DuelStatus.DUEL_MISSING) {
 			return;
 		}
 		if (flags().Privilegios < 2) {
@@ -1691,7 +1689,7 @@ public class Player extends AbstractCharacter {
 		Player tu = null;
 		MapObject obj = null;
 
-		if (skill == SKILL_FundirMetal) {
+		if (skill == Skill.SKILL_FundirMetal) {
 			// UGLY HACK!!! This is a constant, not a skill!!
 			mapa.lookAtTile(this, x, y);
 			if (flags().TargetObj > 0) {
@@ -1721,7 +1719,11 @@ public class Player extends AbstractCharacter {
 				if (stats().stamina >= 10) {
 					stats().quitarStamina(Util.Azar(1, 10));
 				} else {
-					sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
+					if (gender() == UserGender.GENERO_HOMBRE) {
+						sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
+					} else {
+						sendMessage("Estas muy cansada para luchar.", FontType.FONTTYPE_INFO);
+					}					
 					return;
 				}
 
@@ -3013,10 +3015,15 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendWave(int sound) {
-		Map map = this.server.getMap(pos().map);
-		// Sonido
-		if (map != null) {
-			map.sendToArea(pos().x, pos().y, new PlayWaveResponse((byte) sound, pos().x, pos().y));
+	    if (flags().AdminInvisible) {
+	    	// Los admin invisibles solo producen sonidos a si mismos
+	    	sendPacket(new PlayWaveResponse((byte) sound, pos().x, pos().y));
+	    
+	    } else {
+			Map map = this.server.getMap(pos().map);
+			if (map != null) {
+				map.sendToArea(pos().x, pos().y, new PlayWaveResponse((byte) sound, pos().x, pos().y));
+			}
 		}
 	}
 
@@ -3712,10 +3719,14 @@ public class Player extends AbstractCharacter {
 	public void safeToggle() {
 		flags().Seguro = !flags().Seguro;
 	}
+	
+	public boolean isInCombatMode() {
+		return flags().ModoCombate;
+	}
 
-	public void cambiarModoCombate() {
+	public void toggleCombatMode() {
 		// Entrar o salir modo combate
-		if (flags().ModoCombate) {
+		if (isInCombatMode()) {
 			sendMessage("Has salido del modo de combate.", FontType.FONTTYPE_INFO);
 		} else {
 			sendMessage("Has pasado al modo de combate.", FontType.FONTTYPE_INFO);
@@ -4255,11 +4266,11 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void modifyAttributesByRace() {
-		stats().attr().modify(Attribute.FUERZA, race().modificadorFuerza());
-		stats().attr().modify(Attribute.AGILIDAD, race().modificadorAgilidad());
-		stats().attr().modify(Attribute.INTELIGENCIA, race().modificadorInteligencia());
-		stats().attr().modify(Attribute.CARISMA, race().modificadorCarisma());
-		stats().attr().modify(Attribute.CONSTITUCION, race().modificadorConstitucion());
+		stats().attr().set(Attribute.FUERZA, 		stats().attr().get(Attribute.FUERZA) 		+ race().modificadorFuerza());
+		stats().attr().set(Attribute.AGILIDAD, 		stats().attr().get(Attribute.AGILIDAD) 		+ race().modificadorAgilidad());
+		stats().attr().set(Attribute.INTELIGENCIA, 	stats().attr().get(Attribute.INTELIGENCIA) 	+ race().modificadorInteligencia());
+		stats().attr().set(Attribute.CARISMA, 		stats().attr().get(Attribute.CARISMA) 		+ race().modificadorCarisma());
+		stats().attr().set(Attribute.CONSTITUCION, 	stats().attr().get(Attribute.CONSTITUCION) 	+ race().modificadorConstitucion());
 	}
 
 	public void sendError(String msg) {
@@ -4462,7 +4473,7 @@ public class Player extends AbstractCharacter {
 					userDie();
 				}
 			} else {
-				if (stats().stamina > 0) { // Verificación agregada por gorlok
+				if (!stats().isTooTired()) { // Verificación agregada por gorlok
 					int modifi = Util.porcentaje(stats().maxStamina, 5);
 					stats().quitarStamina(modifi);
 					sendMessage("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.FONTTYPE_INFO);

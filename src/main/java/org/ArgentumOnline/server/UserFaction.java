@@ -135,7 +135,7 @@ public class UserFaction implements Constants {
 	}
 	
     
-    public boolean faccionPuedeUsarItem(Player player, short objid) {
+    public boolean faccionPuedeUsarItem(short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
         if (infoObj.esReal()) {
             if (!player.isCriminal()) {

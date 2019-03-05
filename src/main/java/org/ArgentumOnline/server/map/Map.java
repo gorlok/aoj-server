@@ -204,7 +204,7 @@ public class Map implements Constants {
     }
     
     public boolean isSafeMap() {
-        return this.pk;
+        return this.pk == false;
     }
     
     public boolean isSafeZone(byte x, byte y) {

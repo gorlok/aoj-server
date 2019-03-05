@@ -227,5 +227,9 @@ public class UserStats extends AbstractCharStats {
 		this.ELU = 300; // Puntos necesarios para subir de nivel.
 		this.ELV = 1; // Nivel inicial.
 	}
+	
+	public boolean isTooTired() {
+		return this.stamina <= 0;
+	}
 
 }

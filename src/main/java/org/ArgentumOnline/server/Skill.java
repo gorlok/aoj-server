@@ -44,6 +44,8 @@ public enum Skill {
 	SKILL_Wresterling("Wresterling"),
 	SKILL_Navegacion("Navegacion");
     
+	public final static byte SKILL_FundirMetal = 88;
+	
 	public final static byte MAX_SKILL_POINTS = 100;
     
 	public final static byte levelSkill[] = {

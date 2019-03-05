@@ -65,13 +65,22 @@ public class UserAttributes {
 	 * @param attr is the attribute to modify
 	 * @param amount to increment o decrement from the attribute
 	 */
-	public void modify(Attribute attr, int amount) {
+	public void modifyByEffect(Attribute attr, int amount) {
 		this.userAttributes[attr.value()] += amount;
+		
+		// el valor del atributo no puede ser menor que MIN_ATTRIBUTE_VALUE
 		if (this.userAttributes[attr.value()] < MIN_ATTRIBUTE_VALUE) {
 			this.userAttributes[attr.value()] = MIN_ATTRIBUTE_VALUE;
 		}
+		
+		// el valor del atributo no puede ser mayor que MAX_ATTRIBUTE_VALUE
 		if (this.userAttributes[attr.value()] > MAX_ATTRIBUTE_VALUE) {
 			this.userAttributes[attr.value()] = MAX_ATTRIBUTE_VALUE;
+		}
+		
+		// el valor del atributo no puede ser mayor que el doble de su valor original
+		if (this.userAttributes[attr.value()] > 2 * this.userAttributesBackup[attr.value()]) {
+			this.userAttributes[attr.value()] = 2 * this.userAttributesBackup[attr.value()];
 		}
 	}
 	

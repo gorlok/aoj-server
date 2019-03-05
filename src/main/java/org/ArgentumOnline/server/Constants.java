@@ -335,6 +335,11 @@ End Enum
     final static byte SOUND_CREACION_CLAN = 44;
     final static byte SOUND_DECLARE_WAR = 45;
     final static byte SOUND_BEBER = 46;
+    final static byte SOUND_CONVERSION_BARCO = 55;
+    final static byte SOUND_FLECHA_IMPACTO = 65;
+    final static byte SOUND_MUERTE_MUJER = 74;
+    final static byte SOUND_MORFAR_MANZANA = 82;
+    
     
     // PECES_POSIBLES
     final static int PESCADOS_RED[] = { 139, 544, 545, 546 };

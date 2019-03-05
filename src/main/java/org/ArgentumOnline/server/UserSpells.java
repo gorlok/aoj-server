@@ -552,7 +552,7 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modify(Attribute.AGILIDAD, daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.AGILIDAD, daño);
 			targetUser.flags().TomoPocion = true;
 			return true;
 		} else if (hechizo.SubeAgilidad == 2) {
@@ -566,7 +566,7 @@ public class UserSpells implements Constants {
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modify(Attribute.AGILIDAD, -daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.AGILIDAD, -daño);
 			return true;
 		}
 		// <-------- Fuerza ---------->
@@ -574,7 +574,7 @@ public class UserSpells implements Constants {
 			infoHechizo();
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modify(Attribute.FUERZA, daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.FUERZA, daño);
 			targetUser.flags().TomoPocion = true;
 			return true;
 		} else if (hechizo.SubeFuerza == 2) {
@@ -588,7 +588,7 @@ public class UserSpells implements Constants {
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modify(Attribute.FUERZA, -daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.FUERZA, -daño);
 			return true;
 		}
 		// Salud
@@ -736,10 +736,12 @@ public class UserSpells implements Constants {
 					FontType.FONTTYPE_INFO);
 			return false;
 		}
-		if (this.player.stats().stamina == 0
-				|| this.player.stats().stamina < hechizo.StaRequerida) {
-			this.player.sendMessage("Estas muy cansado para lanzar este hechizo.",
-				FontType.FONTTYPE_INFO);
+		if (this.player.stats().isTooTired() || this.player.stats().stamina < hechizo.StaRequerida) {
+			if (this.player.gender() == UserGender.GENERO_HOMBRE) {
+				this.player.sendMessage("Estas muy cansado para lanzar este hechizo.", FontType.FONTTYPE_INFO);
+			} else {
+				this.player.sendMessage("Estas muy cansada para lanzar este hechizo.", FontType.FONTTYPE_INFO);
+			}
 			return false;
 		}
 		return true;
