@@ -315,7 +315,7 @@ public class GuildManager {
         player.guildInfo().giveGuildPoints(25);
         guild.addMember(solicitante.getNick());
         guild.joinRequest.remove(solicitud);
-        guild.sendPlayWave(Constants.SND_ACEPTADOCLAN);
+        guild.sendPlayWave(Constants.SOUND_ACEPTADO_CLAN);
         guild.messageToGuildMembers(solicitante.getNick() + " ha sido aceptado en el clan.", FontType.FONTTYPE_GUILD);
     }
 
@@ -529,9 +529,9 @@ public class GuildManager {
         leaderGuild.alliedGuilds.add(enemyGuild.guildName);
         enemyGuild.alliedGuilds.add(leaderGuild.guildName);
         leaderGuild.messageToGuildMembers("Tu clan ha firmado una alianza con " + enemyGuild.guildName, FontType.FONTTYPE_GUILD);
-        leaderGuild.sendPlayWave(Constants.SND_DECLAREWAR);        
+        leaderGuild.sendPlayWave(Constants.SOUND_DECLARE_WAR);        
         enemyGuild.messageToGuildMembers(leaderGuild.guildName + " firmó una alianza con tu clan.", FontType.FONTTYPE_GUILD);
-        enemyGuild.sendPlayWave(Constants.SND_DECLAREWAR);        
+        enemyGuild.sendPlayWave(Constants.SOUND_DECLARE_WAR);        
     }
     
     public void declareWar(Player player, String guildName) {
@@ -559,9 +559,9 @@ public class GuildManager {
         leaderGuild.enemyGuilds.add(enemyGuild.guildName);
         enemyGuild.enemyGuilds.add(leaderGuild.guildName);
         leaderGuild.messageToGuildMembers("Tu clan le declaró la guerra a " + enemyGuild.guildName, FontType.FONTTYPE_GUILD);
-        leaderGuild.sendPlayWave(Constants.SND_DECLAREWAR);
+        leaderGuild.sendPlayWave(Constants.SOUND_DECLARE_WAR);
         enemyGuild.messageToGuildMembers(leaderGuild.guildName + " le declaradó la guerra a tu clan.", FontType.FONTTYPE_GUILD);
-        enemyGuild.sendPlayWave(Constants.SND_DECLAREWAR);        
+        enemyGuild.sendPlayWave(Constants.SOUND_DECLARE_WAR);        
     }
     
     public void sendGuildNews(Player member) {
@@ -688,7 +688,7 @@ public class GuildManager {
         guild.members.add(player.getNick());
         addGuild(guild);
         player.guildInfo().fundarClan(guild.guildName);
-        this.server.sendToAll(new PlayWaveResponse(Constants.SND_CREACIONCLAN, (byte)50, (byte)50));
+        this.server.sendToAll(new PlayWaveResponse(Constants.SOUND_CREACION_CLAN, (byte)50, (byte)50));
         this.server.sendToAll(new GuildChatResponse("¡¡¡" + player.getNick() + " fundó el clan '" + guild.guildName + "'!!!"));
         
         if (guildsCount() == 1) {

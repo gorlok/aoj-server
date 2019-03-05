@@ -205,7 +205,7 @@ public class AreasAO implements Constants {
     			}
     			
     			if (map.hasObject(x, y)) {
-    				MapObject obj = map.getObjeto(x, y);
+    				MapObject obj = map.getObject(x, y);
  
     				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
     				
@@ -290,11 +290,9 @@ public class AreasAO implements Constants {
     	if (maxY > YMaxMapSize - 1) {
     		maxY = YMaxMapSize - 1;
     	}
-    	
     	if (minY < YMinMapSize) {
     		minY = YMinMapSize;
     	}
-
     	if (maxX > XMaxMapSize - 1) {
     		maxX = XMaxMapSize - 1;
     	}
@@ -303,15 +301,13 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	if (map.getCantUsuarios() > 0) {
+    	if (map.getPlayersCount() > 0) {
     		
     		for(byte x = (byte) minX; x < maxX;x++) {
         		for(byte y = (byte) minY; y < maxY; y++) {
         			if (map.hasPlayer(x, y)) {
         				Player jao = map.getPlayer(x, y);
-        				
         				jao.sendPacket(npc.createCC());
-        				
         			}
         		}
     		}
@@ -367,21 +363,18 @@ public class AreasAO implements Constants {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
-		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Player user = map.spUser(loopc);
-			
-			int tempInt = (user.getUserArea().areaRecibeX & areaX);
-			
+		for(Player player : map.getPlayers()) {
+			int tempInt = (player.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (user.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					user.sendPacket(packet);
+					player.sendPacket(packet);
 				}
 			}
 		}
@@ -394,23 +387,18 @@ public class AreasAO implements Constants {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
-		for(int loopc = 0; loopc < map.getCantUsuarios(); loopc++) {
-			Player user = map.spUser(loopc);
-			
-			int tempInt = (user.getUserArea().areaRecibeX & areaX);
-			
+		for(Player player : map.getPlayers()) {
+			int tempInt = (player.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
-			
 			gral.set(tempInt);
-			
+
 			if (gral.cardinality() > 0) {
-				
-				tempInt = (user.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (user.getId() != id) {
-						user.sendPacket(packet);
+					if (player.getId() != id) {
+						player.sendPacket(packet);
 					}
 				}
 			}
@@ -426,20 +414,17 @@ public class AreasAO implements Constants {
 		int areaX = userArea.areaPerteneceX;
 		int areaY = userArea.areaPerteneceY;
 		
-		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Player tempIndex = map.spUser(i);
-			
-			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
+		for(Player player : map.getPlayers()) {
+			int tempInt = (player.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
-				
-				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					tempIndex.sendPacket(packet);
+					player.sendPacket(packet);
 				}
 			}
 		}
@@ -454,21 +439,19 @@ public class AreasAO implements Constants {
 		int areaX = userArea.areaPerteneceX;
 		int areaY = userArea.areaPerteneceY;
 		
-		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Player tempIndex = map.spUser(i);
-			
-			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
+		for(Player player : map.getPlayers()) {
+			int tempInt = (player.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (tempIndex.getId() != user.getId()) {
-						tempIndex.sendPacket(packet);
+					if (player.getId() != user.getId()) {
+						player.sendPacket(packet);
 					}
 				}
 			}
@@ -483,20 +466,17 @@ public class AreasAO implements Constants {
 		int areaX = npc.areaPerteneceX;
 		int areaY = npc.areaPerteneceY;
 		
-		for(int i = 0; i < map.getCantUsuarios();i++) {
-			Player tempIndex = map.spUser(i);
-			
-			int tempInt = (tempIndex.getUserArea().areaRecibeX & areaX);
+		for(Player player : map.getPlayers()) {
+			int tempInt = (player.getUserArea().areaRecibeX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (tempIndex.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.getUserArea().areaRecibeY & areaY);
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
-					
-					tempIndex.sendPacket(packet);
+					player.sendPacket(packet);
 				}
 			}
 		}

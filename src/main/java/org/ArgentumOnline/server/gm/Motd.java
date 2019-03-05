@@ -121,7 +121,7 @@ public class Motd {
 		if (motd.isEmpty()) {
 			return;
 		}
-		player.sendMessage("Mensaje del día:", FontType.FONTTYPE_INFO);
+		player.sendPacket(new GuildChatResponse("Mensajes de entrada:"));
 		for (String line : motd) {
 			player.sendPacket(new GuildChatResponse(line));
 		}

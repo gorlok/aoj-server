@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -58,7 +59,7 @@ public class Admins {
 
     private List<String> invalidNames = new ArrayList<>();
 
-    /** User names than asked help */
+    /** User names than asked for help */
     private List<String> helpRequests = new ArrayList<>();
     
     private List<String> bannedIPs = new ArrayList<>();
@@ -443,16 +444,9 @@ public class Admins {
 		if (mapa == null) {
 			return;
 		}
-		var msg = new StringBuilder();
-		int cant = 0;
-		for (String usuario : mapa.getUsuarios()) {
-			if (cant > 0) {
-				msg.append(",");
-			}
-			cant++;
-			msg.append(usuario);
-		}
-		admin.sendMessage("Usuarios en el mapa: " + msg, FontType.FONTTYPE_INFO);
+		String userNames = mapa.getPlayers().stream().map(Player::getNick).collect(Collectors.joining(","));
+		admin.sendMessage("Hay " + mapa.getPlayers().size() + 
+				" usuarios en el mapa: " + userNames, FontType.FONTTYPE_INFO);
 	}
 
 	public void sendUsersWorking(Player admin) {
@@ -666,10 +660,10 @@ public class Admins {
 			admin.sendMessage("Mapa " + admin.pos().map + " PK: " + (mapa.pk ? "SI" : "NO"), FontType.FONTTYPE_INFO);
 		} else if (accion.equalsIgnoreCase("BACKUP")) {
 			if (valor == 0 || valor == 1) {
-				mapa.m_backup = (valor == 1);
+				mapa.backup = (valor == 1);
 				admin.sendMessage("BACKUP cambiado.", FontType.FONTTYPE_INFO);
 			}
-			admin.sendMessage("Mapa " + admin.pos().map + " Backup: " + (mapa.m_backup ? "SI" : "NO"), FontType.FONTTYPE_INFO);
+			admin.sendMessage("Mapa " + admin.pos().map + " Backup: " + (mapa.backup ? "SI" : "NO"), FontType.FONTTYPE_INFO);
 		}
 	}
 

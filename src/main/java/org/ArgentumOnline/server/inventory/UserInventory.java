@@ -405,7 +405,7 @@ public class UserInventory extends Inventory implements Constants {
                     // Sonido
                     if (!this.dueño.flags().AdminInvisible) {
                         // El sonido solo se envia si no lo produce un admin invisible
-                    	this.dueño.sendWave(SOUND_SACARARMA);
+                    	this.dueño.sendWave(SOUND_SACAR_ARMA);
                     }
                     
                     if (this.dueño.flags().Mimetizado) {
@@ -840,7 +840,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-                this.dueño.sendWave(SND_BEBER);
+                this.dueño.sendWave(SOUND_BEBER);
                 this.dueño.sendUpdateUserStats();
                 break;
             case Bebidas:
@@ -852,7 +852,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.dueño.sendUpdateHungerAndThirst();
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-                this.dueño.sendWave(SND_BEBER);
+                this.dueño.sendWave(SOUND_BEBER);
                 break;
             case Llaves:
                 if (!this.dueño.checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
@@ -871,8 +871,8 @@ public class UserInventory extends Inventory implements Constants {
                         byte targetY = this.dueño.flags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == info.Clave) {
-                                mapa.toggleDoor(mapa.getObjeto(targetX, targetY));
-                                this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
+                                mapa.toggleDoor(mapa.getObject(targetX, targetY));
+                                this.dueño.flags().TargetObj = mapa.getObject(targetX, targetY).obj_ind;
                                 this.dueño.sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
@@ -880,8 +880,8 @@ public class UserInventory extends Inventory implements Constants {
                             return;
                         }
                         if (targetInfo.Clave == info.Clave) {
-                            mapa.toggleDoor(mapa.getObjeto(targetX, targetY));
-                            this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
+                            mapa.toggleDoor(mapa.getObject(targetX, targetY));
+                            this.dueño.flags().TargetObj = mapa.getObject(targetX, targetY).obj_ind;
                             this.dueño.sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 

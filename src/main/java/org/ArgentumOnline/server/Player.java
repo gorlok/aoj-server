@@ -33,7 +33,6 @@ import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.map.MapCell;
 import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
@@ -1235,7 +1234,7 @@ public class Player extends AbstractCharacter {
 		if (mapa == null) {
 			return;
 		}
-		if (mapa.hasObject(pos().x, pos().y) && mapa.getObjeto(pos().x, pos().y).obj_ind == FOGATA) {
+		if (mapa.hasObject(pos().x, pos().y) && mapa.getObject(pos().x, pos().y).obj_ind == FOGATA) {
 			sendPacket(new RestOKResponse());
 			if (!flags().Descansar) {
 				sendMessage("Te acomodas junto a la fogata y comienzas a descansar.", FontType.FONTTYPE_INFO);
@@ -1333,7 +1332,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		if (mapa.getObjeto(targetPos.x, targetPos.y).obj_ind != Constants.Leña) {
+		if (mapa.getObject(targetPos.x, targetPos.y).obj_ind != Constants.Leña) {
 			sendMessage("Necesitas clickear sobre Leña para hacer ramitas", FontType.FONTTYPE_INFO);
 		    return;
 		}
@@ -1343,7 +1342,7 @@ public class Player extends AbstractCharacter {
 		    return;
 		}
 
-		if (mapa.getObjeto(targetPos.x, targetPos.y).obj_cant < 3) {
+		if (mapa.getObject(targetPos.x, targetPos.y).obj_cant < 3) {
 			sendMessage("Necesitas por lo menos tres troncos para hacer una fogata.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -1360,7 +1359,7 @@ public class Player extends AbstractCharacter {
 
 		if (exito) {
 			short objid = FOGATA_APAG;
-			int cant = mapa.getObjeto(targetPos.x, targetPos.y).obj_cant / 3;
+			int cant = mapa.getObject(targetPos.x, targetPos.y).obj_cant / 3;
 			if (cant > 1) {
 				sendMessage("Has hecho " + cant + " fogatas.", FontType.FONTTYPE_INFO);
 			} else {
@@ -1857,7 +1856,7 @@ public class Player extends AbstractCharacter {
 					sendMessage("Deberías equiparte el hacha de leñador.", FontType.FONTTYPE_INFO);
 					return;
 				}
-				obj = mapa.getObjeto(x, y);
+				obj = mapa.getObject(x, y);
 				if (obj != null) {
 					MapPos wpaux = MapPos.mxy(pos().map, x, y);
 					if (wpaux.distance(pos()) > 2) {
@@ -1887,7 +1886,7 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				mapa.lookAtTile(this, x, y);
-				obj = mapa.getObjeto(x, y);
+				obj = mapa.getObject(x, y);
 				if (obj != null) {
 					MapPos wpaux = MapPos.mxy(pos().map, x, y);
 					if (wpaux.distance(pos()) > 2) {
@@ -2219,7 +2218,7 @@ public class Player extends AbstractCharacter {
 		if (Pos.isValid(x, y)) {
 			// ¿Hay un objeto en el tile?
 			if (mapa.hasObject(x, y)) {
-				MapObject obj = mapa.getObjeto(x, y);
+				MapObject obj = mapa.getObject(x, y);
 				flags().TargetObj = obj.getInfo().ObjIndex;
 				switch (obj.getInfo().objType) {
 				case Puertas:
@@ -2509,7 +2508,7 @@ public class Player extends AbstractCharacter {
 		// ¿Hay algun obj?
 		if (mapa.hasObject(pos().x, pos().y)) {
 			// ¿Esta permitido agarrar este obj?
-			MapObject obj = mapa.getObjeto(pos().x, pos().y);
+			MapObject obj = mapa.getObject(pos().x, pos().y);
 			if (!obj.getInfo().esAgarrable()) {
 				sendMessage("El objeto no se puede agarrar.", FontType.FONTTYPE_INFO);
 			} else {
@@ -2659,7 +2658,7 @@ public class Player extends AbstractCharacter {
 		if (withFX) {
 			sendCreateFX(1, 0);
 			if (flags().UserLogged) { // No hacer sonido en el LOGIN.
-				sendWave(SND_WARP);
+				sendWave(SOUND_WARP);
 			}
 		}
 
@@ -2744,7 +2743,7 @@ public class Player extends AbstractCharacter {
 			map.sendToArea(x, y, new SetInvisibleResponse(getId(), (byte)1));
 		}
 		if (withFX && !flags().AdminInvisible) {
-			sendWave(SND_WARP);
+			sendWave(SOUND_WARP);
 			sendCreateFX(FXWARP, 0);
 		}
 		warpPets();
@@ -2804,7 +2803,7 @@ public class Player extends AbstractCharacter {
 	public void efectoLluvia() {
 		if (flags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
-			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZona() != ZONA_DUNGEON) {
+			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZone() != ZONA_DUNGEON) {
 				int modifi = Util.porcentaje(stats().maxStamina, 3);
 				stats().quitarStamina(modifi);
 				sendMessage("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.FONTTYPE_INFO);
@@ -2909,7 +2908,7 @@ public class Player extends AbstractCharacter {
 		npc.setSpellSpawnedPet(true);
 		npc.setGiveGLD(0);
 		npc.followMaster();
-		npc.sendPlayWave(SND_WARP);
+		npc.sendPlayWave(SOUND_WARP);
 		npc.sendCreateFX(FXWARP, 0);
 		npc.activate();
 
@@ -3027,7 +3026,7 @@ public class Player extends AbstractCharacter {
 		}
 		Map map = this.server.getMap(pos().map);
 		// Sonido
-		sendWave(SND_USERMUERTE);
+		sendWave(SOUND_USER_DIE);
 		// Quitar el dialogo del usuario muerto
 		map.sendToArea(pos().x, pos().y, new RemoveCharDialogResponse(getId()));
 		
@@ -3477,7 +3476,7 @@ public class Player extends AbstractCharacter {
 			boolean rechazo = (Util.Azar(1, 100) <= probRechazo);
 			if (rechazo) {
 				// Se rechazo el ataque con el escudo
-				sendWave(SND_ESCUDO);
+				sendWave(SOUND_ESCUDO);
 				sendPacket(new BlockedWithShieldUserResponse());
 				subirSkill(Skill.SKILL_Defensa);
 			}
@@ -3702,7 +3701,7 @@ public class Player extends AbstractCharacter {
 			if (npc.getSonidoAtaqueExitoso() > 0) {
 				sendWave(npc.getSonidoAtaqueExitoso());
 			} else {
-				sendWave(SND_IMPACTO2);
+				sendWave(SOUND_IMPACTO2);
 			}
 			userDañoNpc(npc);
 		} else {
@@ -3828,7 +3827,7 @@ public class Player extends AbstractCharacter {
 				boolean huboRechazo = (Util.Azar(1, 100) <= probRechazo);
 				if (huboRechazo) {
 					// Se rechazo el ataque con el escudo!
-					sendWave(SND_ESCUDO);
+					sendWave(SOUND_ESCUDO);
 					sendPacket(new BlockedWithShieldOtherResponse());
 					victima.sendPacket(new BlockedWithShieldUserResponse());
 					victima.subirSkill(Skill.SKILL_Defensa);
@@ -3859,7 +3858,7 @@ public class Player extends AbstractCharacter {
 		}
 		usuarioAtacadoPorUsuario(victima);
 		if (usuarioImpacto(victima)) {
-			sendWave(SND_IMPACTO);
+			sendWave(SOUND_IMPACTO);
 			if (!victima.isSailing()) {
 				victima.sendCreateFX(FXSANGRE, 0);
 			}
@@ -4449,7 +4448,7 @@ public class Player extends AbstractCharacter {
 			this.counters.Frio++;
 		} else {
 			Map mapa = this.server.getMap(pos().map);
-			if (mapa.getTerreno() == TERRENO_NIEVE) {
+			if (mapa.getTerrain() == TERRENO_NIEVE) {
 				sendMessage("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.FONTTYPE_INFO);
 				int modifi = Util.porcentaje(stats().MaxHP, 5);
 				stats().MinHP -= modifi;
@@ -4931,7 +4930,7 @@ public class Player extends AbstractCharacter {
 			}
 			subirSkill(Skill.SKILL_Herreria);
 			sendInventoryToUser();
-			sendWave(MARTILLOHERRERO);
+			sendWave(SOUND_MARTILLO_HERRERO);
 			flags().Trabajando = true;
 		}
 	}
@@ -4960,7 +4959,7 @@ public class Player extends AbstractCharacter {
 			}
 			subirSkill(Skill.SKILL_Carpinteria);
 			sendInventoryToUser();
-			sendWave(LABUROCARPINTERO);
+			sendWave(SOUND_LABURO_CARPINTERO);
 			flags().Trabajando = true;
 		}
 	}

@@ -28,13 +28,13 @@ import org.ArgentumOnline.server.npc.Npc;
 public class MapCell {
     // del archivo .map    
     
-	// FIXME
-	
-    final static int FLAG_BLOQUED = 0;
-    final static int FLAG_MODIFIED = 1;
-    final static int FLAG_WATER = 2;
-    final static int FLAGS_NUMBER = 3;
+    private final static int FLAG_BLOQUED = 0;
+    private final static int FLAG_MODIFIED = 1;
+    private final static int FLAG_WATER = 2;
+    private final static int FLAGS_NUMBER = 3;
 
+    private BitSet flags = new BitSet(FLAGS_NUMBER);
+    
     public enum Trigger {
 	    /* 0 */ TRIGGER_NADA,
 	    /* 1 */ TRIGGER_BAJO_TECHO,
@@ -46,61 +46,56 @@ public class MapCell {
 	    /* 7 */ TRIGGER_ARENA_TORNEO; // Para torneos con espectadores
     }
     
-    private BitSet m_flags = new BitSet(FLAGS_NUMBER);
-    
-    int borderArea = 0; //Areas by jao
-    
     private Trigger trigger = Trigger.TRIGGER_NADA;
     
-    private byte m_x;
-    private byte m_y;
+    private byte x;
+    private byte y;
     
     // teleport (del archivo .inf) 
-    private short m_dest_mapa;
-    private short m_dest_x;
-    private short m_dest_y;
+    private short dest_map;
+    private short dest_x;
+    private short dest_y;
     
-    private short m_npc;
-    
-    private short m_obj_ind;
-    private int m_obj_cant;
+    private short objIndex;
+    private int objCount;
     
     private short playerId = 0;
+    private short npcId;
     
     private int grh[] = new int[4];
     
     public MapCell(short x, short y) {
-    	this.m_x = (byte)x;
-    	this.m_y = (byte)y;
+    	this.x = (byte)x;
+    	this.y = (byte)y;
     }
     
     public int getGrh(int index) {
     	return this.grh[index];
     }
     
-    public short getX() {
-    	return this.m_x;
+    public short x() {
+    	return this.x;
     }
     
-    public short getY() {
-    	return this.m_y;
+    public short y() {
+    	return this.y;
     }
     
-    public short getObjInd() {
-        return this.m_obj_ind;
+    public short objIndex() {
+        return this.objIndex;
     }
     
-    public int getObjCant() {
-        return this.m_obj_cant;
+    public int objCount() {
+        return this.objCount;
     }
     
     public boolean hasObject() {
-    	return this.m_obj_ind > 0 && this.m_obj_cant > 0;
+    	return this.objIndex > 0 && this.objCount > 0;
     }
 
-    public void quitarObjeto() {
-    	this.m_obj_ind = 0;
-    	this.m_obj_cant = 0;
+    public void removeObject() {
+    	this.objIndex = 0;
+    	this.objCount = 0;
     }
     
     public void setGrh(int index, int value) {
@@ -108,16 +103,16 @@ public class MapCell {
     }
     
     public void setObj(short obj_ind, int cant) {
-        this.m_obj_ind = obj_ind;
-        this.m_obj_cant = cant;
+        this.objIndex = obj_ind;
+        this.objCount = cant;
     }
     
-    public Npc getNpc() {
-        return GameServer.instance().npcById(this.m_npc);
+    public Npc npc() {
+        return GameServer.instance().npcById(this.npcId);
     }
     
-    public void setNpc(Npc npc) {
-        this.m_npc = (npc == null) ? 0 : npc.getId();
+    public void npc(Npc npc) {
+        this.npcId = (npc == null) ? 0 : npc.getId();
     }
     
     public short playerId() {
@@ -128,47 +123,47 @@ public class MapCell {
         this.playerId = id;
     }
     
-    public Trigger getTrigger() {
+    public Trigger trigger() {
         return this.trigger;
     }
 
-    public void setTrigger(Trigger value) {
+    public void trigger(Trigger value) {
         this.trigger = value;
     }
     
     public boolean isModified() {
-        return this.m_flags.get(FLAG_MODIFIED);
+        return this.flags.get(FLAG_MODIFIED);
     }
     
     public boolean isBlocked() {
-        return this.m_flags.get(FLAG_BLOQUED);
+        return this.flags.get(FLAG_BLOQUED);
     }
     
     public void blocked(boolean estado) {
-        this.m_flags.set(FLAG_BLOQUED, estado);
+        this.flags.set(FLAG_BLOQUED, estado);
     }
     
     public void modified(boolean estado) {
-        this.m_flags.set(FLAG_MODIFIED, estado);
+        this.flags.set(FLAG_MODIFIED, estado);
     }
     
     public boolean isTeleport() {
-    	return (this.m_dest_mapa != 0 && this.m_dest_x != 0 && this.m_dest_y != 0);
+    	return (this.dest_map != 0 && this.dest_x != 0 && this.dest_y != 0);
     }
     
     public MapPos teleport() {
-    	return MapPos.mxy(this.m_dest_mapa, this.m_dest_x, this.m_dest_y);
+    	return MapPos.mxy(this.dest_map, this.dest_x, this.dest_y);
     }
     
     public void teleport(MapPos dest) {
     	if (dest != null) {
-    		this.m_dest_mapa = dest.map;
-    		this.m_dest_x = dest.x;
-    		this.m_dest_y = dest.y;
+    		this.dest_map = dest.map;
+    		this.dest_x = dest.x;
+    		this.dest_y = dest.y;
     	} else {
-    		this.m_dest_mapa = 0;
-    		this.m_dest_x = 0;
-    		this.m_dest_y = 0;    		
+    		this.dest_map = 0;
+    		this.dest_x = 0;
+    		this.dest_y = 0;    		
     	}    	
     }
     
@@ -197,42 +192,42 @@ public class MapCell {
 	    if (!canWater) {
 	        return !isBlocked() 
 	        		&& playerId() == 0 
-	        		&& getNpc() == null 
-	        		&& getTrigger() != Trigger.TRIGGER_POS_INVALIDA 
+	        		&& npc() == null 
+	        		&& trigger() != Trigger.TRIGGER_POS_INVALIDA 
 	        		&& !isWater();
 	    }
         return !isBlocked() 
         		&& playerId() == 0 
-        		&& getNpc() == null 
-        		&& getTrigger() != Trigger.TRIGGER_POS_INVALIDA;
+        		&& npc() == null 
+        		&& trigger() != Trigger.TRIGGER_POS_INVALIDA;
     }
     
     public boolean isLegalPos(boolean canWater) {
         if (!canWater) {
             return !isBlocked() 
             	&& playerId() == 0 
-            	&& getNpc() == null 
+            	&& npc() == null 
             	&& !isWater();
         }
         return !isBlocked() 
         		&& playerId() == 0
-        		&& getNpc() == null
+        		&& npc() == null
         		&& isWater();
     }
     
     /** es intemperie */
     public boolean isOutdoor() {
-    	return getTrigger() != Trigger.TRIGGER_BAJO_TECHO
-    			&& getTrigger() != Trigger.TRIGGER_NO_RESPAWN
-    			&& getTrigger() != Trigger.TRIGGER_ZONA_SEGURA;
+    	return trigger() != Trigger.TRIGGER_BAJO_TECHO
+    			&& trigger() != Trigger.TRIGGER_NO_RESPAWN
+    			&& trigger() != Trigger.TRIGGER_ZONA_SEGURA;
     }
     
     public boolean isAntiPiquete() {
-    	return getTrigger() == Trigger.TRIGGER_ANTI_PIQUETE;
+    	return trigger() == Trigger.TRIGGER_ANTI_PIQUETE;
     }
 
     public boolean isUnderRoof() {
-    	return getTrigger() == Trigger.TRIGGER_BAJO_TECHO;
+    	return trigger() == Trigger.TRIGGER_BAJO_TECHO;
     }
     
     public boolean isSafeZone() {

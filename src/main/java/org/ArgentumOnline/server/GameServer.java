@@ -549,7 +549,7 @@ public class GameServer implements Constants {
 	                    // Usamos AI si hay algun user en el mapa
 	                    if (npc.pos().isValid()) {
 	                        Map mapa = getMap(npc.pos().map);
-	                        if (mapa != null && mapa.getCantUsuarios() > 0) {
+	                        if (mapa != null && mapa.getPlayersCount() > 0) {
 	                            if (!npc.isStatic()) {
 	                                npc.doAI();
 	                            }
@@ -626,7 +626,7 @@ public class GameServer implements Constants {
 
     private void FX_Timer() {
     	for (Map mapa: this.maps) {
-            if ((Util.Azar(1, 150) < 12) && (mapa.getCantUsuarios() > 0)) {
+            if ((Util.Azar(1, 150) < 12) && (mapa.getPlayersCount() > 0)) {
                 mapa.doFX();
             }
         }
@@ -972,7 +972,7 @@ public class GameServer implements Constants {
         // Ver cuantos m_mapas necesitan backup.
         int cant = 0;
         for (Map mapa: this.maps) {
-            if (mapa.m_backup) {
+            if (mapa.backup) {
 				cant++;
 			}
         }
@@ -980,7 +980,7 @@ public class GameServer implements Constants {
         this.feedback.init("Guardando m_mapas modificados", cant);
         int i = 0;
         for (Map mapa: this.maps) {
-            if (mapa.m_backup) {
+            if (mapa.backup) {
                 mapa.saveMapData();
                 this.feedback.step("Mapa " + (++i));
             }

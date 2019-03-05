@@ -46,12 +46,12 @@ public enum Clazz {
 	private boolean magic = false;
 
     // HP adicionales cuando sube de nivel
-    final static byte AdicionalHPGuerrero = 2 ;
+    final static byte AdicionalHPGuerrero = 2;
     final static byte AdicionalSTLadron   = 3;
     final static byte AdicionalSTLeñador  = 23;
     final static byte AdicionalSTPescador = 20;
     final static byte AdicionalSTMinero   = 25;
-    
+
 	private Clazz(String name, boolean magic) {
 		this.name = name;
 		this.magic = magic;
@@ -63,12 +63,12 @@ public enum Clazz {
 	}
 
 	public static Clazz[] values = Clazz.values();
-	
+
 	/** id starts with 1 */
 	public static Clazz value(int i) {
 		return values[i-1];
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.name;

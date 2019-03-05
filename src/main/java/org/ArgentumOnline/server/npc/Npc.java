@@ -270,7 +270,7 @@ End Enum
         	System.out.println("OJO: NO HAY POSICION VALIDA !!!");
         	return null;
         } else if (conFX) {
-            npc.sendPlayWave(SND_WARP);
+            npc.sendPlayWave(SOUND_WARP);
             npc.sendCreateFX(FXWARP, 0);
         }
         npc.activate();
@@ -762,6 +762,7 @@ End Enum
             player.quest().checkNpcEnemigo(player, this);
 
             if (this.stats.Alineacion == 0) {
+            	// TODO: ¿No debería compararse con NpcType==2? Hay otros guardias aparte del npcNumber=6
                 if (this.npcNumber == GUARDIAS) {
                     player.volverCriminal();
                 }
@@ -790,11 +791,9 @@ End Enum
             // Tiramos el inventario
             tirarItems();
         }
-        //short mapa = pos().mapa;
         // Quitamos el npc
         quitarNPC();
         // ReSpawn o no
-        //reSpawnNpc(mapa);
         reSpawnNpc();
     }
 
@@ -822,9 +821,6 @@ End Enum
         	return;
         }
 
-        //JAO: Nuevo sistema de áreas!! ;-)
-        // FIXME
-        //mapa.areasData.dieNpc(this);
         map.areasData.resetNpc(this);
 
         if (map != null && pos().isValid()) {
@@ -856,16 +852,6 @@ End Enum
             this.counters.Paralisis -= 1;
         } else {
             this.flags.set(FLAG_PARALIZADO, false);
-        }
-    }
-
-    public void enviarMP() {
-        Map mapa = this.server.getMap(pos().map);
-        if (mapa != null) {
-        	// FIXME
-           // mapa.enviarATodos(serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
-           // mapa.enviarAlArea(getPos().x, getPos().y, -1, serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
-           // mapa.enviarAlArea(pos().x, pos().y, serverPacketID.MSG_MP, this.m_id, pos().x, pos().y);
         }
     }
 
@@ -902,7 +888,6 @@ End Enum
                 this.infoChar.heading(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
-                //enviarMP(); FIXME
             }
         } else { // No es mascota
             // Controlamos que la posicion sea legal, los npc que
@@ -924,7 +909,6 @@ End Enum
                 this.infoChar.heading(dir);
                 mapa.moverNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
-                //enviarMP(); // FIXME
             } else {
                 if (this.movement == MOV_NPC_PATHFINDING) {
                     // Someone has blocked the npc's way, we must to seek a new path!
@@ -995,11 +979,9 @@ End Enum
     }
 
     public void expresar() {
-        // Public Sub Expresar(ByVal NpcIndex As Integer, ByVal UserIndex As Integer)
         if (this.petUserOwner == null) {
 			return;
 		}
-        //WorldPos pos = m_maestroUser.getPos();
         if (this.expressionsCount > 0) {
             int azar = Util.Azar(0, this.expressionsCount - 1);
             Map mapa = this.server.getMap(pos().map);
@@ -1081,7 +1063,7 @@ End Enum
                     			return;
                     		}
                     	}
-                    	/*
+                    	/* FIXME
                         if ((player.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CRIMINALES) ||
                             (!player.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CIUDADANOS)) {
                             cambiarDir(dir);
@@ -1289,39 +1271,31 @@ End Enum
     }
 
     private void seguirAmo() {
-    	/*
-        if (m_target > 0 || m_targetNpc != null) return;
-        if (m_maestroUser == null) return;
-        short dir = pos().findDirection(m_maestroUser.getPos());
-        mover(dir);
-        */
-    	// FIXME: ESTO SE PUEDE OPTIMIZAR, YO SE QUIEN Y DONDE ESTA EL AMO !!!
-        Map mapa = this.server.getMap(pos().map);
-        if (mapa == null) {
-			return;
-		}
-        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
-            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
-                MapPos pos = MapPos.mxy(pos().map, x, y);
-                if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
-                        if (player.isAlive() && !player.isInvisible() && getPetUserOwner() == player &&
-                        		getPetUserOwner().pos().distance(pos()) > 3) {
-                            Heading dir = pos().findDirection(player.pos());
-                            mover(dir);
-                            return;
-                        }
-                    }
-                }
-            }
+        Player master = getPetUserOwner();
+        if (master == null) {
+        	return;
+        }
+        // FIXME debe ser por rango de visión
+        if (master.isAlive() 
+    		&& !master.isInvisible() 
+    		&& master.pos().distance(pos()) > 3) {
+		            Heading dir = pos().findDirection(master.pos());
+		            mover(dir);
+		            return;
         }
         restoreOldMovement();
     }
 
     private void aiNpcAtacaNpc() {
-    	// FIXME: ESTO SE PUEDE OPTIMIZAR TERRIBLEMENTE,
-    	// CONOCIENDO m_targetNpc no tengo que buscarlo en el mapa ;)
+    	// FIXME BROKEN
+    	/*
+    	if (targetNpc != null && targetNpc.pos().map == pos().map) {
+            Map map = this.server.getMap(pos().map);
+            if (map == null) {
+    			return;
+    		}
+    		
+    	}
         Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
@@ -1349,6 +1323,7 @@ End Enum
             this.movement  = this.oldMovement;
             this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
         }
+        */
     }
 
     public void moverAlAzar() {
@@ -1515,7 +1490,7 @@ End Enum
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x,pos().y));
 		}
         if (player.npcImpacto(this)) {
-        	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x,pos().y));
+        	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SOUND_IMPACTO, pos().x,pos().y));
             if (!player.isSailing()) {
             	mapa.sendToArea(pos().x, pos().y, new CreateFXResponse(player.getId(), FXSANGRE, (short) 0));
 			}
@@ -1572,12 +1547,12 @@ End Enum
             if (victim.snd2 > 0) {
             	mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(victim.snd2, victim.pos().x, victim.pos().y));
 			} else {
-				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO2, victim.pos().x, victim.pos().y));
+				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SOUND_IMPACTO2, victim.pos().x, victim.pos().y));
 			}
             if (this.petUserOwner != null) {
-            	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x, pos().y));
+            	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SOUND_IMPACTO, pos().x, pos().y));
 			} else {
-				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO, victim.pos().x, victim.pos().y));
+				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SOUND_IMPACTO, victim.pos().x, victim.pos().y));
 			}
             npcDañoNpc(victim);
         } else {

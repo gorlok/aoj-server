@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.ArgentumOnline.server.Constants;
@@ -79,30 +78,28 @@ public class Map implements Constants {
     //private int mw      = 0;
     
     // Información del archivo .dat
-    String  m_name  = "";
-    String  m_music = "";
-    int     m_numUsers = 0; // FIXME se usa?
-    int     m_mapVersion = 0; // FIXME se usa?
-    short   m_terreno = TERRENO_BOSQUE;
-    short   m_zona = ZONA_CAMPO;
-    String m_restringir = ""; // Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
+    String  name  = "";
+    String  music = "";
+    int     numUsers = 0; // FIXME se usa?
+    int     mapVersion = 0; // FIXME se usa?
+    short   terrain = TERRENO_BOSQUE;
+    short   zone = ZONA_CAMPO;
+    String  restricted = ""; // Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
     
     /** player killing enabled */
     public boolean pk = false;
 
-    public boolean m_backup = false;
+    public boolean backup = false;
     
-    short   m_version = 0; // FIXME se usa?
-    
-    MapPos m_startPos = MapPos.empty(); // FIXME se usa?
+    MapPos startPos = MapPos.empty(); // FIXME se usa?
     
     GameServer server;
     
     MapCell cells[][] = new MapCell[MAPA_ANCHO][MAPA_ALTO];
     
-    List<MapCell> objects = new ArrayList<MapCell>();
-    List<Player> players = new ArrayList<Player>();
-    List<Npc> npcs = new ArrayList<Npc>();
+    private List<MapCell> objects = new ArrayList<MapCell>();
+    private List<Player> players = new ArrayList<Player>();
+    private List<Npc> npcs = new ArrayList<Npc>();
     
     /** Creates a new instance of Map */
     public Map(short nroMapa, GameServer server) {
@@ -118,7 +115,15 @@ public class Map implements Constants {
         }
     }
     
-    public int getNroMapa() {
+    public List<Player> getPlayers() {
+    	return this.players;
+    }
+    
+    public List<Npc> getNpcs() {
+    	return this.npcs;
+    }
+    
+    public int getMapNumber() {
         return this.mapNumber;
     }
     
@@ -126,21 +131,21 @@ public class Map implements Constants {
 		return version;
 	}
     
-    public short getZona() {
-        return this.m_zona;
+    public short getZone() {
+        return this.zone;
     }
     
     public String getMusic() {
-        return this.m_music;
+        return this.music;
     }
     
-    public short getTerreno() {
-        return this.m_terreno;
+    public short getTerrain() {
+        return this.terrain;
     }
     
-    public MapObject getObjeto(byte x, byte y) {
+    public MapObject getObject(byte x, byte y) {
     	if (cell(x, y).hasObject()) {
-			return new MapObject(cell(x, y).getObjInd(), cell(x, y).getObjCant(), x, y);
+			return new MapObject(cell(x, y).objIndex(), cell(x, y).objCount(), x, y);
 		}
 		return null;
     }
@@ -150,12 +155,12 @@ public class Map implements Constants {
 	}
 	
     public Npc getNPC(byte  x, byte y) {
-        return cell(x, y).getNpc();
+        return cell(x, y).npc();
     }
     
     // FIXME
     public Trigger getTrigger(byte  x, byte y) {
-        return cell(x, y).getTrigger();
+        return cell(x, y).trigger();
     }
     
     public boolean isUnderRoof(byte x, byte y) {
@@ -167,7 +172,7 @@ public class Map implements Constants {
     }
     
     public void setTrigger(byte  x, byte y, Trigger value) {
-        cell(x, y).setTrigger(value);
+        cell(x, y).trigger(value);
     }
     
     public boolean testSpawnTriggerNpc(byte  x, byte y, boolean underRoof) {
@@ -191,31 +196,11 @@ public class Map implements Constants {
     
     /** intemperie */
     public boolean isOutdoor(byte  x, byte y) {
-       	return (this.m_zona != ZONA_DUNGEON) && cell(x, y).isOutdoor();
+       	return (this.zone != ZONA_DUNGEON) && cell(x, y).isOutdoor();
     }
     
-    public int getCantUsuarios() {
+    public int getPlayersCount() {
         return this.players.size();
-    }
-    
-    public List<String> getUsuarios() {
-        List<String> userNames = new LinkedList<>();
-        for (Player cli: this.players) {
-            if (!"".equals(cli.getNick())) {
-                userNames.add(cli.getNick());
-            }
-        }
-        return userNames;
-    }
-    
-    // FIXME
-    public Player spUser(int value) {
-    	return this.players.get(value);
-    }
-    
-    // FIXME
-    public Npc spNpc(int value) {
-    	return this.npcs.get(value);
     }
     
     public boolean isSafeMap() {
@@ -260,30 +245,30 @@ public class Map implements Constants {
 			ini.load(FOLDER_MAPS + File.separator + datFileName);			
 		}
         String section = "Mapa" + this.mapNumber;
-        this.m_name = ini.getString(section, "Name");
-        this.m_music = ini.getString(section, "MusicNum");
+        this.name = ini.getString(section, "Name");
+        this.music = ini.getString(section, "MusicNum");
         this.pk = (ini.getInt(section, "PK") == 1);
-        this.m_restringir = ini.getString(section, "Restringir");
-        this.m_backup = (ini.getInt(section, "BackUp") == 1);
+        this.restricted = ini.getString(section, "Restringir");
+        this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
         if (tipo_terreno.equals("BOSQUE")) {
-            this.m_terreno = TERRENO_BOSQUE;
+            this.terrain = TERRENO_BOSQUE;
         } else if (tipo_terreno.equals("DESIERTO")) {
-            this.m_terreno = TERRENO_DESIERTO;
+            this.terrain = TERRENO_DESIERTO;
         } else if (tipo_terreno.equals("NIEVE")) {
-            this.m_terreno = TERRENO_NIEVE;
+            this.terrain = TERRENO_NIEVE;
         } else {
-            this.m_terreno = TERRENO_BOSQUE;
+            this.terrain = TERRENO_BOSQUE;
         }
         String tipo_zona = ini.getString(section, "Zona");
         if (tipo_zona.equals("CAMPO")) {
-            this.m_zona = ZONA_CAMPO;
+            this.zone = ZONA_CAMPO;
         } else if (tipo_zona.equals("CIUDAD")) {
-            this.m_zona = ZONA_CIUDAD;
+            this.zone = ZONA_CIUDAD;
         } else if (tipo_zona.equals("DUNGEON")) {
-            this.m_zona = ZONA_DUNGEON;
+            this.zone = ZONA_DUNGEON;
         } else {
-            this.m_zona = ZONA_CAMPO;
+            this.zone = ZONA_CAMPO;
         }
         
         // FIXME esta información sigue estando en los mapas?
@@ -292,18 +277,18 @@ public class Map implements Constants {
             String mapa = startPos.substring(0, startPos.indexOf('-'));
             String x = startPos.substring(startPos.indexOf('-')+1, startPos.lastIndexOf('-'));
             String y = startPos.substring(startPos.lastIndexOf('-')+1);
-            this.m_startPos.map = Short.parseShort(mapa);
-            this.m_startPos.x = Byte.parseByte(x);
-            this.m_startPos.y = Byte.parseByte(y);
+            this.startPos.map = Short.parseShort(mapa);
+            this.startPos.x = Byte.parseByte(x);
+            this.startPos.y = Byte.parseByte(y);
         }
-        if (this.m_startPos.map == 0) {
-			this.m_startPos.map = 45;
+        if (this.startPos.map == 0) {
+			this.startPos.map = 45;
 		}
-        if (this.m_startPos.x == 0) {
-			this.m_startPos.x = 45;
+        if (this.startPos.x == 0) {
+			this.startPos.x = 45;
 		}
-        if (this.m_startPos.y == 0) {
-			this.m_startPos.y = 45;
+        if (this.startPos.y == 0) {
+			this.startPos.y = 45;
 		}
     }
     
@@ -362,7 +347,12 @@ public class Map implements Constants {
                     }
                     
                     if ((byflags & 16) == 16) {
-                    	this.cells[x][y].setTrigger(Trigger.values()[Util.leShort(reader.readShort())]);
+                    	short value = Util.leShort(reader.readShort());
+                    	if (value > Trigger.values().length-1 || value < 0) {
+                    		log.warn("Trigger fuera de rango: " + value + " en mapa:" + mapFileName + " x:" + (x+1) + " y:" +(y+1));
+                    	} else {
+                    		this.cells[x][y].trigger(Trigger.values()[value]);
+                    	}
                     }
                     
                 }
@@ -415,8 +405,8 @@ public class Map implements Constants {
 	                    short npcId = Util.leShort(reader.readShort());
 	                    if (npcId > 0) {
 	                        // Crear un nuevo Npc.
-	                        this.cells[x][y].setNpc(this.server.createNpc(npcId));
-	                        npc = this.cells[x][y].getNpc();
+	                        this.cells[x][y].npc(this.server.createNpc(npcId));
+	                        npc = this.cells[x][y].npc();
 	                        this.npcs.add(npc);
 	                        npc.pos().map = this.mapNumber;
 	                        npc.pos().x = (byte) (x+1);
@@ -440,7 +430,7 @@ public class Map implements Constants {
 						short obj_ind = Util.leShort(reader.readShort());
 						short obj_cant = Util.leShort(reader.readShort());
 						agregarObjeto(obj_ind, obj_cant, (byte)(x+1), (byte)(y+1)); // FIXME ignora el resultado ? y si no pudo agregarlo?
-						sendDoorUpdate(getObjeto((byte)(x+1), (byte)(y+1)));
+						sendDoorUpdate(getObject((byte)(x+1), (byte)(y+1)));
 	                }
 	            }
 	        }         
@@ -483,19 +473,18 @@ public class Map implements Constants {
     }
     
     public void moverNpc(Npc npc, byte x, byte y) {
-        if (cell(x, y).getNpc() != null) {
+        if (cell(x, y).npc() != null) {
 			log.fatal("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
 		}
-        this.cells[npc.pos().x-1][npc.pos().y-1].setNpc(null);
-        cell(x, y).setNpc(npc);
+        this.cells[npc.pos().x-1][npc.pos().y-1].npc(null);
+        cell(x, y).npc(npc);
         
         this.areasData.checkUpdateNeededNpc(npc, npc.infoChar().heading());
         this.areasData.sendToNPCArea(npc, new CharacterMoveResponse(npc.getId(), x, y));
-        
     }
     
     public boolean isFree(byte  x, byte y) {
-        return (cell(x, y).playerId() == 0) && (cell(x, y).getNpc() == null);
+        return (cell(x, y).playerId() == 0) && (cell(x, y).npc() == null);
     }
     
     public boolean isBlocked(byte  x, byte y) {
@@ -506,11 +495,11 @@ public class Map implements Constants {
     }
     
     public boolean enterNpc(Npc npc, byte  x, byte y) {
-        if (cell(x, y).getNpc() != null) {
+        if (cell(x, y).npc() != null) {
 			return false;
 		}
         
-        cell(x, y).setNpc(npc);
+        cell(x, y).npc(npc);
         this.npcs.add(npc);
         
         npc.pos().set(this.mapNumber, x, y);
@@ -528,7 +517,7 @@ public class Map implements Constants {
         	sendToArea(x, y, new RemoveCharDialogResponse(npc.getId()));
 	        sendToArea(x, y, new CharacterRemoveResponse(npc.getId()));
         } finally {
-            cell(x, y).setNpc(null);
+            cell(x, y).npc(null);
 	        this.npcs.remove(npc);
 	        npc.pos().set(this.mapNumber, (short)0, (short)0);
         }
@@ -555,7 +544,7 @@ public class Map implements Constants {
         Npc npc;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-            	npc = cell(x,y).getNpc();
+            	npc = cell(x,y).npc();
                 if (npc != null) { 
                 	
                 	//agush: fix mascotas ;-)
@@ -587,7 +576,7 @@ public class Map implements Constants {
     
     public void quitarObjeto(byte  x, byte y) {
     	this.objects.remove(cell(x, y));
-        cell(x, y).quitarObjeto();
+        cell(x, y).removeObject();
         sendToArea(x, y, new ObjectDeleteResponse(x,y));
     }
     
@@ -617,9 +606,9 @@ public class Map implements Constants {
                 ObjectInfo info = findObj(obj.getInfo().IndexCerrada);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             }
-            obj = getObjeto(obj.x, obj.y);
+            obj = getObject(obj.x, obj.y);
             sendDoorUpdate(obj);
-            sendToArea(obj.x, obj.y, new PlayWaveResponse(SND_PUERTA, obj.x, obj.y));
+            sendToArea(obj.x, obj.y, new PlayWaveResponse(SOUND_PUERTA, obj.x, obj.y));
         }
     }
     
@@ -731,7 +720,7 @@ public class Map implements Constants {
     /** Send objects in map */
     public void sendObjects(Player player) {
         for (MapCell object : this.objects) {
-            player.sendObject(object.getObjInd(), object.getX(), object.getY());
+            player.sendObject(object.objIndex(), object.x(), object.y());
         }
     }
     
@@ -774,7 +763,7 @@ public class Map implements Constants {
     public boolean isTeleportObject(byte x, byte y) {
     	return isTeleport(x, y) 
     			&& hasObject(x, y) 
-				&& (getObjeto(x, y).getInfo().objType == ObjType.Teleport);    	
+				&& (getObject(x, y).getInfo().objType == ObjType.Teleport);    	
     }
     
     public void createTeleport(byte x, byte y, short dest_mapa, byte dest_x, byte dest_y) {
@@ -801,7 +790,7 @@ public class Map implements Constants {
     }
     
     public boolean hasNpc(byte  x, byte y) {
-        return (cell(x, y).getNpc() != null);
+        return (cell(x, y).npc() != null);
     }
     
     public Player getPlayer(byte  x, byte y) {
@@ -809,22 +798,22 @@ public class Map implements Constants {
     }
     
     public Npc getNpc(byte  x, byte y) {
-        return cell(x, y).getNpc();
+        return cell(x, y).npc();
     }
     
     public MapObject queryObject(byte  x, byte y) {
         // Ver si hay un objeto en los alrededores...
         if (hasObject(x, y)) {
-            return getObjeto(x, y);
+            return getObject(x, y);
         }
         if (hasObject((byte) (x+1), y)) {
-            return getObjeto((byte) (x+1), y);
+            return getObject((byte) (x+1), y);
         }
         if (hasObject((byte) (x+1), (byte) (y+1))) {
-            return getObjeto((byte) (x+1), (byte) (y+1));
+            return getObject((byte) (x+1), (byte) (y+1));
         }
         if (hasObject(x, (byte) (y+1))) {
-            return getObjeto(x, (byte) (y+1));
+            return getObject(x, (byte) (y+1));
         }
         return null;
     }
@@ -969,7 +958,7 @@ public class Map implements Constants {
             return;
         }
         // ¿Hay mensajes?
-        MapObject obj = getObjeto(x, y);
+        MapObject obj = getObject(x, y);
         if (obj == null || obj.getInfo().objType != ObjType.Foros) {
             return;
         }
@@ -982,7 +971,7 @@ public class Map implements Constants {
             player.sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
-        MapObject obj = getObjeto(x, y);
+        MapObject obj = getObject(x, y);
         if (obj == null || obj.getInfo().objType != ObjType.Puertas) {
 			return;
 		}
@@ -995,7 +984,7 @@ public class Map implements Constants {
     }
     
     public void accionParaCartel(byte  x, byte y, Player player) {
-        MapObject obj = getObjeto(x, y);
+        MapObject obj = getObject(x, y);
         if (obj == null || obj.getInfo().objType != ObjType.Carteles) {
 			return;
 		}
@@ -1189,7 +1178,7 @@ public class Map implements Constants {
 		}
         return !cell(x, y).isBlocked() && 
         cell(x, y).playerId() == 0 &&
-        cell(x, y).getNpc() == null && 
+        cell(x, y).npc() == null && 
         isWater(x,y);
     }
     
@@ -1199,7 +1188,7 @@ public class Map implements Constants {
 		}
         return !cell(x, y).isBlocked() &&
         cell(x, y).playerId() == 0 &&
-        cell(x, y).getNpc() == null &&
+        cell(x, y).npc() == null &&
         !isWater(x,y);
     }
     
@@ -1208,7 +1197,7 @@ public class Map implements Constants {
         if (x < 1 || x > 100 || y < 1 || y > 100) {
 			return false;
 		}
-        return cell(x, y).playerId() == 0 && cell(x, y).getNpc() == null;
+        return cell(x, y).playerId() == 0 && cell(x, y).npc() == null;
     }
     
     /** Devuelve la cantidad de enemigos que hay en el mapa */
@@ -1240,13 +1229,13 @@ public class Map implements Constants {
         try {
             IniFile ini = new IniFile();
             String section = "Mapa" + this.mapNumber;
-            ini.setValue(section, "Name", this.m_name);
-            ini.setValue(section, "MusicNum", this.m_music);
-            ini.setValue(section, "StartPos", this.m_startPos.map + "-" + this.m_startPos.x + "-" + this.m_startPos.y);
-            ini.setValue(section, "Terreno", TERRENOS[this.m_terreno]);
-            ini.setValue(section, "Zona", ZONAS[this.m_zona]);
-            ini.setValue(section, "Restringir", this.m_restringir);
-            ini.setValue(section, "BackUp", this.m_backup);
+            ini.setValue(section, "Name", this.name);
+            ini.setValue(section, "MusicNum", this.music);
+            ini.setValue(section, "StartPos", this.startPos.map + "-" + this.startPos.x + "-" + this.startPos.y);
+            ini.setValue(section, "Terreno", TERRENOS[this.terrain]);
+            ini.setValue(section, "Zona", ZONAS[this.zone]);
+            ini.setValue(section, "Restringir", this.restricted);
+            ini.setValue(section, "BackUp", this.backup);
             ini.setValue(section, "PK", this.pk);
             ini.store(datFileName);
         } catch (Exception e) {
@@ -1282,7 +1271,7 @@ public class Map implements Constants {
                         f.writeShort(0);
                         f.writeShort(0);
                         f.writeShort(0);
-                        f.writeShort(Util.leShort((short) this.cells[x][y].getTrigger().ordinal()));
+                        f.writeShort(Util.leShort((short) this.cells[x][y].trigger().ordinal()));
                         f.writeShort(0); // 2 bytes de relleno.
                     }
                 }
@@ -1322,12 +1311,12 @@ public class Map implements Constants {
                         }
                         // Indice del Npc que esta en este bloque.
                         // Es cero (0) si no hay Npc.
-                        f.writeShort((this.cells[x][y].getNpc() != null) ? Util.leShort((short)this.cells[x][y].getNpc().getNumero()) : 0);
+                        f.writeShort((this.cells[x][y].npc() != null) ? Util.leShort((short)this.cells[x][y].npc().getNumero()) : 0);
                         // Indice del Objeto que esta en este bloque.
                         // Es cero (0) si no hay objeto.
                         if (this.cells[x][y].hasObject()) {
-                            f.writeShort(Util.leShort(getObjeto((byte)(x+1), (byte)(y+1)).getInfo().ObjIndex));
-                            f.writeShort(Util.leShort((short)getObjeto((byte)(x+1), (byte)(y+1)).obj_cant));
+                            f.writeShort(Util.leShort(getObject((byte)(x+1), (byte)(y+1)).getInfo().ObjIndex));
+                            f.writeShort(Util.leShort((short)getObject((byte)(x+1), (byte)(y+1)).obj_cant));
                         } else {
                             f.writeInt(0);
                         }
@@ -1362,7 +1351,7 @@ public class Map implements Constants {
 		}
         for (byte y = y1; y <= y2; y++) {
             for (byte x = x1; x <= x2; x++) {
-                if (hasObject(x, y) && getObjeto(x, y).getInfo().itemNoEsDeMapa()) {
+                if (hasObject(x, y) && getObject(x, y).getInfo().itemNoEsDeMapa()) {
                     quitarObjeto(x, y);
                 }
             }
@@ -1370,7 +1359,7 @@ public class Map implements Constants {
     }    
     
     public void construirAreaObj(Player player, byte  x, byte y) {
-    	MapObject obj = getObjeto(x,y);
+    	MapObject obj = getObject(x,y);
     	if (obj != null) player.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
     }
     
@@ -1379,25 +1368,25 @@ public class Map implements Constants {
     }
     
     public void doFX() {
-        if (getCantUsuarios() > 0 && Util.Azar(1, 150) < 12) {
+        if (getPlayersCount() > 0 && Util.Azar(1, 150) < 12) {
         	byte sound = -1;
-            switch (this.m_terreno) {
+            switch (this.terrain) {
                 case TERRENO_BOSQUE:
                     int n = Util.Azar(1, 100);
-                    switch (this.m_zona) {
+                    switch (this.zone) {
                         case ZONA_CAMPO:
                         case ZONA_CIUDAD:
                             if (!this.server.isRaining()) {
                                 if (n < 15) {
-                                	sound = Constants.SND_AVE2;
+                                	sound = Constants.SOUND_AVE2;
                                 } else if (n < 30) {
-                                	sound = Constants.SND_AVE;
+                                	sound = Constants.SOUND_AVE;
                                 } else if (n <= 35) {
-                                	sound = Constants.SND_GRILLO;
+                                	sound = Constants.SOUND_GRILLO;
                                 } else if (n <= 40) {
-                                	sound = Constants.SND_GRILLO2;
+                                	sound = Constants.SOUND_GRILLO2;
                                 } else if (n <= 45) {
-                                	sound = Constants.SND_AVE3;
+                                	sound = Constants.SOUND_AVE3;
                                 }
                             }
                             break;
@@ -1431,7 +1420,7 @@ public class Map implements Constants {
      */
     public boolean isForbbidenMap(Player player) {
     	// ¿Es mapa de newbies?
-    	if ("NEWBIE".equalsIgnoreCase(m_restringir)) {
+    	if ("NEWBIE".equalsIgnoreCase(restricted)) {
     		if (player.esNewbie() || player.isGM()) {
     			return false; // allowed
     		} else {
@@ -1442,7 +1431,7 @@ public class Map implements Constants {
     	} 
     	
 		// ¿Es mapa de Armadas?
-    	if ("ARMADA".equalsIgnoreCase(m_restringir)) {
+    	if ("ARMADA".equalsIgnoreCase(restricted)) {
             // ¿El usuario es Armada?
     		if (player.esArmada() || player.isGM()) {
     			return false; // allowed
@@ -1454,7 +1443,7 @@ public class Map implements Constants {
     	}
     	
 		// ¿Es mapa de Caos?
-    	if ("CAOS".equalsIgnoreCase(m_restringir)) {
+    	if ("CAOS".equalsIgnoreCase(restricted)) {
             // ¿El usuario es Caos?
     		if (player.esCaos() || player.isGM()) {
     			return false; // allowed
@@ -1466,7 +1455,7 @@ public class Map implements Constants {
     	}
     	
 		// ¿Es mapa de faccionarios?
-    	if ("FACCION".equalsIgnoreCase(m_restringir)) {
+    	if ("FACCION".equalsIgnoreCase(restricted)) {
             // ¿El usuario es Caos?
     		if (player.esArmada() || player.esCaos() || player.isGM()) {
     			return false; // allowed
