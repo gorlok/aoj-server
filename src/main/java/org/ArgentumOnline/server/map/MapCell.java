@@ -28,40 +28,29 @@ import org.ArgentumOnline.server.npc.Npc;
 public class MapCell {
     // del archivo .map    
     
+	// FIXME
+	
     final static int FLAG_BLOQUED = 0;
     final static int FLAG_MODIFIED = 1;
     final static int FLAG_WATER = 2;
     final static int FLAGS_NUMBER = 3;
 
-    // TRIGGERS
-    public final static int TRIGGER_NADA = 0;
-    public final static int TRIGGER_BAJO_TECHO = 1;
-    // Los NPCs no pueden hacer respawn y,
-    // el layer cuatro desaparece cuando un jugador pisa el tile:
-    public final static int TRIGGER_NO_RESPAWN = 2; 
-    // Los npcs no pueden pisar tiles con este trigger:
-    public final static int TRIGGER_POS_INVALIDA = 3;
-    // No se puede robar o pelear desde este trigger:
-    public final static int TRIGGER_ZONA_SEGURA = 4;
-    // Te encarcelan si estas mucho tiempo sobre este trigger:
-    public final static int TRIGGER_ANTI_PIQUETE = 5;
-    // Arena para duelos (??? - revisar)
-    // Al pelear en este trigger no se caen las cosas y no cambia el estado de ciuda o crimi
-    public final static int TRIGGER_ARENA_DUELOS = 6; // ???
-    // Para torneos con espectadores:
-    public final static int TRIGGER_ARENA_TORNEO = 7;
-
-    public final static int TRIGGER6_PERMITE = 1;
-    public final static int TRIGGER6_PROHIBE = 2;
-    public final static int TRIGGER6_AUSENTE = 3;
-    
-    
+    public enum Trigger {
+	    /* 0 */ TRIGGER_NADA,
+	    /* 1 */ TRIGGER_BAJO_TECHO,
+	    /* 2 */ TRIGGER_NO_RESPAWN, // Los NPCs no pueden hacer respawn y, el layer cuatro desaparece cuando un jugador pisa el tile: 
+	    /* 3 */ TRIGGER_POS_INVALIDA, // Los npcs no pueden pisar este trigger
+	    /* 4 */ TRIGGER_ZONA_SEGURA, // No se puede robar o pelear desde este trigger
+	    /* 5 */ TRIGGER_ANTI_PIQUETE, // Te encarcelan si estas mucho tiempo sobre este trigger
+	    /* 6 */ TRIGGER_ARENA_DUELOS, // ZONAPELEA Arena para duelos. Al pelear en este trigger no se caen las cosas y no cambia el estado de ciuda o crimi
+	    /* 7 */ TRIGGER_ARENA_TORNEO; // Para torneos con espectadores
+    }
     
     private BitSet m_flags = new BitSet(FLAGS_NUMBER);
     
     int borderArea = 0; //Areas by jao
     
-    byte m_trigger = 0;
+    private Trigger trigger = Trigger.TRIGGER_NADA;
     
     private byte m_x;
     private byte m_y;
@@ -85,7 +74,9 @@ public class MapCell {
     	this.m_y = (byte)y;
     }
     
-    public int getGrh(int val) {return this.grh[val];}
+    public int getGrh(int index) {
+    	return this.grh[index];
+    }
     
     public short getX() {
     	return this.m_x;
@@ -103,7 +94,7 @@ public class MapCell {
         return this.m_obj_cant;
     }
     
-    public boolean hayObjeto() {
+    public boolean hasObject() {
     	return this.m_obj_ind > 0 && this.m_obj_cant > 0;
     }
 
@@ -112,7 +103,9 @@ public class MapCell {
     	this.m_obj_cant = 0;
     }
     
-    public void setGrh(int val, int value) {this.grh[val] = value;}
+    public void setGrh(int index, int value) {
+    	this.grh[index] = value;
+    }
     
     public void setObj(short obj_ind, int cant) {
         this.m_obj_ind = obj_ind;
@@ -135,12 +128,12 @@ public class MapCell {
         this.playerId = id;
     }
     
-    public byte getTrigger() {
-        return this.m_trigger;
+    public Trigger getTrigger() {
+        return this.trigger;
     }
 
-    public void setTrigger(byte value) {
-        this.m_trigger = value;
+    public void setTrigger(Trigger value) {
+        this.trigger = value;
     }
     
     public boolean isModified() {
@@ -179,5 +172,79 @@ public class MapCell {
     	}    	
     }
     
-}
+    public boolean testSpawnTriggerNpc(boolean underRoof) {
+        if (underRoof) {
+			return this.trigger != Trigger.TRIGGER_POS_INVALIDA 
+					&& this.trigger != Trigger.TRIGGER_NO_RESPAWN;
+		}
+		return this.trigger != Trigger.TRIGGER_POS_INVALIDA 
+				&& this.trigger != Trigger.TRIGGER_NO_RESPAWN 
+				&& this.trigger != Trigger.TRIGGER_BAJO_TECHO;
+    }
 
+    public boolean isFreeForObject() {
+        return !isBlocked() &&
+        		!isWater() &&
+        		!hasObject() && 
+        		!isTeleport();
+    }
+    
+    public boolean isWater() {
+    	return getGrh(0) >= 1505 && getGrh(0) <= 1520 && getGrh(1) == 0;
+    }
+
+    public boolean isFreeForNpc(boolean canWater) {
+	    if (!canWater) {
+	        return !isBlocked() 
+	        		&& playerId() == 0 
+	        		&& getNpc() == null 
+	        		&& getTrigger() != Trigger.TRIGGER_POS_INVALIDA 
+	        		&& !isWater();
+	    }
+        return !isBlocked() 
+        		&& playerId() == 0 
+        		&& getNpc() == null 
+        		&& getTrigger() != Trigger.TRIGGER_POS_INVALIDA;
+    }
+    
+    public boolean isLegalPos(boolean canWater) {
+        if (!canWater) {
+            return !isBlocked() 
+            	&& playerId() == 0 
+            	&& getNpc() == null 
+            	&& !isWater();
+        }
+        return !isBlocked() 
+        		&& playerId() == 0
+        		&& getNpc() == null
+        		&& isWater();
+    }
+    
+    /** es intemperie */
+    public boolean isOutdoor() {
+    	return getTrigger() != Trigger.TRIGGER_BAJO_TECHO
+    			&& getTrigger() != Trigger.TRIGGER_NO_RESPAWN
+    			&& getTrigger() != Trigger.TRIGGER_ZONA_SEGURA;
+    }
+    
+    public boolean isAntiPiquete() {
+    	return getTrigger() == Trigger.TRIGGER_ANTI_PIQUETE;
+    }
+
+    public boolean isUnderRoof() {
+    	return getTrigger() == Trigger.TRIGGER_BAJO_TECHO;
+    }
+    
+    public boolean isSafeZone() {
+    	return this.trigger == Trigger.TRIGGER_ZONA_SEGURA; 
+    }
+    
+    public boolean isArenaZone() {
+    	return this.trigger == Trigger.TRIGGER_ARENA_DUELOS;
+    }
+    
+    public boolean isTournamentZone() {
+    	return this.trigger == Trigger.TRIGGER_ARENA_TORNEO;
+    }
+    
+}

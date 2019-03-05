@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Motd {
+	
 	private static Logger log = LogManager.getLogger();
 	
     private List<String> m_motd = new ArrayList<String>();
@@ -57,7 +58,7 @@ public class Motd {
         }
     }
     
-    void guardarMotd() {
+    private void guardarMotd() {
         try {
             IniFile ini = new IniFile();
             ini.setValue("INIT", "NumLines", this.m_motd.size());
@@ -71,16 +72,16 @@ public class Motd {
         }
     }
 
-    List<String> getMOTD() {
+    private List<String> getMOTD() {
     	return this.m_motd;
     }
     
-    void setMOTD(List<String> motd) {
+    private void setMOTD(List<String> motd) {
     	this.m_motd.clear();
     	this.m_motd.addAll(motd);
     }
 
-	public void doIniciarCambiarMOTD(Player player) {
+	public void startUpdateMOTD(Player player) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
 		if (!player.isGod()) {
@@ -99,7 +100,7 @@ public class Motd {
 		player.sendPacket(new ShowMOTDEditionFormResponse(sb.toString()));
 	}
 
-	public void doFinCambiarMOTD(Player player, String s) {
+	public void updateMOTD(Player player, String s) {
 		// Finalizar el cambio de MOTD
 		// Comando ZMOTD
 		String CRLF = "" + (char) 13 + (char) 10;
@@ -113,7 +114,7 @@ public class Motd {
 		player.sendMessage("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
-	public void doEnviarMOTD(Player player) {
+	public void sendMOTD(Player player) {
 		// Comando /MOTD
 		// Envia los mensajes del dia.
 		List<String> motd = getMOTD();

@@ -167,8 +167,8 @@ public class UserTrade {
 			}
 			player.quitarObjetos(obj1_objid, obj1_cant);
 		}
-		player.enviarInventario();
-		targetPlayer.enviarInventario();
+		player.sendInventoryToUser();
+		targetPlayer.sendInventoryToUser();
 		sendCommerceEnded();
 		targetPlayer.userTrade.sendCommerceEnded();
 	}

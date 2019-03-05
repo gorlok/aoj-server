@@ -24,22 +24,22 @@ import org.ArgentumOnline.server.util.Util;
 
 public enum Clazz {
 
-    Mage("MAGO", true),
-    Cleric("CLERIGO", true),
-    Warrior("GUERRERO", false),
-    Assassin("ASESINO", true),
-    Thief("LADRON", false),
-    Bard("BARDO", true), // alto bardo
-    Druid("DRUIDA", true),
-    Bandit("BANDIDO", false),
-    Paladin("PALADIN", true),
-    Hunter("CAZADOR", false),
-    Fisher("PESCADOR", false),
-    Blacksmith("HERRERO", false),
-    Lumberjack("LEÑADOR", false),
-    Miner("MINERO", false),
-    Carpenter("CARPINTERO", false),
-    Pirate("PIRATA", false);
+    /** id= 1 */ Mage("MAGO", true),
+    /** id= 2 */ Cleric("CLERIGO", true),
+    /** id= 3 */ Warrior("GUERRERO", false),
+    /** id= 4 */ Assassin("ASESINO", true),
+    /** id= 5 */ Thief("LADRON", false),
+    /** id= 6 */ Bard("BARDO", true), // alto bardo
+    /** id= 7 */ Druid("DRUIDA", true),
+    /** id= 8 */ Bandit("BANDIDO", false),
+    /** id= 9 */ Paladin("PALADIN", true),
+    /** id=10 */ Hunter("CAZADOR", false),
+    /** id=11 */ Fisher("PESCADOR", false),
+    /** id=12 */ Blacksmith("HERRERO", false),
+    /** id=13 */ Lumberjack("LEÑADOR", false),
+    /** id=14 */ Miner("MINERO", false),
+    /** id=15 */ Carpenter("CARPINTERO", false),
+    /** id=16 */ Pirate("PIRATA", false);
 
 	private String name;
 

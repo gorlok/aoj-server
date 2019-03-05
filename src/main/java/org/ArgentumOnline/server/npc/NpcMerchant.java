@@ -70,7 +70,7 @@ public class NpcMerchant extends Npc {
         }
     }        
 	
-    public void enviarNpcInv(Player player) {
+    public void sendNpcInventoryToUser(Player player) {
         // Enviamos el inventario del npc con el cual el user va a comerciar...
         double dto = player.descuento();
         if (dto == 0.0) {
@@ -131,11 +131,11 @@ public class NpcMerchant extends Npc {
             // Agregamos el obj que compro al inventario
             player.userCompraObj(this, slot, cant);
             // Actualizamos el inventario del usuario
-            player.enviarInventario();
+            player.sendInventoryToUser();
             // Actualizamos el oro
             player.sendUpdateUserStats();
             // Actualizamos la ventana de comercio
-            enviarNpcInv(player);
+            sendNpcInventoryToUser(player);
             short objid = this.npcInv.getObjeto(slot).objid;
             player.updateVentanaComercio(objid, cant);
         }
@@ -151,10 +151,10 @@ public class NpcMerchant extends Npc {
             // Agregamos el obj que compro al inventario
             npcCompraObj(player, slot, cant);
             // Actualizamos el inventario del usuario
-            player.enviarInventario();
+            player.sendInventoryToUser();
             // Actualizamos el oro
             player.sendUpdateUserStats();
-            enviarNpcInv(player);
+            sendNpcInventoryToUser(player);
             // Actualizamos la ventana de comercio
             short objid = player.userInv().getObjeto(slot).objid;
             player.updateVentanaComercio(objid, cant);

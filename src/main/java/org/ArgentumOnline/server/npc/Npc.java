@@ -743,7 +743,7 @@ End Enum
             Map m = this.server.getMap(pos.map);
 
             if (this.snd3 > 0) {
-            	m.enviarAlArea(pos.x, pos.y, new PlayWaveResponse(this.snd3, player.pos().x, player.pos().y));
+            	m.sendToArea(pos.x, pos.y, new PlayWaveResponse(this.snd3, player.pos().x, player.pos().y));
             }
             player.flags().TargetNpc = 0;
             player.flags().TargetNpcTipo = 0;
@@ -831,7 +831,7 @@ End Enum
             map.exitNpc(this);
         }
 
-        map.enviarAlArea(pos().x, pos().y, new CharacterRemoveResponse(this.getId()));
+        map.sendToArea(pos().x, pos().y, new CharacterRemoveResponse(this.getId()));
 
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
@@ -886,10 +886,10 @@ End Enum
         if (this.petUserOwner != null) {
             // es una posicion legal ???
             if (mapa.isLegalPos(newPos, false)) {
-                if (!esAguaValida() && mapa.hayAgua(newPos.x, newPos.y)) {
+                if (!esAguaValida() && mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
-                if (esTierraInvalida() && !mapa.hayAgua(newPos.x, newPos.y)) {
+                if (esTierraInvalida() && !mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
@@ -908,10 +908,10 @@ End Enum
             // Controlamos que la posicion sea legal, los npc que
             // no son mascotas tienen mas restricciones de movimiento.
             if (mapa.isLegalPosNPC(newPos, esAguaValida())) {
-                if (!esAguaValida() && mapa.hayAgua(newPos.x, newPos.y)) {
+                if (!esAguaValida() && mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
-                if (esTierraInvalida() && !mapa.hayAgua(newPos.x, newPos.y)) {
+                if (esTierraInvalida() && !mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
@@ -948,7 +948,7 @@ End Enum
         Map mapa = this.server.getMap(pos().map);
         // Sonido
         if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(sonido, pos().x, pos().y));
+			mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(sonido, pos().x, pos().y));
 		}
     }
 
@@ -1012,7 +1012,7 @@ End Enum
     public void hablarAlArea(int color, String texto) {
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
-        	mapa.enviarAlArea(pos().x, pos().y,
+        	mapa.sendToArea(pos().x, pos().y,
         			new ChatOverHeadResponse(texto, this.getId(),
         					Color.r(color), Color.g(color), Color.b(color)));
         }
@@ -1028,7 +1028,7 @@ End Enum
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
             this.infoChar.heading(dir);
-            mapa.enviarAlArea(pos().x, pos().y, createCC());
+            mapa.sendToArea(pos().x, pos().y, createCC());
         }
     }
 
@@ -1512,12 +1512,12 @@ End Enum
 		}
         this.flags.set(FLAG_PUEDE_ATACAR, false);
         if (this.snd1 > 0) {
-        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x,pos().y));
+        	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x,pos().y));
 		}
         if (player.npcImpacto(this)) {
-        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x,pos().y));
+        	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x,pos().y));
             if (!player.isSailing()) {
-            	mapa.enviarAlArea(pos().x, pos().y, new CreateFXResponse(player.getId(), FXSANGRE, (short) 0));
+            	mapa.sendToArea(pos().x, pos().y, new CreateFXResponse(player.getId(), FXSANGRE, (short) 0));
 			}
             player.npcDaño(this);
             // ¿Puede envenenar?
@@ -1566,25 +1566,25 @@ End Enum
         victim.movement = MOV_NPC_ATACA_NPC;
 
         if (this.snd1 > 0) {
-        	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x, pos().y));
+        	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x, pos().y));
 		}
         if (npcImpactoNpc(victim)) {
             if (victim.snd2 > 0) {
-            	mapa.enviarAlArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(victim.snd2, victim.pos().x, victim.pos().y));
+            	mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(victim.snd2, victim.pos().x, victim.pos().y));
 			} else {
-				mapa.enviarAlArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO2, victim.pos().x, victim.pos().y));
+				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO2, victim.pos().x, victim.pos().y));
 			}
             if (this.petUserOwner != null) {
-            	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x, pos().y));
+            	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SND_IMPACTO, pos().x, pos().y));
 			} else {
-				mapa.enviarAlArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO, victim.pos().x, victim.pos().y));
+				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SND_IMPACTO, victim.pos().x, victim.pos().y));
 			}
             npcDañoNpc(victim);
         } else {
             if (this.petUserOwner != null) {
-            	mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse(SOUND_SWING, pos().x, pos().y));
+            	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SOUND_SWING, pos().x, pos().y));
 			} else {
-				mapa.enviarAlArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SOUND_SWING, victim.pos().x, victim.pos().y));
+				mapa.sendToArea(victim.pos().x, victim.pos().y, new PlayWaveResponse(SOUND_SWING, victim.pos().x, victim.pos().y));
 			}
         }
     }

@@ -23,8 +23,11 @@ import org.ArgentumOnline.server.UserAttributes.Attribute;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.protocol.BlindResponse;
 import org.ArgentumOnline.server.protocol.ChangeSpellSlotResponse;
+import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
+import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -59,7 +62,7 @@ public class UserSpells implements Constants {
 		this.spells[slot - 1] = spell;
 	}
 
-	public boolean isSlotEmpty(int slot) {
+	private boolean isSlotEmpty(int slot) {
 		return getSpell(slot) == 0;
 	}
 
@@ -67,18 +70,18 @@ public class UserSpells implements Constants {
 		return slot > 0 && slot < this.spells.length;
 	}
 
-	public void enviarHechizos() {
+	public void sendSpells() {
 		for (int slot = 1; slot <= this.spells.length; slot++) {
-			enviarHechizo(slot);
+			sendSpell(slot);
 		}
 	}
 
-	public void changeUserHechizo(int slot, short hechizo) {
+	private void changeUserHechizo(int slot, short hechizo) {
 		setSpell(slot, hechizo);
-		enviarHechizo(slot);
+		sendSpell(slot);
 	}
 
-	public void enviarHechizo(int slot) {
+	private void sendSpell(int slot) {
 		if (!isSlotValid(slot)) {
 			return;
 		}
@@ -112,19 +115,14 @@ public class UserSpells implements Constants {
 	}
 
 	public void castSpell(short slot) {
-
-		System.out.println("ENTRO");
 		if (slot < 1 || slot > this.spells.length) {
 			return;
 		}
-
-		System.out.println(" " + slot + "");
-
 		this.player.flags().Hechizo = this.spells[slot - 1];
 		log.info("doLanzarHechizo =====> " + this.player.flags().Hechizo);
 	}
 
-	public boolean tieneHechizo(int numHechizo) {
+	public boolean hasSpell(int numHechizo) {
 		for (short element : this.spells) {
 			if (element == numHechizo) {
 				return true;
@@ -142,11 +140,11 @@ public class UserSpells implements Constants {
 		return 0;
 	}
 
-	public void agregarHechizo(int slot) {
+	public void addSpell(int slot) {
 		int oid = this.player.userInv().getObjeto(slot).objid;
 		ObjectInfo objHechizo = this.server.getObjectInfoStorage().getInfoObjeto(oid);
 		short numHechizo = objHechizo.HechizoIndex;
-		if (!tieneHechizo(numHechizo)) {
+		if (!hasSpell(numHechizo)) {
 			// Buscamos un slot vacio
 			int slotLibre = slotLibreHechizos();
 			if (slotLibre == 0) {
@@ -174,8 +172,8 @@ public class UserSpells implements Constants {
 			short spell = getSpell(slot);
 			setSpell(slot, getSpell(slot - 1));
 			setSpell(slot - 1, spell);
-			enviarHechizo(slot - 1);
-			enviarHechizo(slot);
+			sendSpell(slot - 1);
+			sendSpell(slot);
 		} else if (direction == 2) {
 			// Move spell downward
 			if (slot == MAX_HECHIZOS) {
@@ -186,13 +184,13 @@ public class UserSpells implements Constants {
 			short spell = getSpell(slot);
 			setSpell(slot, getSpell(slot + 1));
 			setSpell(slot + 1, spell);
-			enviarHechizo(slot);
-			enviarHechizo(slot + 1);
+			sendSpell(slot);
+			sendSpell(slot + 1);
 		}
 	}
 
-	public void lanzarHechizo(Spell hechizo) {
-		if (puedeLanzar(hechizo)) {
+	public void hitSpell(Spell hechizo) {
+		if (canCastSpell(hechizo)) {
 			switch (hechizo.Target) {
 			case uUsuarios:
 				if (this.player.flags().TargetUser > 0) {
@@ -227,12 +225,13 @@ public class UserSpells implements Constants {
 		this.player.flags().Trabajando = false;
 	}
 
-	public boolean hechizoEstadoUsuario() {
+	private boolean hechizoEstadoUsuario() {
 		Spell hechizo = this.server.getHechizo(this.player.flags().Hechizo);
 		Player targetUser = this.server.playerById(this.player.flags().TargetUser);
 		if (hechizo.Invisibilidad == 1) {
 			targetUser.flags().Invisible = true;
-			//mapa.enviarATodos(MSG_NOVER, targetUser.m_id, 1);
+			Map map = server.getMap(targetUser.pos().map);
+			map.sendToArea(targetUser.pos().x, targetUser.pos().y, new SetInvisibleResponse(targetUser.getId(), (byte) 1));
 			infoHechizo();
 			return true;
 		}
@@ -320,7 +319,7 @@ public class UserSpells implements Constants {
 			}
 			targetUser.flags().Ceguera = true;
 			targetUser.counters.Ceguera = IntervaloParalizado;
-			//targetUser.enviar(MSG_CEGU);
+			targetUser.sendPacket(new BlindResponse());
 			infoHechizo();
 			return true;
 		}
@@ -333,14 +332,14 @@ public class UserSpells implements Constants {
 			}
 			targetUser.flags().Estupidez = true;
 			targetUser.counters.Ceguera = IntervaloParalizado;
-			//targetUser.enviar(MSG_DUMB);
+			targetUser.sendPacket(new DumbResponse());
 			infoHechizo();
 			return true;
 		}
 		return false;
 	}
 
-	public boolean hechizoEstadoNPC(Npc npc, Spell hechizo) {
+	private boolean hechizoEstadoNPC(Npc npc, Spell hechizo) {
 		if (hechizo.Invisibilidad == 1) {
 			infoHechizo();
 			npc.hacerInvisible();
@@ -399,7 +398,7 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	public boolean hechizoPropNPC(Npc npc, Spell hechizo) {
+	private boolean hechizoPropNPC(Npc npc, Spell hechizo) {
 		// Salud
 		if (hechizo.SubeHP == 1) {
 			// Curar la salud
@@ -456,7 +455,7 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	public boolean hechizoPropUsuario() {
+	private boolean hechizoPropUsuario() {
 		Spell hechizo = this.server.getHechizo(this.player.flags().Hechizo);
 		Player targetUser = this.server.playerById(this.player.flags().TargetUser);
 		// Hambre
@@ -717,7 +716,7 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	public boolean puedeLanzar(Spell hechizo) {
+	private boolean canCastSpell(Spell hechizo) {
 		if (!this.player.checkAlive("No puedes lanzar hechizos porque estas muerto.")) {
 			return false;
 		}
@@ -754,7 +753,7 @@ public class UserSpells implements Constants {
 
 		Map mapa = this.server.getMap(this.player.pos().map);
 
-		if (mapa.esZonaSegura()) {
+		if (mapa.isSafeMap()) {
 			this.player.sendMessage("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
 			return false;
 		}

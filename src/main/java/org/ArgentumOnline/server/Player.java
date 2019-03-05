@@ -34,6 +34,7 @@ import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapCell;
+import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.MapPos.Heading;
@@ -50,6 +51,8 @@ import org.ArgentumOnline.server.protocol.BankInitResponse;
 import org.ArgentumOnline.server.protocol.BankOKResponse;
 import org.ArgentumOnline.server.protocol.BlindNoMoreResponse;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
+import org.ArgentumOnline.server.protocol.BlockedWithShieldOtherResponse;
+import org.ArgentumOnline.server.protocol.BlockedWithShieldUserResponse;
 import org.ArgentumOnline.server.protocol.ChangeBankSlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeInventorySlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeMapResponse;
@@ -70,6 +73,7 @@ import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
 import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
 import org.ArgentumOnline.server.protocol.MiniStatsResponse;
 import org.ArgentumOnline.server.protocol.NPCHitUserResponse;
+import org.ArgentumOnline.server.protocol.NPCKillUserResponse;
 import org.ArgentumOnline.server.protocol.NavigateToggleResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
@@ -86,8 +90,11 @@ import org.ArgentumOnline.server.protocol.ShowBlacksmithFormResponse;
 import org.ArgentumOnline.server.protocol.UpdateHungerAndThirstResponse;
 import org.ArgentumOnline.server.protocol.UpdateTagAndStatusResponse;
 import org.ArgentumOnline.server.protocol.UpdateUserStatsResponse;
+import org.ArgentumOnline.server.protocol.UserAttackedSwingResponse;
 import org.ArgentumOnline.server.protocol.UserCharIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserHitNPCResponse;
+import org.ArgentumOnline.server.protocol.UserHittedByUserResponse;
+import org.ArgentumOnline.server.protocol.UserHittedUserResponse;
 import org.ArgentumOnline.server.protocol.UserIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserSwingResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
@@ -378,7 +385,7 @@ public class Player extends AbstractCharacter {
 			this.channel.writeAndFlush(packet);
 		} catch (Exception e) {
 			e.printStackTrace();
-			doSALIR();
+			quitGame();
 		}
 	}
 
@@ -415,14 +422,14 @@ public class Player extends AbstractCharacter {
 		gambler.bet(this, gold);
 	}
 
-	public void doPonerMensajeForo(String titulo, String texto) {
+	public void postOnForum(String titulo, String texto) {
 		// Comando DEMSG
 		if (flags().TargetObj == 0) {
 			return;
 		}
 		ObjectInfo iobj = findObj(flags().TargetObj);
 		if (iobj.esForo()) {
-			this.server.getForumManager().ponerMensajeForo(iobj.ForoID, titulo, texto);
+			this.server.getForumManager().postOnForum(iobj.ForoID, titulo, texto);
 		}
 	}
 
@@ -523,6 +530,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void sendUserStatsTxt(Player usuario) {
+		// Comando /EST
 		sendMessage("Estadisticas de: " + usuario.userName, FontType.FONTTYPE_INFOBOLD);
 		sendMessage("Nivel: " + usuario.stats().ELV + "  EXP: " + usuario.stats().Exp + "/" + usuario.stats().ELU,
 				FontType.FONTTYPE_INFO);
@@ -766,7 +774,7 @@ public class Player extends AbstractCharacter {
 			// Agregamos el obj que compro al inventario
 			userDejaObj(slot, cant);
 			// Actualizamos el inventario del usuario
-			enviarInventario();
+			sendInventoryToUser();
 			// Actualizamos el inventario del banco
 			updateBankUserInv();
 			// Actualizamos la ventana del banco
@@ -813,7 +821,7 @@ public class Player extends AbstractCharacter {
 			// Agregamos el obj que compro al inventario
 			userReciveObj(slot, cant);
 			// Actualizamos el inventario del usuario
-			enviarInventario();
+			sendInventoryToUser();
 			// Actualizamos el banco
 			updateBankUserInv();
 			// ventana update
@@ -1147,8 +1155,8 @@ public class Player extends AbstractCharacter {
 			}
 
 			// Mandamos el Inventario
-			((NpcMerchant)npc).enviarNpcInv(this);
-			enviarInventario();
+			((NpcMerchant)npc).sendNpcInventoryToUser(this);
+			sendInventoryToUser();
 			sendUpdateUserStats();
 
 			// Iniciamos el comercio con el Npc
@@ -1228,7 +1236,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (mapa.hasObject(pos().x, pos().y) && mapa.getObjeto(pos().x, pos().y).obj_ind == FOGATA) {
-			// enviar(MSG_DOK);
+			sendPacket(new RestOKResponse());
 			if (!flags().Descansar) {
 				sendMessage("Te acomodas junto a la fogata y comienzas a descansar.", FontType.FONTTYPE_INFO);
 			} else {
@@ -1239,16 +1247,11 @@ public class Player extends AbstractCharacter {
 			if (flags().Descansar) {
 				sendMessage("Te levantas.", FontType.FONTTYPE_INFO);
 				flags().Descansar = false;
-				// enviar(MSG_DOK);
+				sendPacket(new RestOKResponse());
 				return;
 			}
 			sendMessage("No hay ninguna fogata junto a la cual descansar.", FontType.FONTTYPE_INFO);
 		}
-	}
-
-	public void doEnviarEstads() {
-		// Comando /EST
-		sendUserStatsTxt(this);
 	}
 
 	public void sendFame() {
@@ -1394,7 +1397,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		this.userInv.quitarUserInvItem(flags().TargetObjInvSlot, 5);
-		enviarObjetoInventario(flags().TargetObjInvSlot);
+		sendInventorySlot(flags().TargetObjInvSlot);
 		if (Util.Azar(1, info.MinSkill) <= 10) {
 			sendMessage("Has obtenido un lingote!!!", FontType.FONTTYPE_INFO);
 			Map mapa = this.server.getMap(pos().map);
@@ -1565,13 +1568,13 @@ public class Player extends AbstractCharacter {
 				cant = this.userInv.getObjeto(slot).cant;
 			}
 			victima.userInv.quitarUserInvItem(slot, cant);
-			victima.enviarObjetoInventario(slot);
+			victima.sendInventorySlot(slot);
 			Map mapa = this.server.getMap(pos().map);
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
 			}
-			enviarObjetoInventario(slot);
+			sendInventorySlot(slot);
 			ObjectInfo info = findObj(objid);
 			sendMessage("Has robado " + cant + " " + info.Nombre, FontType.FONTTYPE_INFO);
 		} else {
@@ -1587,7 +1590,7 @@ public class Player extends AbstractCharacter {
 
 	private void doRobar(Player victima) {
 		Map mapa = this.server.getMap(pos().map);
-		if (!mapa.esZonaSegura() || triggerZonaPelea(victima) != MapCell.TRIGGER6_AUSENTE) {
+		if (!mapa.isSafeMap() || duelStatus(victima) != DuelStatus.DUEL_MISSING) {
 			return;
 		}
 		if (flags().Privilegios < 2) {
@@ -1755,7 +1758,7 @@ public class Player extends AbstractCharacter {
 				if (this.userInv.getObjeto(slotMunicion) != null && this.userInv.getObjeto(slotMunicion).cant > 0) {
 					this.userInv.equipar(slotMunicion);
 				}
-				enviarObjetoInventario(slotMunicion);
+				sendInventorySlot(slotMunicion);
 				break;
 
 
@@ -1767,7 +1770,7 @@ public class Player extends AbstractCharacter {
 					return;
 				mapa.lookAtTile(this, x, y);
 				if (flags().Hechizo > 0) {
-					this.spells.lanzarHechizo(this.server.getHechizo(flags().Hechizo));
+					this.spells.hitSpell(this.server.getHechizo(flags().Hechizo));
 					flags().Hechizo = 0;
 				} else {
 					sendMessage("¡Primero selecciona el hechizo que deseas lanzar!", FontType.FONTTYPE_INFO);
@@ -1788,11 +1791,11 @@ public class Player extends AbstractCharacter {
 					sendMessage("Deberías equiparte la caña o la red.", FontType.FONTTYPE_INFO);
 					return;
 				}
-				if (mapa.getTrigger(pos().x, pos().y) == 1) {
+				if (mapa.isUnderRoof(pos().x,  pos().y)) {
 					sendMessage("No puedes pescar desde donde te encuentras.", FontType.FONTTYPE_INFO);
 					return;
 				}
-				if (mapa.hayAgua(x, y)) {
+				if (mapa.isWater(x, y)) {
 					sendWave(SOUND_PESCAR);
 					switch (this.userInv.getArma().ObjIndex) {
 					case OBJ_INDEX_CAÑA:
@@ -1813,7 +1816,7 @@ public class Player extends AbstractCharacter {
 
 
 			case SKILL_Robar:
-				if (!mapa.esZonaSegura()) {
+				if (!mapa.isSafeMap()) {
 					if (!counters().intervaloPermiteTrabajar()) {
 						return;
 					}
@@ -1827,7 +1830,7 @@ public class Player extends AbstractCharacter {
 								return;
 							}
 							// Nos aseguramos que el trigger le permite robar
-							if (mapa.getTrigger(tu.pos().x, tu.pos().y) == 4) {
+							if (mapa.isSafeZone(tu.pos().x, tu.pos().y)) {
 								sendMessage("No podes robar aquí.", FontType.FONTTYPE_WARNING);
 								return;
 							}
@@ -1880,7 +1883,7 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				if (this.userInv.getArma().ObjIndex != PIQUETE_MINERO) {
-					doSALIR();
+					quitGame();
 					return;
 				}
 				mapa.lookAtTile(this, x, y);
@@ -1935,8 +1938,8 @@ public class Player extends AbstractCharacter {
 				mapa.lookAtTile(this, x, y);
 				if (flags().TargetObj > 0) {
 					if (findObj(flags().TargetObj).objType == ObjType.Yunque) {
-						this.userInv.enviarArmasConstruibles();
-						this.userInv.enviarArmadurasConstruibles();
+						this.userInv.sendBlacksmithWeapons();
+						this.userInv.sendBlacksmithArmors();
 						sendPacket(new ShowBlacksmithFormResponse());
 					} else {
 						sendMessage("Ahi no hay ningun yunque.", FontType.FONTTYPE_INFO);
@@ -2077,9 +2080,9 @@ public class Player extends AbstractCharacter {
 			sendMessage("¡JA! Debes estar muerto para resucitarte.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (!existePersonaje()) {
+		if (!userExists()) {
 			sendMessage("!!El personaje no existe, cree uno nuevo.", FontType.FONTTYPE_INFO);
-			doSALIR();
+			quitGame();
 			return;
 		}
 		revive();
@@ -2130,15 +2133,10 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		mapa.enviarAlArea(pos().x, pos().y, createCC());
+		mapa.sendToArea(pos().x, pos().y, createCC());
 	}
 
-	public void enviarValCode() {
-		// FIXME
-		// enviar(MSG_VAL, (short) 345, (short) 343);
-	}
-
-	public void doSALIR() {
+	public void quitGame() {
 		if (this.m_saliendo) {
 			return;
 		}
@@ -2292,7 +2290,7 @@ public class Player extends AbstractCharacter {
 		}
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y,
+			mapa.sendToArea(pos().x, pos().y,
 					new ChatOverHeadResponse(text, getId(),
 							Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO)));
 		}
@@ -2311,7 +2309,7 @@ public class Player extends AbstractCharacter {
 		}
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y,
+			mapa.sendToArea(pos().x, pos().y,
 				new ChatOverHeadResponse(text, getId(),
 						Color.r(Color.COLOR_ROJO), Color.g(Color.COLOR_ROJO), Color.b(Color.COLOR_ROJO)));
 		}
@@ -2351,7 +2349,7 @@ public class Player extends AbstractCharacter {
 
 				if (!isGM() || isCounselor()) {
 					// send to admins at area
-					map.enviarAlAreaAdminsNoConsejeros(pos().x, pos().y,
+					map.sendToAreaToAdminsButCounselor(pos().x, pos().y,
 							new ChatOverHeadResponse("a " + targetUser.getNick() + "> " + text, this.getId(),
 									Color.r(Color.COLOR_AMARILLO), Color.g(Color.COLOR_AMARILLO), Color.b(Color.COLOR_AMARILLO)));
 				}
@@ -2366,7 +2364,7 @@ public class Player extends AbstractCharacter {
 			this.speedHackMover.check();
 		} catch (SpeedHackException e) {
 			sendMessage(e.getMessage(), FontType.FONTTYPE_SERVER);
-			doSALIR();
+			quitGame();
 			return;
 		}
 
@@ -2409,7 +2407,7 @@ public class Player extends AbstractCharacter {
 		flags().Oculto = false;
 		flags().Invisible = false;
 		Map map = this.server.getMap(pos().map);
-		map.enviarAlArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)0));
+		map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)0));
 	}
 
 	private void move(Heading heading) {
@@ -2432,8 +2430,8 @@ public class Player extends AbstractCharacter {
 				// Esto es similar al DoTileEvents original
 				MapPos targetPos	= map.teleportTarget(newPos.x, newPos.y);
 				boolean withFX 		= map.isTeleportObject(newPos.x, newPos.y);
-				boolean enviarData 	= pos().map != targetPos.map;
-				if (!enterIntoMap(targetPos.map, targetPos.x, targetPos.y, withFX, enviarData)) {
+				boolean sendingData = pos().map != targetPos.map;
+				if (!enterIntoMap(targetPos.map, targetPos.x, targetPos.y, withFX, sendingData)) {
 					// if fails, go back to the closest original position
 					MapPos warpPos = map.closestLegalPosPlayer(oldPos.x, oldPos.y, flags().Navegando, isGM());
 					warpMe(warpPos.map, warpPos.x, warpPos.y, true);
@@ -2544,14 +2542,14 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void enviarInventario() {
+	public void sendInventoryToUser() {
 		// updateUserInv
 		for (int i = 1; i <= this.userInv.size(); i++) {
-			enviarObjetoInventario(i);
+			sendInventorySlot(i);
 		}
 	}
 
-	public void enviarObjetoInventario(int slot) {
+	public void sendInventorySlot(int slot) {
 		InventoryObject inv = this.userInv.getObjeto(slot);
 
 		ObjectInfo objInfo;
@@ -2667,7 +2665,7 @@ public class Player extends AbstractCharacter {
 
 		sendCharIndexInServer();
 		if (sendingData) {
-			targetMap.sendOtherPlayers(this);
+			targetMap.sendPlayers(this);
 			targetMap.sendObjects(this);
 			targetMap.sendBlockedPositions(this);
 		}
@@ -2719,7 +2717,7 @@ public class Player extends AbstractCharacter {
 		// Quitar el dialogo
 		Map map = this.server.getMap(pos().map);
 		if (map != null) {
-			map.enviarAlArea(x, y, new RemoveCharDialogResponse(getId()));
+			map.sendToArea(x, y, new RemoveCharDialogResponse(getId()));
 		}
 
 		boolean changingMap = pos().map != targetMap;
@@ -2743,7 +2741,7 @@ public class Player extends AbstractCharacter {
 
 		// Seguis invisible al pasar de mapa
 		if ((flags().Invisible || flags().Oculto) && !flags().AdminInvisible) {
-			map.enviarAlArea(x, y, new SetInvisibleResponse(getId(), (byte)1));
+			map.sendToArea(x, y, new SetInvisibleResponse(getId(), (byte)1));
 		}
 		if (withFX && !flags().AdminInvisible) {
 			sendWave(SND_WARP);
@@ -2770,24 +2768,17 @@ public class Player extends AbstractCharacter {
 				MapPos lugarLibre = newMapa.closestLegalPosNpc(pos().x, pos().y, pet.esAguaValida(), pet.esTierraInvalida(), true);
 
 				if (lugarLibre != null) {
-					// La mascota lo sigue al nuevo mapa, y mantiene su
-					// control.
+					// La mascota lo sigue al nuevo mapa, y mantiene su control.
 					oldMapa.exitNpc(pet);
-					// envio un BP adicional, porque ya sali del mapa y
-					// sino no soy notificado de que salio la mascota.
-					// enviar(MSG_QDL, m_mascotas[i].getId());
-					// enviar(MSG_BP, m_mascotas[i].getId());
-					if (newMapa.enterNpc(pet, lugarLibre.x, lugarLibre.y)) {
+					if (!newMapa.enterNpc(pet, lugarLibre.x, lugarLibre.y)) {
 						// FIXME !!!
 					}
 				} else {
-					// La mascota no puede seguirlo al nuevo mapa, asi que
-					// pierde su control.
+					// La mascota no puede seguirlo al nuevo mapa, asi que pierde su control.
 					getUserPets().removePet(pet);
 				}
 			} else {
-				// La mascota no puede seguirlo al nuevo mapa, asi que
-				// pierde su control.
+				// La mascota no puede seguirlo al nuevo mapa, asi que pierde su control.
 				getUserPets().removePet(pet);
 			}
 		});
@@ -2813,7 +2804,7 @@ public class Player extends AbstractCharacter {
 	public void efectoLluvia() {
 		if (flags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
-			if (this.server.isRaining() && mapa.intemperie(pos().x, pos().y) && mapa.getZona() != ZONA_DUNGEON) {
+			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZona() != ZONA_DUNGEON) {
 				int modifi = Util.porcentaje(stats().maxStamina, 3);
 				stats().quitarStamina(modifi);
 				sendMessage("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.FONTTYPE_INFO);
@@ -2859,7 +2850,7 @@ public class Player extends AbstractCharacter {
 		flags().Oculto = true;
 		flags().Invisible = true;
 		Map map = this.server.getMap(pos().map);
-		map.enviarAlArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
+		map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
 		sendMessage("¡Te has escondido entre las sombras!", FontType.FONTTYPE_INFO);
 	}
 
@@ -2895,9 +2886,9 @@ public class Player extends AbstractCharacter {
 			texto = texto.substring(0, MAX_TEXTO_HABLAR);
 		}
 
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y,
+		Map map = this.server.getMap(pos().map);
+		if (map != null) {
+			map.sendToArea(pos().x, pos().y,
 					new ChatOverHeadResponse(texto, (short)quienId,
 							Color.r(color), Color.g(color), Color.b(color)));
 		}
@@ -2998,9 +2989,9 @@ public class Player extends AbstractCharacter {
 		sendPacket(new ObjectCreateResponse((byte)x, (byte)y, grhIndex));
 	}
 
-	public void sendBlockedPosition(int x, int y, boolean bloqueado) {
+	public void sendBlockedPosition(int x, int y, boolean blocked) {
 		byte bq = 0;
-		if (bloqueado)
+		if (blocked)
 			bq = 1;
 		sendPacket(new BlockPositionResponse((byte)x, (byte)y, bq));
 	}
@@ -3022,11 +3013,11 @@ public class Player extends AbstractCharacter {
 		getUserPets().removePet(pet);
 	}
 
-	public void sendWave(int sonido) {
-		Map mapa = this.server.getMap(pos().map);
+	public void sendWave(int sound) {
+		Map map = this.server.getMap(pos().map);
 		// Sonido
-		if (mapa != null) {
-			mapa.enviarAlArea(pos().x, pos().y, new PlayWaveResponse((byte) sonido, pos().x, pos().y));
+		if (map != null) {
+			map.sendToArea(pos().x, pos().y, new PlayWaveResponse((byte) sound, pos().x, pos().y));
 		}
 	}
 
@@ -3034,11 +3025,12 @@ public class Player extends AbstractCharacter {
 		if (isGM()) {
 			return;
 		}
-		Map mapa = this.server.getMap(pos().map);
+		Map map = this.server.getMap(pos().map);
 		// Sonido
 		sendWave(SND_USERMUERTE);
 		// Quitar el dialogo del usuario muerto
-		// mapa.enviarAlArea(pos().x, pos().y, MSG_QDL, m_id);
+		map.sendToArea(pos().x, pos().y, new RemoveCharDialogResponse(getId()));
+		
 		stats().MinHP = 0;
 		stats().stamina = 0;
 		flags().AtacadoPorNpc = 0;
@@ -3061,7 +3053,7 @@ public class Player extends AbstractCharacter {
 		// <<<< Descansando >>>>
 		if (flags().Descansar) {
 			flags().Descansar = false;
-			// enviar(MSG_DOK);
+			sendPacket(new RestOKResponse());
 		}
 		// <<<< Meditando >>>>
 		if (flags().Meditando) {
@@ -3085,9 +3077,9 @@ public class Player extends AbstractCharacter {
 			this.userInv.desequiparMunicion();
 		}
 		// << Si es zona de trigger 6, no pierde el inventario >>
-		if (mapa.getTrigger(pos().x, pos().y) != MapCell.TRIGGER6_PERMITE) {
+		if ( !map.isArenaZone(pos().x, pos().y) ) {
 			// << Si es newbie no pierde el inventario >>
-			if (!esNewbie() || isCriminal()) {
+			if ( !esNewbie() || isCriminal()) {
 				tirarTodo();
 			} else {
 				tirarTodosLosItemsNoNewbies();
@@ -3099,7 +3091,7 @@ public class Player extends AbstractCharacter {
 			this.infoChar.loops = 0;
 		}
 		// << Cambiamos la apariencia del char >>
-		if (!flags().Navegando) {
+		if ( !flags().Navegando ) {
 			this.infoChar.body = OBJ_INDEX_CUERPO_MUERTO;
 			this.infoChar.head = OBJ_INDEX_CABEZA_MUERTO;
 			this.infoChar.shield = NingunEscudo;
@@ -3115,8 +3107,8 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void tirarTodo() {
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa.getTrigger(pos().x, pos().y) == MapCell.TRIGGER_ARENA_DUELOS || isGM()) {
+		Map map = this.server.getMap(pos().map);
+		if (map.isArenaZone(pos().x, pos().y) || isGM()) {
 			return;
 		}
 		tirarTodosLosItems();
@@ -3131,7 +3123,7 @@ public class Player extends AbstractCharacter {
 				if (info_obj.itemSeCae()) {
 					InventoryObject obj_inv = new InventoryObject(this.userInv.getObjeto(i).objid, this.userInv.getObjeto(i).cant);
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
-					enviarObjetoInventario(i);
+					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
 						m.tirarItemAlPiso(pos().x, pos().y, obj_inv);
 					}
@@ -3141,16 +3133,16 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void tirarTodosLosItemsNoNewbies() {
-		Map m = this.server.getMap(pos().map);
+		Map map = this.server.getMap(pos().map);
 		for (int i = 1; i <= this.userInv.size(); i++) {
 			if (this.userInv.getObjeto(i).objid > 0) {
 				ObjectInfo info_obj = findObj(this.userInv.getObjeto(i).objid);
 				if (!info_obj.esNewbie() && info_obj.itemSeCae()) {
 					InventoryObject obj_inv = new InventoryObject(this.userInv.getObjeto(i).objid, this.userInv.getObjeto(i).cant);
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
-					enviarObjetoInventario(i);
+					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
-						m.tirarItemAlPiso(pos().x, pos().y, obj_inv);
+						map.tirarItemAlPiso(pos().x, pos().y, obj_inv);
 					}
 				}
 			}
@@ -3185,8 +3177,8 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void volverCriminal() {
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa.getTrigger(pos().x, pos().y) == MapCell.TRIGGER_ARENA_DUELOS) {
+		Map map = this.server.getMap(pos().map);
+		if (map.isArenaZone(pos().x, pos().y)) {
 			return;
 		}
 		if (flags().Privilegios < 2) {
@@ -3203,7 +3195,18 @@ public class Player extends AbstractCharacter {
 
 	public void subirSkill(Skill skill) {
 		if (!flags().Hambre && !flags().Sed) {
-			int prob = 0;
+			
+			// Alcanzó el máximo del skill para este nivel?
+			if (skills().get(skill) >= Skill.levelSkill[stats().ELV]) {
+				return;
+			}
+			
+			// Alcanzó el máximo valor del skill? (100)
+			if (skills().get(skill) >= Skill.MAX_SKILL_POINTS) {
+				return;
+			}
+			
+			int prob;
 			if (stats().ELV <= 3) {
 				prob = 25;
 			} else if (stats().ELV < 6) {
@@ -3216,20 +3219,11 @@ public class Player extends AbstractCharacter {
 				prob = 50;
 			}
 
-			int aumenta = Util.Azar(1, prob);
-
-			int lvl = stats().ELV;
-			// FIXME
-			// if (lvl > MAX_SKILLS)
-			// return;
-
-			if (skills().get(skill) >= Skill.MAX_SKILL_POINTS) {
-				return;
-			}
-			if (aumenta == 7 && skills().get(skill) < Skill.levelSkill[lvl]) {
+			if (Util.Azar(1, prob) == 7) {
 				skills().addSkillPoints(skill, (byte) 1);
-				sendMessage("¡Has mejorado tu skill " + skill + " en un punto!. Ahora tienes "
-						+ skills().get(skill) + " pts.", FontType.FONTTYPE_INFO);
+				sendMessage("¡Has mejorado tu skill " + skill + " en un punto!. Ahora tienes " 
+							+ skills().get(skill) + " pts.", FontType.FONTTYPE_INFO);
+				
 				stats().addExp((byte) 50);
 				sendMessage("¡Has ganado 50 puntos de experiencia!", FONTTYPE_FIGHT);
 				checkUserLevel();
@@ -3275,7 +3269,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void modificarSkills(String s) {
-		// FIXME
+		// TODO
 		// Comando "SKSE" Modificar skills
 		/*
 		StringTokenizer st = new StringTokenizer(s, ",");
@@ -3311,6 +3305,7 @@ public class Player extends AbstractCharacter {
 
 	public void checkUserLevel() {
 		while (stats().Exp >= stats().ELU) {
+			boolean wasNewbie = esNewbie();
 
 			// ¿Alcanzo el maximo nivel?
 			if (stats().ELV == STAT_MAXELV) {
@@ -3319,8 +3314,7 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			
-			// Acumuló la experiencia necesaria para subir de nivel
-			boolean wasNewbie = esNewbie();
+			// Se acumuló la experiencia necesaria para subir de nivel
 			sendWave(SOUND_NIVEL);
 			sendMessage("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
 			
@@ -3343,7 +3337,7 @@ public class Player extends AbstractCharacter {
             	stats().ELU *= 1.175;
             }
 			
-			this.clazz().subirEstads(this);
+			clazz().subirEstads(this);
 			sendSkills();
 			sendLevelUp((short)skillPoints);
 			
@@ -3484,14 +3478,14 @@ public class Player extends AbstractCharacter {
 			if (rechazo) {
 				// Se rechazo el ataque con el escudo
 				sendWave(SND_ESCUDO);
-				// enviar(MSG_7);
+				sendPacket(new BlockedWithShieldUserResponse());
 				subirSkill(Skill.SKILL_Defensa);
 			}
 		}
 		return impacto;
 	}
 
-	public int calcularDaño(Npc npc) {
+	public short calcularDaño(Npc npc) {
 		long dañoArma = 0;
 		long dañoMaxArma = 0;
 		long dañoUsuario = 0;
@@ -3504,15 +3498,17 @@ public class Player extends AbstractCharacter {
 				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) { // Usa la
 					// matadragones?
 					modifClase = this.clazz().modicadorDañoClaseArmas();
-					if (npc.npcType() == NpcType.NPCTYPE_DRAGON) { // Ataca
-						// dragon?
+					if (npc.npcType() == NpcType.NPCTYPE_DRAGON) { 
+						// Ataca a un dragón?
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
 						dañoMaxArma = arma.MaxHIT;
-					} else { // Sino es dragon daño es 1
+					} else { 
+						// Si no ataca a un dragón, el daño es 1
 						dañoArma = 1;
 						dañoMaxArma = 1;
 					}
-				} else { // daño comun
+				} else { 
+					// daño comun
 					if (arma.esProyectil()) {
 						modifClase = this.clazz().modicadorDañoClaseProyectiles();
 						dañoArma = Util.Azar(arma.MinHIT, arma.MaxHIT);
@@ -3528,7 +3524,8 @@ public class Player extends AbstractCharacter {
 						dañoMaxArma = arma.MaxHIT;
 					}
 				}
-			} else { // Ataca usuario
+			} else { 
+				// Ataca usuario
 				if (arma.ObjIndex == OBJ_INDEX_ESPADA_MATA_DRAGONES) {
 					modifClase = this.clazz().modicadorDañoClaseArmas();
 					dañoArma = 1; // Si usa la espada matadragones daño es 1
@@ -3554,7 +3551,7 @@ public class Player extends AbstractCharacter {
 		dañoUsuario = Util.Azar(stats().MinHIT, stats().MaxHIT);
 		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Util.Max(0, (stats().attr.get(Attribute.FUERZA) - 15)))
 				+ dañoUsuario) * modifClase);
-		return (int) daño;
+		return (short) daño;
 	}
 
 	public void userDañoNpc(Npc npc) {
@@ -3612,9 +3609,9 @@ public class Player extends AbstractCharacter {
 				cant -= cant_quitar;
 				this.userInv.desequipar(i);
 				this.userInv.quitarUserInvItem(i, cant_quitar);
-				enviarObjetoInventario(i);
+				sendInventorySlot(i);
 				if (cant <= 0) {
-					break; // Terminar.
+					break; // exit for.
 				}
 			}
 		}
@@ -3663,7 +3660,7 @@ public class Player extends AbstractCharacter {
 
 		// Muere el usuario
 		if (stats().MinHP <= 0) {
-			// enviar(MSG_6); // Le informamos que ha muerto ;)
+			sendPacket(new NPCKillUserResponse()); // Le informamos que ha muerto ;)
 			// Si lo mato un guardia
 			if (isCriminal() && npc.isNpcGuard()) {
 				this.reputation.decAsesino(vlAsesino / 4);
@@ -3777,7 +3774,7 @@ public class Player extends AbstractCharacter {
 			Npc attackedNpc = mapa.getNPC(attackPos.x, attackPos.y);
 			if (attackedNpc != null) {
 				if (attackedNpc.getAttackable()) {
-					if (attackedNpc.getPetUserOwner() != null && mapa.esZonaSegura()) {
+					if (attackedNpc.getPetUserOwner() != null && mapa.isSafeMap()) {
 						sendMessage("No podés atacar mascotas en zonas seguras", FONTTYPE_FIGHT);
 						return;
 					}
@@ -3832,8 +3829,8 @@ public class Player extends AbstractCharacter {
 				if (huboRechazo) {
 					// Se rechazo el ataque con el escudo!
 					sendWave(SND_ESCUDO);
-					// enviar(MSG_8);
-					// victima.enviar(MSG_7);
+					sendPacket(new BlockedWithShieldOtherResponse());
+					victima.sendPacket(new BlockedWithShieldUserResponse());
 					victima.subirSkill(Skill.SKILL_Defensa);
 				}
 			}
@@ -3869,35 +3866,34 @@ public class Player extends AbstractCharacter {
 			userDañoUser(victima);
 		} else {
 			sendWave(SOUND_SWING);
-			// FIXME
-			// enviar(MSG_U1);
-			// victima.enviar(MSG_U3, m_nick);
+			this.sendPacket(new UserSwingResponse());
+			victima.sendPacket(new UserAttackedSwingResponse(getId()));
 		}
 	}
 
 	public void userDañoUser(Player victima) {
-		int daño = calcularDaño(null);
-		int defbarco = 0;
+		short damage = calcularDaño(null);
+		short shipDefense = 0;
 		envenenarUsuario(victima); // revisar... FIXME
 		if (isSailing()) {
 			ObjectInfo barco = this.userInv.getBarco();
-			daño += Util.Azar(barco.MinHIT, barco.MaxHIT);
+			damage += Util.Azar(barco.MinHIT, barco.MaxHIT);
 		}
 		if (victima.isSailing()) {
 			ObjectInfo barco = victima.userInv.getBarco();
-			defbarco = Util.Azar(barco.MinDef, barco.MaxDef);
+			shipDefense = (short) Util.Azar(barco.MinDef, barco.MaxDef);
 		}
-		int lugar = Util.Azar(1, 6);
-		switch (lugar) {
+		byte target = (byte) Util.Azar(1, 6);
+		switch (target) {
 		case bCabeza:
 			// Si tiene casco absorbe el golpe
 			if (victima.userInv.tieneCascoEquipado()) {
 				ObjectInfo casco = victima.userInv.getCasco();
 				int absorbido = Util.Azar(casco.MinDef, casco.MaxDef);
-				absorbido += defbarco;
-				daño -= absorbido;
-				if (daño < 0) {
-					daño = 1;
+				absorbido += shipDefense;
+				damage -= absorbido;
+				if (damage < 0) {
+					damage = 1;
 				}
 			}
 			break;
@@ -3906,16 +3902,16 @@ public class Player extends AbstractCharacter {
 			if (victima.userInv.tieneEscudoEquipado()) {
 				ObjectInfo escudo = victima.userInv.getEscudo();
 				int absorbido = Util.Azar(escudo.MinDef, escudo.MaxDef);
-				absorbido += defbarco;
-				daño -= absorbido;
-				if (daño < 0) {
-					daño = 1;
+				absorbido += shipDefense;
+				damage -= absorbido;
+				if (damage < 0) {
+					damage = 1;
 				}
 			}
 		}
-		// enviar(MSG_N5, lugar, daño, victima.getNick());
-		// victima.enviar(MSG_N4, lugar, daño, getNick());
-		victima.stats().quitarHP(daño);
+		sendPacket(new UserHittedUserResponse(victima.getId(), target, damage));
+		victima.sendPacket(new UserHittedByUserResponse(getId(), target, damage));
+		victima.stats().quitarHP(damage);
 		if (!flags().Hambre && !flags().Sed) {
 			if (this.userInv.tieneArmaEquipada()) {
 				// Si usa un arma quizas suba "Combate con armas"
@@ -3927,7 +3923,7 @@ public class Player extends AbstractCharacter {
 			subirSkill(Skill.SKILL_Tacticas);
 			// Trata de apuñalar por la espalda al enemigo
 			if (puedeApuñalar()) {
-				apuñalar(victima, daño);
+				apuñalar(victima, damage);
 				subirSkill(Skill.SKILL_Apuñalar);
 			}
 		}
@@ -3947,7 +3943,7 @@ public class Player extends AbstractCharacter {
 		this.sendMessage("Has matado " + victima.userName + "!", FONTTYPE_FIGHT);
 		sendMessage("Has ganado " + daExp + " puntos de experiencia.", FONTTYPE_FIGHT);
 		victima.sendMessage(this.userName + " te ha matado!", FONTTYPE_FIGHT);
-		if (triggerZonaPelea(victima) != MapCell.TRIGGER6_PERMITE) {
+		if (duelStatus(victima) != DuelStatus.DUEL_ALLOWED) {
 			if (!victima.isCriminal()) {
 				this.reputation.incAsesino(vlAsesino * 2);
 				this.reputation.burguesRep = 0;
@@ -3966,7 +3962,7 @@ public class Player extends AbstractCharacter {
 		if (usuarioMuerto.esNewbie()) {
 			return;
 		}
-		if (triggerZonaPelea(usuarioMuerto) == MapCell.TRIGGER6_PERMITE) {
+		if (duelStatus(usuarioMuerto) == DuelStatus.DUEL_ALLOWED) {
 			return;
 		}
 
@@ -3994,7 +3990,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void usuarioAtacadoPorUsuario(Player victima) {
-		if (triggerZonaPelea(victima) == MapCell.TRIGGER6_PERMITE) {
+		if (duelStatus(victima) == DuelStatus.DUEL_ALLOWED) {
 			return;
 		}
 		if (!getGuildInfo().esMiembroClan() || !victima.getGuildInfo().esMiembroClan()) {
@@ -4029,23 +4025,25 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean puedeAtacar(Player victima) {
-		Map mapa = this.server.getMap(victima.pos().map);
+		Map map = this.server.getMap(victima.pos().map);
 
 		if (!victima.isAlive()) {
 			sendMessage("No puedes atacar a un espíritu", FontType.FONTTYPE_INFO);
 			return false;
 		}
-		int t = triggerZonaPelea(victima);
-		if (t == MapCell.TRIGGER6_PERMITE) {
+		
+		DuelStatus t = duelStatus(victima);
+		if (t == DuelStatus.DUEL_ALLOWED) {
 			return true;
-		} else if (t == MapCell.TRIGGER6_PROHIBE) {
+		} else if (t == DuelStatus.DUEL_FORBIDDEN) {
 			return false;
 		}
-		if (mapa.esZonaSegura()) {
+		
+		if (map.isSafeMap()) {
 			sendMessage("Esta es una zona segura, aqui no puedes atacar usuarios.", FontType.FONTTYPE_WARNING);
 			return false;
 		}
-		if (mapa.getTrigger(victima.pos().x, victima.pos().y) == 4) {
+		if (map.isSafeZone(victima.pos().x, victima.pos().y)) {
 			sendMessage("No puedes pelear aqui.", FontType.FONTTYPE_WARNING);
 			return false;
 		}
@@ -4079,12 +4077,10 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		// Implementacion de trigger 7 - Para torneos con espectadores
-		if (mapa.getTrigger(pos().x, pos().y) == 7) {
-			if (mapa.getTrigger(pos().x, pos().y) == 7
-					&& mapa.getTrigger(victima.pos().x, victima.pos().y) != 7) {
+		if (map.isTournamentZone(pos().x, pos().y)) {
+			if ( map.isTournamentZone(pos().x, pos().y) && !map.isTournamentZone(victima.pos().x, victima.pos().y) ) {
 				sendMessage("Para atacar a ese usuario, él se debe encontrar en tu misma zona.", FONTTYPE_FIGHT);
-			} else if (mapa.getTrigger(pos().x, pos().y) != 7
-					&& mapa.getTrigger(victima.pos().x, victima.pos().y) == 7) {
+			} else if ( !map.isTournamentZone(pos().x, pos().y)	&& map.isTournamentZone(victima.pos().x, victima.pos().y) ) {
 				sendMessage("Para atacar a ese usuario, debes encontrarte en la misma zona que él.", FONTTYPE_FIGHT);
 			}
 			return false;
@@ -4163,15 +4159,15 @@ public class Player extends AbstractCharacter {
 		// Validar los datos recibidos :-)
 		this.userName = userName;
 		if (!this.server.getAdmins().isValidUserName(this.userName)) {
-			enviarError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
+			sendError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
 			return;
 		}
 		if (!Util.asciiValidos(this.userName)) {
-			enviarError("Nombre invalido.");
+			sendError("Nombre invalido.");
 			return;
 		}
-		if (existePersonaje()) {
-			enviarError("Ya existe el personaje.");
+		if (userExists()) {
+			sendError("Ya existe el personaje.");
 			return;
 		}
 		this.flags().Muerto = false;
@@ -4190,7 +4186,7 @@ public class Player extends AbstractCharacter {
 		// FIXME
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		// if (!atributosValidos()) {
-		// enviarError("Atributos invalidos.");
+		// sendError("Atributos invalidos.");
 		// return;
 		// }
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
@@ -4245,7 +4241,7 @@ public class Player extends AbstractCharacter {
 		return Constants.CHARFILES_FOLDER + java.io.File.separator + nick.toLowerCase() + ".chr";
 	}
 
-	public boolean existePersonaje() {
+	public boolean userExists() {
 		// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
 		return Util.existeArchivo(getPjFile(this.userName));
 	}
@@ -4268,7 +4264,7 @@ public class Player extends AbstractCharacter {
 		stats().attr().modify(Attribute.CONSTITUCION, race().modificadorConstitucion());
 	}
 
-	public void enviarError(String msg) {
+	public void sendError(String msg) {
 		log.warn("ERROR: " + msg);
 		sendPacket(new ErrorMsgResponse(msg));
 	}
@@ -4278,8 +4274,8 @@ public class Player extends AbstractCharacter {
 		this.password = password;
 		try {
 			// ¿Existe el personaje?
-			if (!existePersonaje()) {
-				enviarError("El personaje no existe. Compruebe el nombre de usuario.");
+			if (!userExists()) {
+				sendError("El personaje no existe. Compruebe el nombre de usuario.");
 				return;
 			}
 
@@ -4291,13 +4287,13 @@ public class Player extends AbstractCharacter {
 			this.infoChar.fx = 0;
 
 			if (this.server.isPlayerAlreadyConnected(this)) {
-				enviarError("Perdon, pero ya esta conectado.");
+				sendError("Perdon, pero ya esta conectado.");
 				return;
 			}
 
 			// ¿Es el password valido?
 			if (!this.password.equals(this.userStorage.loadPasswordFromStorage(this.userName))) {
-				enviarError("Clave incorrecta.");
+				sendError("Clave incorrecta.");
 				return;
 			}
 			this.userStorage.loadUserFromStorage();
@@ -4337,8 +4333,8 @@ public class Player extends AbstractCharacter {
 				this.infoChar.helmet = NingunCasco;
 			}
 
-			enviarInventario();
-			spells().enviarHechizos();
+			sendInventoryToUser();
+			spells().sendSpells();
 			
 			if (isParalized()) {
 				sendPacket(new ParalizeOKResponse());
@@ -4367,7 +4363,7 @@ public class Player extends AbstractCharacter {
 			sendUserIndexInServer();
 			
 			if (!enterIntoMap(pos().map, pos().x, pos().y, true, true)) {
-				enviarError("Se encuenta en un mapa invalido.");
+				sendError("Se encuenta en un mapa invalido.");
 				return;
 			}
 			
@@ -4388,7 +4384,7 @@ public class Player extends AbstractCharacter {
 			sendUpdateUserStats();
 			sendUpdateHungerAndThirst();
 			
-			server.getMotd().doEnviarMOTD(this);
+			server.getMotd().sendMOTD(this);
 			
 			sendCreateFX(FXWARP, 0);
 
@@ -4405,12 +4401,12 @@ public class Player extends AbstractCharacter {
 
 		} catch (Exception e) {
 			log.fatal("ERROR EN connectUser(), nick=" + this.userName, e);
-			enviarError("Hubo un error conectando.");
+			sendError("Hubo un error conectando.");
 
 		} finally {
 			if (!flags().UserLogged) {
 				// if anything went wrong...
-				doSALIR();
+				quitGame();
 				this.userName = "";
 			}
 		}
@@ -4464,7 +4460,7 @@ public class Player extends AbstractCharacter {
 					userDie();
 				}
 			} else {
-				if (stats().stamina > 0) { // Vericación agregada por gorlok
+				if (stats().stamina > 0) { // Verificación agregada por gorlok
 					int modifi = Util.porcentaje(stats().maxStamina, 5);
 					stats().quitarStamina(modifi);
 					sendMessage("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.FONTTYPE_INFO);
@@ -4476,11 +4472,12 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean sanar(int intervalo) {
-		Map mapa = this.server.getMap(pos().map);
-		short trigger = mapa.getTrigger(pos().x, pos().y);
-		if (trigger == 1 || trigger == 2 || trigger == 4) {
+		Map map = this.server.getMap(pos().map);
+		
+		if (!map.isOutdoor(pos().x, pos().y)) {
 			return false;
 		}
+		
 		// Con el paso del tiempo se va sanando... pero muy lentamente ;-)
 		if (stats().MinHP < stats().MaxHP) {
 			if (this.counters.HPCounter < intervalo) {
@@ -4580,9 +4577,9 @@ public class Player extends AbstractCharacter {
 			stats().attr().get(Attribute.CONSTITUCION)));
 	}
 
-	public boolean aplicarHambreYSed() {
+	public boolean updateHungerAndThirst() {
 		// Sed
-		boolean enviarEstads = false;
+		boolean wasUpdated = false;
 		if (stats().drinked > 0) {
 			if (this.counters.drinkCounter < IntervaloSed) {
 				this.counters.drinkCounter++;
@@ -4593,7 +4590,7 @@ public class Player extends AbstractCharacter {
 					stats().drinked = 0;
 					flags().Sed = true;
 				}
-				enviarEstads = true;
+				wasUpdated = true;
 			}
 		}
 		// hambre
@@ -4607,18 +4604,19 @@ public class Player extends AbstractCharacter {
 					stats().eaten = 0;
 					flags().Hambre = true;
 				}
-				enviarEstads = true;
+				wasUpdated = true;
 			}
 		}
-		return enviarEstads;
+		return wasUpdated;
 	}
 
 	public boolean recStamina(int intervalo) {
-		Map mapa = this.server.getMap(pos().map);
-		short trigger = mapa.getTrigger(pos().x, pos().y);
-		if (trigger == 2 || trigger == 3 || trigger == 4) {
+		// TODO revisar
+		Map map = this.server.getMap(pos().map);
+		if (!map.isOutdoor(pos().x,  pos().y)) {
 			return false;
 		}
+		
 		if (stats().stamina < stats().maxStamina) {
 			if (this.counters.STACounter < intervalo) {
 				this.counters.STACounter++;
@@ -4652,10 +4650,8 @@ public class Player extends AbstractCharacter {
 		// This is like GameTimer_Timer
 		// Is user logged?
 		if (flags().UserLogged) {
-			boolean bEnviarStats = false;
-			boolean bEnviarAyS = false;
-
-			// Call DoTileEvents(iUserIndex, .Pos.map, .Pos.X, .Pos.Y)
+			boolean statsChanged = false;
+			boolean hungerAndThristChanged = false;
 
 			this.NumeroPaquetesPorMiliSec = 0;
 			if (flags().Paralizado) {
@@ -4672,29 +4668,29 @@ public class Player extends AbstractCharacter {
 					meditar();
 				}
 				if (flags().Envenenado && flags().Privilegios == 0) {
-					bEnviarStats = efectoVeneno();
+					statsChanged = efectoVeneno();
 				}
 				if (!flags().AdminInvisible && flags().Invisible) {
 					efectoInvisibilidad();
 				}
 				duracionPociones();
-				bEnviarAyS = aplicarHambreYSed();
+				hungerAndThristChanged = updateHungerAndThirst();
 				Map mapa = this.server.getMap(pos().map);
-				if (!(this.server.isRaining() && mapa.intemperie(pos().x, pos().y))) {
+				if (!(this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y))) {
 					if (!flags().Descansar && !flags().Hambre && !flags().Sed) {
 						// No esta descansando
 						if (sanar(SanaIntervaloSinDescansar))
-							bEnviarStats = true;
+							statsChanged = true;
 						if (recStamina(StaminaIntervaloSinDescansar))
-							bEnviarStats = true;
+							statsChanged = true;
 
 					} else if (flags().Descansar) {
 						// esta descansando
 
 						if (sanar(SanaIntervaloDescansar))
-							bEnviarStats = true;
+							statsChanged = true;
 						if (recStamina(StaminaIntervaloDescansar))
-							bEnviarStats = true;
+							statsChanged = true;
 
 						// termina de descansar automaticamente
 						if (stats().MaxHP == stats().MinHP && stats().maxStamina == stats().stamina) {
@@ -4716,10 +4712,10 @@ public class Player extends AbstractCharacter {
 					stats().drinked = 0;
 					userDie();
 				}
-				if (bEnviarStats) {
+				if (statsChanged) {
 					sendUpdateUserStats();
 				}
-				if (bEnviarAyS) {
+				if (hungerAndThristChanged) {
 					sendUpdateHungerAndThirst();
 				}
 				if (getUserPets().hasPets()) {
@@ -4730,7 +4726,7 @@ public class Player extends AbstractCharacter {
 			this.counters.IdleCount++;
 			if (this.counters.IdleCount > IntervaloParaConexion) {
 				this.counters.IdleCount = 0;
-				doSALIR();
+				quitGame();
 			}
 		}
 	}
@@ -4921,7 +4917,6 @@ public class Player extends AbstractCharacter {
 			}
 			ObjectInfo info = findObj(objid);
 			herreroQuitarMateriales(objid);
-			// AGREGAR FX
 			if (info.objType == ObjType.Weapon) {
 				sendMessage("Has construido el arma!.", FontType.FONTTYPE_INFO);
 			} else if (info.objType == ObjType.ESCUDO) {
@@ -4935,7 +4930,7 @@ public class Player extends AbstractCharacter {
 				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Herreria);
-			enviarInventario();
+			sendInventoryToUser();
 			sendWave(MARTILLOHERRERO);
 			flags().Trabajando = true;
 		}
@@ -4964,7 +4959,7 @@ public class Player extends AbstractCharacter {
 				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Carpinteria);
-			enviarInventario();
+			sendInventoryToUser();
 			sendWave(LABUROCARPINTERO);
 			flags().Trabajando = true;
 		}
@@ -4974,7 +4969,7 @@ public class Player extends AbstractCharacter {
 
 	public void volverCiudadano() {
 		Map mapa = this.server.getMap(pos().map);
-		if (mapa.getTrigger(pos().x, pos().y) == MapCell.TRIGGER_ARENA_DUELOS) {
+		if (mapa.isTournamentZone(pos().x, pos().y)) {
 			return;
 		}
 		boolean eraCrimi = isCriminal();
@@ -4984,20 +4979,19 @@ public class Player extends AbstractCharacter {
 		}
 
 		System.out.println(this.getNick() + "ahora es ciuda");
-
 	}
 
 	public void refreshUpdateTagAndStatus() {
 		Map mapa = this.server.getMap(pos().map);
-		mapa.enviarAlArea(pos().x, pos().y,
+		mapa.sendToArea(pos().x, pos().y,
 				new UpdateTagAndStatusResponse(getId(), isCriminal() ? (byte)1 : (byte)0, getTagsDesc()));
 	}
 
-	public void quitGame() {
+	public void startQuitGame() {
 		if (flags().UserLogged && !this.counters.Saliendo) {
 			this.counters.Saliendo = true;
 			Map mapa = this.server.getMap(pos().map);
-			if (mapa != null && mapa.esZonaSegura()) {
+			if (mapa != null && mapa.isSafeMap()) {
 				this.counters.SalirCounter = 1; // 1 segundo.
 			} else {
 				this.counters.SalirCounter = IntervaloCerrarConexion; // 10 segundos
@@ -5121,19 +5115,31 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	private int triggerZonaPelea(Player victima) {
+    enum DuelStatus {
+	    DUEL_ALLOWED 	/* TRIGGER6_PERMITE  1 */,
+	    DUEL_FORBIDDEN 	/* TRIGGER6_PROHIBE  2 */,
+	    DUEL_MISSING 	/* TRIGGER6_AUSENTE  3 */;
+    }
+
+	private DuelStatus duelStatus(Player victima) {
+		// triggerZonaPelea
+		
 		if (victima == null) {
-			return MapCell.TRIGGER6_AUSENTE;
+			// there is no opponent
+			return DuelStatus.DUEL_MISSING;
 		}
-		int t1 = this.server.getMap(pos().map).getTrigger(pos().x, pos().y);
-		int t2 = this.server.getMap(victima.pos().map).getTrigger(victima.pos().x, victima.pos().y);
-		if (t1 != MapCell.TRIGGER_ARENA_DUELOS && t2 != MapCell.TRIGGER_ARENA_DUELOS) {
-			return MapCell.TRIGGER6_AUSENTE;
+		
+		Trigger t1 = this.server.getMap(pos().map).getTrigger(pos().x, pos().y);
+		Trigger t2 = this.server.getMap(victima.pos().map).getTrigger(victima.pos().x, victima.pos().y);
+		
+		if (t1 == Trigger.TRIGGER_ARENA_DUELOS || t2 == Trigger.TRIGGER_ARENA_DUELOS) {
+			if (t1 == t2) {
+				return DuelStatus.DUEL_ALLOWED;
+			} else {
+				return DuelStatus.DUEL_FORBIDDEN;
+			}
 		}
-		if (t1 == t2) {
-			return MapCell.TRIGGER6_PERMITE;
-		}
-		return MapCell.TRIGGER6_PROHIBE;
+		return DuelStatus.DUEL_MISSING;
 	}
 
 	private void envenenarUsuario(Player victima) {
@@ -5202,7 +5208,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void agregarHechizo(int slot) {
-		this.spells.agregarHechizo(slot);
+		this.spells.addSpell(slot);
 	}
 
 	public void doBalance() {

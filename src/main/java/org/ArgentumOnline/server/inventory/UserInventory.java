@@ -236,7 +236,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (infoObj.esNewbie()) {
                     quitarUserInvItem(j+1, this.objs[j].cant);
                     // Actualiza un solo slot del inventario del usuario
-                    this.dueño.enviarObjetoInventario(j+1);
+                    this.dueño.sendInventorySlot(j+1);
                 }
             }
         }
@@ -261,7 +261,7 @@ public class UserInventory extends Inventory implements Constants {
             this.objs[slot-1].cant = 0;
             this.objs[slot-1].objid = 0;
         }
-       	this.dueño.enviarObjetoInventario(slot);
+       	this.dueño.sendInventorySlot(slot);
     }
 
     public void dropObj(byte slot, int cant) {
@@ -280,7 +280,7 @@ public class UserInventory extends Inventory implements Constants {
 				}
                 mapa.agregarObjeto(objid, cant, x, y);
                 quitarUserInvItem(slot, cant);
-                this.dueño.enviarObjetoInventario(slot);
+                this.dueño.sendInventorySlot(slot);
                 ObjectInfo iobj = findObj(objid);
                 if (this.dueño.isGM()) {
 					Log.logGM(this.dueño.getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
@@ -360,7 +360,7 @@ public class UserInventory extends Inventory implements Constants {
         }
 
 		this.dueño.sendUpdateUserStats();
-        this.dueño.enviarObjetoInventario(slot);
+        this.dueño.sendInventorySlot(slot);
     }
     
     public void equipar(int slot) {
@@ -585,7 +585,7 @@ public class UserInventory extends Inventory implements Constants {
         }
         // Actualiza
         log.debug("actualizar inventario del usuario");
-        this.dueño.enviarInventario();
+        this.dueño.sendInventoryToUser();
     }
     
     public void desequiparArmadura() {
@@ -631,7 +631,7 @@ public class UserInventory extends Inventory implements Constants {
 				int agregados = (agregar > this.objs[i].espacioLibre()) ? this.objs[i].espacioLibre() : agregar;
 	            this.objs[i].objid = objid;
 	            this.objs[i].cant += agregados;
-	            this.dueño.enviarObjetoInventario(i + 1);
+	            this.dueño.sendInventorySlot(i + 1);
 				agregar -= agregados; // Descuento lo agregado al total que hay que agregar.
 				// Si no hay nada pendiente de agregar, termino la búsqueda.
 				if (agregar < 1) {
@@ -647,7 +647,7 @@ public class UserInventory extends Inventory implements Constants {
     				int agregados = (agregar > MAX_INVENTORY_OBJS) ? MAX_INVENTORY_OBJS : agregar;
 		            this.objs[i].objid = objid;
 		            this.objs[i].cant  = agregados;
-		            this.dueño.enviarObjetoInventario(i + 1);
+		            this.dueño.sendInventorySlot(i + 1);
     				agregar -= agregados; // Descuento lo agregado al total que hay que agregar.
     				// Si no hay nada pendiente de agregar, termino la búsqueda.
     				if (agregar < 1) {
@@ -682,7 +682,7 @@ public class UserInventory extends Inventory implements Constants {
         return false;
     }
     
-    public void enviarArmasConstruibles() {
+    public void sendBlacksmithWeapons() {
     	var validWeapons = new ArrayList<BlacksmithWeapons_DATA>();
     	for (short objid : this.server.getArmasHerrero()) {
             ObjectInfo info = findObj(objid);
@@ -697,7 +697,7 @@ public class UserInventory extends Inventory implements Constants {
 					validWeapons.toArray(new BlacksmithWeapons_DATA[0])));
     }
  
-    public void enviarObjConstruibles() {
+    public void sendCarpenterObjects() {
     	var validObjects = new ArrayList<CarpenterObjects_DATA>();
     	for (short objid : this.server.getObjCarpintero()) {
             ObjectInfo info = findObj(objid);
@@ -712,7 +712,7 @@ public class UserInventory extends Inventory implements Constants {
         				validObjects.toArray(new CarpenterObjects_DATA[0])));
     }
 
-    public void enviarArmadurasConstruibles() {
+    public void sendBlacksmithArmors() {
     	var validArmaduras = new ArrayList<BlacksmithArmors_DATA>();
     	for (short objid : this.server.getArmadurasHerrero()) {
             ObjectInfo info = findObj(objid);
@@ -727,7 +727,7 @@ public class UserInventory extends Inventory implements Constants {
         				validArmaduras.toArray(new BlacksmithArmors_DATA[0])));
     }
 
-    public void tirarTodosLosItemsNoNewbies() {
+    public void dropAllItemsNoNewbies() {
         Map mapa = this.server.getMap(this.dueño.pos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
@@ -871,7 +871,7 @@ public class UserInventory extends Inventory implements Constants {
                         byte targetY = this.dueño.flags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == info.Clave) {
-                                mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
+                                mapa.toggleDoor(mapa.getObjeto(targetX, targetY));
                                 this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
                                 this.dueño.sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
@@ -880,7 +880,7 @@ public class UserInventory extends Inventory implements Constants {
                             return;
                         }
                         if (targetInfo.Clave == info.Clave) {
-                            mapa.abrirCerrarPuerta(mapa.getObjeto(targetX, targetY));
+                            mapa.toggleDoor(mapa.getObjeto(targetX, targetY));
                             this.dueño.flags().TargetObj = mapa.getObjeto(targetX, targetY).obj_ind;
                             this.dueño.sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
@@ -897,7 +897,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 Pos lugar = new Pos(this.dueño.flags().TargetX, this.dueño.flags().TargetY);
-                if (!lugar.isValid() || !mapa.hayAgua(this.dueño.flags().TargetX, this.dueño.flags().TargetY)) {
+                if (!lugar.isValid() || !mapa.isWater(this.dueño.flags().TargetX, this.dueño.flags().TargetY)) {
                     this.dueño.sendMessage("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
@@ -962,7 +962,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 if (!this.dueño.flags().Hambre && !this.dueño.flags().Sed) {
                     this.dueño.agregarHechizo(slot);
-                    this.dueño.enviarInventario();
+                    this.dueño.sendInventoryToUser();
                 } else {
                     this.dueño.sendMessage("Estas demasiado hambriento y sediento.", FontType.FONTTYPE_INFO);
                 }

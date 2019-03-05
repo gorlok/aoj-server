@@ -35,9 +35,11 @@ import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.UserFaction;
 import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.ShowGMPanelFormResponse;
+import org.ArgentumOnline.server.protocol.ShowMessageBoxResponse;
 import org.ArgentumOnline.server.protocol.ShowSOSFormResponse;
 import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.protocol.UserNameListResponse;
@@ -232,7 +234,7 @@ public class Admins {
 			usuario.flags().Ban = true;
 			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
 			Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
-			usuario.doSALIR();
+			usuario.quitGame();
 		}
 	}
 
@@ -519,7 +521,7 @@ public class Admins {
 		msg = msg.trim();
 		Log.logGM(admin.getNick(), "Envió el mensaje del sistema: " + msg);
 		// FIXME
-		// server.enviarATodos(MSG_SYSMSG, s);
+		server.sendToAll(new ShowMessageBoxResponse(msg));
 	}
 
 	public void doNick2IP(Player admin, String userName) {
@@ -658,10 +660,10 @@ public class Admins {
 		}
 		if (accion.equalsIgnoreCase("PK")) {
 			if (valor == 0 || valor == 1) {
-				mapa.m_pk = (valor == 1);
+				mapa.pk = (valor == 1);
 				admin.sendMessage("PK cambiado.", FontType.FONTTYPE_INFO);
 			}
-			admin.sendMessage("Mapa " + admin.pos().map + " PK: " + (mapa.m_pk ? "SI" : "NO"), FontType.FONTTYPE_INFO);
+			admin.sendMessage("Mapa " + admin.pos().map + " PK: " + (mapa.pk ? "SI" : "NO"), FontType.FONTTYPE_INFO);
 		} else if (accion.equalsIgnoreCase("BACKUP")) {
 			if (valor == 0 || valor == 1) {
 				mapa.m_backup = (valor == 1);
@@ -787,13 +789,19 @@ public class Admins {
 	}
 
 	public void doTrigger(Player admin, byte t) {
+		// FIXME
 		// Consulta o cambia el trigger de la posición actual.
 		// Comando /TRIGGER
 		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
-		mapa.setTrigger(admin.pos().x, admin.pos().y, t);
-		admin.sendMessage("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y) +
-				" en " + admin.pos(), FontType.FONTTYPE_INFO);
+		
+		if (t <0 || t >= Trigger.values().length) {
+			admin.sendMessage("no es un trigger valido", FontType.FONTTYPE_INFO);
+			return;
+		}
+		mapa.setTrigger(admin.pos().x, admin.pos().y, Trigger.values()[t]);
+		
+		admin.sendMessage("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y).ordinal() + " en " + admin.pos(), FontType.FONTTYPE_INFO);
 	}
 
 	public void doMassDest(Player admin) {
@@ -911,13 +919,13 @@ public class Admins {
 		usuario.flags().Ban = true;
 		if (usuario.isGM()) {
 			admin.flags().Ban = true;
-			admin.doSALIR();
+			admin.quitGame();
 			this.server.sendMessageToAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
 					FontType.FONTTYPE_FIGHT);
 		}
 		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
 		Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
-		usuario.doSALIR();
+		usuario.quitGame();
 	}
 
 	public void doUnban(Player admin, String s) {
@@ -952,7 +960,7 @@ public class Admins {
 				admin.getNick() + " echo a " + usuario.getNick() + ".",
 				FontType.FONTTYPE_INFO.id()));
 		Log.logGM(admin.getNick(), "Echó a " + usuario.getNick());
-		usuario.doSALIR();
+		usuario.quitGame();
 	}
 
 	public void sendUserToJail(Player admin, String userName, byte minutes) {
@@ -1135,11 +1143,11 @@ public class Admins {
 		}
 		if (s.length() > 0) {
 			Log.logGM(admin.getNick(), "Mensaje para GMs: " + s);
-			this.server.enviarMensajeALosGMs(admin.getNick() + "> " + s);
+			this.server.sendMessageToGMs(admin.getNick() + "> " + s);
 		}
 	}
 
-	public void doEnviarHora(Player admin) {
+	public void sendServerTime(Player admin) {
 		// Comando /HORA
 		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
 		java.util.Date ahora = new java.util.Date();
@@ -1149,7 +1157,7 @@ public class Admins {
 		admin.sendMessage("Hora: " + hora + " Fecha: " + fecha, FontType.FONTTYPE_INFO);
 	}
 
-	public void doDonde(Player admin, String s) {
+	public void whereIsUser(Player admin, String s) {
 		// Comando /DONDE
 		// ¿Donde esta fulano?
 		s = s.trim();
@@ -1169,16 +1177,16 @@ public class Admins {
 				FontType.FONTTYPE_INFO);
 	}
 
-	public void doEnviarCantidadHostiles(Player admin, short m) {
-		if (m < 1) {
+	public void sendHostilesCount(Player admin, short mapNumber) {
+		if (mapNumber < 1) {
 			admin.sendMessage("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Map mapa = this.server.getMap(m);
-		if (mapa != null) {
-			Log.logGM(admin.getNick(), "Consultó el número de enemigos en el mapa, /NENE " + m);
+		Map map = this.server.getMap(mapNumber);
+		if (map != null) {
+			Log.logGM(admin.getNick(), "Consultó el número de enemigos en el mapa, /NENE " + mapNumber);
 			// FIXME
-			// enviar(MSG_NENE, mapa.getCantHostiles());
+			admin.sendMessage("Hay " + map.getHostilesCount() + " en el mapa.", FontType.FONTTYPE_INFO);
 		} else {
 			admin.sendMessage("El mapa no existe.", FontType.FONTTYPE_INFO);
 		}

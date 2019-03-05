@@ -77,7 +77,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 				
 	        // Is the user actually logged?
 	        if ( ! player.isLogged() ) {
-	        	player.doSALIR();
+	        	player.quitGame();
 	        }
 		}
 		
@@ -151,7 +151,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case Quit:
-			player.quitGame();
+			player.startQuitGame();
 			break;
 			
 		case CommerceStart:

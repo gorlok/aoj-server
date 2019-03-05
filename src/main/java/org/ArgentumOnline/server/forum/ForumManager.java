@@ -31,7 +31,7 @@ public class ForumManager {
 
 	private Map<String, Forum> forum = new HashMap<>();
 
-	public void ponerMensajeForo(String foroId, String titulo, String texto) {
+	public void postOnForum(String foroId, String titulo, String texto) {
 		Forum forum = this.forum.get(foroId);
 		if (forum == null) {
 			this.forum.put(foroId, (forum = new Forum(foroId)));
@@ -39,7 +39,7 @@ public class ForumManager {
 		forum.addMessage(titulo, texto);
 	}
 
-	public void enviarMensajesForo(String foroId, Player player) {
+	public void sendForumPosts(String foroId, Player player) {
 		Forum forum = this.forum.get(foroId);
 		if (forum == null) {
 			this.forum.put(foroId, (forum = new Forum(foroId)));

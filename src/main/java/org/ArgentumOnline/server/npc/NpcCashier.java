@@ -46,10 +46,10 @@ public class NpcCashier extends Npc {
 			return;
 		}
 		
-		if (!player.existePersonaje()) {
+		if (!player.userExists()) {
 			log.error("ERROR, no existe el personaje " + player.getNick());
 			player.sendMessage("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
-			player.doSALIR();
+			player.quitGame();
 			return;
 		}
 		if (cant > 0 && cant <= player.stats().getBankGold()) {

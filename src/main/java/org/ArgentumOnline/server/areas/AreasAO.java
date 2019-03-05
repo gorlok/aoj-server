@@ -33,7 +33,7 @@ import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 
 /** 
  * Areas class
- * Esta clase realiza el manejo de áreas para enviar datos a los usuarios
+ * Esta clase realiza el manejo de áreas para limitar el envío de datos a los usuarios
  * Idea original: Juan Martín Sotuyo Dodero (Maraxus)
  * Implementado y adaptado a Java: Juan Agustín Oliva (JAO) -> juancho_isap14@hotmail.com
  */

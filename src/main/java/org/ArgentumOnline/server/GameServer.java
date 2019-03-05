@@ -251,7 +251,7 @@ public class GameServer implements Constants {
 
     	users.forEach(c -> {
 	    	c.sendMessage("Servidor> Conexiones temporalmente cerradas por mantenimiento.", FontType.FONTTYPE_SERVER);
-	        c.doSALIR();
+	        c.quitGame();
     	});
     }
 
@@ -582,7 +582,7 @@ public class GameServer implements Constants {
             }
         }
         for (Player cli: paraSalir) {
-            cli.doSALIR();
+            cli.quitGame();
         }
     }
 
@@ -736,7 +736,7 @@ public class GameServer implements Constants {
         for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 Map mapa = getMap(cli.pos().map);
-                if (mapa.getTrigger(cli.pos().x, cli.pos().y) == 5) {
+                if (mapa.isAntiPiquete(cli.pos().x, cli.pos().y)) {
                     cli.counters.PiqueteC++;
                     cli.sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
                     if (cli.counters.PiqueteC > 23) {
@@ -778,8 +778,8 @@ public class GameServer implements Constants {
             if (player != null && player.getId() > 0 && player.isLogged()) {
                 player.counters.IdleCount++;
                 if (player.counters.IdleCount >= IdleLimit) {
-                    player.enviarError("Demasiado tiempo inactivo. Has sido desconectado.");
-                    player.doSALIR();
+                    player.sendError("Demasiado tiempo inactivo. Has sido desconectado.");
+                    player.quitGame();
                 }
             }
         }
@@ -900,7 +900,7 @@ public class GameServer implements Constants {
         return lineas;
     }
 
-    public void enviarMensajeALosGMs(String msg) {
+    public void sendMessageToGMs(String msg) {
         for (Player cli: players()) {
             if (cli.isLogged() && cli.isGM()) {
                 cli.sendMessage(msg, FontType.FONTTYPE_GM);

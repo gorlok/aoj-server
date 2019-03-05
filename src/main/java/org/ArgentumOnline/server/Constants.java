@@ -102,8 +102,6 @@ public interface Constants {
     
     final static int LimiteNewbie = 8;
     
-    final static short POSINVALIDA = 3;
-    
     final static String DATDIR = "dat";
     final static String GUILDDIR = "guilds";
     
@@ -113,11 +111,13 @@ public interface Constants {
     
     final static int APUESTA_MAXIMA = 5000;
     
+    // FIXME
     final static short TERRENO_BOSQUE = 0;
     final static short TERRENO_DESIERTO = 1;
     final static short TERRENO_NIEVE = 2;
     final static String TERRENOS[] = { "BOSQUE", "DESIERTO", "NIEVE" };
     
+    // FIXME
     final static short ZONA_CAMPO = 0;
     final static short ZONA_CIUDAD = 1;
     final static short ZONA_DUNGEON = 2;

@@ -51,62 +51,30 @@ public class GuildManager {
 
 	private GameServer server;
 	
+	private Map<String, Guild> guilds = new HashMap<String, Guild>();
+	
 	public GuildManager(GameServer server) {
 		this.server = server;
 	}
-	
-    /** Guilds collection */
-    private Map<String, Guild> guilds = new HashMap<String, Guild>();
 
     private Collection<Guild> getGuilds() {
     	return this.guilds.values();    	
     }
     
-    /**
-     * Add a guild into the guilds collection.
-     * @param guild
-     */
     private void addGuild(Guild guild) {
         this.guilds.put(guild.guildName.toUpperCase(), guild);
     }
     
-    /**
-     * Get a guild by name.
-     * @param guildName
-     * @return a Guild
-     */
     public Guild getGuild(String guildName) {
         return this.guilds.get(guildName.toUpperCase());
     }
     
-    /**
-     * Gives guilds count.
-     * @return guilds count
-     */
     public int guildsCount() {
         return this.guilds.values().size();
     }
 
-    /**
-     * Remove all guilds from guilds collection.
-     */
-    private void guildsClear() {
-    	this.guilds.clear();
-    }
-    
-    private void crearClan(Player player, String name) {
-        if (this.createGuild(player, name)) {
-            int n;
-            if ((n = this.guildsCount()) == 1) {
-                player.sendMessage("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
-            } else {
-                player.sendMessage("¡Felicidades! Has creado el clan número " + n + " de Argentum!!!.", FontType.FONTTYPE_INFO);
-            }
-            this.saveGuildsDB();
-        }
-    }
-
-    private void computeVote(Player player, String member) {
+    public void computeVote(Player player, String member) {
+    	// /VOTO
         Guild guild = getGuild(player.guildInfo().getGuildName());
         if (guild == null) {
             return;
@@ -122,7 +90,7 @@ public class GuildManager {
             	if (!guild.elections) {
             		guild.resetVotes();
             		guild.elections = true;
-            		guild.members.forEach(s -> enviarMensajeVotacion(this.server.playerByUserName(s)));
+            		guild.members.forEach(s -> sendOpenVotingAnnouncement(this.server.playerByUserName(s)));
             	} else {
                     if (guild.members.size() > 1) {
                     	// compute elections results
@@ -164,7 +132,8 @@ public class GuildManager {
         }
     }
 
-    private void acceptPeaceOffer(Player player, String guildName) {
+    public void acceptPeaceOffer(Player player, String guildName) {
+    	// ACEPPEAT
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -190,7 +159,8 @@ public class GuildManager {
         guild.messageToGuildMembers("El clan firmó la paz con " +  guildName, FontType.FONTTYPE_GUILD);
     }
     
-    private void sendPeaceRequest(Player player, String guildName, String desc) {
+    public void sendPeaceRequest(Player player, String guildName, String desc) {
+    	// PEACEDET
         if (!player.guildInfo().esGuildLeader()) {
 			return;
 		}
@@ -205,7 +175,8 @@ public class GuildManager {
         player.sendPacket(new OfferDetailsResponse(solic.desc));
     }
 
-    private void recievePeaceOffer(Player player, String guildName, String desc) {
+    public void recievePeaceOffer(Player player, String guildName, String desc) {
+    	// PEACEOFF
         if (!player.guildInfo().esGuildLeader()) {
 			return;
 		}
@@ -233,7 +204,8 @@ public class GuildManager {
         }
     }
     
-    private void sendPeacePropositions(Player player) {
+    public void sendPeacePropositions(Player player) {
+    	// ENVPROPP
         if (!player.guildInfo().esGuildLeader()) {
 			return;
 		}
@@ -257,7 +229,8 @@ public class GuildManager {
         player.sendPacket(new PeaceProposalsListResponse(sb.toString()));
     }
 
-    private void echarMember(Player player, String userName) {
+    public void kickMember(Player player, String userName) {
+    	// ECHARCLA
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -288,7 +261,8 @@ public class GuildManager {
         guild.removeMember(userName);
     }
     
-    private void denyRequest(Player player, String userName) {
+    public void rejectRequest(Player player, String userName) {
+    	// RECHAZAR
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -310,7 +284,8 @@ public class GuildManager {
         guild.joinRequest.remove(solicitud);
     }
     
-    private void acceptClanMember(Player player, String userName) {
+    public void acceptGuildMember(Player player, String userName) {
+    	// ACEPTARI
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -348,7 +323,8 @@ public class GuildManager {
 		return this.getGuild(user.guildInfo().getGuildName());
 	}
     
-    private void sendPeticion(Player player, String userName) {
+    public void showUserRequest(Player player, String userName) {
+    	// ENVCOMEN
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -363,7 +339,8 @@ public class GuildManager {
         player.sendPacket(new ShowUserRequestResponse(solicitud.getDesc()));
     }
 	
-    private void solicitudIngresoClan(Player applicant, String guildName, String desc) {
+    public void requestMembership(Player applicant, String guildName, String desc) {
+    	// SOLICITUD
     	if (applicant.esNewbie()) {
            applicant.sendMessage("Los newbies no pueden conformar clanes.", FontType.FONTTYPE_GUILD);
            return;
@@ -389,7 +366,8 @@ public class GuildManager {
         applicant.sendMessage("La solicitud será entregada al lider del clan, ahora debes esperar su respuesta.", FontType.FONTTYPE_GUILD);
     }
 
-    private void sendCharInfo(Player player, String userName) {
+    public void sendCharInfo(Player player, String userName) {
+    	// 1HRINFO<
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -400,7 +378,8 @@ public class GuildManager {
 		}
     }
 
-    private void updateGuildNews(Player player, String news) {
+    public void updateGuildNews(Player player, String news) {
+    	// ACTGNEWS
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -510,7 +489,8 @@ public class GuildManager {
         return guilds.toString();
     }
 
-	private void setNewURL(Player player, String newURL) {
+	public void setNewURL(Player player, String newURL) {
+		// NEWWEBSI
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -522,7 +502,8 @@ public class GuildManager {
         player.sendMessage("La direccion de la web ha sido actualizada", FontType.FONTTYPE_INFO);
     }
 
-    private void declareAllie(Player player, String guildName) {
+    public void declareAllie(Player player, String guildName) {
+    	// DECALIAD
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -553,7 +534,8 @@ public class GuildManager {
         enemyGuild.sendPlayWave(Constants.SND_DECLAREWAR);        
     }
     
-    private void declareWar(Player player, String guildName) {
+    public void declareWar(Player player, String guildName) {
+    	// DECGUERR
         if (!player.guildInfo().esGuildLeader()) {
             return;
         }
@@ -599,7 +581,7 @@ public class GuildManager {
     	member.sendPacket(new GuildNewsResponse(news, enemies, allies));
 		
 		if (playerGuild.elections) {
-			enviarMensajeVotacion(member);
+			sendOpenVotingAnnouncement(member);
 		}
     }
 
@@ -618,7 +600,7 @@ public class GuildManager {
 
     public void loadGuildsDB() {
         try {
-        	guildsClear();
+        	this.guilds.clear();
             IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + "GuildsInfo.ini");
             short cant = ini.getShort("INIT", "NroGuilds");
             Guild guild;
@@ -634,7 +616,8 @@ public class GuildManager {
         }
     }
 
-    private void sendGuildDetails(Player player, String guildName) {
+    public void sendGuildDetails(Player player, String guildName) {
+    	// CLANDETAILS
 		Guild guild = this.getGuild(guildName);
 		if (guild == null) {
 			return;
@@ -686,27 +669,34 @@ public class GuildManager {
         return false;
     }
     
-    public boolean createGuild(Player player, String guildInfo) {
+    public void createGuild(Player player, String guildInfo) {
+    	// CIG
         if (!canCreateGuild(player)) {
-            return false;
+            return;
         }
         Guild guild;
         try {
             guild = new Guild(guildInfo, player.getNick(), (long) player.reputation().getPromedio());
         } catch (InvalidGuildNameException e) {
             player.sendMessage("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
-            return false;
+            return;
         }
         if (existeGuild(guild.guildName)) {
             player.sendMessage("Ya existe un clan con ese nombre.", FontType.FONTTYPE_GUILD);
-            return false;
+            return;
         }
         guild.members.add(player.getNick());
         addGuild(guild);
         player.guildInfo().fundarClan(guild.guildName);
         this.server.sendToAll(new PlayWaveResponse(Constants.SND_CREACIONCLAN, (byte)50, (byte)50));
         this.server.sendToAll(new GuildChatResponse("¡¡¡" + player.getNick() + " fundó el clan '" + guild.guildName + "'!!!"));
-        return true;
+        
+        if (guildsCount() == 1) {
+            player.sendMessage("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
+        } else {
+            player.sendMessage("¡Felicidades! Has creado el clan número " + guildsCount() + " de Argentum!!!.", FontType.FONTTYPE_INFO);
+        }
+        this.saveGuildsDB();
     }
 
     public void saveGuildsDB() {
@@ -723,7 +713,7 @@ public class GuildManager {
         }
     }
 
-	public void doFundarClan(Player player) {
+	public void guildFundation(Player player) {
 		// Comando /FUNDARCLAN
 		if (player.getGuildInfo().m_fundoClan) {
 			player.sendMessage("Ya has fundado un clan, solo se puede fundar uno por personaje.", FontType.FONTTYPE_INFO);
@@ -734,18 +724,13 @@ public class GuildManager {
 		}
 	}
 
-	public void doInfoClan(Player player) {
+	public void sendGuilds(Player player) {
 		// Comando GLINFO
 		if (player.getGuildInfo().m_esGuildLeader) {
 			sendGuildLeaderInfo(player);
 		} else {
 			sendGuildsList(player);
 		}
-	}
-
-	public void doCrearClan(Player player, String guildName) {
-		// Comando CIG
-		crearClan(player, guildName);
 	}
 
 	public void doSalirClan(Player player) {
@@ -762,12 +747,7 @@ public class GuildManager {
 		}
 	}
 
-	public void doVotarClan(Player player, String member) {
-		// Comando /VOTO
-		computeVote(player, member);
-	}
-
-	public void enviarMensajeVotacion(Player player) {
+	public void sendOpenVotingAnnouncement(Player player) {
 		if (player == null) {
 			return;
 		}
@@ -775,87 +755,6 @@ public class GuildManager {
 		player.sendMessage("La eleccion durara 24 horas, se puede votar a cualquier miembro del clan.", FontType.FONTTYPE_GUILD);
 		player.sendMessage("Para votar escribe /VOTO NICKNAME.", FontType.FONTTYPE_GUILD);
 		player.sendMessage("Solo se computarÁ un voto por miembro.", FontType.FONTTYPE_GUILD);
-	}
-
-	public void doAceptarOfertaPaz(Player player, String guildName) {
-		// Comando ACEPPEAT
-		acceptPeaceOffer(player, guildName);
-	}
-
-	public void doRecibirOfertaPaz(Player player, String s) {
-		// Comando PEACEOFF
-		StringTokenizer st = new StringTokenizer(s, ",");
-		String userName = st.nextToken();
-		String desc = st.nextToken();
-		recievePeaceOffer(player, userName, desc);
-	}
-
-	public void doEnviarPedidoPaz(Player player, String s) {
-		// Comnando PEACEDET
-		StringTokenizer st = new StringTokenizer(s, ",");
-		String userName = st.nextToken();
-		String desc = st.nextToken();
-		sendPeaceRequest(player, userName, desc);
-	}
-
-	public void doEnviarPeticion(Player player, String s) {
-		// Comando ENVCOMEN
-		sendPeticion(player, s);
-	}
-
-	public void doEnviarProposiciones(Player player) {
-		// Comando ENVPROPP
-		sendPeacePropositions(player);
-	}
-
-	public void doDeclararGuerra(Player player, String s) {
-		// Comando DECGUERR
-		declareWar(player, s);
-	}
-
-	public void doDeclararAlianza(Player player, String s) {
-		// Comando DECALIAD
-		declareAllie(player, s);
-	}
-
-	public void doSetNewURL(Player player, String s) {
-		// Comando NEWWEBSI
-		setNewURL(player, s);
-	}
-
-	public void doAceptarMiembroClan(Player player, String s) {
-		// Comando ACEPTARI
-		acceptClanMember(player, s);
-	}
-
-	public void doRechazarPedido(Player player, String s) {
-		// Comando RECHAZAR
-		denyRequest(player, s);
-	}
-
-	public void doEcharMiembro(Player player, String s) {
-		// Comando ECHARCLA
-		echarMember(player, s);
-	}
-
-	public void doActualizarGuildNews(Player player, String s) {
-		// Comando ACTGNEWS
-		updateGuildNews(player, s);
-	}
-
-	public void doCharInfoClan(Player player, String s) {
-		// Comando 1HRINFO<
-		sendCharInfo(player, s);
-	}
-
-	public void doSolicitudIngresoClan(Player player, String guildName, String desc) {
-		// Comando SOLICITUD
-		solicitudIngresoClan(player, guildName, desc);
-	}
-
-	public void doClanDetails(Player player, String s) {
-		// Comando CLANDETAILS
-		sendGuildDetails(player, s);
 	}
 
 /*

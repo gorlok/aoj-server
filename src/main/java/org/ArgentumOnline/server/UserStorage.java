@@ -61,7 +61,7 @@ public class UserStorage {
 		loadUserInit(ini);
 		loadUserStats(ini);
 		if (!validateChr()) {
-			user.enviarError("Error en el personaje.");
+			user.sendError("Error en el personaje.");
 			throw new RuntimeException("Error en el personaje." + user.getNick());
 		}
 		loadUserReputacion(ini, user.reputation());

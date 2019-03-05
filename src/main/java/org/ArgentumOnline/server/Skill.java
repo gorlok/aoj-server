@@ -53,7 +53,7 @@ public enum Skill {
 		    77, 80, 83, 85, 87, 90, 93, 95, 97, 100,
 		    100, 100, 100, 100, 100, 100, 100, 100, 100, 100
 		};
-    
+	
     private String name;
     
     private Skill(String name) {
