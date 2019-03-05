@@ -17,40 +17,105 @@
  *******************************************************************************/
 package org.ArgentumOnline.server.forum;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.protocol.AddForumMsgResponse;
 import org.ArgentumOnline.server.protocol.ShowForumFormResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author gorlok
  */
 public class ForumManager {
+	
+	private static Logger log = LogManager.getLogger();
 
-	private Map<String, Forum> forum = new HashMap<>();
+	private static final String FORUM_EXT = ".json";
 
-	public void postOnForum(String foroId, String titulo, String texto) {
-		Forum forum = this.forum.get(foroId);
+	private Map<String, Forum> forumCache = new HashMap<>();
+	
+	private Forum getForum(String forumId) {
+		Forum forum = this.forumCache.get(forumId);
 		if (forum == null) {
-			this.forum.put(foroId, (forum = new Forum(foroId)));
+			forum = loadForumFromFile(forumId);
+			
+			if (forum == null) {
+				forum = new Forum(forumId);
+				this.forumCache.put(forumId, forum);
+			}
 		}
-		forum.addMessage(titulo, texto);
+		return forum;
+	}
+	
+	private Forum loadForumFromFile(String forumId) {
+		String fileName = Constants.FORUMDIR + File.separator + forumId + FORUM_EXT;
+
+		if (!Files.exists(Paths.get(fileName))) {
+			try {
+				Files.createFile(Paths.get(fileName));
+			} catch (IOException e) {
+				log.fatal("Can't create forum file " + fileName, e);
+				return null;
+			}
+		}
+		
+		try {
+			List<String> lines = Files.readAllLines(Paths.get(fileName));
+			String jsonText = String.join("\n", lines);
+			return Forum.fromJson(jsonText);
+		} catch (IOException e) {
+			log.fatal("Can't load forum file " + fileName, e);
+		}
+		return null;
 	}
 
+	private void writeForumToFile(Forum forum) {
+		String fileName = Constants.FORUMDIR + File.separator + forum.getForumId() + FORUM_EXT;
+
+		if (!Files.exists(Paths.get(fileName))) {
+			try {
+				Files.createFile(Paths.get(fileName));
+			} catch (IOException e) {
+				log.fatal("Can't create forum file " + fileName, e);
+				return;
+			}
+		}
+
+	    try {
+			Files.write(Paths.get(fileName), forum.toJson().getBytes());
+		} catch (IOException e) {
+			log.fatal("Can't write forum file " + fileName, e);
+		}
+	}
+
+	public void postOnForum(String forumId, String title, String body, String userName) {
+		Forum forum = getForum(forumId);
+		
+		forum.addPost(title, body, userName);
+		
+		writeForumToFile(forum);
+	}
+	
 	public void sendForumPosts(String foroId, Player player) {
-		Forum forum = this.forum.get(foroId);
-		if (forum == null) {
-			this.forum.put(foroId, (forum = new Forum(foroId)));
-		}
-		// Enviar mensajes dejados en el foro:
-		for (int i = 1; i <= forum.messageCount(); i++) {
-			ForumMessage msg = forum.getMessage(i);
-			player.sendPacket(new AddForumMsgResponse(msg.getTitle(), msg.getBody()));
-		}
-		// Enviar fin de foro:
+		Forum forum = getForum(foroId);
+		
+		forum.getPosts().stream()
+			.sorted(Comparator.comparing(ForumMessage::getCreateDate, Comparator.nullsLast(Comparator.reverseOrder())))
+			.forEach(post -> {
+				player.sendPacket(new AddForumMsgResponse(post.getTitle(), post.getBody()));
+			});
+		
 		player.sendPacket(new ShowForumFormResponse());
 	}
-
+	
 }

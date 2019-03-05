@@ -104,6 +104,7 @@ public interface Constants {
     
     final static String DATDIR = "dat";
     final static String GUILDDIR = "guilds";
+    final static String FORUMDIR = "forum";
     
     final static short MAX_TEXTO_HABLAR = 500;
     

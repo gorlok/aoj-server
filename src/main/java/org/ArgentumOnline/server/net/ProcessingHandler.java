@@ -20,8 +20,6 @@ package org.ArgentumOnline.server.net;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.MapPos.Heading;
-import org.ArgentumOnline.server.protocol.AcceptChaosCouncilMemberRequest;
-import org.ArgentumOnline.server.protocol.AlterPasswordRequest;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
 import org.ArgentumOnline.server.protocol.BankDepositRequest;
 import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
@@ -33,6 +31,7 @@ import org.ArgentumOnline.server.protocol.CommerceSellRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
+import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
@@ -264,10 +263,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.doApostar(((GambleRequest)packet).amount);
 			break;
 			
+		case ForumPost:
+			handleForumPost(((ForumPostRequest)packet), player);
+			break;
+			
 		default:
 			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 		}
 		
+	}
+
+	private void handleForumPost(ForumPostRequest packet, Player player) {
+		player.postOnForum(packet.title, packet.msg);
 	}
 
 	private void handleBankExtractItem(BankExtractItemRequest packet, Player player) {

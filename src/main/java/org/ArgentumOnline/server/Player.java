@@ -421,14 +421,14 @@ public class Player extends AbstractCharacter {
 		gambler.bet(this, gold);
 	}
 
-	public void postOnForum(String titulo, String texto) {
+	public void postOnForum(String title, String body) {
 		// Comando DEMSG
 		if (flags().TargetObj == 0) {
 			return;
 		}
 		ObjectInfo iobj = findObj(flags().TargetObj);
 		if (iobj.esForo()) {
-			this.server.getForumManager().postOnForum(iobj.ForoID, titulo, texto);
+			this.server.getForumManager().postOnForum(iobj.ForoID, title, body, getNick());
 		}
 	}
 

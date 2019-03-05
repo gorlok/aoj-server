@@ -18,7 +18,10 @@
 package org.ArgentumOnline.server.forum;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import com.google.gson.Gson;
 
 /**
  * @author gorlok
@@ -27,34 +30,45 @@ public class Forum {
 
     final static int MAX_FORUM_MESSAGES = 35;
 
-    private String foroId;
-    private List<ForumMessage> messages = new ArrayList<>();
+    /**
+     * Unique ID of this forum
+     */
+    private String forumId;
+    
+    /**
+     * New post are added at front.
+     * When forum is full, oldest post is discarded.
+     */
+    private List<ForumMessage> posts = new ArrayList<>();
 
     /** Creates a new instance of Forum */
-    public Forum(String foroId) {
-        this.foroId = foroId;
+    public Forum(String forumId) {
+        this.forumId = forumId;
     }
 
-    public String getForoId() {
-        return this.foroId;
+    public String getForumId() {
+        return this.forumId;
     }
 
-    public void addMessage(String titulo, String texto) {
-        if (this.messages.size() >= MAX_FORUM_MESSAGES) {
-            this.messages.remove(0);
+    public void addPost(String title, String text, String author) {
+        if (this.posts.size() >= MAX_FORUM_MESSAGES) {
+            this.posts.remove(this.posts.size()-1);
         }
-        this.messages.add(new ForumMessage(titulo, texto));
+        this.posts.add(0, new ForumMessage(title, text, author, new Date()));
     }
-
-    public int messageCount() {
-        return this.messages.size();
+    
+    public List<ForumMessage> getPosts() {
+		return posts;
+	}
+    
+    public String toJson() {
+    	Gson gson = new Gson();
+    	return gson.toJson(this);
     }
-
-    public ForumMessage getMessage(int index) {
-        if (index > 0 && index <= this.messages.size()) {
-            return this.messages.get(index - 1);
-        }
-        return null;
+    
+    public static Forum fromJson(String jsonText) {
+    	Gson gson = new Gson();
+    	return gson.fromJson(jsonText, Forum.class);
     }
 
 }

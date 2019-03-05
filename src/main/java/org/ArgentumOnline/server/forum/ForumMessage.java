@@ -17,25 +17,43 @@
  *******************************************************************************/
 package org.ArgentumOnline.server.forum;
 
+import java.util.Date;
+
 /**
  * @author gorlok
  */
 public class ForumMessage {
 
-	String title;
-	String body;
+	private String title;
+	
+	private String body;
+	
+	private String author;
+	
+	private Date createDate;
 
-	public ForumMessage(String title, String text) {
+	public ForumMessage(String title, String body, String author, Date createDate) {
+		super();
 		this.title = title;
-		this.body = text;
+		this.body = body;
+		this.author = author;
+		this.createDate = createDate;
 	}
 
 	public String getTitle() {
-		return this.title;
+		return title;
 	}
 
 	public String getBody() {
-		return this.body;
+		return body;
 	}
 
+	public String getAuthor() {
+		return author;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+	
 }
