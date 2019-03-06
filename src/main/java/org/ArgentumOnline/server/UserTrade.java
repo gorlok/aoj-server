@@ -282,8 +282,35 @@ public class UserTrade {
 			return;
 		}
 		if (objid > 0 && this.cant > 0) {
-			this.player.updateVentanaComercio(objid, cant);
+			player.updateVentanaComercio(objid, cant);
 		}
 	}
+
+	/*
+'envia a AQuien el objeto del otro
+Public Sub EnviarObjetoTransaccion(ByVal AQuien As Integer)
+Dim ObjInd As Integer
+Dim ObjCant As Long
+
+'[Alejo]: En esta funcion se centralizaba el problema
+'         de no poder comerciar con mas de 32k de oro.
+'         Ahora si funciona!!!
+
+ObjCant = UserList(UserList(AQuien).ComUsu.DestUsu).ComUsu.cant
+If UserList(UserList(AQuien).ComUsu.DestUsu).ComUsu.Objeto = FLAGORO Then
+    ObjInd = iORO
+Else
+    ObjInd = UserList(UserList(AQuien).ComUsu.DestUsu).Invent.Object(UserList(UserList(AQuien).ComUsu.DestUsu).ComUsu.Objeto).ObjIndex
+End If
+
+If ObjCant <= 0 Or ObjInd <= 0 Then Exit Sub
+
+If ObjInd > 0 And ObjCant > 0 Then
+    Call WriteChangeUserTradeSlot(AQuien, ObjInd, ObjCant)
+    Call FlushBuffer(AQuien)
+End If
+
+End Sub
+	 */
 	
 }

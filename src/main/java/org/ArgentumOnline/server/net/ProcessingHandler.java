@@ -247,7 +247,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case Train:
-			player.userEntrenaConMascota(((TrainRequest)packet).petIndex);
+			player.userTrainWithPet(((TrainRequest)packet).petIndex);
 			break;
 			
 		case Heal:
@@ -318,11 +318,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleCommerceSell(CommerceSellRequest packet, Player player) {
-		player.commerceSell(packet.slot, packet.amount);		
+		player.commerceSellToMerchant(packet.slot, packet.amount);		
 	}
 
 	private void handleCommerceBuy(CommerceBuyRequest packet, Player player) {
-		player.commerceBuy(packet.slot, packet.amount);
+		player.commerceBuyFromMerchant(packet.slot, packet.amount);
 	}
 
 	private void handleEquipItem(EquipItemRequest packet, Player player) {

@@ -33,7 +33,7 @@ public class ObjectInfo implements Constants {
 
     public short ObjIndex = 0;
     public String Nombre = "";
-    public ObjType objType; // Tipo enum que determina cuales son las caract del obj
+    public ObjType objType = ObjType.NONE; // Tipo enum que determina cuales son las caract del obj
     //public short SubTipo; // Tipo enum que determina cuales son las caract del obj
     public short GrhIndex; // Indice del grafico que representa el obj
     public short GrhSecundario;

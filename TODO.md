@@ -20,3 +20,9 @@
 * role masters
 * add SeguroResu
 * chatColor in user flags
+
+* En Comercio, REVISAR si se hace el chequeto de 
+	' Cantidad maxima de objetos por slot de inventario
+	Public Const MAX_INVENTORY_OBJS As Integer = 10000
+	
+	

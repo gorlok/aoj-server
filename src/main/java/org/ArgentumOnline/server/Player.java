@@ -951,7 +951,7 @@ public class Player extends AbstractCharacter {
 		carpinteroConstruirItem(objid);
 	}
 
-	public void userEntrenaConMascota(byte petIndex) {
+	public void userTrainWithPet(byte petIndex) {
 		// Comando ENTR
 		// Entrenar con una mascota.
 		if (!checkAlive()) {
@@ -980,7 +980,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void commerceBuy(byte slot, short amount) {
+	public void commerceBuyFromMerchant(byte slotNpc, short amount) {
 		// Comando COMP
 		// ¿Esta el user muerto? Si es asi no puede comerciar
 		if (!checkAlive()) {
@@ -1003,12 +1003,12 @@ public class Player extends AbstractCharacter {
 			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
-		if (npc.npcInv().isSlotValid(slot)) {
-			((NpcMerchant)npc).venderItem(this, slot, amount);
+		if (npc.npcInv().isSlotValid(slotNpc)) {
+			((NpcMerchant)npc).sellItemToUser(this, slotNpc, amount);
 		}
 	}
 
-	public void commerceSell(byte slot, short amount) {
+	public void commerceSellToMerchant(byte slot, short amount) {
 		// Comando VEND
 		// ¿Esta el user muerto? Si es asi no puede comerciar
 		if (!checkAlive()) {
@@ -1033,59 +1033,12 @@ public class Player extends AbstractCharacter {
 		}
 
 		if (npc.npcInv().isSlotValid(slot)) {
-			((NpcMerchant)npc).comprarItem(this, slot, amount);
-		}
-	}
-
-	public void userCompraObj(Npc npc, short slot, int cant) {
-		if (npc.npcInv().getObjeto(slot).cant <= 0) {
-			return;
-		}
-		short objid = npc.npcInv().getObjeto(slot).objid;
-		// ¿Ya tiene un objeto de este tipo?
-		int slot_inv = 0;
-		for (short i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i).objid == objid && (this.userInv.getObjeto(i).cant + cant) <= MAX_INVENTORY_OBJS) {
-				slot_inv = i;
-				break;
-			}
-		}
-		// Sino se fija por un slot vacio
-		if (slot_inv == 0) {
-			slot_inv = this.userInv.getSlotLibre();
-			if (slot_inv == 0) {
-				sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
-				return;
-			}
-		}
-		// Mete el obj en el slot
-		if (this.userInv.getObjeto(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
-			// Menor que MAX_INV_OBJS
-			this.userInv.getObjeto(slot_inv).objid = objid;
-			this.userInv.getObjeto(slot_inv).cant += cant;
-			ObjectInfo info = findObj(objid);
-			// Le sustraemos el valor en oro del obj comprado
-			double infla = (npc.inflation() * info.Valor) / 100.0;
-			double dto = flags().Descuento;
-			if (dto == 0) {
-				dto = 1; // evitamos dividir por 0!
-			}
-			double unidad = ((info.Valor + infla) / dto);
-			int monto = (int) (unidad * cant);
-			stats().addGold( -monto );
-			// tal vez suba el skill comerciar ;-)
-			subirSkill(Skill.SKILL_Comerciar);
-			if (info.objType == ObjType.Llaves) {
-				Log.logVentaCasa(this.userName + " compro " + info.Nombre);
-			}
-			((NpcMerchant)npc).quitarNpcInvItem(slot, cant);
-		} else {
-			sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
+			((NpcMerchant)npc).buyItemFromUser(this, slot, amount);
 		}
 	}
 
 	public void updateVentanaComercio(short objIndex, int amount) {
-		ObjectInfo objInfo = findObj(objIndex);
+		ObjectInfo objInfo = (objIndex == 0) ? ObjectInfo.EMPTY : findObj(objIndex);
 		sendPacket(new ChangeUserTradeSlotResponse(
 				objInfo.ObjIndex,
 				objInfo.Nombre,
@@ -5247,5 +5200,5 @@ public class Player extends AbstractCharacter {
 			sendTalk(Color.COLOR_BLANCO, "No entiendo de eso. Habla con alguien más.", getId());
 		}
 	}
-
+	
 }
