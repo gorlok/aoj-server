@@ -813,19 +813,18 @@ public class UserInventory extends Inventory implements Constants {
                 	
                 } else {
                 	// No es un arma de proyectiles
-                    if (player().flags().TargetObj == 0) {
-						return;
-					}
-                    ObjectInfo targeInfo = findObj(player().flags().TargetObj);
-                    // ¿El objetivo es leña?
-                    if (targeInfo.objType == ObjType.Leña) {
-                    	// ¿Estoy usando una daga?
-                        if (infoObjInv.ObjIndex == DAGA) {
-                            player().tratarDeHacerFogata();
-//                        } else {
-//                        	player().sendMessage("Si quieres hacer una fogata, necesitas usar una daga común.", FontType.FONTTYPE_INFO);
-                        }
-                    }
+                	if (player().flags().TargetObj != 0) {
+	                	ObjectInfo targetInfo = findObj(player().flags().TargetObj);
+	                	// ¿El objetivo es leña?
+	                	if (targetInfo != null && targetInfo.objType == ObjType.Leña) {
+	                    	// ¿Estoy usando una daga?
+	                        if (infoObjInv.ObjIndex == DAGA) {
+	                            player().tratarDeHacerFogata();
+	                        } else {
+	                        	player().sendMessage("Si quieres hacer una fogata, necesitas usar una daga común.", FontType.FONTTYPE_INFO);
+	                        }
+	                    }
+                	}
                 }
                 
                 // Start work with tools

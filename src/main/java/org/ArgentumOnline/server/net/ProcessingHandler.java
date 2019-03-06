@@ -28,6 +28,8 @@ import org.ArgentumOnline.server.protocol.CastSpellRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
 import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
 import org.ArgentumOnline.server.protocol.CommerceSellRequest;
+import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
+import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
@@ -282,6 +284,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case Rest:
 			player.doDescansar();
+			break;
+			
+		case CraftCarpenter:
+			player.doConstruyeCarpinteria(((CraftCarpenterRequest)packet).item);
+			break;
+			
+		case CraftBlacksmith:
+			player.doConstruyeHerreria(((CraftBlacksmithRequest)packet).item);
 			break;
 			
 		default:
