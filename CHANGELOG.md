@@ -7,6 +7,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 ### 2019-03-05
 - corregido el forum, con persistencia en json. Completo.
 - corregido que envíe el level-up al enviar skills, si corresponde. No se enviaba.
+- corregido crear fogatas y descansar.
 
 ### 2019-02-28
 - se corrigieron muchos comandos y más refactory.

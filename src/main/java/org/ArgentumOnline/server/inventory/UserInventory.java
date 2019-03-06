@@ -743,33 +743,33 @@ public class UserInventory extends Inventory implements Constants {
         if (slot < 1 || slot > this.objs.length) {
 			return;
 		}
-        InventoryObject obj = this.objs[slot-1];
-        if (obj.objid == 0) {
+        InventoryObject objInv = this.objs[slot-1];
+        if (objInv.objid == 0) {
 			return;
 		}
-        ObjectInfo info = findObj(obj.objid);
-        if (info.esNewbie() && !player().isNewbie()) {
+        ObjectInfo infoObjInv = findObj(objInv.objid);
+        if (infoObjInv.esNewbie() && !player().isNewbie()) {
             player().sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
         if (!player().counters().intervaloPermiteUsar()) {
             return;
         }
-        player().flags().TargetObjInvIndex = obj.objid;
+        player().flags().TargetObjInvIndex = objInv.objid;
         player().flags().TargetObjInvSlot = slot;
         
-        Map mapa = this.server.getMap(player().pos().map);
-        switch (info.objType) {
+        Map map = this.server.getMap(player().pos().map);
+        switch (infoObjInv.objType) {
             case UseOnce:
                 if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 // Usa el item
-                player().stats().aumentarHambre(info.MinHam);
+                player().stats().aumentarHambre(infoObjInv.MinHam);
                 player().flags().Hambre = false;
                 player().sendUpdateHungerAndThirst();
                 // Sonido
-                if (obj.objid == Manzana || obj.objid == ManzanaNewbie || obj.objid == ManzanaNewbie) {
+                if (objInv.objid == Manzana || objInv.objid == ManzanaNewbie || objInv.objid == ManzanaNewbie) {
                 	player().sendWave(SOUND_MORFAR_MANZANA);
                 } else {
                 	player().sendWave(SOUND_COMIDA);
@@ -781,9 +781,9 @@ public class UserInventory extends Inventory implements Constants {
                 if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                player().stats().addGold(obj.cant);
+                player().stats().addGold(objInv.cant);
                 player().sendUpdateUserStats();
-                quitarUserInvItem(slot, obj.cant);
+                quitarUserInvItem(slot, objInv.cant);
                 break;
             case Weapon:
                 if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
@@ -799,12 +799,12 @@ public class UserInventory extends Inventory implements Constants {
 					return;
                 }
                 
-                if (!obj.equipado) {
+                if (!objInv.equipado) {
                     player().sendMessage("Antes de usar la herramienta deberias equipartela.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 
-                if (info.esProyectil()) {
+                if (infoObjInv.esProyectil()) {
                 	if ( ! player().isInCombatMode()) {
                 		player().sendMessage("No estás en modo de combate, presiona la tecla \"C\" para pasar al modo combate.", FontType.FONTTYPE_INFO);
                 		return;
@@ -820,14 +820,16 @@ public class UserInventory extends Inventory implements Constants {
                     // ¿El objetivo es leña?
                     if (targeInfo.objType == ObjType.Leña) {
                     	// ¿Estoy usando una daga?
-                        if (info.ObjIndex == DAGA) {
+                        if (infoObjInv.ObjIndex == DAGA) {
                             player().tratarDeHacerFogata();
+//                        } else {
+//                        	player().sendMessage("Si quieres hacer una fogata, necesitas usar una daga común.", FontType.FONTTYPE_INFO);
                         }
                     }
                 }
                 
                 // Start work with tools
-                switch (info.ObjIndex) {
+                switch (infoObjInv.ObjIndex) {
                     case OBJ_INDEX_CAÑA:
                     case OBJ_INDEX_RED_PESCA:
                         player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Pesca.value()));
@@ -861,20 +863,20 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 player().flags().TomoPocion = true;
-                player().flags().TipoPocion = info.TipoPocion;
+                player().flags().TipoPocion = infoObjInv.TipoPocion;
                 
                 switch (player().flags().TipoPocion) {
                 	// TODO enum
                     case 1: // Modif la agilidad
-                        player().flags().DuracionEfecto = info.DuracionEfecto;
-                        player().stats().attr().modifyByEffect(Attribute.AGILIDAD, Util.Azar(info.MinModificador, info.MaxModificador));
+                        player().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        player().stats().attr().modifyByEffect(Attribute.AGILIDAD, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
-                        player().flags().DuracionEfecto = info.DuracionEfecto;
-                        player().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(info.MinModificador, info.MaxModificador));
+                        player().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        player().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
-                        player().stats().addMinHP(Util.Azar(info.MinModificador, info.MaxModificador));
+                        player().stats().addMinHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         player().sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
@@ -905,7 +907,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                player().stats().aumentarSed(info.MinSed);
+                player().stats().aumentarSed(infoObjInv.MinSed);
                 player().flags().Sed = false;
                 player().sendUpdateHungerAndThirst();
                 // Quitamos del inv el item
@@ -929,18 +931,18 @@ public class UserInventory extends Inventory implements Constants {
                         byte targetX = player().flags().TargetObjX;
                         byte targetY = player().flags().TargetObjY;
                         if (targetInfo.Llave > 0) {
-                            if (targetInfo.Clave == info.Clave) {
-                                mapa.toggleDoor(mapa.getObject(targetX, targetY));
-                                player().flags().TargetObj = mapa.getObject(targetX, targetY).obj_ind;
+                            if (targetInfo.Clave == infoObjInv.Clave) {
+                                map.toggleDoor(map.getObject(targetX, targetY));
+                                player().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
                                 player().sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
                             player().sendMessage("La llave no sirve.", FontType.FONTTYPE_INFO);
                             return;
                         }
-                        if (targetInfo.Clave == info.Clave) {
-                            mapa.toggleDoor(mapa.getObject(targetX, targetY));
-                            player().flags().TargetObj = mapa.getObject(targetX, targetY).obj_ind;
+                        if (targetInfo.Clave == infoObjInv.Clave) {
+                            map.toggleDoor(map.getObject(targetX, targetY));
+                            player().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
                             player().sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 
@@ -957,13 +959,13 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 Pos lugar = new Pos(player().flags().TargetX, player().flags().TargetY);
-                if (!lugar.isValid() || !mapa.isWater(player().flags().TargetX, player().flags().TargetY)) {
+                if (!lugar.isValid() || !map.isWater(player().flags().TargetX, player().flags().TargetY)) {
                     player().sendMessage("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 quitarUserInvItem(slot, 1);
-                if (agregarItem(info.IndexAbierta, 1) == 0) {
-                    mapa.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(info.IndexAbierta, 1));
+                if (agregarItem(infoObjInv.IndexAbierta, 1) == 0) {
+                    map.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexAbierta, 1));
                 }
                 break;
                 
@@ -972,12 +974,12 @@ public class UserInventory extends Inventory implements Constants {
                     player().sendMessage("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
                 }
-                player().stats().aumentarSed(info.MinSed);
+                player().stats().aumentarSed(infoObjInv.MinSed);
                 player().flags().Sed = false;
                 player().sendUpdateHungerAndThirst();
                 quitarUserInvItem(slot, 1);
-                if (agregarItem(info.IndexCerrada, 1) == 0) {
-                    mapa.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(info.IndexCerrada, 1));
+                if (agregarItem(infoObjInv.IndexCerrada, 1) == 0) {
+                    map.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexCerrada, 1));
                 }
                 break;
                 
@@ -1006,12 +1008,12 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 
                 // ¿Es el Cuerno Real?
-                if (info.esReal()) {
-                	if (player().userFaction().faccionPuedeUsarItem(obj.objid)) {
-                		if (mapa.isSafeMap()) {
+                if (infoObjInv.esReal()) {
+                	if (player().userFaction().faccionPuedeUsarItem(objInv.objid)) {
+                		if (map.isSafeMap()) {
                 			player().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
                 		}
-                		player().sendWave(info.Snd1);
+                		player().sendWave(infoObjInv.Snd1);
                 	} else {
                 		player().sendMessage("Solo Miembros de la Armada Real pueden usar este cuerno.", FontType.FONTTYPE_INFO);
                 	}
@@ -1019,12 +1021,12 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 
                 // ¿Es el Cuerno Real?
-                if (info.esCaos()) {
-                	if (player().userFaction().faccionPuedeUsarItem(obj.objid)) {
-                		if (mapa.isSafeMap()) {
+                if (infoObjInv.esCaos()) {
+                	if (player().userFaction().faccionPuedeUsarItem(objInv.objid)) {
+                		if (map.isSafeMap()) {
                 			player().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
                 		}
-                		player().sendWave(info.Snd1);
+                		player().sendWave(infoObjInv.Snd1);
                 	} else {
                 		player().sendMessage("Solo Miembros de la Legión Oscura pueden usar este cuerno.", FontType.FONTTYPE_INFO);
                 	}
@@ -1032,7 +1034,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 
                 // Es Laud o Tambor o Flauta
-                player().sendWave(info.Snd1);
+                player().sendWave(infoObjInv.Snd1);
                 break;
                 
             case Barcos:
@@ -1048,10 +1050,10 @@ public class UserInventory extends Inventory implements Constants {
                 short m = player().pos().map;
                 short x = player().pos().x;
                 short y = player().pos().y;
-                if (((mapa.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true) 
-                		|| mapa.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) 
-                		|| mapa.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) 
-                		|| mapa.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true)) 
+                if (((map.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true) 
+                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) 
+                		|| map.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) 
+                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true)) 
                 		&& !player().flags().Navegando) 
                 	|| player().flags().Navegando) {
 		                    this.barcoSlot = slot;
@@ -1062,7 +1064,7 @@ public class UserInventory extends Inventory implements Constants {
                 break;
                 
             default:
-                log.fatal("No se como usar este tipo de objeto: " + info.objType);
+                log.fatal("No se como usar este tipo de objeto: " + infoObjInv.objType);
         }
     }
     

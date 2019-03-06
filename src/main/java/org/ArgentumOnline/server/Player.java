@@ -4705,7 +4705,7 @@ public class Player extends AbstractCharacter {
 
 						// termina de descansar automaticamente
 						if (stats().MaxHP == stats().MinHP && stats().maxStamina == stats().stamina) {
-							sendPacket(new MeditateToggleResponse());
+							sendPacket(new RestOKResponse());
 							sendMessage("Has terminado de descansar.", FontType.FONTTYPE_INFO);
 							flags().Descansar = false;
 						}

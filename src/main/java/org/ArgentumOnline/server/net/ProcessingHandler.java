@@ -280,6 +280,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.skills().subirSkills(((ModifySkillsRequest)packet).skills);
 			break;
 			
+		case Rest:
+			player.doDescansar();
+			break;
+			
 		default:
 			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 		}
