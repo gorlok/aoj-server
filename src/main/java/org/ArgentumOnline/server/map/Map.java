@@ -247,7 +247,8 @@ public class Map implements Constants {
         String section = "Mapa" + this.mapNumber;
         this.name = ini.getString(section, "Name");
         this.music = ini.getString(section, "MusicNum");
-        this.pk = (ini.getInt(section, "PK") == 1);
+        // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
+        this.pk = (ini.getInt(section, "PK") == 0); 
         this.restricted = ini.getString(section, "Restringir");
         this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
@@ -1236,7 +1237,8 @@ public class Map implements Constants {
             ini.setValue(section, "Zona", ZONAS[this.zone]);
             ini.setValue(section, "Restringir", this.restricted);
             ini.setValue(section, "BackUp", this.backup);
-            ini.setValue(section, "PK", this.pk);
+            // PK está invertido
+            ini.setValue(section, "PK", !this.pk);
             ini.store(datFileName);
         } catch (Exception e) {
             log.fatal("ERROR GUARDANDO MAPA " + this.mapNumber, e);

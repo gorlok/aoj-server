@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.ArgentumOnline.server.api.ManagerServer;
 import org.ArgentumOnline.server.forum.ForumManager;
 import org.ArgentumOnline.server.gm.Admins;
 import org.ArgentumOnline.server.gm.Motd;
@@ -105,9 +106,17 @@ public class GameServer implements Constants {
     private Feedback feedback = new Feedback();// FIXME
 
     private NettyServer ns;
+    private ManagerServer managerServer;
 
     private GameServer() {
+    	// start API management server
+    	this.managerServer = new ManagerServer();
+    	
+    	// start network game server
     	this.ns = new NettyServer(Constants.SERVER_PORT);
+    	
+    	
+    	// initialize game server
     	this.guildManager = new GuildManager(this);
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
@@ -115,7 +124,7 @@ public class GameServer implements Constants {
     	this.admins = new Admins(this);
     	this.objectInfoStorage = new ObjectInfoStorage();
     	this.gamblerStats = new GamblerStats();
-    }
+    }    	
 
     private static GameServer instance = null;
 
@@ -266,6 +275,7 @@ public class GameServer implements Constants {
         this.running = false;
         this.ns.shutdown();
         System.out.println("=== Goodbye. Server closed. ===");
+        System.exit(0);
     }
 
     public List<String> getUsuariosConIP(String ip) {
@@ -1048,6 +1058,7 @@ public class GameServer implements Constants {
 		System.out.println("Memoria: " + memoryStatus());
 	}
 
+ 
 	private static boolean loadBackup = false;
     public static void main(String[] args) {
         loadBackup = !(args.length > 0 && args[0].equalsIgnoreCase("reset"));

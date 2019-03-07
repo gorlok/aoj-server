@@ -25,4 +25,9 @@
 	' Cantidad maxima de objetos por slot de inventario
 	Public Const MAX_INVENTORY_OBJS As Integer = 10000
 	
-	
+* REHACER TODO EL COMERCIO
+
+* ACCOUNTS / DB / security
+
+* jugadores desconectados, quedan logueados
+

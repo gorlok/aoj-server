@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-06
+- corregido comercio con npc, pero debería reimplementarse completo
+- se crea una API REST para la administración del servidor, usando Spark.
 
 ### 2019-03-05
 - corregido el forum, con persistencia en json. Completo.
