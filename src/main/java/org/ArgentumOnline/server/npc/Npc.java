@@ -39,6 +39,7 @@ import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_PUEDE_ATACAR;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN_ORIG_POS;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_TIERRA_INVALIDA;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INMOVILIZADO;
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
 import java.util.List;
@@ -47,9 +48,7 @@ import org.ArgentumOnline.server.AbstractCharacter;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.Spell;
 import org.ArgentumOnline.server.aStar.Node;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
@@ -61,7 +60,10 @@ import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
 import org.ArgentumOnline.server.protocol.NPCSwingResponse;
+import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.Spell;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -300,7 +302,7 @@ End Enum
     }
 
     public boolean isNpcGuard() {
-    	return this.npcType == NpcType.NPCTYPE_GUARDIAS;
+    	return this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL;
     }
 
     public boolean isGambler() {
@@ -512,6 +514,14 @@ End Enum
         this.counters.Paralisis = 0;
     }
 
+    public void inmovilizar() {
+        this.flags.set(FLAG_INMOVILIZADO, true);
+    }
+
+    public void desinmovilizar() {
+        this.flags.set(FLAG_INMOVILIZADO, false);
+    }
+
     @Override
 	public String toString() {
         return this.name + " (id=" + this.getId() + ")";
@@ -585,6 +595,10 @@ End Enum
 
     public boolean estaParalizado() {
         return this.flags.get(FLAG_PARALIZADO);
+    }
+
+    public boolean estaInmovilizado() {
+        return this.flags.get(FLAG_INMOVILIZADO);
     }
 
     public boolean comercia() {
@@ -1341,7 +1355,7 @@ End Enum
         if (this.petUserOwner == null) {
             // Busca a alguien para atacar
             // ¿Es un guardia?
-            if (this.npcType == NpcType.NPCTYPE_GUARDIAS || this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
+            if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL || this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
                 guardiasAI();
             } else if (esHostil() && this.stats.Alineacion != 0) {
                 hostilMalvadoAI();
@@ -1356,7 +1370,7 @@ End Enum
         // <<<<<<<<<<< Movimiento >>>>>>>>>>>>>>>>
         switch (this.movement) {
             case MOV_MUEVE_AL_AZAR:
-                if (this.npcType == NpcType.NPCTYPE_GUARDIAS) {
+                if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
                     if (Util.Azar(1, 12) == 3) {
                         moverAlAzar();
                     }
@@ -1441,19 +1455,21 @@ End Enum
 		}
         this.flags.set(FLAG_PUEDE_ATACAR, false);
         int daño = 0;
-        Spell hechizo = this.server.getHechizo(spell);
+        
+        Spell hechizo = this.server.getSpell(spell);
         if (hechizo.SubeHP == 1) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             player.sendWave(hechizo.WAV);
             player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
-            player.stats().addMinHP(daño);
+            player.stats().addHP(daño);
             player.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             player.sendUpdateUserStats();
+            
         } else if (hechizo.SubeHP == 2) {
             daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
             player.sendWave(hechizo.WAV);
             player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
-            player.stats().quitarHP(daño);
+            player.stats().removeHP(daño);
             player.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             player.sendUpdateUserStats();
             // Muere
@@ -1466,8 +1482,37 @@ End Enum
                 }
             }
         }
-        if (hechizo.isParaliza()) {
-            player.paralizar(hechizo);
+        
+        if (hechizo.isParaliza() || hechizo.isInmoviliza()) {
+    		if (!player.flags().Paralizado) {
+    			player.sendWave(hechizo.WAV);
+    			player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
+    			
+    			if (hechizo.isInmoviliza()) {
+    				player.flags().Inmovilizado = true;
+    			}
+    			
+    			player.flags().Paralizado = true;
+    			player.counters().Paralisis = IntervaloParalizado;
+    			player.sendPacket(new ParalizeOKResponse());
+    			/*
+        If UserList(UserIndex).Invent.AnilloEqpObjIndex = SUPERANILLO Then
+            Call WriteConsoleMsg(UserIndex, " Tu anillo rechaza los efectos del hechizo.", FontTypeNames.FONTTYPE_FIGHT)
+            Exit Sub
+        End If
+        
+        If Hechizos(Spell).Inmoviliza = 1 Then
+            UserList(UserIndex).flags.Inmovilizado = 1
+        End If
+          
+        UserList(UserIndex).flags.Paralizado = 1
+        UserList(UserIndex).Counters.Paralisis = IntervaloParalizado
+          
+        Call WriteParalizeOK(UserIndex)
+
+    			 */
+    		}
+    		
         }
     }
 
@@ -1518,7 +1563,7 @@ End Enum
 
     private void npcDañoNpc(Npc victima) {
         int daño = Util.Azar(this.stats.MinHIT, this.stats.MaxHIT);
-        victima.stats.quitarHP(daño);
+        victima.stats.removeHP(daño);
         if (victima.stats.MinHP < 1) {
             this.movement = this.oldMovement;
             if (this.attackedBy.length() > 0) {
@@ -1653,7 +1698,7 @@ End Enum
         // General
         String section = "NPC" + this.npcNumber;
         ini.setValue(section, "NpcType", this.npcType.value());
-        if (this.npcType == NpcType.NPCTYPE_GUARDIAS) {
+        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
             ini.setValue(section, "GuardiaPersigue", this.guardiaPersigue);
         }
         ini.setValue(section, "Name", this.name);
@@ -1704,7 +1749,7 @@ End Enum
 
         this.npcType = NpcType.value(ini.getShort(section, "NpcType"));
 
-        if (this.npcType == NpcType.NPCTYPE_GUARDIAS) {
+        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
             this.guardiaPersigue = ini.getShort(section, "GuardiaPersigue");
         }
         this.isQuest = (ini.getShort(section, "DeQuest") == 1);

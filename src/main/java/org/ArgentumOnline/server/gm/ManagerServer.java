@@ -30,11 +30,8 @@ import java.util.stream.Collectors;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.UserFaction;
-import org.ArgentumOnline.server.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
@@ -44,13 +41,16 @@ import org.ArgentumOnline.server.protocol.ShowMessageBoxResponse;
 import org.ArgentumOnline.server.protocol.ShowSOSFormResponse;
 import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.protocol.UserNameListResponse;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.UserFaction;
+import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Admins {
+public class ManagerServer {
 	private static Logger log = LogManager.getLogger();
 
     private List<String> gods = new ArrayList<>();
@@ -69,7 +69,7 @@ public class Admins {
 
     GameServer server;
 
-    public Admins(GameServer server) {
+    public ManagerServer(GameServer server) {
     	this.server = server;
 	}
 
@@ -183,7 +183,7 @@ public class Admins {
 
             UserFaction.loadFactionArmors(ini);
 
-			log.warn("Admins recargados");
+			log.warn("Admins loaded");
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -500,7 +500,7 @@ public class Admins {
 		this.server.shutdown();
 	}
 
-	public void doLluvia() {
+	public void toggleRain() {
 		// Comando /LLUVIA
 		if (this.server.isRaining()) {
 			this.server.rainStop();

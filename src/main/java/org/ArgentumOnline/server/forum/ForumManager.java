@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.protocol.AddForumMsgResponse;
 import org.ArgentumOnline.server.protocol.ShowForumFormResponse;
+import org.ArgentumOnline.server.user.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -20,7 +20,7 @@ package org.ArgentumOnline.server.npc;
 import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

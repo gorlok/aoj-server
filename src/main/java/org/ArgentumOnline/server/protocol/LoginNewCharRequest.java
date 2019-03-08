@@ -19,6 +19,7 @@ package org.ArgentumOnline.server.protocol;
 
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.net.*;
+
 import io.netty.buffer.ByteBuf;
 
 public class LoginNewCharRequest extends ClientPacket {

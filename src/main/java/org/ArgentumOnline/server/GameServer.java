@@ -29,9 +29,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.ArgentumOnline.server.api.ManagerServer;
+import org.ArgentumOnline.server.api.ManagerApi;
 import org.ArgentumOnline.server.forum.ForumManager;
-import org.ArgentumOnline.server.gm.Admins;
+import org.ArgentumOnline.server.gm.ManagerServer;
 import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
@@ -43,6 +43,8 @@ import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.quest.Quest;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.Spell;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -58,8 +60,6 @@ import io.netty.channel.Channel;
  */
 public class GameServer implements Constants {
 	private static Logger log = LogManager.getLogger();
-
-	public ManageServer manager = new ManageServer(this);
 
     private boolean useUPnP = false; // FIXME configure this
 
@@ -99,18 +99,17 @@ public class GameServer implements Constants {
     private Motd motd;
     private ForumManager forumManager;
     private NpcLoader npcLoader;
-    private Admins admins;
+    private ManagerServer manager;
     private ObjectInfoStorage objectInfoStorage;
     private GamblerStats gamblerStats;
 
     private Feedback feedback = new Feedback();// FIXME
 
     private NettyServer ns;
-    private ManagerServer managerServer;
 
     private GameServer() {
     	// start API management server
-    	this.managerServer = new ManagerServer();
+    	new ManagerApi(this);
     	
     	// start network game server
     	this.ns = new NettyServer(Constants.SERVER_PORT);
@@ -121,7 +120,7 @@ public class GameServer implements Constants {
     	this.motd = new Motd();
     	this.forumManager = new ForumManager();
     	this.npcLoader = new NpcLoader(this);
-    	this.admins = new Admins(this);
+    	this.manager = new ManagerServer(this);
     	this.objectInfoStorage = new ObjectInfoStorage();
     	this.gamblerStats = new GamblerStats();
     }    	
@@ -134,7 +133,7 @@ public class GameServer implements Constants {
 		}
         return instance;
     }
-
+    
     public GamblerStats getGamblerStats() {
 		return this.gamblerStats;
 	}
@@ -143,8 +142,8 @@ public class GameServer implements Constants {
 		return this.objectInfoStorage;
 	}
 
-    public Admins getAdmins() {
-		return this.admins;
+    public ManagerServer manager() {
+		return this.manager;
 	}
 
     public Motd getMotd() {
@@ -185,13 +184,13 @@ public class GameServer implements Constants {
 
 		return new StringBuilder()
 			.append(dias)
-			.append(" días, ")
+			.append("d ")
 			.append(horas)
-			.append(" horas, ")
+			.append("h ")
 			.append(mins)
-			.append(" mins, ")
+			.append("m ")
 			.append(segs)
-			.append(" segs.").toString();
+			.append("s").toString();
 	}
 
     public short nextId() {
@@ -319,7 +318,6 @@ public class GameServer implements Constants {
             long lastAutoSaveTimer = this.startTime;
             long lastPasarSegundoTimer = this.startTime;
             this.running = true;
-            this.manager.start();
 
             int fps = 0;
             long worstTime = 0;
@@ -409,9 +407,9 @@ public class GameServer implements Constants {
     }
 
     private static String memoryStatus() {
-    	return  "total=" + (int) (Runtime.getRuntime().totalMemory() / 1024) +
-    			" KB free=" + (int) (Runtime.getRuntime().freeMemory() / 1024) +
-				" KB";
+    	return  "total " + (int) (Runtime.getRuntime().totalMemory() / 1024) +
+    			"KB free " + (int) (Runtime.getRuntime().freeMemory() / 1024) +
+				"KB";
     }
 
     private void loadMaps(boolean loadBackup) {
@@ -475,9 +473,9 @@ public class GameServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
-        this.admins.loadAdminsSpawnableCreatures();
-        this.admins.loadInvalidNamesList();
-        this.admins.loadAdmins();
+        this.manager.loadAdminsSpawnableCreatures();
+        this.manager.loadInvalidNamesList();
+        this.manager.loadAdmins();
         this.motd.loadMotd();
         log.trace("loadAllData ended");
     }
@@ -496,7 +494,7 @@ public class GameServer implements Constants {
 
     public Player findPlayer(Channel channel) {
     	return this.players.values().stream()
-		    		.filter(p -> p.channel == channel)
+		    		.filter(p -> p.getChannel() == channel)
 		    		.findFirst()
 		    		.get();
     }
@@ -513,7 +511,7 @@ public class GameServer implements Constants {
         return this.players.get(id);
     }
 
-    public Spell getHechizo(int spell) {
+    public Spell getSpell(int spell) {
         return this.spells.get(spell - 1);
     }
 
@@ -575,14 +573,14 @@ public class GameServer implements Constants {
     private void pasarSegundo() {
         var paraSalir = new LinkedList<Player>();
         for (Player cli: players()) {
-            if (cli.counters.Saliendo) {
-                cli.counters.SalirCounter--;
-                if (cli.counters.SalirCounter <= 0) {
+            if (cli.counters().Saliendo) {
+                cli.counters().SalirCounter--;
+                if (cli.counters().SalirCounter <= 0) {
                     paraSalir.add(cli);
                 } else {
-                	switch (cli.counters.SalirCounter) {
+                	switch (cli.counters().SalirCounter) {
                 		case 10:
-                			cli.sendMessage("En " + cli.counters.SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
+                			cli.sendMessage("En " + cli.counters().SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
                 			break;
                 		case 3:
                 			cli.sendMessage("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
@@ -599,16 +597,11 @@ public class GameServer implements Constants {
     public void guardarUsuarios() {
         this.doingBackup = true;
         try {
-        	// FIXME
-            //enviarATodos(MSG_BKW);
-            //enviarATodos(MSG_TALK, "Servidor> Grabando Personajes" + FontType.SERVER);
             for (Player cli: players()) {
                 if (cli.isLogged()) {
-                    cli.userStorage.saveUserToStorage();
+                    cli.saveUser();
                 }
             }
-           // enviarATodos(MSG_TALK, "Servidor> Personajes Grabados" + FontType.SERVER);
-          //  enviarATodos(MSG_BKW);
         } finally {
             this.doingBackup = false;
         }
@@ -747,19 +740,19 @@ public class GameServer implements Constants {
             if (cli != null && cli.getId() > 0 && cli.isLogged()) {
                 Map mapa = getMap(cli.pos().map);
                 if (mapa.isAntiPiquete(cli.pos().x, cli.pos().y)) {
-                    cli.counters.PiqueteC++;
+                    cli.counters().PiqueteC++;
                     cli.sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
-                    if (cli.counters.PiqueteC > 23) {
-                        cli.counters.PiqueteC = 0;
+                    if (cli.counters().PiqueteC > 23) {
+                        cli.counters().PiqueteC = 0;
                         cli.sendToJail(3, null);
                     }
                 } else {
-                    if (cli.counters.PiqueteC > 0) {
-						cli.counters.PiqueteC = 0;
+                    if (cli.counters().PiqueteC > 0) {
+						cli.counters().PiqueteC = 0;
 					}
                 }
                 if (this.segundos >= 18) {
-                    cli.counters.Pasos = 0;
+                    cli.counters().Pasos = 0;
                 }
             }
         }
@@ -771,10 +764,10 @@ public class GameServer implements Constants {
     public void purgePenalties() {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0 && cli.flags().UserLogged) {
-                if (cli.counters.Pena > 0) {
-                    cli.counters.Pena--;
-                    if (cli.counters.Pena < 1) {
-                        cli.counters.Pena = 0;
+                if (cli.counters().Pena > 0) {
+                    cli.counters().Pena--;
+                    if (cli.counters().Pena < 1) {
+                        cli.counters().Pena = 0;
                         cli.warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
                         cli.sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
                     }
@@ -786,8 +779,8 @@ public class GameServer implements Constants {
     private void checkIdleUser() {
     	for (Player player: players()) {
             if (player != null && player.getId() > 0 && player.isLogged()) {
-                player.counters.IdleCount++;
-                if (player.counters.IdleCount >= IdleLimit) {
+                player.counters().IdleCount++;
+                if (player.counters().IdleCount >= IdleLimit) {
                     player.sendError("Demasiado tiempo inactivo. Has sido desconectado.");
                     player.quitGame();
                 }
@@ -1052,10 +1045,18 @@ public class GameServer implements Constants {
         }
     }
 
-	public void showStatus() {
-		System.out.println("Server uptime: " + calculateUptime());
-		System.out.println("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
-		System.out.println("Memoria: " + memoryStatus());
+	public ServerStatus serverStatus() {
+		var status = new ServerStatus();
+		status.uptime = calculateUptime();
+		status.usersOnline = getUsuariosConectados().size();
+		status.memoryStatus = memoryStatus();
+		return status;
+	}
+	
+	class ServerStatus {
+		String uptime;
+		int usersOnline;
+		String memoryStatus;
 	}
 
  

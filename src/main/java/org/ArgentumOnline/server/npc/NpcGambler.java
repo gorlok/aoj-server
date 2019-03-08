@@ -21,7 +21,7 @@ import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 
 import org.ArgentumOnline.server.GamblerStats;
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 

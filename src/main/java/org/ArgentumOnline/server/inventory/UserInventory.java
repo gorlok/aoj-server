@@ -24,11 +24,8 @@ import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.UserAttributes.Attribute;
-import org.ArgentumOnline.server.UserGender;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.net.BlacksmithArmors_DATA;
@@ -39,6 +36,9 @@ import org.ArgentumOnline.server.protocol.BlacksmithWeaponsResponse;
 import org.ArgentumOnline.server.protocol.CarpenterObjectsResponse;
 import org.ArgentumOnline.server.protocol.ShowCarpenterFormResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.UserGender;
+import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -875,7 +875,7 @@ public class UserInventory extends Inventory implements Constants {
                         player().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
-                        player().stats().addMinHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        player().stats().addHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         player().sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA

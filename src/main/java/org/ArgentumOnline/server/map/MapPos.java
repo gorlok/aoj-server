@@ -27,10 +27,11 @@ public class MapPos extends Pos {
 	
 	public enum Heading {
 	    NONE,
-	    NORTH,
-	    EAST,
-	    SOUTH,
-	    WEST;
+	    
+	    /*1*/ NORTH,
+	    /*2*/ EAST,
+	    /*3*/ SOUTH,
+	    /*4*/ WEST;
 	    
 		// cache values() because performance
 		private static final Heading[] values = Heading.values();

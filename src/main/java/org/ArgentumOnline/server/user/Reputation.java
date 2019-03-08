@@ -15,7 +15,10 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
+
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.protocol.FameResponse;
 
 /**
  * @author gorlok
@@ -135,6 +138,17 @@ public class Reputation {
 				this.asesinoRep = 0;
 			}
         }
+    }
+    
+    public FameResponse createFameResponse() {
+    	return new FameResponse(
+				(int) this.asesinoRep, 
+				(int) this.bandidoRep,
+				(int) this.burguesRep, 
+				(int) this.ladronRep, 
+				(int) this.nobleRep,
+				(int) this.plebeRep, 
+				(int) this.getPromedio());    	
     }
 }
 

@@ -15,8 +15,9 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
+import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.util.*;
 
 /**
@@ -33,9 +34,26 @@ public class Spell implements Constants {
     public String TargetMsg = "";
     public String PropioMsg = "";
     
-    char  Resis = 0;
+    boolean Invisibilidad  = false;
+    boolean inmoviliza     = false;
+    boolean paraliza       = false;
+    boolean RemoverParalisis = false;
+    boolean CuraVeneno     = false;
+    boolean Envenena       = false;
+    boolean Maldicion      = false;
+    boolean RemoverMaldicion = false;
+    boolean Bendicion      = false;
+    boolean Estupidez      = false;
+    boolean Ceguera        = false;
+    boolean Revivir        = false;
+    boolean Morph          = false;
+    boolean RemoverEstupidez = false;
+    boolean Mimetiza 		= false;
+    boolean RemueveInvisibilidadParcial = false;    
     
-    public char  Tipo  = 0;
+    /* Tipo */
+    SpellAction spellAction;
+    
     public short WAV   = 0;
     public short FXgrh = 0;
     public char  loops = 0;
@@ -72,28 +90,19 @@ public class Spell implements Constants {
     short MinCarisma  = 0;
     short MaxCarisma  = 0;
     
-    public char Invisibilidad  = 0;
-    boolean paraliza       = false;
-    char RemoverParalisis = 0;
-    char CuraVeneno     = 0;
-    char Envenena       = 0;
-    char Maldicion      = 0;
-    char RemoverMaldicion = 0;
-    char Bendicion      = 0;
-    char Estupidez      = 0;
-    char Ceguera        = 0;
-    char Revivir        = 0;
-    char Morph          = 0;    
     
     char  Invoca        = 0;
     int   NumNpc        = 0;
-    public short Cant   = 0;    
-    char  Materializa   = 0;
-    char  ItemIndex     = 0;    
-    short MinSkill      = 0;    
-    public short ManaRequerido = 0;    
-    char  Target        = 0;
+    public short Cant   = 0;
+    
+    public short MinSkill      = 0;    
+    public short ManaRequerido = 0;
     public short StaRequerida  = 0;
+    
+    SpellTarget  Target;
+    
+    short NeedStaff; // FIXME
+    boolean StaffAffected; // FIXME 
     
     /** Creates a new instance of Hechizo */
     public Spell(int numero) {
@@ -112,6 +121,10 @@ public class Spell implements Constants {
 		return paraliza;
 	}
     
+    public boolean isInmoviliza() {
+		return inmoviliza;
+	}
+    
     public void load(IniFile ini) {
         String section = "HECHIZO" + this.Numero;
         this.Nombre          = ini.getString(section, "Nombre");
@@ -121,8 +134,8 @@ public class Spell implements Constants {
         this.TargetMsg       = ini.getString(section, "TargetMsg");
         this.PropioMsg       = ini.getString(section, "PropioMsg");
         
-        this.Resis   = (char) ini.getShort(section, "Resis");
-        this.Tipo    = (char) ini.getShort(section, "Tipo");
+        this.spellAction    = SpellAction.value(ini.getShort(section, "Tipo"));
+        
         this.WAV     = ini.getShort(section, "WAV");
         this.FXgrh   = ini.getShort(section, "FXgrh");
         this.loops   = (char) ini.getShort(section, "loops");
@@ -137,7 +150,6 @@ public class Spell implements Constants {
         
         this.SubeSta  = (char) ini.getShort(section, "SubeSta");
         this.MinSta   = ini.getShort(section, "MinSta");
-        
         this.MaxSta   = ini.getShort(section, "MaxSta");
         
         this.SubeHam  = (char) ini.getShort(section, "SubeHam");
@@ -160,30 +172,34 @@ public class Spell implements Constants {
         this.MinCarisma  = ini.getShort(section, "MinCarisma");
         this.MaxCarisma  = ini.getShort(section, "MaxCarisma");
         
-        this.Invisibilidad   = (char) ini.getShort(section, "Invisibilidad");
+        this.Invisibilidad   = ini.getShort(section, "Invisibilidad") == 1;
+        this.RemueveInvisibilidadParcial   = ini.getShort(section, "RemueveInvisibilidadParcial") == 1;
+		this.inmoviliza      = ini.getShort(section, "Inmoviliza") == 1;
         this.paraliza        = ini.getShort(section, "Paraliza") == 1;
-        this.RemoverParalisis = (char) ini.getShort(section, "RemoverParalisis");
-        this.CuraVeneno      = (char) ini.getShort(section, "CuraVeneno");
-        this.Envenena        = (char) ini.getShort(section, "Envenena");
-        this.Maldicion       = (char) ini.getShort(section, "Maldicion");
-        this.RemoverMaldicion = (char) ini.getShort(section, "RemoverMaldicion");
-        this.Bendicion       = (char) ini.getShort(section, "Bendicion");
-        this.Estupidez       = (char) ini.getShort(section, "Estupidez");
-        this.Ceguera         = (char) ini.getShort(section, "Ceguera");
-        this.Revivir         = (char) ini.getShort(section, "Revivir");
-        this.Morph           = (char) ini.getShort(section, "Morph");
-        
+        this.RemoverParalisis= ini.getShort(section, "RemoverParalisis") == 1;
+        this.Envenena        = ini.getShort(section, "Envenena") == 1;
+        this.CuraVeneno      = ini.getShort(section, "CuraVeneno") == 1;
+        this.Maldicion       = ini.getShort(section, "Maldicion") == 1;
+        this.RemoverMaldicion= ini.getShort(section, "RemoverMaldicion") == 1;
+        this.Bendicion       = ini.getShort(section, "Bendicion") == 1;
+        this.Estupidez       = ini.getShort(section, "Estupidez") == 1;
+        this.RemoverEstupidez = ini.getShort(section, "RemoverEstupidez") == 1;
+        this.Ceguera         = ini.getShort(section, "Ceguera") == 1;
+        this.Revivir         = ini.getShort(section, "Revivir") == 1;
+        this.Morph           = ini.getShort(section, "Morph") == 1;
+        this.Mimetiza        = ini.getShort(section, "Mimetiza") == 1;
+        		
         this.Invoca  = (char) ini.getShort(section, "Invoca");
         this.NumNpc  = ini.getShort(section, "NumNpc");
         this.Cant    = ini.getShort(section, "Cant");
-        
-        this.Materializa = (char) ini.getShort(section, "Materializa");
-        this.ItemIndex   = (char) ini.getShort(section, "ItemIndex");
         
         this.MinSkill       = ini.getShort(section, "MinSkill");
         this.ManaRequerido  = ini.getShort(section, "ManaRequerido");
         this.StaRequerida   = ini.getShort(section, "StaRequerido");
         
-        this.Target  = (char) ini.getShort(section, "Target");
+        this.Target  = SpellTarget.value(ini.getShort(section, "Target"));
+        
+        this.NeedStaff = ini.getShort(section, "NeedStaff");
+	    this.StaffAffected = ini.getShort(section, "StaffAffected") == 1;        
     }
 }

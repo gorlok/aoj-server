@@ -44,8 +44,9 @@ public class NpcFlags {
 	public final static int FLAG_BENDICION = 22;
 	public final static int FLAG_RESPAWN = 23;
 	public final static int FLAG_LANZA_SPELLS = 24;
+	public final static int FLAG_INMOVILIZADO = 25;
 	
-	public final static int MAX_FLAGS = 25;
+	public final static int MAX_FLAGS = 26;
 	
 	private boolean[] flags = new boolean[MAX_FLAGS];
 	

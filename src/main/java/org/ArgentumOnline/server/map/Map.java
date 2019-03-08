@@ -33,7 +33,6 @@ import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
@@ -50,6 +49,7 @@ import org.ArgentumOnline.server.protocol.ObjectDeleteResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
 import org.ArgentumOnline.server.protocol.ShowSignalResponse;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.BytesReader;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -82,8 +82,11 @@ public class Map implements Constants {
     String  music = "";
     int     numUsers = 0; // FIXME se usa?
     int     mapVersion = 0; // FIXME se usa?
-    short   terrain = TERRENO_BOSQUE;
-    short   zone = ZONA_CAMPO;
+    
+    Terrain terrain = Terrain.FOREST;
+
+    Zone zone = Zone.COUNTRY;
+    
     String  restricted = ""; // Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
     
     /** player killing enabled */
@@ -131,7 +134,7 @@ public class Map implements Constants {
 		return version;
 	}
     
-    public short getZone() {
+    public Zone getZone() {
         return this.zone;
     }
     
@@ -139,7 +142,7 @@ public class Map implements Constants {
         return this.music;
     }
     
-    public short getTerrain() {
+    public Terrain getTerrain() {
         return this.terrain;
     }
     
@@ -196,7 +199,7 @@ public class Map implements Constants {
     
     /** intemperie */
     public boolean isOutdoor(byte  x, byte y) {
-       	return (this.zone != ZONA_DUNGEON) && cell(x, y).isOutdoor();
+       	return (this.zone != Zone.DUNGEON) && cell(x, y).isOutdoor();
     }
     
     public int getPlayersCount() {
@@ -253,23 +256,23 @@ public class Map implements Constants {
         this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
         if (tipo_terreno.equals("BOSQUE")) {
-            this.terrain = TERRENO_BOSQUE;
+            this.terrain = Terrain.FOREST;
         } else if (tipo_terreno.equals("DESIERTO")) {
-            this.terrain = TERRENO_DESIERTO;
+            this.terrain = Terrain.DESERT;
         } else if (tipo_terreno.equals("NIEVE")) {
-            this.terrain = TERRENO_NIEVE;
+            this.terrain = Terrain.SNOW;
         } else {
-            this.terrain = TERRENO_BOSQUE;
+            this.terrain = Terrain.FOREST;
         }
         String tipo_zona = ini.getString(section, "Zona");
         if (tipo_zona.equals("CAMPO")) {
-            this.zone = ZONA_CAMPO;
+            this.zone = Zone.COUNTRY;
         } else if (tipo_zona.equals("CIUDAD")) {
-            this.zone = ZONA_CIUDAD;
+            this.zone = Zone.CITY;
         } else if (tipo_zona.equals("DUNGEON")) {
-            this.zone = ZONA_DUNGEON;
+            this.zone = Zone.DUNGEON;
         } else {
-            this.zone = ZONA_CAMPO;
+            this.zone = Zone.COUNTRY;
         }
         
         // FIXME esta información sigue estando en los mapas?
@@ -1051,12 +1054,17 @@ public class Map implements Constants {
         }
         return null;
     }
+
     
     public boolean isLegalPos(MapPos pos, boolean canWater) {
+    	return isLegalPos(pos, canWater, true);
+    }
+    
+    public boolean isLegalPos(MapPos pos, boolean canWater, boolean canLand) {
         if (!pos.isValid()) {
 			return false;
 		}
-        return cell(pos.x,pos.y).isLegalPos(canWater);
+        return cell(pos.x,pos.y).isLegalPos(canWater, canLand);
     }
     
     public boolean isLegalPosNPC(MapPos pos, boolean canWater) {
@@ -1233,8 +1241,8 @@ public class Map implements Constants {
             ini.setValue(section, "Name", this.name);
             ini.setValue(section, "MusicNum", this.music);
             ini.setValue(section, "StartPos", this.startPos.map + "-" + this.startPos.x + "-" + this.startPos.y);
-            ini.setValue(section, "Terreno", TERRENOS[this.terrain]);
-            ini.setValue(section, "Zona", ZONAS[this.zone]);
+            ini.setValue(section, "Terreno", this.terrain.toString());
+            ini.setValue(section, "Zona", this.zone.toString());
             ini.setValue(section, "Restringir", this.restricted);
             ini.setValue(section, "BackUp", this.backup);
             // PK está invertido
@@ -1373,11 +1381,11 @@ public class Map implements Constants {
         if (getPlayersCount() > 0 && Util.Azar(1, 150) < 12) {
         	byte sound = -1;
             switch (this.terrain) {
-                case TERRENO_BOSQUE:
+                case FOREST:
                     int n = Util.Azar(1, 100);
                     switch (this.zone) {
-                        case ZONA_CAMPO:
-                        case ZONA_CIUDAD:
+                        case COUNTRY:
+                        case CITY:
                             if (!this.server.isRaining()) {
                                 if (n < 15) {
                                 	sound = Constants.SOUND_AVE2;

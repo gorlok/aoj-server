@@ -17,7 +17,7 @@
  *******************************************************************************/
 package org.ArgentumOnline.server.guilds;
 
-import org.ArgentumOnline.server.Player;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 
 /**

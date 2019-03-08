@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
 import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeAtacar;
 import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeCastear;
@@ -29,7 +29,7 @@ import org.ArgentumOnline.server.util.Util;
  * @author gorlok
  */
 public class UserCounters {
-    long IdleCount = 0;
+    public long IdleCount = 0;
     int AttackCounter = 0;
     int HPCounter = 0;
     int STACounter = 0;
@@ -37,16 +37,16 @@ public class UserCounters {
     int foodCounter = 0; // contador del intervalo de comida
     int drinkCounter = 0; // contador del inveralo de bebida
     int Veneno = 0;
-    int Paralisis = 0;
+    public int Paralisis = 0;
     int Ceguera = 0;
     int Estupidez = 0;
     int Invisibilidad = 0;
-    long PiqueteC = 0;
+    public long PiqueteC = 0;
 	public long Pena = 0;
+    public int Pasos = 0;
+    public boolean Saliendo = false;
+    public short SalirCounter = 0; // segundos para salir.
     MapPos SendMapCounter = MapPos.empty();
-    int Pasos = 0;
-    boolean Saliendo = false;
-    short SalirCounter = 0; // segundos para salir.
     int Pingeo = 0;
     long tInicioMeditar = 0;
     long tUltimoHechizo = 0;

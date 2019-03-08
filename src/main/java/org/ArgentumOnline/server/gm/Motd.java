@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.protocol.GuildChatResponse;
 import org.ArgentumOnline.server.protocol.ShowMOTDEditionFormResponse;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;

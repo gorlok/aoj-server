@@ -20,9 +20,9 @@ package org.ArgentumOnline.server.areas;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.user.Player;
 
 /**
  *

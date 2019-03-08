@@ -15,10 +15,13 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
 import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.npc.Npc;

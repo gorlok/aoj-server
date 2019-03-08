@@ -21,7 +21,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,14 +33,11 @@ public class ObjectInfo implements Constants {
     public short ObjIndex = 0;
     public String Nombre = "";
     public ObjType objType = ObjType.NONE; // Tipo enum que determina cuales son las caract del obj
-    //public short SubTipo; // Tipo enum que determina cuales son las caract del obj
     public short GrhIndex; // Indice del grafico que representa el obj
     public short GrhSecundario;
     
-    //Solo contenedores
-    public short MaxItems;
-    
-    public Inventory m_contenido;
+    //Solo contenedores (cofres)
+    public short MaxItems; // FIXME
     
     public short HechizoIndex;
     
@@ -110,7 +106,7 @@ public class ObjectInfo implements Constants {
     public short Snd3;
     public short MinInt;
     
-    short StaffPower;
+    public short StaffPower;
     short StaffDamageBonus;
     short DefensaMagicaMax;
     short DefensaMagicaMin;

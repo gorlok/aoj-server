@@ -17,9 +17,11 @@
  *******************************************************************************/
 package org.ArgentumOnline.server;
 
-import static org.ArgentumOnline.server.UserGender.GENERO_HOMBRE;
+import static org.ArgentumOnline.server.user.UserGender.GENERO_HOMBRE;
 
 import org.ArgentumOnline.server.map.MapPos.Heading;
+import org.ArgentumOnline.server.user.UserGender;
+import org.ArgentumOnline.server.user.UserRace;
 import org.ArgentumOnline.server.util.Util;
 
 /**
@@ -37,7 +39,7 @@ public class CharInfo implements Constants {
 	public short fx;
 	public short loops;
 
-	public byte heading;
+	public byte heading; // FIXME cambiar por Heading
 
 	public CharInfo() {
 	}

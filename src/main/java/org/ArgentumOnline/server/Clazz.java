@@ -17,8 +17,12 @@
  *******************************************************************************/
 package org.ArgentumOnline.server;
 
-import org.ArgentumOnline.server.UserAttributes.Attribute;
-import org.ArgentumOnline.server.UserFaction.FactionArmors;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.UserFaction;
+import org.ArgentumOnline.server.user.UserRace;
+import org.ArgentumOnline.server.user.UserStats;
+import org.ArgentumOnline.server.user.UserAttributes.Attribute;
+import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
 
@@ -538,7 +542,7 @@ public enum Clazz {
 
 		if (aumentoSalud > 0) {
 			estads.addMaxHP(aumentoSalud);
-			estads.fullHP(); // Recupera la salud al 100%.
+			estads.restoreFullHP(); // Recupera la salud al 100%.
 			player.sendMessage("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoStamina > 0) {

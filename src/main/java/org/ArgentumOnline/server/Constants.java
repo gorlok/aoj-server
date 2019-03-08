@@ -26,6 +26,10 @@ public interface Constants {
 	
 	public final static char NULL_CHAR = '\0';
 	
+    final static String VERSION = "0.12.3";
+    final static int SERVER_PORT = 7666;
+    final static int CRCKEY = 1234;
+	
 	final static int DISTANCE_CASHIER = 4; // CAJERO DE BANCO
 	final static int DISTANCE_QUEST = 4;
 	final static int DISTANCE_PET = 10; // MASCOTA
@@ -61,11 +65,6 @@ public interface Constants {
 	final static short heading_s = 3;
 	final static short heading_w = 4;
 
-    final static String VERSION = "0.12.3";
-    final static int SERVER_PORT = 7666;
-    
-    final static int CRCKEY = 1234;
-
     final static int IntervaloSed = 6000;
     final static int IntervaloHambre = 6500;
     final static int IntervaloFrio = 15;
@@ -74,10 +73,10 @@ public interface Constants {
     final static int IntervaloParalizado = 500;
     final static int IntervaloInvocacion = 1001;
     
-    final static int IntervaloUserPuedeAtacar = 200; // milisegs
-    final static int IntervaloUserPuedeCastear = 200; // milisegs
-    final static int IntervaloUserPuedeTrabajar = 200; // milisegs
-    final static int IntervaloUserPuedeUsar = 200; // milisegs
+    final static int IntervaloUserPuedeAtacar = 200; // ms
+    final static int IntervaloUserPuedeCastear = 200; // ms
+    final static int IntervaloUserPuedeTrabajar = 200; // ms
+    final static int IntervaloUserPuedeUsar = 200; // ms
     
     final static int SanaIntervaloSinDescansar = 1600;
     final static int SanaIntervaloDescansar = 100;
@@ -89,8 +88,8 @@ public interface Constants {
     
     final static int IdleLimit = 30; // FIXME 5 Minutos que un usuario puede estar ocioso.
     
-    final static int TIEMPO_INICIO_MEDITAR = 3000; // milisegs.
-    final static int TIEMPO_SACAR_TEXTO_ENCIMA = 1000; // milisegs.
+    final static int TIEMPO_INICIO_MEDITAR = 3000; // ms.
+    final static int TIEMPO_SACAR_TEXTO_ENCIMA = 1000; // ms.
     
     final static int MAXSPAWNATTEMPS = 60;
     
@@ -111,18 +110,6 @@ public interface Constants {
     final static short HECHIZO_DARDO_MAGICO = 2;
     
     final static int APUESTA_MAXIMA = 5000;
-    
-    // FIXME
-    final static short TERRENO_BOSQUE = 0;
-    final static short TERRENO_DESIERTO = 1;
-    final static short TERRENO_NIEVE = 2;
-    final static String TERRENOS[] = { "BOSQUE", "DESIERTO", "NIEVE" };
-    
-    // FIXME
-    final static short ZONA_CAMPO = 0;
-    final static short ZONA_CIUDAD = 1;
-    final static short ZONA_DUNGEON = 2;
-    final static String ZONAS[] = { "CAMPO", "CIUDAD", "DUNGEON" };
     
     final static int NUM_CLASES  = 17;
     
@@ -156,7 +143,7 @@ public interface Constants {
     final static short MinYBorder = YMinMapSize + (YWindow / 2);  // 1 + (13/2) = 7 
     final static short MaxYBorder = YMaxMapSize - (YWindow / 2);
     
-    final static int MAX_HECHIZOS = 35;
+    final static int MAX_SPELLS = 35;
     
     final static int MAX_OBJS_X_SLOT = 10000;
     final static int MAX_INVENTORY_OBJS = 10000;
@@ -175,18 +162,6 @@ public interface Constants {
     final static int FXMEDITARCHICO = 4;
     final static int FXMEDITARMEDIANO = 5;
     final static int FXMEDITARGRANDE = 6;
-    
-    // <<<<<< Targets >>>>>>
-    final static byte uUsuarios = 1;
-    final static byte uNPC = 2;
-    final static byte uUsuariosYnpc = 3;
-    final static byte uTerreno = 4;
-
-    // <<<<<< Acciona sobre >>>>>>
-    final static byte uPropiedades = 1;
-    final static byte uEstado = 2;
-    final static byte uMaterializa = 3;
-    final static byte uInvocacion = 4;
     
     // Estadisticas
     final static int STAT_MAXELV = 255;
@@ -215,7 +190,6 @@ public interface Constants {
     final static int MAX_GOLD = 90000000;
     final static int MAXEXP = 99999999;
     
-    
     final static short OBJ_INDEX_HACHA_LEÑADOR = 127;
     final static short OBJ_INDEX_CAÑA = 138;
     final static short OBJ_INDEX_PIQUETE_MINERO = 187;
@@ -227,13 +201,12 @@ public interface Constants {
     final static short OBJ_INDEX_FRAGATA_FANTASMAL = 87;
     final static short OBJ_INDEX_CUERPO_MUERTO = 8;
     final static short OBJ_INDEX_CABEZA_MUERTO = 500;
-    //final static short ObjArboles = 4;
     
-    /*
-Public Const EspadaMataDragonesIndex As Integer = 402
-Public Const LAUDMAGICO As Integer = 696
-Public Const FLAUTAMAGICA As Integer = 208
+	public final static short EspadaMataDragonesIndex = 402;
+	public final static short LAUDMAGICO = 696;
+	public final static short FLAUTAMAGICA = 208;
 
+/*
 Public Const iFragataFantasmal = 87
 Public Const iFragataReal = 190
 Public Const iFragataCaos = 189

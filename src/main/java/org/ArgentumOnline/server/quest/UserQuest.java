@@ -18,9 +18,9 @@
 package org.ArgentumOnline.server.quest;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcType;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 
 /**

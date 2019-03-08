@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
 /**
  * @author gorlok
@@ -34,12 +34,17 @@ public class UserFlags {
     public boolean ModoCombate = false;
     public boolean Hambre = false;
     public boolean Sed = false;
+    
     public boolean PuedeMoverse = false;
+    public boolean PuedeAtacar = true;
     //public boolean PuedeLanzarSpell = false;
-    //public long TimerPuedeLanzarSpell = 0;
     //public boolean PuedeTrabajar = false;
+
+    //public long TimerPuedeLanzarSpell = 0;
+    
     public boolean Envenenado = false;
     public boolean Paralizado = false;
+    public boolean Inmovilizado = false;
     public boolean Estupidez = false;
     public boolean Ceguera = false;
     public boolean Invisible = false;
@@ -48,12 +53,20 @@ public class UserFlags {
     public boolean Oculto = false;
     public boolean Desnudo = false;
     public boolean Descansar = false;
-    public boolean TomoPocion = false;
     public boolean Vuela = false;
     public boolean Navegando = false;
+    public boolean Mimetizado = false; // FIXME
+    
+    public boolean NoActualizado; // FIXME
+    
+    public byte Silenciado; // FIXME
+    
+    public boolean TomoPocion = false;
+    public short TipoPocion = 0;
     
     public boolean Seguro = true;
-    public boolean PuedeAtacar = true;
+    public boolean SeguroResu; // FIXME    
+    
     
     public boolean Ban = false;
     public boolean AdministrativeBan = false;
@@ -63,7 +76,6 @@ public class UserFlags {
     public boolean AdminInvisible = false;
     
     public short Hechizo = 0;
-    public short TipoPocion = 0;
     public double Descuento = 0.0;
     
     public long DuracionEfecto = 0;
@@ -119,8 +131,6 @@ End Enum
     byte UltimoMensaje = 0; // FIXME hacer enum de mensajes y IDs... y para i18n también 
     
     short indexDuel = 0;
-    
-    public boolean Mimetizado = false; // FIXME
     
 }
 

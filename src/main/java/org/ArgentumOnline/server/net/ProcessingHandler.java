@@ -18,7 +18,6 @@
 package org.ArgentumOnline.server.net;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
 import org.ArgentumOnline.server.protocol.BankDepositRequest;
@@ -40,6 +39,7 @@ import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
+import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
@@ -49,6 +49,7 @@ import org.ArgentumOnline.server.protocol.WhisperRequest;
 import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
 import org.ArgentumOnline.server.protocol.WorkRequest;
 import org.ArgentumOnline.server.protocol.YellRequest;
+import org.ArgentumOnline.server.user.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -292,6 +293,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case CraftBlacksmith:
 			player.doConstruyeHerreria(((CraftBlacksmithRequest)packet).item);
+			break;
+			
+		case SpellInfo:
+			player.spells().sendSpellInfo(((SpellInfoRequest)packet).spellSlot);
 			break;
 			
 		default:

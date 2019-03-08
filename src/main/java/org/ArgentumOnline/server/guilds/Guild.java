@@ -26,8 +26,8 @@ import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
+import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 

@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
 import static org.ArgentumOnline.server.Constants.IntervaloParalizado;
 import static org.ArgentumOnline.server.Constants.NingunArma;
@@ -28,11 +28,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import org.ArgentumOnline.server.UserAttributes.Attribute;
+import org.ArgentumOnline.server.Clazz;
+import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
+import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;

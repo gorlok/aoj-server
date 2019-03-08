@@ -24,9 +24,7 @@ import java.util.StringTokenizer;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.Player;
 import org.ArgentumOnline.server.Skill;
-import org.ArgentumOnline.server.UserStorage;
 import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
 import org.ArgentumOnline.server.protocol.GuildChatResponse;
 import org.ArgentumOnline.server.protocol.GuildDetailsResponse;
@@ -38,6 +36,8 @@ import org.ArgentumOnline.server.protocol.PeaceProposalsListResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.ShowGuildFundationFormResponse;
 import org.ArgentumOnline.server.protocol.ShowUserRequestResponse;
+import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.user.UserStorage;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.apache.logging.log4j.LogManager;

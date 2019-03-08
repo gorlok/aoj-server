@@ -203,16 +203,26 @@ public class MapCell {
     }
     
     public boolean isLegalPos(boolean canWater) {
-        if (!canWater) {
+    	return isLegalPos(canWater, true);
+    }
+    
+    public boolean isLegalPos(boolean canWater, boolean canLand) {
+        if (canWater && canLand) {
             return !isBlocked() 
             	&& playerId() == 0 
-            	&& npc() == null 
-            	&& !isWater();
+            	&& npc() == null; 
+        } else if (canLand && !canWater) {
+            return !isBlocked() 
+                	&& playerId() == 0 
+                	&& npc() == null 
+                	&& !isWater();
+        } else if (canWater && !canLand) {
+            return !isBlocked() 
+                	&& playerId() == 0 
+                	&& npc() == null 
+                	&& isWater();
         }
-        return !isBlocked() 
-        		&& playerId() == 0
-        		&& npc() == null
-        		&& isWater();
+        return false;
     }
     
     /** es intemperie */

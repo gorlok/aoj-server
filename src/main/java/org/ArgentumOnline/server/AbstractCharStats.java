@@ -44,7 +44,7 @@ public abstract class AbstractCharStats implements Constants {
     }
 
     /** Aumentar SALUD actual */
-    public void addMinHP(int cant) {
+    public void addHP(int cant) {
         this.MinHP += cant;
         if (this.MinHP > this.MaxHP) {
 			this.MinHP = this.MaxHP;
@@ -52,12 +52,12 @@ public abstract class AbstractCharStats implements Constants {
     }
     
     /** Aumentar SALUD actual */
-    public void fullHP() {
+    public void restoreFullHP() {
         this.MinHP = this.MaxHP;
     }
     
     /** Disminuir SALUD actual */
-    public void quitarHP(int cant) {
+    public void removeHP(int cant) {
         this.MinHP -= cant;
         if (this.MinHP < 0) {
 			this.MinHP = 0;

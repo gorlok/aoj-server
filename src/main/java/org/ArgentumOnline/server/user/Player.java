@@ -15,7 +15,7 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.ArgentumOnline.server;
+package org.ArgentumOnline.server.user;
 
 import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 import static org.ArgentumOnline.server.util.Color.COLOR_CYAN;
@@ -24,7 +24,15 @@ import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
-import org.ArgentumOnline.server.UserAttributes.Attribute;
+import org.ArgentumOnline.server.AbstractCharacter;
+import org.ArgentumOnline.server.CharInfo;
+import org.ArgentumOnline.server.Clazz;
+import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.ObjType;
+import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Pos;
+import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
 import org.ArgentumOnline.server.guilds.Guild;
@@ -36,7 +44,9 @@ import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.map.Terrain;
 import org.ArgentumOnline.server.map.MapPos.Heading;
+import org.ArgentumOnline.server.map.Zone;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcCashier;
@@ -66,7 +76,6 @@ import org.ArgentumOnline.server.protocol.DisconnectResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
-import org.ArgentumOnline.server.protocol.FameResponse;
 import org.ArgentumOnline.server.protocol.LevelUpResponse;
 import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
 import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
@@ -98,6 +107,7 @@ import org.ArgentumOnline.server.protocol.UserIndexInServerResponse;
 import org.ArgentumOnline.server.protocol.UserSwingResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.quest.UserQuest;
+import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -116,7 +126,7 @@ import io.netty.channel.Channel;
 public class Player extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
 
-	Channel channel = null;
+	private Channel channel = null;
 
 	String userName = "";
 	String password = ""; // FIXME SEGURIDAD
@@ -194,6 +204,10 @@ public class Player extends AbstractCharacter {
 			this.ip = addr.getAddress().getHostAddress();
 			log.info(this.userName + " conectado desde " + this.ip);
 		}
+	}
+	
+	public Channel getChannel() {
+		return channel;
 	}
 
 	public void closeConnection() {
@@ -1205,21 +1219,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendFame() {
-		sendPacket(new FameResponse((int) this.reputation.asesinoRep, (int) this.reputation.bandidoRep,
-				(int) this.reputation.burguesRep, (int) this.reputation.ladronRep, (int) this.reputation.nobleRep,
-				(int) this.reputation.plebeRep, (int) this.reputation.getPromedio()));
-	}
-
-	/**
-	 * Send spell information to user.
-	 *
-	 * @param spell slot number
-	 */
-	public void doInfoHechizo(String s) {
-		// Comando INFS"
-		// Spell information
-		short slot = Short.parseShort(s);
-		this.spells.sendMeSpellInfo(slot);
+		sendPacket(reputation().createFameResponse());
 	}
 
 	public void doNavega() {
@@ -1724,7 +1724,7 @@ public class Player extends AbstractCharacter {
 					return;
 				mapa.lookAtTile(this, x, y);
 				if (flags().Hechizo > 0) {
-					this.spells.hitSpell(this.server.getHechizo(flags().Hechizo));
+					this.spells.hitSpell(this.server.getSpell(flags().Hechizo));
 					flags().Hechizo = 0;
 				} else {
 					sendMessage("¡Primero selecciona el hechizo que deseas lanzar!", FontType.FONTTYPE_INFO);
@@ -2076,9 +2076,40 @@ public class Player extends AbstractCharacter {
 		sendMessage("La descripcion a cambiado.", FontType.FONTTYPE_INFO);
 	}
 
-	public void changeHeading(byte heading) {
-		this.infoChar.heading = heading;
-		sendCharacterChange();
+	public void changeHeading(byte newHeading) {
+		if (newHeading < 1 || newHeading > 4) {
+	    	return;
+	    }
+		
+		int posX = 0;
+		int posY = 0;
+		Heading heading = Heading.value(newHeading);
+        if (flags().Paralizado && !flags().Inmovilizado) {
+        	switch (heading) {
+	        case NORTH:
+                posY = -1;
+                break;
+            case EAST:
+                posX = 1;
+                break;
+            case SOUTH:
+                posY = 1;
+                break;
+            case WEST:
+                posX = -1;
+                break;
+			default:
+				break;
+        	}
+        	Map map = server.getMap(pos().map);
+        	MapPos pos = MapPos.mxy(pos().map, pos().x + posX, pos().y + posY);
+            if (map.isLegalPos(pos, isSailing(), !isSailing())) {   
+                return;
+            }
+        }
+        
+	    this.infoChar.heading = newHeading;
+        sendCharacterChange();
 	}
 
 	public void sendCharacterChange() {
@@ -2117,7 +2148,7 @@ public class Player extends AbstractCharacter {
 			this.server.dropPlayer(this);
 			if (wasLogged) {
 				try {
-					this.userStorage.saveUserToStorage();
+					saveUser();
 				} catch (Exception ex) {
 					log.fatal("ERROR EN doSALIR() - saveUser(): ", ex);
 				}
@@ -2758,7 +2789,7 @@ public class Player extends AbstractCharacter {
 	public void efectoLluvia() {
 		if (flags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
-			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZone() != ZONA_DUNGEON) {
+			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZone() != Zone.DUNGEON) {
 				int modifi = Util.porcentaje(stats().maxStamina, 3);
 				stats().quitarStamina(modifi);
 				sendMessage("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.FONTTYPE_INFO);
@@ -2772,6 +2803,7 @@ public class Player extends AbstractCharacter {
 			this.counters.Paralisis--;
 		} else {
 			flags().Paralizado = false;
+			flags().Inmovilizado = false;
 			sendPacket(new ParalizeOKResponse());
 		}
 	}
@@ -2823,16 +2855,6 @@ public class Player extends AbstractCharacter {
 
 	public void decirPalabrasMagicas(String palabrasMagicas) {
 		hablar(COLOR_CYAN, palabrasMagicas, getId());
-	}
-
-	public void paralizar(Spell hechizo) {
-		if (!flags().Paralizado) {
-			flags().Paralizado = true;
-			counters().Paralisis = IntervaloParalizado;
-			sendWave(hechizo.WAV);
-			sendCreateFX(hechizo.FXgrh, hechizo.loops);
-			sendPacket(new ParalizeOKResponse());
-		}
 	}
 
 	public void hablar(int color, String texto, int quienId) {
@@ -3873,7 +3895,7 @@ public class Player extends AbstractCharacter {
 		}
 		sendPacket(new UserHittedUserResponse(victima.getId(), target, damage));
 		victima.sendPacket(new UserHittedByUserResponse(getId(), target, damage));
-		victima.stats().quitarHP(damage);
+		victima.stats().removeHP(damage);
 		if (!flags().Hambre && !flags().Sed) {
 			if (this.userInv.tieneArmaEquipada()) {
 				// Si usa un arma quizas suba "Combate con armas"
@@ -3907,12 +3929,12 @@ public class Player extends AbstractCharacter {
 		victima.sendMessage(this.userName + " te ha matado!", FONTTYPE_FIGHT);
 		if (duelStatus(victima) != DuelStatus.DUEL_ALLOWED) {
 			if (!victima.isCriminal()) {
-				this.reputation.incAsesino(vlAsesino * 2);
-				this.reputation.burguesRep = 0;
-				this.reputation.nobleRep = 0;
-				this.reputation.plebeRep = 0;
+				this.reputation().incAsesino(vlAsesino * 2);
+				this.reputation().burguesRep = 0;
+				this.reputation().nobleRep = 0;
+				this.reputation().plebeRep = 0;
 			} else {
-				this.reputation.incNoble(vlNoble);
+				this.reputation().incNoble(vlNoble);
 			}
 		}
 		victima.userDie();
@@ -4093,7 +4115,7 @@ public class Player extends AbstractCharacter {
 		} else {
 			// Reputacion
 			if (npc.stats().Alineacion == 0 && npc.getPetUserOwner() == null) {
-				if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS) {
+				if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_REAL) {
 					volverCriminal();
 				} else {
 					this.reputation.incBandido(vlAsalto);
@@ -4120,7 +4142,7 @@ public class Player extends AbstractCharacter {
 	public void connectNewUser(String userName, String password, byte race, byte gender, byte clazz, String email, byte homeland) {
 		// Validar los datos recibidos :-)
 		this.userName = userName;
-		if (!this.server.getAdmins().isValidUserName(this.userName)) {
+		if (!this.server.manager().isValidUserName(this.userName)) {
 			sendError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
 			return;
 		}
@@ -4194,8 +4216,12 @@ public class Player extends AbstractCharacter {
 			break;
 		}
 
-		this.userStorage.saveUserToStorage();
+		saveUser();
 		connectUser(userName, password);
+	}
+
+	public void saveUser() {
+		this.userStorage.saveUserToStorage();
 	}
 
 	static String getPjFile(String nick) {
@@ -4260,13 +4286,13 @@ public class Player extends AbstractCharacter {
 			}
 			this.userStorage.loadUserFromStorage();
 
-			if (this.server.getAdmins().isGod(this.userName)) {
+			if (this.server.manager().isGod(this.userName)) {
 				flags().Privilegios = 3;
 				Log.logGM(this.userName, "El GM-DIOS se conectó desde la ip=" + this.ip);
-			} else if (this.server.getAdmins().isDemiGod(this.userName)) {
+			} else if (this.server.manager().isDemiGod(this.userName)) {
 				flags().Privilegios = 2;
 				Log.logGM(this.userName, "El GM-SEMIDIOS se conectó desde la ip=" + this.ip);
-			} else if (this.server.getAdmins().isCounsellor(this.userName)) {
+			} else if (this.server.manager().isCounsellor(this.userName)) {
 				flags().Privilegios = 1;
 				Log.logGM(this.userName, "El GM-CONSEJERO se conectó desde la ip=" + this.ip);
 			} else {
@@ -4298,7 +4324,7 @@ public class Player extends AbstractCharacter {
 			sendInventoryToUser();
 			spells().sendSpells();
 			
-			if (isParalized()) {
+			if (isParalized() || flags().Inmovilizado) {
 				sendPacket(new ParalizeOKResponse());
 			}
 			
@@ -4415,7 +4441,7 @@ public class Player extends AbstractCharacter {
 			this.counters.Frio++;
 		} else {
 			Map mapa = this.server.getMap(pos().map);
-			if (mapa.getTerrain() == TERRENO_NIEVE) {
+			if (mapa.getTerrain() == Terrain.SNOW) {
 				sendMessage("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.FONTTYPE_INFO);
 				int modifi = Util.porcentaje(stats().MaxHP, 5);
 				stats().MinHP -= modifi;
@@ -4618,7 +4644,7 @@ public class Player extends AbstractCharacter {
 			boolean hungerAndThristChanged = false;
 
 			this.NumeroPaquetesPorMiliSec = 0;
-			if (flags().Paralizado) {
+			if (flags().Paralizado || flags().Inmovilizado) {
 				efectoParalisisUser();
 			}
 			if (flags().Ceguera || flags().Estupidez) {
@@ -5009,7 +5035,7 @@ public class Player extends AbstractCharacter {
 		if (dir < 1 || dir > 2) {
 			return;
 		}
-		if (slot < 1 || slot > MAX_HECHIZOS) {
+		if (slot < 1 || slot > MAX_SPELLS) {
 			return;
 		}
 
