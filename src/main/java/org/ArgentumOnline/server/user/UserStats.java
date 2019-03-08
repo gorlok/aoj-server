@@ -233,5 +233,9 @@ public class UserStats extends AbstractCharStats {
 	public boolean isTooTired() {
 		return this.stamina <= 0;
 	}
+	
+	public boolean isFullStamina() {
+		return this.stamina > 0 && this.stamina == this.maxStamina;
+	}
 
 }

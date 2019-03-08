@@ -40,7 +40,7 @@ public class CharInfo implements Constants {
 	public short loops;
 
 	public byte heading; // FIXME cambiar por Heading
-
+	
 	public CharInfo() {
 	}
 
@@ -53,6 +53,14 @@ public class CharInfo implements Constants {
 		this.fx = charInfo.fx;
 		this.loops = charInfo.loops;
 		this.heading = charInfo.heading;
+	}
+	
+	public void copyFrom(CharInfo other) {
+		this.head = other.head;
+		this.body = other.body;
+		this.weapon = other.weapon;
+		this.shield = other.shield;
+		this.helmet = other.helmet;
 	}
 
 	public boolean validateChr() {

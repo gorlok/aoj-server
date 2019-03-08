@@ -205,6 +205,9 @@ public interface Constants {
 	public final static short EspadaMataDragonesIndex = 402;
 	public final static short LAUDMAGICO = 696;
 	public final static short FLAUTAMAGICA = 208;
+	public final static short SUPERANILLO = 700;	
+	public final static short HELEMENTAL_FUEGO = 26;
+	public final static short HELEMENTAL_TIERRA = 28;
 
 /*
 Public Const iFragataFantasmal = 87

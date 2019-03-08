@@ -66,6 +66,7 @@ import org.ArgentumOnline.server.protocol.ChangeBankSlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeInventorySlotResponse;
 import org.ArgentumOnline.server.protocol.ChangeMapResponse;
 import org.ArgentumOnline.server.protocol.ChangeUserTradeSlotResponse;
+import org.ArgentumOnline.server.protocol.CharacterChangeResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
@@ -2118,7 +2119,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		mapa.sendToArea(pos().x, pos().y, createCC());
+		mapa.sendToArea(pos().x, pos().y, characterChange());
 	}
 
 	public void quitGame() {
@@ -2636,7 +2637,7 @@ public class Player extends AbstractCharacter {
 		if (sendingData) {
 			sendPacket(new ChangeMapResponse(mapNumber, targetMap.getVersion()));
 		}
-		sendPacket(createCC());
+		sendPacket(characterCreate());
 
 		targetMap.areasData.loadUser(this);
 		sendPositionUpdate();
@@ -2935,10 +2936,10 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void sendCC() {
-		sendPacket(createCC());
+		sendPacket(characterCreate());
 	}
 
-	public CharacterCreateResponse createCC() {
+	public CharacterCreateResponse characterCreate() {
 		return new CharacterCreateResponse(
 				getId(),
 				this.infoChar.body(),
@@ -2956,6 +2957,20 @@ public class Player extends AbstractCharacter {
 				(byte)flags().Privilegios);
 	}
 
+	public CharacterChangeResponse characterChange() {
+		return new CharacterChangeResponse(
+				getId(),
+				this.infoChar.body(),
+				this.infoChar.head(),
+				this.infoChar.heading(),
+
+				this.infoChar.weapon(),
+				this.infoChar.shield(),
+				this.infoChar.helmet(),
+				this.infoChar.fx(),
+				this.infoChar.loops);
+	}
+	
 	private void sendLogged() {
 		sendPacket(new LoggedMessageResponse());
 	}
@@ -4007,15 +4022,15 @@ public class Player extends AbstractCharacter {
 			pet.defenderse();
 		});
 	}
+	
+	public boolean isAtDuelArena() {
+        Map map = server.getMap(pos().map);
+        return map.getTrigger(pos().x, pos().y) == Trigger.TRIGGER_ARENA_DUELOS;
+	}
 
 	public boolean puedeAtacar(Player victima) {
 		Map map = this.server.getMap(victima.pos().map);
 
-		if (!victima.isAlive()) {
-			sendMessage("No puedes atacar a un espíritu", FontType.FONTTYPE_INFO);
-			return false;
-		}
-		
 		DuelStatus t = duelStatus(victima);
 		if (t == DuelStatus.DUEL_ALLOWED) {
 			return true;
@@ -5111,7 +5126,7 @@ public class Player extends AbstractCharacter {
 	    DUEL_MISSING 	/* TRIGGER6_AUSENTE  3 */;
     }
 
-	private DuelStatus duelStatus(Player victima) {
+	public DuelStatus duelStatus(Player victima) {
 		// triggerZonaPelea
 		
 		if (victima == null) {

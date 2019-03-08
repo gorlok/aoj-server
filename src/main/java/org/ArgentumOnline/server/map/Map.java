@@ -72,16 +72,19 @@ public class Map implements Constants {
     
     // Cabecera archivo .map
     private short version   = 0;
-    //private byte desc[] = new byte[255];
     private String desc = "";
-    //private int crc     = 0;
-    //private int mw      = 0;
     
     // Información del archivo .dat
     String  name  = "";
     String  music = "";
+    
     int     numUsers = 0; // FIXME se usa?
     int     mapVersion = 0; // FIXME se usa?
+    boolean NoEncriptarMP = false; // sin uso
+    
+    public boolean MagiaSinEfecto = false;
+    public boolean InviSinEfecto = false;
+    public boolean ResuSinEfecto = false;
     
     Terrain terrain = Terrain.FOREST;
 
@@ -252,6 +255,13 @@ public class Map implements Constants {
         this.music = ini.getString(section, "MusicNum");
         // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
         this.pk = (ini.getInt(section, "PK") == 0); 
+
+        
+        this.MagiaSinEfecto = (ini.getInt(section, "MagiaSinEfecto") == 1);
+        this.InviSinEfecto = (ini.getInt(section, "InviSinEfecto") == 1);
+        this.ResuSinEfecto = (ini.getInt(section, "ResuSinEfecto") == 1);
+        this.NoEncriptarMP = (ini.getInt(section, "NoEncriptarMP") == 1);
+        
         this.restricted = ini.getString(section, "Restringir");
         this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
@@ -450,7 +460,7 @@ public class Map implements Constants {
 		}
         this.players.add(player);
         cell(x, y).playerId(player.getId());
-        sendToAreaButIndex(x, y, player.getId(), player.createCC());
+        sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
         player.pos().set(this.mapNumber, x, y);
         return true;
     }
@@ -716,7 +726,7 @@ public class Map implements Constants {
     	for (Player otherPlayer : this.players) {
     		// send me other Chars in map, except mine
     		if (!otherPlayer.equals(player)) {
-    			player.sendPacket(otherPlayer.createCC());
+    			player.sendPacket(otherPlayer.characterCreate());
     		}
     	}
     }
@@ -1247,6 +1257,11 @@ public class Map implements Constants {
             ini.setValue(section, "BackUp", this.backup);
             // PK está invertido
             ini.setValue(section, "PK", !this.pk);
+            
+            ini.setValue(section, "MagiaSinefecto", MagiaSinEfecto);
+            ini.setValue(section, "InviSinEfecto", InviSinEfecto);
+            ini.setValue(section, "ResuSinEfecto", ResuSinEfecto);
+            	    
             ini.store(datFileName);
         } catch (Exception e) {
             log.fatal("ERROR GUARDANDO MAPA " + this.mapNumber, e);

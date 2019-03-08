@@ -191,11 +191,11 @@ public class AreasAO implements Constants {
     			
     			if (user.getId() != tempInt && tempInt > 0) {
     				Player other = this.server.playerById(tempInt);
-    				user.sendPacket(other.createCC());
-    				other.sendPacket(user.createCC());
+    				user.sendPacket(other.characterCreate());
+    				other.sendPacket(user.characterCreate());
     				
     			} else if (dir == USER_NUEVO) {
-    				user.sendPacket(user.createCC());
+    				user.sendPacket(user.characterCreate());
     			}
     			
     			}

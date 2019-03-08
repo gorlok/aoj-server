@@ -18,14 +18,20 @@
 package org.ArgentumOnline.server.user;
 
 import org.ArgentumOnline.server.Constants;
+import org.ArgentumOnline.server.GameServer;
+import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.protocol.FameResponse;
+import org.ArgentumOnline.server.protocol.NobilityLostResponse;
 
 /**
  * @author gorlok
  */
 public class Reputation {
     // Fama del usuario
-    
+
+	final static int MAX_REP = 6000000;
+	
     // Puntos positivos:
     double burguesRep    = 0.0;
     double nobleRep      = 0.0;
@@ -64,6 +70,9 @@ public class Reputation {
     
     public void incNoble(double val) {
         this.nobleRep += val;
+        if (this.nobleRep > MAX_REP) {
+        	this.nobleRep = MAX_REP;
+        }
     }
     
     public void decNoble(double val) {
@@ -77,6 +86,9 @@ public class Reputation {
     
     public void incBurgues(double val) {
         this.burguesRep += val;
+        if (this.burguesRep > MAX_REP) {
+        	this.burguesRep = MAX_REP;
+        }
     }
     
     public void decBurgues(double val) {
@@ -90,6 +102,9 @@ public class Reputation {
     
     public void incPlebe(double val) {
         this.plebeRep += val;
+        if (this.plebeRep > MAX_REP) {
+        	this.plebeRep = MAX_REP;
+        }
     }
     
     public void decPlebe(double val) {
@@ -103,6 +118,9 @@ public class Reputation {
     
     public void incLandron(double val) {
         this.ladronRep += val;
+        if (this.ladronRep > MAX_REP) {
+        	this.ladronRep = MAX_REP;
+        }
     }
     
     public void decLadron(double val) {
@@ -116,6 +134,9 @@ public class Reputation {
     
     public void incBandido(double val) {
         this.bandidoRep += val;
+        if (this.bandidoRep > MAX_REP) {
+        	this.bandidoRep = MAX_REP;
+        }
     }
     
     public void decBandido(double val) {
@@ -129,6 +150,9 @@ public class Reputation {
     
     public void incAsesino(double val) {
         this.asesinoRep += val;
+        if (this.asesinoRep > MAX_REP) {
+        	this.asesinoRep = MAX_REP;
+        }
     }
     
     public void decAsesino(double val) {
@@ -137,6 +161,34 @@ public class Reputation {
             if (this.asesinoRep < 0) {
 				this.asesinoRep = 0;
 			}
+        }
+    }
+    
+    public void disminuyeNoblezaAumentaBandido(Player player, double noblePts, double bandidoPts) {
+    	// DisNobAuBan
+    	// disminuye la nobleza NoblePts puntos y aumenta el bandido BandidoPts puntos
+        boolean eraCriminal = player.isCriminal();
+        
+        // Si estamos en la arena no hacemos nada
+        if (player.isAtDuelArena()) {
+        	return;
+        }
+        
+        if (!player.isGM() || player.isCounselor()) {
+        	// pierdo nobleza...
+        	decNoble(noblePts);
+			// gano bandido...
+        	incBandido(bandidoPts);
+
+        	player.sendPacket(new NobilityLostResponse());
+        	
+        	if (player.isCriminal() && player.isRoyalArmy()) {
+        		player.userFaction().expulsarFaccionReal();
+        	}
+        }
+        
+        if ( !eraCriminal && player.isCriminal()) {
+        	player.refreshUpdateTagAndStatus();
         }
     }
     

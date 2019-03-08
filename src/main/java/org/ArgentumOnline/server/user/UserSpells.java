@@ -30,9 +30,11 @@ import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcType;
 import org.ArgentumOnline.server.protocol.BlindResponse;
 import org.ArgentumOnline.server.protocol.ChangeSpellSlotResponse;
+import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
+import org.ArgentumOnline.server.user.Player.DuelStatus;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Util;
@@ -232,17 +234,97 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoEstadoUsuario() {
-		Spell hechizo = this.server.getSpell(this.player.flags().Hechizo);
+		// HechizoEstadoUsuario
+		Spell spell = this.server.getSpell(this.player.flags().Hechizo);
 		Player targetUser = this.server.playerById(this.player.flags().TargetUser);
-		if (hechizo.Invisibilidad) {
+		
+		boolean result = false;
+		if (spell.Invisibilidad) {
+			if (!targetUser.isAlive()) {
+				this.player.sendMessage("¡Está muerto!", FontType.FONTTYPE_INFO);
+				return false;
+			}
+			
+		    if (targetUser.m_saliendo) {
+		    	if (this.player != targetUser) {
+		    		this.player.sendMessage("¡El hechizo no tiene efecto!", FontType.FONTTYPE_INFO);
+		    		return false;
+		    	} else {
+		    		this.player.sendMessage("¡No puedes volverte invisible mientras estás saliendo!", FontType.FONTTYPE_INFO);
+		    		return false;
+		    	}
+		    }
+		    
+		    // No usar invi mapas InviSinEfecto
+		    Map tuMap = server.getMap(targetUser.pos().map);
+		    if (tuMap.InviSinEfecto) {
+		    	this.player.sendMessage("¡La invisibilidad no funciona aquí!", FontType.FONTTYPE_INFO);
+		    	return false;
+		    }
+
+		    // Para poder tirar invi a un pk en el ring
+		    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+		    	if (targetUser.isCriminal() && !player.isCriminal()) {
+		    		if (player.isRoyalArmy()) {
+				    	this.player.sendMessage("Los miembros de la Armada Real no pueden ayudar a los criminales", FontType.FONTTYPE_INFO);
+				    	return false;
+		    		}
+		    		if (player.hasSafeLock()) {
+				    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
+				    	return false;
+		    		} else {
+		                player.volverCriminal();
+		    		}
+		    	}
+		    }
+		    
+		    // Los usuarios no pueden usar este hechizo con los GMs.
+		    if (!player.isGM() && targetUser.isGM()) {
+		    	return false;
+		    }
+		    
 			targetUser.flags().Invisible = true;
 			Map map = this.server.getMap(targetUser.pos().map);
-			map.sendToArea(targetUser.pos().x, targetUser.pos().y,
-					new SetInvisibleResponse(targetUser.getId(), (byte) 1));
-			infoHechizo();
-			return true;
+			map.sendToArea(targetUser.pos().x, targetUser.pos().y, 
+					new SetInvisibleResponse(targetUser.getId(), (byte) 1)); // FIXME está comentado en vb6
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.Envenena) {
+		
+		if (spell.Mimetiza) {
+			if (!targetUser.isAlive()) {
+				return false;
+			}
+			if (targetUser.isSailing() || player.isSailing()) {
+				return false;
+			}
+		    // Los usuarios no pueden usar este hechizo con los GMs.
+		    if (!player.isGM() && targetUser.isGM()) {
+		    	return false;
+		    }
+		    if (player.flags().Mimetizado) {
+		    	this.player.sendMessage("Ya te encuentras transformado. El hechizo no ha tenido efecto", FontType.FONTTYPE_INFO);
+		    	return false;
+		    }
+		    if (targetUser.flags().AdminInvisible) {
+		    	return false;
+		    }
+		    
+		    // Guardo el char original en mimetizado
+		    player.mimetizeChar().copyFrom(player.infoChar());
+		    player.flags().Mimetizado = true;
+	        // Le copio el char del target
+		    player.infoChar().copyFrom(targetUser.infoChar());
+		    player.sendCharacterChange();
+		    sendInfoSpell();
+			result = true;
+		}
+
+		if (spell.Envenena) {
+			if (targetUser == player) {
+		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
+		    	return false;
+			}
 			if (!this.player.puedeAtacar(targetUser)) {
 				return false;
 			}
@@ -250,15 +332,48 @@ public class UserSpells implements Constants {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Envenenado = true;
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.CuraVeneno) {
+		
+		if (spell.CuraVeneno) {
+			if (!targetUser.isAlive()) {
+				this.player.sendMessage("¡Está muerto!", FontType.FONTTYPE_INFO);
+				return false;
+			}
+			
+		    // Los usuarios no pueden usar este hechizo con los GMs.
+		    if (!player.isGM() && targetUser.isGM()) {
+		    	return false;
+		    }
+			
+			
+		    // Para poder usar con un pk en el ring
+		    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+		    	if (targetUser.isCriminal() && !player.isCriminal()) {
+		    		if (player.isRoyalArmy()) {
+				    	this.player.sendMessage("Los miembros de la Armada Real no pueden ayudar a los criminales", FontType.FONTTYPE_INFO);
+				    	return false;
+		    		}
+		    		if (player.hasSafeLock()) {
+				    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
+				    	return false;
+		    		} else {
+		                player.reputation().disminuyeNoblezaAumentaBandido(player, player.reputation().nobleRep * 0.5f, 10000);
+		    		}
+		    	}
+		    }
+			
 			targetUser.flags().Envenenado = false;
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.Maldicion) {
+
+		if (spell.Maldicion) {
+			if (targetUser == player) {
+		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
+		    	return false;
+			}
 			if (!this.player.puedeAtacar(targetUser)) {
 				return false;
 			}
@@ -266,20 +381,27 @@ public class UserSpells implements Constants {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Maldicion = true;
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.RemoverMaldicion) {
+		
+		if (spell.RemoverMaldicion) {
 			targetUser.flags().Maldicion = false;
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.Bendicion) {
+		
+		if (spell.Bendicion) {
 			targetUser.flags().Bendicion = true;
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.isParaliza()) {
+		
+		if (spell.isParaliza() || spell.isInmoviliza()) {
+			if (targetUser == player) {
+		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
+		    	return false;
+			}
 			if (!targetUser.flags().Paralizado) {
 				if (!this.player.puedeAtacar(targetUser)) {
 					return false;
@@ -287,27 +409,137 @@ public class UserSpells implements Constants {
 				if (this.player != targetUser) {
 					this.player.usuarioAtacadoPorUsuario(targetUser);
 				}
+				
+	            if (targetUser.userInv().tieneAnilloEquipado() && targetUser.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+			    	targetUser.sendMessage("Tu anillo rechaza los efectos del hechizo.", FontType.FONTTYPE_INFO);
+			    	player.sendMessage("¡El hechizo no tuvo efecto, ha sido rechazado!", FontType.FONTTYPE_INFO);
+			    	return false;
+	            }
+				
 				targetUser.flags().Paralizado = true;
-				if (hechizo.inmoviliza) {
+				if (spell.inmoviliza) {
 					targetUser.flags().Inmovilizado = true;
 				}
 				targetUser.counters.Paralisis = IntervaloParalizado;
 				targetUser.sendPacket(new ParalizeOKResponse());
-				infoHechizo();
-				return true;
+				sendInfoSpell();
+				result = true;
 			}
 		}
-		if (hechizo.RemoverParalisis) {
+		
+		if (spell.RemoverParalisis) {
 			if (targetUser.flags().Paralizado) {
+				
+			    // Para poder usar con un pk en el ring
+			    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+			    	if (targetUser.isCriminal() && !player.isCriminal()) {
+			    		if (player.isRoyalArmy()) {
+					    	this.player.sendMessage("Los miembros de la Armada Real no pueden ayudar a los criminales", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		}
+			    		if (player.hasSafeLock()) {
+					    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		} else {
+			                player.volverCriminal();
+			    		}
+			    	}
+			    }
+				
 				targetUser.flags().Paralizado = false;
 				targetUser.flags().Inmovilizado = false;
 				targetUser.sendPacket(new ParalizeOKResponse());
-				infoHechizo();
-				return true;
+				sendInfoSpell();
+				result = true;
 			}
 		}
-		if (hechizo.Revivir) {
+		
+		if (spell.RemoverEstupidez) {
+			if (targetUser.flags().Estupidez) {
+			    // Para poder usar con un pk en el ring
+			    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+			    	if (targetUser.isCriminal() && !player.isCriminal()) {
+			    		if (player.isRoyalArmy()) {
+					    	this.player.sendMessage("Los miembros de la Armada Real no pueden ayudar a los criminales", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		}
+			    		if (player.hasSafeLock()) {
+					    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		} else {
+			    			player.reputation().disminuyeNoblezaAumentaBandido(player, player.reputation().nobleRep * 0.5f, 10000);
+			    		}
+			    	}
+			    }
+				targetUser.flags().Estupidez = false;
+				targetUser.sendPacket(new DumbNoMoreResponse());
+				sendInfoSpell();
+				result = true;
+			}
+		}
+
+		if (spell.Revivir) {
 			if (!targetUser.isAlive()) {
+				
+		        // Seguro de resurreccion (solo afecta a los hechizos, no al sacerdote ni al comando de GM)
+		        if (player.flags().SeguroResu) {
+		        	this.player.sendMessage("¡El espíritu no tiene intenciones de regresar al mundo de los vivos!", FontType.FONTTYPE_INFO);
+		        	return false;
+		        }
+		    
+		        // No usar resu en mapas con ResuSinEfecto
+				Map map = this.server.getMap(targetUser.pos().map);
+		        if (map.ResuSinEfecto) {
+		        	this.player.sendMessage("¡Revivir no está permitido aqui! Retirate de la Zona si deseas utilizar el Hechizo.", FontType.FONTTYPE_INFO);
+		        	return false;
+		        }
+		        
+		        // No podemos resucitar si nuestra barra de energía no está llena. (GD: 29/04/07)
+		        if (!player.stats().isFullStamina()) {
+		        	this.player.sendMessage("No puedes resucitar si no tienes tu barra de energía llena.", FontType.FONTTYPE_INFO);
+		        	return false;
+		        }
+		        
+		        // revisamos si tiene vara, laud, o flauta
+		        if (player.clazz() == Clazz.Mage) {
+		        	if (!player.userInv().tieneArmaEquipada() || player.userInv().getArma().StaffPower == 0) {
+			        	this.player.sendMessage("Necesitas un báculo para este hechizo.", FontType.FONTTYPE_INFO);
+			        	return false;
+		        	}
+		        	if (player.userInv().getArma().StaffPower < spell.NeedStaff) {
+			        	this.player.sendMessage("Necesitas un mejor báculo para este hechizo.", FontType.FONTTYPE_INFO);
+			        	return false;
+		        	}
+		        } else if (player.clazz() == Clazz.Bard) {
+		            if (!player.userInv().tieneAnilloEquipado() || player.userInv().getAnillo().ObjIndex != LAUDMAGICO) {
+			        	this.player.sendMessage("Necesitas un instrumento mágico para devolver la vida.", FontType.FONTTYPE_INFO);
+			        	return false;
+		            }
+		        } else if (player.clazz() == Clazz.Druid) {
+		            if (!player.userInv().tieneAnilloEquipado() || player.userInv().getAnillo().ObjIndex != FLAUTAMAGICA) {
+			        	this.player.sendMessage("Necesitas un instrumento mágico para devolver la vida.", FontType.FONTTYPE_INFO);
+			        	return false;
+		            }
+		        }
+		        
+		        boolean eraCriminal = player.isCriminal();
+		        
+			    // Para poder usar con un pk en el ring
+			    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+			    	if (targetUser.isCriminal() && !player.isCriminal()) {
+			    		if (player.isRoyalArmy()) {
+					    	this.player.sendMessage("Los miembros de la Armada Real no pueden ayudar a los criminales", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		}
+			    		if (player.hasSafeLock()) {
+					    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
+					    	return false;
+			    		} else {
+			    			player.volverCriminal();
+			    		}
+			    	}
+			    }
+		        
 				if (!targetUser.isCriminal()) {
 					if (this.player != targetUser) {
 						this.player.reputation.incNoble(500);
@@ -316,12 +548,46 @@ public class UserSpells implements Constants {
 								FontType.FONTTYPE_INFO);
 					}
 				}
+				
+				if (!eraCriminal && player.isCriminal()) {
+					player.refreshUpdateTagAndStatus();
+				}
+
+				targetUser.stats().drinked = 0;
+				targetUser.flags().Sed = true;
+				targetUser.stats().eaten = 0;
+				targetUser.flags().Hambre = true;
+				targetUser.refreshUpdateTagAndStatus();
 				targetUser.revive();
+				
+				sendInfoSpell();
+				player.stats().mana = 0;
+				player.stats().stamina = 0;
+		        
+		        // Agregado para quitar la penalización de vida en el ring y cambio de ecuacion. (NicoNZ)
+				if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
+		            // Solo saco vida si es User. no quiero que exploten GMs por ahi.
+		            if (!player.isGM()) {
+		            	player.stats().MinHP = (int) (player.stats().MinHP * (1 - player.stats().ELV * 0.015f));
+		            }
+				}
+		        
+				if (player.stats().MinHP <= 0) {
+					player.userDie();
+					player.sendMessage("El esfuerzo de resucitar fue demasiado grande.", FontType.FONTTYPE_INFO);
+					return false;
+				} else {
+					player.sendMessage("El esfuerzo de resucitar te ha debilitado.", FontType.FONTTYPE_INFO);
+					result = true;
+				}			
 			}
-			infoHechizo();
-			return true;
 		}
-		if (hechizo.Ceguera) {
+		
+		if (spell.Ceguera) {
+			if (targetUser == player) {
+		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
+		    	return false;
+			}
 			if (!this.player.puedeAtacar(targetUser)) {
 				return false;
 			}
@@ -329,86 +595,95 @@ public class UserSpells implements Constants {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Ceguera = true;
-			targetUser.counters.Ceguera = IntervaloParalizado;
+			targetUser.counters.Ceguera = IntervaloParalizado / 3;
 			targetUser.sendPacket(new BlindResponse());
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		if (hechizo.Estupidez) {
+		
+		if (spell.Estupidez) {
+			if (targetUser == player) {
+		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
+		    	return false;
+			}
 			if (!this.player.puedeAtacar(targetUser)) {
 				return false;
 			}
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			targetUser.flags().Estupidez = true;
-			targetUser.counters.Ceguera = IntervaloParalizado;
+			
+			if (!targetUser.flags().Estupidez) {
+				targetUser.flags().Estupidez = true;
+				targetUser.counters.Ceguera = IntervaloParalizado;
+			}
 			targetUser.sendPacket(new DumbResponse());
-			infoHechizo();
-			return true;
+			sendInfoSpell();
+			result = true;
 		}
-		return false;
+		
+		return result;
 	}
 
-	private boolean hechizoEstadoNPC(Npc npc, Spell hechizo) {
-		if (hechizo.Invisibilidad) {
-			infoHechizo();
+	private boolean hechizoEstadoNPC(Npc npc, Spell spell) {
+		if (spell.Invisibilidad) {
+			sendInfoSpell();
 			npc.hacerInvisible();
 			return true;
 		}
-		if (hechizo.Envenena) {
+		if (spell.Envenena) {
 			if (!npc.getAttackable()) {
 				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
-			infoHechizo();
+			sendInfoSpell();
 			npc.envenenar();
 			return true;
 		}
-		if (hechizo.CuraVeneno) {
-			infoHechizo();
+		if (spell.CuraVeneno) {
+			sendInfoSpell();
 			npc.curarVeneno();
 			return true;
 		}
-		if (hechizo.Maldicion) {
+		if (spell.Maldicion) {
 			if (!npc.getAttackable()) {
 				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
-			infoHechizo();
+			sendInfoSpell();
 			npc.volverMaldito();
 			return true;
 		}
-		if (hechizo.RemoverMaldicion) {
-			infoHechizo();
+		if (spell.RemoverMaldicion) {
+			sendInfoSpell();
 			npc.quitarMaldicion();
 			return true;
 		}
-		if (hechizo.Bendicion) {
+		if (spell.Bendicion) {
 			// No hay contra-hechizo de bendicion???
-			infoHechizo();
+			sendInfoSpell();
 			npc.volverBendito();
 			return true;
 		}
-		if (hechizo.isParaliza()) {
+		if (spell.isParaliza()) {
 			if (!npc.afectaParalisis()) {
-				infoHechizo();
+				sendInfoSpell();
 				npc.paralizar();
 				npc.desinmovilizar();
 				return true;
 			}
 			this.player.sendMessage("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
 		}
-		if (hechizo.RemoverParalisis) {
+		if (spell.RemoverParalisis) {
 			if (npc.estaParalizado() || npc.estaInmovilizado()) {
 				if (npc.getPetUserOwner() == this.player) {
-					infoHechizo();
+					sendInfoSpell();
 					npc.desparalizar();
 					npc.desinmovilizar();// FIXME revisar...
 					return true;
 				} else if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_REAL) {
 					if (player.isRoyalArmy()) {
-						infoHechizo();
+						sendInfoSpell();
 						npc.desparalizar();
 						npc.desinmovilizar();// FIXME revisar...
 						return true;
@@ -418,7 +693,7 @@ public class UserSpells implements Constants {
 					}
 				} else if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_CAOS) {
 					if (player.isDarkLegion()) {
-						infoHechizo();
+						sendInfoSpell();
 						npc.desparalizar();
 						npc.desinmovilizar();// FIXME revisar...
 						return true;
@@ -434,19 +709,19 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	private boolean hechizoPropNPC(Npc npc, Spell hechizo) {
+	private boolean hechizoPropNPC(Npc npc, Spell spell) {
 		// Salud
-		if (hechizo.SubeHP == 1) {
+		if (spell.SubeHP == 1) {
 			// Curar la salud
-			int cura = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
+			int cura = Util.Azar(spell.MinHP, spell.MaxHP);
 			cura += Util.porcentaje(cura, 3 * this.player.stats().ELV);
-			infoHechizo();
+			sendInfoSpell();
 			npc.stats.addHP(cura);
 			this.player.sendMessage("Has curado " + cura
 					+ " puntos de salud a la criatura.", FONTTYPE_FIGHT);
 			return true;
 			
-		} else if (hechizo.SubeHP == 2) {
+		} else if (spell.SubeHP == 2) {
 			// Dañar la salud
 			if (!npc.getAttackable()) {
 				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
@@ -474,9 +749,9 @@ public class UserSpells implements Constants {
 				return false;
 			}
 
-			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
+			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
 			daño += Util.porcentaje(daño, 3 * this.player.stats().ELV);
-			infoHechizo();
+			sendInfoSpell();
 			this.player.npcAtacado(npc);
 			if (npc.getSonidoAtaqueExitoso() > 0) {
 				this.player.sendWave(npc.getSonidoAtaqueExitoso());
@@ -494,13 +769,14 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoPropUsuario() {
+		// HechizoPropUsuario
 		Spell hechizo = this.server.getSpell(this.player.flags().Hechizo);
 		Player targetUser = this.server.playerById(this.player.flags().TargetUser);
 
 		// Hambre
 		if (hechizo.SubeHam == 1) {
 			// Aumentar hambre
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinHam, hechizo.MaxHam);
 			targetUser.stats.aumentarHambre(daño);
 			if (this.player != targetUser) {
@@ -524,7 +800,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinHam, hechizo.MaxHam);
 			targetUser.stats.quitarHambre(daño);
 			if (this.player != targetUser) {
@@ -547,7 +823,7 @@ public class UserSpells implements Constants {
 
 		// Sed
 		if (hechizo.SubeSed == 1) {
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinSed, hechizo.MaxSed);
 			targetUser.stats.aumentarSed(daño);
 			if (this.player != targetUser) {
@@ -569,7 +845,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinSed, hechizo.MaxSed);
 			targetUser.stats.quitarSed(daño);
 			if (this.player != targetUser) {
@@ -592,7 +868,7 @@ public class UserSpells implements Constants {
 
 		// <-------- Agilidad ---------->
 		if (hechizo.SubeAgilidad == 1) {
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 1200;
 			targetUser.stats().attr().modifyByEffect(Attribute.AGILIDAD, daño);
@@ -606,7 +882,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinAgilidad, hechizo.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 700;
@@ -616,7 +892,7 @@ public class UserSpells implements Constants {
 
 		// <-------- Fuerza ---------->
 		if (hechizo.SubeFuerza == 1) {
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 1200;
 			targetUser.stats().attr().modifyByEffect(Attribute.FUERZA, daño);
@@ -630,7 +906,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			targetUser.flags().TomoPocion = true;
 			int daño = Util.Azar(hechizo.MinFuerza, hechizo.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 700;
@@ -642,7 +918,7 @@ public class UserSpells implements Constants {
 		if (hechizo.SubeHP == 1) {
 			int daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
 			daño += Util.porcentaje(daño, 3 * this.player.stats().ELV);
-			infoHechizo();
+			sendInfoSpell();
 			targetUser.stats.addHP(daño);
 			if (this.player != targetUser) {
 				this.player.sendMessage("Le has restaurado " + daño
@@ -670,7 +946,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			targetUser.stats.removeHP(daño);
 			this.player.sendMessage("Le has quitado " + daño + " puntos de vida a "
 					+ targetUser.userName, FONTTYPE_FIGHT);
@@ -688,7 +964,7 @@ public class UserSpells implements Constants {
 
 		// Mana
 		if (hechizo.SubeMana == 1) {
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinMana, hechizo.MaxMana);
 			targetUser.stats.aumentarMana(daño);
 			if (this.player != targetUser) {
@@ -710,7 +986,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinMana, hechizo.MaxMana);
 			if (this.player != targetUser) {
 				this.player.sendMessage("Le has quitado " + daño
@@ -728,7 +1004,7 @@ public class UserSpells implements Constants {
 
 		// Stamina
 		if (hechizo.SubeSta == 1) {
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinSta, hechizo.MaxSta);
 			targetUser.stats.aumentarStamina(daño);
 			if (this.player != targetUser) {
@@ -750,7 +1026,7 @@ public class UserSpells implements Constants {
 			if (this.player != targetUser) {
 				this.player.usuarioAtacadoPorUsuario(targetUser);
 			}
-			infoHechizo();
+			sendInfoSpell();
 			int daño = Util.Azar(hechizo.MinSta, hechizo.MaxSta);
 			if (this.player != targetUser) {
 				this.player.sendMessage("Le has quitado " + daño
@@ -768,15 +1044,15 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	private boolean canCastSpell(Spell hechizo) {
+	private boolean canCastSpell(Spell spell) {
 		if (!this.player.checkAlive("No puedes lanzar hechizos porque estas muerto.")) {
 			return false;
 		}
 		
-	    if (hechizo.NeedStaff > 0) {
+	    if (spell.NeedStaff > 0) {
 	        if (this.player.clazz() == Clazz.Mage) {
 	            if (this.player.userInv().tieneArmaEquipada()) {
-	            	if (this.player.userInv().getArma().StaffPower < hechizo.NeedStaff) {
+	            	if (this.player.userInv().getArma().StaffPower < spell.NeedStaff) {
 	            		this.player.sendMessage("No posees un báculo lo suficientemente poderoso para que puedas lanzar el conjuro.", FontType.FONTTYPE_INFO);
 	            		return false;
 	            	}
@@ -787,14 +1063,14 @@ public class UserSpells implements Constants {
 	        }
 	    }
 		
-	    if (this.player.skills().get(Skill.SKILL_Magia) < hechizo.MinSkill) {
+	    if (this.player.skills().get(Skill.SKILL_Magia) < spell.MinSkill) {
 	    	this.player.sendMessage(
 	    			"No tienes suficientes puntos de magia para lanzar este hechizo.",
 	    			FontType.FONTTYPE_INFO);
 	    	return false;
 	    }
 	    
-	    if (this.player.stats().isTooTired() || this.player.stats().stamina < hechizo.StaRequerida) {
+	    if (this.player.stats().isTooTired() || this.player.stats().stamina < spell.StaRequerida) {
 	    	if (this.player.gender() == UserGender.GENERO_HOMBRE) {
 	    		this.player.sendMessage("Estas muy cansado para lanzar este hechizo.", FontType.FONTTYPE_INFO);
 	    	} else {
@@ -809,9 +1085,9 @@ public class UserSpells implements Constants {
 	        if (this.player.userInv().tieneAnilloEquipado() 
 	        		&& this.player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
 	            
-	        	if (hechizo.Mimetiza) {
+	        	if (spell.Mimetiza) {
 	                druidManaBonus = 0.5f;
-	        	} else if (hechizo.spellAction == SpellAction.SUMMON) {
+	        	} else if (spell.spellAction == SpellAction.SUMMON) {
 	                druidManaBonus = 0.7f;
 	        	} else {
 	                druidManaBonus = 1f;
@@ -823,7 +1099,7 @@ public class UserSpells implements Constants {
 	        druidManaBonus = 1f;
 	    }	    
 	    
-	    if (this.player.stats().mana < hechizo.ManaRequerido * druidManaBonus) {
+	    if (this.player.stats().mana < spell.ManaRequerido * druidManaBonus) {
 	    	this.player.sendMessage("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
 	    	return false;
 	    }
@@ -861,69 +1137,83 @@ public class UserSpells implements Constants {
 			// Considero que hubo exito si se pudo invocar alguna criatura.
 			exito = exito || (this.player.crearMascotaInvocacion(hechizo.NumNpc, targetPos) != null);
 		}
-		infoHechizo();
+		sendInfoSpell();
 		return exito;
 	}
 
-	private void handleSpellTargetTerrain(Spell hechizo) {
+	private void handleSpellTargetTerrain(Spell spell) {
 		boolean exito = false;
-		switch (hechizo.spellAction) {
+		switch (spell.spellAction) {
 		case SUMMON:
 			exito = hechizoInvocacion();
 			break;
 		}
 		if (exito) {
 			this.player.subirSkill(Skill.SKILL_Magia);
-			this.player.stats().quitarMana(hechizo.ManaRequerido);
-			this.player.stats().quitarStamina(hechizo.StaRequerida);
+			this.player.stats().quitarMana(spell.ManaRequerido);
+			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 		}
 	}
 
-	private void handleSpellTargetUser(Spell hechizo) {
+	private void handleSpellTargetUser(Spell spell) {
+		// HandleHechizoUsuario
 		boolean exito = false;
 		Player target = this.server.playerById(this.player.flags().TargetUser);
 		if (target == null || target.isGM()) {
 			return;
 		}
-		switch (hechizo.spellAction) {
+		switch (spell.spellAction) {
 		case STATUS: // Afectan estados (por ejem : Envenenamiento)
 			exito = hechizoEstadoUsuario();
 			break;
+			
 		case PROPERTIES: // Afectan HP,MANA,STAMINA,ETC
 			exito = hechizoPropUsuario();
 			break;
 		}
+		
 		if (exito) {
 			this.player.subirSkill(Skill.SKILL_Magia);
-			this.player.stats().quitarMana(hechizo.ManaRequerido);
-			this.player.stats().quitarStamina(hechizo.StaRequerida);
+			
+		    // Agregado para que los druidas, al tener equipada la flauta magica, el coste de mana de mimetismo es de 50% menos.
+		    if (player.clazz() == Clazz.Druid 
+		    		&& player.userInv().tieneAnilloEquipado() 
+		    		&& player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA
+		    		&& spell.Mimetiza){
+        		this.player.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
+		    } else {
+        		this.player.stats().quitarMana(spell.ManaRequerido);
+		    }
+			
+			this.player.stats().quitarMana(spell.ManaRequerido);
+			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 			this.player.flags().TargetUser = 0;
 		}
 	}
 
-	private void handleSpellTargetNPC(Spell hechizo) {
+	private void handleSpellTargetNPC(Spell spell) {
 		boolean exito = false;
 		Npc targetNPC = this.server.npcById(this.player.flags().TargetNpc);
-		switch (hechizo.spellAction) {
+		switch (spell.spellAction) {
 		case STATUS: // Afectan estados (por ejem : Envenenamiento)
-			exito = hechizoEstadoNPC(targetNPC, hechizo);
+			exito = hechizoEstadoNPC(targetNPC, spell);
 			break;
 		case PROPERTIES: // Afectan HP,MANA,STAMINA,ETC
-			exito = hechizoPropNPC(targetNPC, hechizo);
+			exito = hechizoPropNPC(targetNPC, spell);
 			break;
 		}
 		if (exito) {
 			this.player.subirSkill(Skill.SKILL_Magia);
 			this.player.flags().TargetNpc = 0;
-			this.player.stats().quitarMana(hechizo.ManaRequerido);
-			this.player.stats().quitarStamina(hechizo.StaRequerida);
+			this.player.stats().quitarMana(spell.ManaRequerido);
+			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 		}
 	}
 
-	public void infoHechizo() {
+	public void sendInfoSpell() {
 		Map mapa = this.server.getMap(this.player.pos().map);
 		Spell hechizo = this.server.getSpell(this.player.flags().Hechizo);
 		this.player.decirPalabrasMagicas(hechizo.PalabrasMagicas);
