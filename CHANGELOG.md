@@ -3,6 +3,10 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-07
+- se agregan más operaciones en la API
+- se refactorizan los hechizos, se agregan flags faltantes, bug fixes, etc
+
 ### 2019-03-06
 - corregido comercio con npc, pero debería reimplementarse completo
 - se crea una API REST para la administración del servidor, usando Spark.
