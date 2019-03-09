@@ -96,6 +96,7 @@ import org.ArgentumOnline.server.protocol.SafeModeOnResponse;
 import org.ArgentumOnline.server.protocol.SendSkillsResponse;
 import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
 import org.ArgentumOnline.server.protocol.ShowBlacksmithFormResponse;
+import org.ArgentumOnline.server.protocol.UpdateHPResponse;
 import org.ArgentumOnline.server.protocol.UpdateHungerAndThirstResponse;
 import org.ArgentumOnline.server.protocol.UpdateTagAndStatusResponse;
 import org.ArgentumOnline.server.protocol.UpdateUserStatsResponse;
@@ -2595,6 +2596,10 @@ public class Player extends AbstractCharacter {
 				(byte) stats().maxEaten,
 				(byte) stats().eaten));
 	}
+	
+	public void sendUpdateHP(short minHP) {
+		sendPacket(new UpdateHPResponse(minHP));
+	}
 
 
 	private boolean enterIntoMap(short mapNumber, byte x, byte y, boolean withFX, boolean sendingData) {
@@ -4070,7 +4075,7 @@ public class Player extends AbstractCharacter {
 		if (flags().Seguro) {
 			if (!victima.isCriminal()) {
 				sendMessage(
-						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla S.",
+						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla <S>.",
 						FONTTYPE_FIGHT);
 				return false;
 			}

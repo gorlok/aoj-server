@@ -107,9 +107,9 @@ public class ObjectInfo implements Constants {
     public short MinInt;
     
     public short StaffPower;
-    short StaffDamageBonus;
-    short DefensaMagicaMax;
-    short DefensaMagicaMin;
+    public short StaffDamageBonus;
+    public short DefensaMagicaMax;
+    public short DefensaMagicaMin;
     byte Refuerzo;
     
     //Log As Byte 'es un objeto que queremos loguear? Pablo (ToxicWaste) 07/09/07
