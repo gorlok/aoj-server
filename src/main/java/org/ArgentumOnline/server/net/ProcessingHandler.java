@@ -18,7 +18,7 @@
 package org.ArgentumOnline.server.net;
 
 import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.map.MapPos.Heading;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
 import org.ArgentumOnline.server.protocol.BankDepositRequest;
 import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;

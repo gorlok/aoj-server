@@ -19,7 +19,7 @@ package org.ArgentumOnline.server;
 
 import static org.ArgentumOnline.server.user.UserGender.GENERO_HOMBRE;
 
-import org.ArgentumOnline.server.map.MapPos.Heading;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.user.UserGender;
 import org.ArgentumOnline.server.user.UserRace;
 import org.ArgentumOnline.server.util.Util;
@@ -39,7 +39,7 @@ public class CharInfo implements Constants {
 	public short fx;
 	public short loops;
 
-	public byte heading; // FIXME cambiar por Heading
+	public Heading heading;
 	
 	public CharInfo() {
 	}
@@ -75,7 +75,7 @@ public class CharInfo implements Constants {
 		this.helmet = 0;
 		this.fx = 0;
 		this.loops = 0;
-		this.heading = 0;
+		this.heading = Heading.NONE;
 	}
 
 	public short head() {
@@ -106,16 +106,16 @@ public class CharInfo implements Constants {
 		return this.loops;
 	}
 
-	public byte heading() {
+	public Heading heading() {
 		return this.heading;
 	}
 
-	public void heading(Heading dir) {
-		this.heading = (byte) dir.ordinal();
+	public void heading(Heading heading) {
+		this.heading = heading;
 	}
 
-	public void undress(UserRace raza, UserGender gender) {
-		switch (raza) {
+	public void undress(UserRace race, UserGender gender) {
+		switch (race) {
 		case RAZA_HUMANO:
 			this.body = (gender == GENERO_HOMBRE) ? (short) 21 : (short) 39;
 			break;
@@ -134,10 +134,10 @@ public class CharInfo implements Constants {
 		}
 	}
 
-	public void ramdonBodyAndHead(UserRace raza, UserGender gender) {
+	public void ramdonBodyAndHead(UserRace race, UserGender gender) {
 		switch (gender) {
 		case GENERO_HOMBRE:
-			switch (raza) {
+			switch (race) {
 			case RAZA_HUMANO:
 				this.head = (short) Util.Azar(1, 11);
 				this.body = 1;
@@ -166,7 +166,7 @@ public class CharInfo implements Constants {
 			break;
 
 		case GENERO_MUJER:
-			switch (raza) {
+			switch (race) {
 			case RAZA_HUMANO:
 				this.head = (short) (Util.Azar(1, 3) + 69);
 				this.body = 1;

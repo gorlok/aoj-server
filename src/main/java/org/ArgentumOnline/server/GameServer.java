@@ -551,7 +551,7 @@ public class GameServer implements Constants {
             npcs.stream()
             	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
             	.forEach(npc -> {
-	                if (npc.estaParalizado()) {
+	                if (npc.isParalized()) {
 	                    npc.efectoParalisisNpc();
 	                } else {
 	                    // Usamos AI si hay algun user en el mapa
@@ -647,7 +647,7 @@ public class GameServer implements Constants {
 
     private void npcAtacaTimer() {
     	for (Npc npc: npcs()) {
-            npc.setPuedeAtacar(true);
+            npc.setCanAttack(true);
         }
     }
 
@@ -1012,7 +1012,7 @@ public class GameServer implements Constants {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
                     npc.quitarNPC(); // fixme, lo elimina del server??? revisar.
                     spawnNPCs.add(npc);
-                } else if (npc.getContadores().TiempoExistencia > 0) {
+                } else if (npc.counters().TiempoExistencia > 0) {
                     npc.muereNpc(null);
                 }
             }

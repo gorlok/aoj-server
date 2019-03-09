@@ -28,6 +28,7 @@ import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_FACCION;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_FOLLOW;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_GOLPE_EXACTO;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_HOSTIL;
+import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INMOVILIZADO;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INVISIBLE;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INV_RESPAWN;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_LANZA_SPELLS;
@@ -39,7 +40,6 @@ import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_PUEDE_ATACAR;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_RESPAWN_ORIG_POS;
 import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_TIERRA_INVALIDA;
-import static org.ArgentumOnline.server.npc.NpcFlags.FLAG_INMOVILIZADO;
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
 import java.util.List;
@@ -52,13 +52,14 @@ import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.aStar.Node;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
+import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.NPCSwingResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
@@ -76,6 +77,11 @@ import org.apache.logging.log4j.Logger;
  */
 public class Npc extends AbstractCharacter implements Constants {
 	private static Logger log = LogManager.getLogger();
+	
+	// Damos a los NPCs el mismo rango de visión que un PJ
+	final static byte RANGO_VISION_X = 8;
+	final static byte RANGO_VISION_Y = 6;
+	
 
 	/* FIXME
 Public Enum TipoAI
@@ -223,7 +229,7 @@ End Enum
         Npc npc = server.createNpc(nroNPC);
         Map mapa = server.getMap(orig.map);
 
-        MapPos tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), bajoTecho);
+        MapPos tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.isWaterValid(), npc.isLandInvalid(), bajoTecho);
 
         if (tmp == null) {
         	server.deleteNpc(npc);
@@ -240,7 +246,7 @@ End Enum
     	GameServer server = GameServer.instance();
         Npc npc = server.createNpc(npcNumber);
         if (!conRespawn) {
-			npc.flags.set(FLAG_RESPAWN, false);
+			npc.flags().set(FLAG_RESPAWN, false);
 		}
         Map mapa = server.getMap(orig.map);
         boolean hayPosValida = false;
@@ -251,7 +257,7 @@ End Enum
                 orig.x = (byte) Util.Azar(1, MAPA_ANCHO);
                 orig.y = (byte) Util.Azar(1, MAPA_ALTO);
             }
-            tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.esAguaValida(), npc.esTierraInvalida(), false);
+            tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.isWaterValid(), npc.isLandInvalid(), false);
             if (tmp != null) {
 				orig = tmp;
 			}
@@ -296,7 +302,7 @@ End Enum
     public Inventory npcInv() {
         return this.npcInv;
     }
-
+    
     public int inflation() {
     	return this.inflation;
     }
@@ -408,7 +414,7 @@ End Enum
 
 	public int getArea() {return this.areaID;}
 
-    public boolean esDeQuest() {
+    public boolean isQuest() {
         return this.isQuest;
     }
 
@@ -424,102 +430,105 @@ End Enum
         return this.snd3;
     }
 
-    public boolean lanzaSpells() {
-        return this.flags.get(FLAG_LANZA_SPELLS);
+    public boolean isMagical() {
+        return this.flags().get(FLAG_LANZA_SPELLS);
     }
 
     public boolean getBackup() {
-        return this.flags.get(FLAG_BACKUP);
+        return this.flags().get(FLAG_BACKUP);
     }
 
-    public void volverMaldito() {
-        this.flags.set(FLAG_MALDICION, true);
+    /* volverMaldito */
+    public void turnDamned() {
+        this.flags().set(FLAG_MALDICION, true);
     }
 
-    public void quitarMaldicion() {
-        this.flags.set(FLAG_MALDICION, false);
+    /* quitarMaldito */
+    public void removeDamned() {
+        this.flags().set(FLAG_MALDICION, false);
     }
 
-    public void volverBendito() {
-        this.flags.set(FLAG_BENDICION, true);
+    /* volverBendito */
+    public void turnBlessed() {
+        this.flags().set(FLAG_BENDICION, true);
     }
 
-    public boolean esHostil() {
-        return this.flags.get(FLAG_HOSTIL);
+    public boolean isHostile() {
+        return this.flags().get(FLAG_HOSTIL);
     }
 
-    public boolean estaInvisible() {
-        return this.flags.get(FLAG_INVISIBLE);
+    public boolean isInvisible() {
+        return this.flags().get(FLAG_INVISIBLE);
     }
 
     public boolean respawnOrigPos() {
-        return this.flags.get(FLAG_RESPAWN_ORIG_POS);
+        return this.flags().get(FLAG_RESPAWN_ORIG_POS);
     }
 
-    public void hacerInvisible() {
-        this.flags.set(FLAG_INVISIBLE, true);
+    public void makeInvisible() {
+        this.flags().set(FLAG_INVISIBLE, true);
     }
 
-    public void hacerVisible() {
-        this.flags.set(FLAG_INVISIBLE, false);
+    public void makeVisible() {
+        this.flags().set(FLAG_INVISIBLE, false);
     }
 
-    public boolean puedeAtacar() {
-        return this.flags.get(FLAG_PUEDE_ATACAR);
+    public boolean canAttack() {
+        return this.flags().get(FLAG_PUEDE_ATACAR);
     }
 
-    public void setPuedeAtacar(boolean estado) {
-        this.flags.set(FLAG_PUEDE_ATACAR, estado);
+    public void setCanAttack(boolean estado) {
+        this.flags().set(FLAG_PUEDE_ATACAR, estado);
     }
 
-    public boolean esFaccion() {
-        return this.flags.get(FLAG_FACCION);
+    public boolean isFaction() {
+        return this.flags().get(FLAG_FACCION);
     }
 
     private boolean puedeEnvenenar() {
-        return this.flags.get(FLAG_ENVENENA);
+        return this.flags().get(FLAG_ENVENENA);
     }
 
     public void envenenar() {
-        this.flags.set(FLAG_ENVENENA, true);
+        this.flags().set(FLAG_ENVENENA, true);
     }
 
     public void curarVeneno() {
-        this.flags.set(FLAG_ENVENENA, false);
+        this.flags().set(FLAG_ENVENENA, false);
     }
 
     public boolean puedeReSpawn() {
-        return this.flags.get(FLAG_RESPAWN);
+        return this.flags().get(FLAG_RESPAWN);
     }
 
     protected boolean invReSpawn() {
-        return this.flags.get(FLAG_INV_RESPAWN);
+        return this.flags().get(FLAG_INV_RESPAWN);
     }
 
     private boolean isFollowing() {
-        return this.flags.get(FLAG_FOLLOW);
+        return this.flags().get(FLAG_FOLLOW);
     }
 
     public boolean afectaParalisis() {
-        return this.flags.get(FLAG_AFECTA_PARALISIS);
+        return this.flags().get(FLAG_AFECTA_PARALISIS);
     }
 
     public void paralizar() {
-        this.flags.set(FLAG_PARALIZADO, true);
+        this.flags().set(FLAG_PARALIZADO, true);
         this.counters.Paralisis = IntervaloParalizado;
     }
 
     public void desparalizar() {
-        this.flags.set(FLAG_PARALIZADO, false);
+        this.flags().set(FLAG_PARALIZADO, false);
         this.counters.Paralisis = 0;
     }
 
     public void inmovilizar() {
-        this.flags.set(FLAG_INMOVILIZADO, true);
+        this.flags().set(FLAG_INMOVILIZADO, true);
     }
 
     public void desinmovilizar() {
-        this.flags.set(FLAG_INMOVILIZADO, false);
+        this.flags().set(FLAG_INMOVILIZADO, false);
     }
 
     @Override
@@ -536,7 +545,7 @@ End Enum
     }
 
     public boolean isNpcActive() {
-        return this.flags.get(FLAG_NPC_ACTIVE);
+        return this.flags().get(FLAG_NPC_ACTIVE);
     }
 
 	public void putAreas(int ax, int ay) {
@@ -560,16 +569,16 @@ End Enum
         return this.poderEvasion;
     }
 
-    public boolean getAttackable() {
-        return this.flags.get(FLAG_ATACABLE);
+    public boolean isAttackable() {
+        return this.flags().get(FLAG_ATACABLE);
     }
 
-    public boolean esAguaValida() {
-        return this.flags.get(FLAG_AGUA_VALIDA);
+    public boolean isWaterValid() {
+        return this.flags().get(FLAG_AGUA_VALIDA);
     }
 
-    public boolean esTierraInvalida() {
-        return this.flags.get(FLAG_TIERRA_INVALIDA);
+    public boolean isLandInvalid() {
+        return this.flags().get(FLAG_TIERRA_INVALIDA);
     }
 
     public String getDesc() {
@@ -593,43 +602,43 @@ End Enum
     	this.petNpcOwnerId = 0;
     }
 
-    public boolean estaParalizado() {
-        return this.flags.get(FLAG_PARALIZADO);
+    public boolean isParalized() {
+        return this.flags().get(FLAG_PARALIZADO);
     }
 
-    public boolean estaInmovilizado() {
-        return this.flags.get(FLAG_INMOVILIZADO);
+    public boolean isInmovilized() {
+        return this.flags().get(FLAG_INMOVILIZADO);
     }
 
-    public boolean comercia() {
-        return this.flags.get(FLAG_COMERCIA);
+    public boolean isTrade() {
+        return this.flags().get(FLAG_COMERCIA);
     }
 
     public boolean isBankCashier() {
     	return npcType() == NpcType.NPCTYPE_BANQUERO;
     }
 
-    public boolean esSacerdote() {
+    public boolean isPriest() {
     	return npcType() == NpcType.NPCTYPE_SACERDOTE;
     }
 
-    public boolean esSacerdoteNewbies() {
+    public boolean isPriestNewbies() {
     	return npcType() == NpcType.NPCTYPE_SACERDOTE_NEWBIES;
     }
 
-    public boolean esNoble() {
+    public boolean isNoble() {
     	return npcType() == NpcType.NPCTYPE_NOBLE;
     }
 
     public void activate() {
-        this.flags.set(FLAG_NPC_ACTIVE, true);
+        this.flags().set(FLAG_NPC_ACTIVE, true);
     }
 
-    public void setAttackedBy(String nick) {
+    public void attackedByUserName(String nick) {
         this.attackedBy = nick;
     }
 
-    public boolean atacadoPorUsuario() {
+    public boolean isAttackedByUser() {
         return this.attackedBy.length() > 0;
     }
 
@@ -637,15 +646,15 @@ End Enum
         this.giveGLD = val;
     }
 
-    public int getTargetUser() {
+    public int targetUser() {
         return this.targetUser;
     }
 
-    public Npc getTargetNpc() {
+    public Npc targetNpc() {
     	return this.targetNpc;
     }
 
-    public void setTargetUser(int target) {
+    public void targetUser(int target) {
         this.targetUser = target;
     }
 
@@ -657,11 +666,11 @@ End Enum
         return this.stats;
     }
 
-    public NpcCounters getContadores() {
+    public NpcCounters counters() {
         return this.counters;
     }
 
-    public void setPetNpcOwner(Npc petOwner) {
+    public void petNpcOwner(Npc petOwner) {
         this.petNpcOwnerId = petOwner.getId();
     }
 
@@ -669,13 +678,13 @@ End Enum
         return this.domable;
     }
 
-    public CharacterCreateResponse createCC() {
+    public CharacterCreateResponse characterCreate() {
     	return new CharacterCreateResponse(
 			getId(),
 			this.infoChar.body(),
 			this.infoChar.head(),
 
-			this.infoChar.heading(),
+			this.infoChar.heading().value(),
 			pos().x,
 			pos().y,
 
@@ -814,11 +823,14 @@ End Enum
     private void tirarItems() {
         // NPC_TIRAR_ITEMS
         // TIRA TODOS LOS ITEMS DEL NPC
-        if (this.npcInv.size() > 0) {
-            for (int i = 1; i <= this.npcInv.size(); i++) {
-                if (this.npcInv.getObjeto(i) != null && this.npcInv.getObjeto(i).objid > 0) {
+        if (this.npcInv().size() > 0) {
+            for (int i = 1; i <= this.npcInv().size(); i++) {
+                if (this.npcInv().getObjeto(i) != null && this.npcInv().getObjeto(i).objid > 0) {
                     Map m = this.server.getMap(pos().map);
-                    m.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(this.npcInv.getObjeto(i).objid, this.npcInv.getObjeto(i).cant));
+                    m.tirarItemAlPiso(pos().x, pos().y, 
+                    		new InventoryObject(
+                    				this.npcInv().getObjeto(i).objid,
+                    				this.npcInv().getObjeto(i).cant));
                 }
             }
         }
@@ -829,7 +841,7 @@ End Enum
     		log.debug("NPC BORRADO");
     	}
 
-        this.flags.set(FLAG_NPC_ACTIVE, false);
+        this.flags().set(FLAG_NPC_ACTIVE, false);
         Map map = this.server.getMap(pos().map);
         if (map == null) {
         	return;
@@ -845,7 +857,7 @@ End Enum
 
         // Nos aseguramos de que el inventario sea removido...
         // asi los lobos no volveran a tirar armaduras ;))
-        this.npcInv.clear();
+        this.npcInv().clear();
 
         if (this.petUserOwner != null) {
         	this.petUserOwner.removePet(this);
@@ -865,7 +877,7 @@ End Enum
         if (this.counters.Paralisis > 0) {
             this.counters.Paralisis -= 1;
         } else {
-            this.flags.set(FLAG_PARALIZADO, false);
+            this.flags().set(FLAG_PARALIZADO, false);
         }
     }
 
@@ -886,14 +898,14 @@ End Enum
         if (this.petUserOwner != null) {
             // es una posicion legal ???
             if (mapa.isLegalPos(newPos, false)) {
-                if (!esAguaValida() && mapa.isWater(newPos.x, newPos.y)) {
+                if (!isWaterValid() && mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
-                if (esTierraInvalida() && !mapa.isWater(newPos.x, newPos.y)) {
+                if (isLandInvalid() && !mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
-                    log.debug("m_flags.AguaValida=" + esAguaValida());
+                    log.debug("m_flags.AguaValida=" + isWaterValid());
                     log.debug("OJO, ya hay otro NPC!!! " + this + " " +
                     newPos.x + " " + newPos.y + " encontro=" + mapa.getNPC(newPos.x, newPos.y));
                     return;
@@ -906,15 +918,15 @@ End Enum
         } else { // No es mascota
             // Controlamos que la posicion sea legal, los npc que
             // no son mascotas tienen mas restricciones de movimiento.
-            if (mapa.isLegalPosNPC(newPos, esAguaValida())) {
-                if (!esAguaValida() && mapa.isWater(newPos.x, newPos.y)) {
+            if (mapa.isLegalPosNPC(newPos, isWaterValid())) {
+                if (!isWaterValid() && mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
-                if (esTierraInvalida() && !mapa.isWater(newPos.x, newPos.y)) {
+                if (isLandInvalid() && !mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}
                 if (mapa.getNPC(newPos.x, newPos.y) != null) {
-                    log.debug("m_flags.AguaValida=" + esAguaValida());
+                    log.debug("m_flags.AguaValida=" + isWaterValid());
                     log.debug("OJO, ya hay otro NPC!!! " + this + " " +
                     newPos.x + " " + newPos.y + " encontro=" + mapa.getNPC(newPos.x, newPos.y));
                     return;
@@ -972,22 +984,22 @@ End Enum
         // doFollow
         if (isFollowing()) {
             this.attackedBy = "";
-            this.flags.set(FLAG_FOLLOW, false);
+            this.flags().set(FLAG_FOLLOW, false);
             this.movement  = this.oldMovement;
-            this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
+            this.flags().set(FLAG_HOSTIL, this.flags().get(FLAG_OLD_HOSTILE));
         } else {
             this.attackedBy = nombreUsuario;
-            this.flags.set(FLAG_FOLLOW, true);
+            this.flags().set(FLAG_FOLLOW, true);
             this.movement = MOV_NPCDEFENSA; // follow
-            this.flags.set(FLAG_HOSTIL, false);
+            this.flags().set(FLAG_HOSTIL, false);
         }
     }
 
     /** Seguir al amo / Follow master */
     public void followMaster() {
-        this.flags.set(FLAG_FOLLOW, true);
+        this.flags().set(FLAG_FOLLOW, true);
         this.movement  = MOV_SIGUE_AMO; // follow npc's master.
-        this.flags.set(FLAG_HOSTIL, false);
+        this.flags().set(FLAG_HOSTIL, false);
         this.targetUser = 0;
         this.targetNpc  = null;
     }
@@ -1016,7 +1028,7 @@ End Enum
 
     public void defenderse() {
         this.movement = MOV_NPCDEFENSA;
-        this.flags.set(FLAG_HOSTIL, true);
+        this.flags().set(FLAG_HOSTIL, true);
     }
 
     public void cambiarDir(Heading dir) {
@@ -1024,7 +1036,7 @@ End Enum
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
             this.infoChar.heading(dir);
-            mapa.sendToArea(pos().x, pos().y, createCC());
+            mapa.sendToArea(pos().x, pos().y, characterCreate());
         }
     }
 
@@ -1061,7 +1073,7 @@ End Enum
                     			cambiarDir(dir);
                     			npcAtacaUser(player);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags.get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
                     			npcAtacaUser(player);
                     			return;
@@ -1071,7 +1083,7 @@ End Enum
                     			cambiarDir(dir);
                     			npcAtacaUser(player);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags.get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
                     			npcAtacaUser(player);
                     			return;
@@ -1110,8 +1122,8 @@ End Enum
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
                     if (player.isAlive() && !player.isGM()) {
-                        if (lanzaSpells()) {
-                            npcLanzaUnSpell(player);
+                        if (isMagical()) {
+                            npcCastSpell(player);
                         }
                         cambiarDir(dir);
                         npcAtacaUser(player); // ok
@@ -1137,8 +1149,8 @@ End Enum
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
                     if (player.isAlive() && !player.isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
-                        if (lanzaSpells()) {
-                            npcLanzaUnSpell(player);
+                        if (isMagical()) {
+                            npcCastSpell(player);
                         }
                         cambiarDir(dir);
                         npcAtacaUser(player); // ok
@@ -1161,12 +1173,10 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
-
                         if (player != null) {
-
                             if (player.isAlive() && !player.isInvisible() && !player.isGM()) {
-                                if (lanzaSpells()) {
-                                   npcLanzaUnSpell(player);
+                                if (isMagical()) {
+                                   npcCastSpell(player);
                                 }
                                 Heading dir = pos().findDirection(player.pos());
                                 mover(dir);
@@ -1202,8 +1212,8 @@ End Enum
 		                        }
                             }
                             if (player.isAlive() && !player.isInvisible()) {
-                                if (lanzaSpells()) {
-                                    npcLanzaUnSpell(player);
+                                if (isMagical()) {
+                                    npcCastSpell(player);
                                 }
                                 Heading dir = pos().findDirection(player.pos());
                                 mover(dir);
@@ -1225,7 +1235,7 @@ End Enum
 
     public void oldMovement() {
         this.movement  = this.oldMovement;
-        this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
+        this.flags().set(FLAG_HOSTIL, this.flags().get(FLAG_OLD_HOSTILE));
         this.attackedBy = "";
     }
 
@@ -1244,8 +1254,8 @@ End Enum
                         if (player == null) break;
 
                         if (player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.isGM()) {
-                            if (lanzaSpells()) {
-                                npcLanzaUnSpell(player);
+                            if (isMagical()) {
+                                npcCastSpell(player);
                             }
                             Heading dir = pos().findDirection(player.pos());
                             mover(dir);
@@ -1270,8 +1280,8 @@ End Enum
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
                         if (!player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.isGM()) {
-                            if (lanzaSpells()) {
-                                npcLanzaUnSpell(player);
+                            if (isMagical()) {
+                                npcCastSpell(player);
                             }
                             Heading dir = pos().findDirection(player.pos());
                             mover(dir);
@@ -1301,46 +1311,142 @@ End Enum
     }
 
     private void aiNpcAtacaNpc() {
-    	// FIXME BROKEN
-    	/*
-    	if (targetNpc != null && targetNpc.pos().map == pos().map) {
-            Map map = this.server.getMap(pos().map);
-            if (map == null) {
-    			return;
-    		}
-    		
-    	}
+    	// AiNpcAtacaNpc
         Map mapa = this.server.getMap(pos().map);
         if (mapa == null) {
 			return;
 		}
-        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
-            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
-                MapPos pos = MapPos.mxy(pos().map, x, y);
-                if (pos.isValid()) {
-                    Npc npc = mapa.getNPC(x, y);
-                    if (npc != null) {
-                        if (this.targetNpc == npc) {
-                            Heading dir = pos().findDirection(pos);
-                            mover(dir);
-                            npcAtacaNpc(npc);
-                            return;
-                        }
-                    }
-                }
-            }
+
+        if (isInmovilized()) {
+        	byte signNS = 0;
+        	byte signEO = 0;
+        	switch (heading()) {
+	        case NORTH:
+	            signNS = -1;
+	            signEO = 0;
+	            break;
+	        case EAST:
+	            signNS = 0;
+	            signEO = 1;
+	            break;
+	        case SOUTH:
+	            signNS = 1;
+	            signEO = 0;
+	            break;
+	        case WEST:
+	        	signNS = 0;
+	            signEO = -1;
+	            break;
+	        default:
+	        	break;
+			}
+	        for (byte y = pos().y; y <= pos().y + signNS * RANGO_VISION_Y; y += (signNS == 0 ? 1 : signNS)) {
+	        	for (byte x = pos().x; x <= pos().x + signEO * RANGO_VISION_X; x += (signEO == 0 ? 1 : signEO)) {
+	                MapPos pos = MapPos.mxy(pos().map, x, y);
+	                if (pos.isValid()) {
+	                    Npc npc = mapa.getNPC(x, y);
+	                    if (npc != null) {
+	                        if (this.targetNpc == npc) {
+	                        	if (getNumero() == ELEMENTAL_FUEGO) {
+	                        		npcLanzaUnSpellSobreNpc(npc);
+	                        		if (npc.npcType() == NpcType.NPCTYPE_DRAGON) {
+	                        			// contraataque
+	                        			npc.canAttack();
+	                        			npc.npcLanzaUnSpellSobreNpc(this);
+	                        		}
+	                        	} else {
+                                    // aca verificamosss la distancia de ataque
+                                    if (pos().distance(npc.pos()) <= 1) {
+                                        npcAtacaNpc(npc);
+                                    }
+	                        	}
+	                        	return;
+	                        }
+	                    }
+	                }
+	            }
+	        }
+        } else {
+        	// not inmovilized
+        	for (byte y = (byte) (pos().y-RANGO_VISION_Y); y <= (byte) (pos().y+RANGO_VISION_Y); y++) {
+        		for (byte x = (byte) (pos().x-RANGO_VISION_X); x <= (byte) (pos().x+RANGO_VISION_X); x++) {
+        			MapPos pos = MapPos.mxy(pos().map, x, y);
+        			if (pos.isValid()) {
+        				Npc npc = mapa.getNPC(x, y);
+        				if (npc != null) {
+        					if (this.targetNpc == npc) {
+	                        	if (getNumero() == ELEMENTAL_FUEGO) {
+	                        		npcLanzaUnSpellSobreNpc(npc);
+	                        		if (npc.npcType() == NpcType.NPCTYPE_DRAGON) {
+	                        			// contraataque
+	                        			npc.canAttack();
+	                        			npc.npcLanzaUnSpellSobreNpc(this);
+	                        		}
+	                        	} else {
+                                    // aca verificamosss la distancia de ataque
+                                    if (pos().distance(npc.pos()) <= 1) {
+                                        npcAtacaNpc(npc);
+                                    }
+	                        	}
+        						
+	                        	if (isInmovilized()) {
+	                        		return;
+	                        	}
+	                        	if (targetNpc() == null) {
+	                        		return;
+	                        	}
+        						Heading heading = pos().findDirection(npc.pos());
+        						mover(heading);
+        						return;
+        					}
+        				}
+        			}
+        		}
+        	}
         }
+        
         // No se encontró al NPC objetivo.
         if (this.petUserOwner != null) {
-            followMaster();
+        	followMaster();
         } else {
-            this.movement  = this.oldMovement;
-            this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
+        	this.movement  = this.oldMovement;
+        	this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
         }
-        */
     }
 
-    public void moverAlAzar() {
+    private void npcLanzaUnSpellSobreNpc(Npc targetNpc) {
+    	if (isMagical()) {
+    		int spellIndex = Util.Azar(0, spellsCount-1);
+    		npcLanzaSpellSobreNpc(targetNpc, spells[spellIndex]);
+    	}
+    	
+    }
+    
+
+    private void npcLanzaSpellSobreNpc(Npc targetNpc, short spellId) {
+    	// NpcLanzaSpellSobreNpc
+    	// solo hechizos ofensivos!
+    	if (!canAttack()) {
+    		return;
+    	}
+    	setCanAttack(false);
+    	
+    	Spell spell = server.getSpell(spellId);
+    	if (spell.SubeHP == 2) {
+	        int daño = Util.Azar(spell.MinHP, spell.MaxHP);
+	        
+            sendPlayWave(spell.WAV);
+            sendCreateFX(spell.FXgrh, spell.loops);
+            
+            targetNpc.stats().removeHP(daño);
+	        // Muere?
+            if (targetNpc.stats().MinHP < 1) {
+            	targetNpc.muereNpc(getPetUserOwner());
+            }
+    	}
+	}
+    
+	public void moverAlAzar() {
         mover(Heading.value(Util.Azar(1, 4)));
     }
 
@@ -1357,9 +1463,9 @@ End Enum
             // ¿Es un guardia?
             if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL || this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
                 guardiasAI();
-            } else if (esHostil() && this.stats.alineacion != 0) {
+            } else if (isHostile() && this.stats.alineacion != 0) {
                 hostilMalvadoAI();
-            } else if (esHostil() && this.stats.alineacion == 0) {
+            } else if (isHostile() && this.stats.alineacion == 0) {
                 hostilBuenoAI();
             }
         } else {
@@ -1436,39 +1542,61 @@ End Enum
         }
     }
 
-    private void npcLanzaUnSpell(Player player) {
-        if (player.isInvisible()) {
+    private void npcCastSpell(Player player) {
+    	// NpcLanzaUnSpell
+    	
+    	if (!canAttack()) {
+    		return;
+    	}
+        if (player.isInvisible() || player.isHidden()) {
 			return;
 		}
-        npcLanzaSpellSobreUser(player, this.spells[Util.Azar(0, this.spellsCount-1)]);
-    }
-
-    private void npcLanzaSpellSobreUser(Player player, short spell) {
-        if (!puedeAtacar()) {
-			return;
-		}
-        if (estaInvisible()) {
-			return;
-		}
-        if (player.isGM()) {
-			return;
-		}
-        this.flags.set(FLAG_PUEDE_ATACAR, false);
+        // Si no se peude usar magia en el mapa, no le deja hacerlo.
+        Map map = this.server.getMap(pos().map);
+        if (map.MagiaSinEfecto) {
+        	return;
+        }        
+        this.flags().set(FLAG_PUEDE_ATACAR, false);
         int daño = 0;
         
-        Spell hechizo = this.server.getSpell(spell);
-        if (hechizo.SubeHP == 1) {
-            daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-            player.sendWave(hechizo.WAV);
-            player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
+        short spellIndex = this.spells[Util.Azar(0, this.spellsCount-1)];
+        Spell spell = this.server.getSpell(spellIndex);
+        if (spell.SubeHP == 1) {
+            daño = Util.Azar(spell.MinHP, spell.MaxHP);
+            player.sendWave(spell.WAV);
+            player.sendCreateFX(spell.FXgrh, spell.loops);
             player.stats().addHP(daño);
             player.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             player.sendUpdateUserStats();
             
-        } else if (hechizo.SubeHP == 2) {
-            daño = Util.Azar(hechizo.MinHP, hechizo.MaxHP);
-            player.sendWave(hechizo.WAV);
-            player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
+        }
+
+        if (spell.SubeHP == 2) {
+            if (player.isGM()) {
+    			return;
+    		}
+            daño = Util.Azar(spell.MinHP, spell.MaxHP);
+            
+            // Si el usuario tiene un sombrero mágico de defensa, se reduce el daño
+            if (player.userInv().tieneCascoEquipado()) {
+            	daño = daño - Util.Azar(
+            			player.userInv().getCasco().DefensaMagicaMin,
+            			player.userInv().getCasco().DefensaMagicaMax);
+            }
+            
+            // Si el usuario tiene un anillo mágico de defensa, se reduce el daño
+            if (player.userInv().tieneAnilloEquipado()) {
+            	daño = daño - Util.Azar(
+            			player.userInv().getAnillo().DefensaMagicaMin,
+            			player.userInv().getAnillo().DefensaMagicaMax);
+            }
+            
+            if (daño < 0) {
+            	daño = 0;
+            }
+            
+            player.sendWave(spell.WAV);
+            player.sendCreateFX(spell.FXgrh, spell.loops);
             player.stats().removeHP(daño);
             player.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             player.sendUpdateUserStats();
@@ -1483,54 +1611,58 @@ End Enum
             }
         }
         
-        if (hechizo.isParaliza() || hechizo.isInmoviliza()) {
+        if (spell.isParaliza() || spell.isInmoviliza()) {
     		if (!player.flags().Paralizado) {
-    			player.sendWave(hechizo.WAV);
-    			player.sendCreateFX(hechizo.FXgrh, hechizo.loops);
+    			player.sendWave(spell.WAV);
+    			player.sendCreateFX(spell.FXgrh, spell.loops);
     			
-    			if (hechizo.isInmoviliza()) {
+    			if (player.userInv().tieneAnilloEquipado() && player.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    	            player.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
+    	            return;
+    			}
+    			
+    			if (spell.isInmoviliza()) {
     				player.flags().Inmovilizado = true;
     			}
     			
     			player.flags().Paralizado = true;
     			player.counters().Paralisis = IntervaloParalizado;
     			player.sendPacket(new ParalizeOKResponse());
-    			/*
-        If UserList(UserIndex).Invent.AnilloEqpObjIndex = SUPERANILLO Then
-            Call WriteConsoleMsg(UserIndex, " Tu anillo rechaza los efectos del hechizo.", FontTypeNames.FONTTYPE_FIGHT)
-            Exit Sub
-        End If
-        
-        If Hechizos(Spell).Inmoviliza = 1 Then
-            UserList(UserIndex).flags.Inmovilizado = 1
-        End If
-          
-        UserList(UserIndex).flags.Paralizado = 1
-        UserList(UserIndex).Counters.Paralisis = IntervaloParalizado
-          
-        Call WriteParalizeOK(UserIndex)
-
-    			 */
     		}
-    		
+        }
+        
+        if (spell.isEstupidez()) { // turbación
+        	if (!player.flags().Estupidez) {
+    			player.sendWave(spell.WAV);
+    			player.sendCreateFX(spell.FXgrh, spell.loops);
+
+    			if (player.userInv().tieneAnilloEquipado() && player.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    	            player.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
+    	            return;
+    			}
+    			
+    			player.flags().Estupidez = true;
+    			player.counters().Ceguera = IntervaloInvisible;
+    			player.sendPacket(new DumbResponse());
+        	}
         }
     }
 
     private void npcAtacaUser(Player player) {
         Map mapa = this.server.getMap(pos().map);
         // El npc puede atacar ???
-        if (!puedeAtacar()) {
+        if (!canAttack()) {
 			return;
 		}
         if (player.isGM()) {
 			return;
 		}
         player.getUserPets().petsAttackNpc(this);
-		setTargetUser(player.getId());
+		targetUser(player.getId());
         if (player.flags().AtacadoPorNpc == 0 && player.flags().AtacadoPorUser == 0) {
 			player.flags().AtacadoPorNpc = this.getId();
 		}
-        this.flags.set(FLAG_PUEDE_ATACAR, false);
+        this.flags().set(FLAG_PUEDE_ATACAR, false);
         if (this.snd1 > 0) {
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x,pos().y));
 		}
@@ -1567,7 +1699,7 @@ End Enum
         if (victima.stats.MinHP < 1) {
             this.movement = this.oldMovement;
             if (this.attackedBy.length() > 0) {
-                this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
+                this.flags().set(FLAG_HOSTIL, this.flags().get(FLAG_OLD_HOSTILE));
             }
             followMaster();
             victima.muereNpc(this.petUserOwner);
@@ -1578,10 +1710,10 @@ End Enum
         Map mapa = this.server.getMap(pos().map);
 
         // El npc puede atacar ???
-        if (!puedeAtacar()) {
+        if (!canAttack()) {
 			return;
 		}
-        this.flags.set(FLAG_PUEDE_ATACAR, false);
+        this.flags().set(FLAG_PUEDE_ATACAR, false);
         victim.targetNpc = this;
         victim.movement = MOV_NPC_ATACA_NPC;
 
@@ -1705,16 +1837,16 @@ End Enum
         ini.setValue(section, "Desc", this.description);
         ini.setValue(section, "Head", this.infoChar.head);
         ini.setValue(section, "Body", this.infoChar.body);
-        ini.setValue(section, "Heading", this.infoChar.heading);
+        ini.setValue(section, "Heading", this.infoChar.heading.value());
         ini.setValue(section, "Movement", this.movement);
         ini.setValue(section, "TipoItems", this.tipoItems);
         ini.setValue(section, "GiveEXP", this.giveEXP);
         ini.setValue(section, "GiveGLD", this.giveGLD);
         ini.setValue(section, "Inflacion", this.inflation);
-        ini.setValue(section, "Attackable", this.flags.get(FLAG_ATACABLE));
-        ini.setValue(section, "Comercia", this.flags.get(FLAG_COMERCIA));
-        ini.setValue(section, "Hostil", this.flags.get(FLAG_HOSTIL));
-        ini.setValue(section, "InvReSpawn", this.flags.get(FLAG_INV_RESPAWN));
+        ini.setValue(section, "Attackable", this.flags().get(FLAG_ATACABLE));
+        ini.setValue(section, "Comercia", this.flags().get(FLAG_COMERCIA));
+        ini.setValue(section, "Hostil", this.flags().get(FLAG_HOSTIL));
+        ini.setValue(section, "InvReSpawn", this.flags().get(FLAG_INV_RESPAWN));
         // Stats
         ini.setValue(section, "Alineacion", this.stats.alineacion);
         ini.setValue(section, "DEF", this.stats.defensa);
@@ -1724,13 +1856,13 @@ End Enum
         ini.setValue(section, "MinHit", this.stats.MinHIT);
         ini.setValue(section, "MinHp", this.stats.MinHP);
         // Flags
-        ini.setValue(section, "ReSpawn", !this.flags.get(FLAG_RESPAWN));
-        ini.setValue(section, "BackUp", this.flags.get(FLAG_BACKUP));
+        ini.setValue(section, "ReSpawn", !this.flags().get(FLAG_RESPAWN));
+        ini.setValue(section, "BackUp", this.flags().get(FLAG_BACKUP));
         ini.setValue(section, "Domable", this.domable);
         // Inventario
-        ini.setValue(section, "NroItems", this.npcInv.size());
-        for (int i = 1; i <= this.npcInv.size(); i++) {
-            ini.setValue(section, "Obj" + i, this.npcInv.getObjeto(i).objid + "-" + this.npcInv.getObjeto(i).cant);
+        ini.setValue(section, "NroItems", this.npcInv().size());
+        for (int i = 1; i <= this.npcInv().size(); i++) {
+            ini.setValue(section, "Obj" + i, this.npcInv().getObjeto(i).objid + "-" + this.npcInv().getObjeto(i).cant);
         }
     }
 
@@ -1744,9 +1876,9 @@ End Enum
 
         this.movement = ini.getShort(section, "Movement");
         this.oldMovement = this.movement;
-        this.flags.set(FLAG_AGUA_VALIDA, ini.getInt(section, "AguaValida") == 1);
-        this.flags.set(FLAG_TIERRA_INVALIDA, ini.getInt(section, "TierraInvalida") == 1);
-        this.flags.set(FLAG_FACCION, ini.getInt(section, "Faccion") == 1);
+        this.flags().set(FLAG_AGUA_VALIDA, ini.getInt(section, "AguaValida") == 1);
+        this.flags().set(FLAG_TIERRA_INVALIDA, ini.getInt(section, "TierraInvalida") == 1);
+        this.flags().set(FLAG_FACCION, ini.getInt(section, "Faccion") == 1);
 
         this.npcType = NpcType.value(ini.getShort(section, "NpcType"));
 
@@ -1757,21 +1889,21 @@ End Enum
 
         this.infoChar.body   = ini.getShort(section, "Body");
         this.infoChar.head   = ini.getShort(section, "Head");
-        this.infoChar.heading      = (byte)ini.getShort(section, "Heading");
+        this.infoChar.heading      = Heading.value(ini.getShort(section, "Heading"));
 
-        this.flags.set(FLAG_ENVENENA, ini.getInt(section, "Veneno") == 1);
-        this.flags.set(FLAG_ATACABLE, ini.getInt(section, "Attackable") == 1);
-        this.flags.set(FLAG_COMERCIA, ini.getInt(section, "Comercia") == 1);
-        this.flags.set(FLAG_HOSTIL,   ini.getInt(section, "Hostile") == 1);
-        this.flags.set(FLAG_INV_RESPAWN, ini.getInt(section, "InvReSpawn") == 1);
-        this.flags.set(FLAG_OLD_HOSTILE, this.flags.get(FLAG_HOSTIL));
+        this.flags().set(FLAG_ENVENENA, ini.getInt(section, "Veneno") == 1);
+        this.flags().set(FLAG_ATACABLE, ini.getInt(section, "Attackable") == 1);
+        this.flags().set(FLAG_COMERCIA, ini.getInt(section, "Comercia") == 1);
+        this.flags().set(FLAG_HOSTIL,   ini.getInt(section, "Hostile") == 1);
+        this.flags().set(FLAG_INV_RESPAWN, ini.getInt(section, "InvReSpawn") == 1);
+        this.flags().set(FLAG_OLD_HOSTILE, this.flags().get(FLAG_HOSTIL));
 
         this.giveEXP   = ini.getInt(section, "GiveEXP");
         //m_expDada   = m_giveEXP;
         this.expCount  = this.giveEXP / 2;
 
         this.domable = ini.getShort(section, "Domable");
-        this.flags.set(FLAG_RESPAWN, ini.getInt(section, "ReSpawn") != 1);
+        this.flags().set(FLAG_RESPAWN, ini.getInt(section, "ReSpawn") != 1);
 
         this.giveGLD         = ini.getInt(section, "GiveGLD");
         this.poderAtaque	= ini.getInt(section, "PoderAtaque");
@@ -1788,10 +1920,10 @@ End Enum
 
         this.inflation   = ini.getInt(section, "Inflacion");
 
-        this.flags.set(FLAG_BACKUP, ini.getInt(section, "Backup") == 1);
-        this.flags.set(FLAG_RESPAWN_ORIG_POS, ini.getInt(section, "OrigPos") == 1);
-        this.flags.set(FLAG_AFECTA_PARALISIS, ini.getInt(section, "AfectaParalisis") == 1);
-        this.flags.set(FLAG_GOLPE_EXACTO, ini.getInt(section, "GolpeExacto") == 1);
+        this.flags().set(FLAG_BACKUP, ini.getInt(section, "Backup") == 1);
+        this.flags().set(FLAG_RESPAWN_ORIG_POS, ini.getInt(section, "OrigPos") == 1);
+        this.flags().set(FLAG_AFECTA_PARALISIS, ini.getInt(section, "AfectaParalisis") == 1);
+        this.flags().set(FLAG_GOLPE_EXACTO, ini.getInt(section, "GolpeExacto") == 1);
 
         this.snd1  = (byte) ini.getShort(section, "Snd1");
         this.snd2  = (byte) ini.getShort(section, "Snd2");
@@ -1800,7 +1932,7 @@ End Enum
 
         //Spells
         this.spellsCount = (byte) ini.getInt(section, "LanzaSpells");
-        this.flags.set(FLAG_LANZA_SPELLS, this.spellsCount > 0);
+        this.flags().set(FLAG_LANZA_SPELLS, this.spellsCount > 0);
         if (this.spellsCount > 0) {
             for (int k = 0; k < (this.spellsCount); k++) {
                 String spellName = "Sp" + (k+1);
@@ -1820,7 +1952,7 @@ End Enum
         this.tipoItems = ini.getShort(section, "TipoItems");
     }
 
-    public short getHeading() {
+    public Heading heading() {
     	return this.infoChar.heading;
     }
 
@@ -1903,4 +2035,9 @@ End Enum
 	protected ObjectInfo findObj(int oid) {
 		return this.server.getObjectInfoStorage().getInfoObjeto(oid);
 	}
+
+	private NpcFlags flags() {
+		return flags;
+	}
+
 }

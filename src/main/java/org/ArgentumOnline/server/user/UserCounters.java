@@ -38,9 +38,9 @@ public class UserCounters {
     int drinkCounter = 0; // contador del inveralo de bebida
     int Veneno = 0;
     public int Paralisis = 0;
-    int Ceguera = 0;
-    int Estupidez = 0;
-    int Invisibilidad = 0;
+    public int Ceguera = 0;
+    public int Estupidez = 0;
+    public int Invisibilidad = 0;
     public long PiqueteC = 0;
 	public long Pena = 0;
     public int Pasos = 0;

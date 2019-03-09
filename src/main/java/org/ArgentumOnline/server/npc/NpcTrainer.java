@@ -56,7 +56,7 @@ public class NpcTrainer extends Npc {
     	for (int i = 0; i < this.pets.length; i++) {
     		if (this.pets[i] == null) {
     			this.pets[i] = pet;
-                pet.setPetNpcOwner(this);
+                pet.petNpcOwner(this);
                 this.petsCount++;
                 return;
     		}

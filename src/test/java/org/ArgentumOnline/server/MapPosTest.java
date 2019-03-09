@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.junit.jupiter.api.Test;
 
 public class MapPosTest {

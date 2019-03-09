@@ -60,11 +60,6 @@ public interface Constants {
 	final static int max_border_x = 3;
 	final static int min_border_x = 4;
 	
-	final static short heading_n = 1;
-	final static short heading_e = 2;
-	final static short heading_s = 3;
-	final static short heading_w = 4;
-
     final static int IntervaloSed = 6000;
     final static int IntervaloHambre = 6500;
     final static int IntervaloFrio = 15;
@@ -206,8 +201,8 @@ public interface Constants {
 	public final static short LAUDMAGICO = 696;
 	public final static short FLAUTAMAGICA = 208;
 	public final static short SUPERANILLO = 700;	
-	public final static short HELEMENTAL_FUEGO = 26;
-	public final static short HELEMENTAL_TIERRA = 28;
+	public final static short ELEMENTAL_FUEGO = 26;
+	public final static short ELEMENTAL_TIERRA = 28;
 
 /*
 Public Const iFragataFantasmal = 87

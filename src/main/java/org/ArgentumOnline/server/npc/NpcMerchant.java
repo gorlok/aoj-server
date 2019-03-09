@@ -62,7 +62,7 @@ public class NpcMerchant extends Npc {
                         //System.out.println("DEBUG: objTmp=" + objTmp);
                         //System.out.println("DEBUG: objid=" + objid);
                         //System.out.println("DEBUG: objcnt=" + objcnt);
-                        this.npcInv.setObjeto(j+1, new InventoryObject(Short.parseShort(objid), Integer.parseInt(objcnt)));
+                        npcInv().setObjeto(j+1, new InventoryObject(Short.parseShort(objid), Integer.parseInt(objcnt)));
                         //m_inv.getObjeto(j+1).objid = Short.parseShort(objid);
                         //m_inv.getObjeto(j+1).cant  = Integer.parseInt(objcnt);
                     } catch (Exception e) {
@@ -79,19 +79,19 @@ public class NpcMerchant extends Npc {
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
-        for (byte i = 1; i <= this.npcInv.size(); i++) {
-            if (this.npcInv.getObjeto(i).objid > 0) {
+        for (byte i = 1; i <= npcInv().size(); i++) {
+            if (npcInv().getObjeto(i).objid > 0) {
                 // Calculamos el porc de inflacion del npc
-                ObjectInfo info = findObj(this.npcInv.getObjeto(i).objid);
+                ObjectInfo info = findObj(npcInv().getObjeto(i).objid);
                 double infla = (this.inflation *  info.Valor) / 100;
                 double val = (info.Valor + infla) / dto;
                 player.sendPacket(new ChangeNPCInventorySlotResponse( 
                 		i, 
                 		info.Nombre, 
-                		(short) this.npcInv.getObjeto(i).cant, 
+                		(short) npcInv().getObjeto(i).cant, 
                 		((int) val),
                 		info.GrhIndex, 
-                		this.npcInv.getObjeto(i).objid, 
+                		npcInv().getObjeto(i).objid, 
                 		(byte) info.objType.value(),
                 		info.MaxHIT, 
                 		info.MinHIT, 
@@ -111,11 +111,11 @@ public class NpcMerchant extends Npc {
         // NPC VENDE UN OBJ A UN USUARIO
         player.sendUpdateUserStats();
         // Calculamos el valor unitario
-        if (this.npcInv.getObjeto(slotNpc).objid == 0) {
+        if (npcInv().getObjeto(slotNpc).objid == 0) {
 			return;
 		}
         // Calculamos el porc de inflacion del npc
-        ObjectInfo info = findObj(this.npcInv.getObjeto(slotNpc).objid);
+        ObjectInfo info = findObj(npcInv().getObjeto(slotNpc).objid);
         double dto = player.descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
@@ -128,9 +128,9 @@ public class NpcMerchant extends Npc {
             return;
         }
         
-        if (this.npcInv.getObjeto(slotNpc).cant > 0) {
-            if (amount > this.npcInv.getObjeto(slotNpc).cant) {
-                amount = this.npcInv.getObjeto(slotNpc).cant;
+        if (npcInv().getObjeto(slotNpc).cant > 0) {
+            if (amount > npcInv().getObjeto(slotNpc).cant) {
+                amount = npcInv().getObjeto(slotNpc).cant;
             }
             // Agregamos el obj que compro al inventario
     		if (npcInv().getObjeto(slotNpc).cant <= 0) {
@@ -178,7 +178,7 @@ public class NpcMerchant extends Npc {
         // Actualizamos el oro
         player.sendUpdateUserStats();
         // Actualizamos la ventana de comercio
-        short objid = this.npcInv.getObjeto(slotNpc).objid;
+        short objid = npcInv().getObjeto(slotNpc).objid;
         sendNpcInventoryToUser(player);
         player.sendPacket(new TradeOKResponse());
         player.updateVentanaComercio(objid, amount);
@@ -210,23 +210,23 @@ public class NpcMerchant extends Npc {
             }
             int slot_inv = 0;
             // ¿Ya tiene un objeto de este tipo?
-            for (int i = 1; i <= this.npcInv.size(); i++) {
-                if (this.npcInv.getObjeto(i).objid == objid && this.npcInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
+            for (int i = 1; i <= npcInv().size(); i++) {
+                if (npcInv().getObjeto(i).objid == objid && npcInv().getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
                     slot_inv = i;
                     break;
                 }
             }
             // Sino se fija por un slot vacio antes del slot devuelto
             if (slot_inv == 0) {
-                slot_inv = this.npcInv.getSlotLibre();
+                slot_inv = npcInv().getSlotLibre();
                 //If Slot <= MAX_INVENTORY_SLOTS Then Npclist(NpcIndex).Invent.NroItems = Npclist(NpcIndex).Invent.NroItems + 1
             }
             if (slot_inv > 0) { // Slot valido
                 // Mete el obj en el slot
-                if (this.npcInv.getObjeto(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
+                if (npcInv().getObjeto(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
                     // Menor que MAX_INV_OBJS
-                    this.npcInv.getObjeto(slot_inv).objid = objid;
-                    this.npcInv.getObjeto(slot_inv).cant += cant;
+                    npcInv().getObjeto(slot_inv).objid = objid;
+                    npcInv().getObjeto(slot_inv).cant += cant;
                     player.userInv().quitarUserInvItem(slot, cant);
                     // Le sumamos al user el valor en oro del obj vendido
                     //double monto = ((info.Valor / 3 + infla) * cant);
@@ -258,32 +258,32 @@ public class NpcMerchant extends Npc {
     }
     
     private void removeBuyedItemFromNpcInventory(short slot, int cant) {
-        short objid = this.npcInv.getObjeto(slot).objid;
+        short objid = npcInv().getObjeto(slot).objid;
         // Quita un Obj
         ObjectInfo info = findObj(objid);
         if (!info.esCrucial()) {
-            this.npcInv.getObjeto(slot).cant -= cant;
-            if (this.npcInv.getObjeto(slot).cant <= 0) {
-                this.npcInv.getObjeto(slot).objid = 0;
-                this.npcInv.getObjeto(slot).cant = 0;
-                if (this.npcInv.isEmpty() && invReSpawn()) {
+            npcInv().getObjeto(slot).cant -= cant;
+            if (npcInv().getObjeto(slot).cant <= 0) {
+                npcInv().getObjeto(slot).objid = 0;
+                npcInv().getObjeto(slot).cant = 0;
+                if (npcInv().isEmpty() && invReSpawn()) {
                     // Reponemos el inventario
                     loadInitialInventory(); 
                 }
             }
         } else {
-            this.npcInv.getObjeto(slot).cant -= cant;
-            if (this.npcInv.getObjeto(slot).cant <= 0) {
-                this.npcInv.getObjeto(slot).objid = 0;
-                this.npcInv.getObjeto(slot).cant = 0;
+            npcInv().getObjeto(slot).cant -= cant;
+            if (npcInv().getObjeto(slot).cant <= 0) {
+                npcInv().getObjeto(slot).objid = 0;
+                npcInv().getObjeto(slot).cant = 0;
                 if (!quedanItems(objid)) {
                 	int cantNpcDat = encontrarCant(objid);
                 	if (cantNpcDat > 0) {
-	                    this.npcInv.getObjeto(slot).objid = objid;
-						this.npcInv.getObjeto(slot).cant = cantNpcDat;
+	                    npcInv().getObjeto(slot).objid = objid;
+						npcInv().getObjeto(slot).cant = cantNpcDat;
                 	}
                 }
-                if (this.npcInv.isEmpty() && invReSpawn()) {
+                if (npcInv().isEmpty() && invReSpawn()) {
                     // Reponemos el inventario
                     loadInitialInventory(); 
                 }
@@ -299,7 +299,7 @@ public class NpcMerchant extends Npc {
 
     private boolean quedanItems(short objid) {
         for (int i = 1; i <= MAX_INVENTORY_SLOTS; i++) {
-            if (this.npcInv.getObjeto(i).objid == objid) {
+            if (npcInv().getObjeto(i).objid == objid) {
                 return true;
             }
         }
@@ -309,7 +309,7 @@ public class NpcMerchant extends Npc {
     private int encontrarCant(short objid) {
     	// FIXME es necesario que lea del archivo?
     	if (DEBUG)
-    		System.out.println("+++++DEBUG++++ encontrarCant() " + this.npcInv.isEmpty());
+    		System.out.println("+++++DEBUG++++ encontrarCant() " + npcInv().isEmpty());
     	
         IniFile ini = this.server.getNpcLoader().getIniFile(this.npcNumber, false);
         String section = "NPC" + this.npcNumber;

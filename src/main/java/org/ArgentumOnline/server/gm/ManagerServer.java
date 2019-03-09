@@ -630,7 +630,7 @@ public class ManagerServer {
 
 		admin.sendMessage(usuario.getNick() + " tiene " + pets.size() + " mascotas.", FontType.FONTTYPE_SERVER);
 		pets.forEach(pet -> {
-			admin.sendMessage(" mascota " + pet.getName() + " esta en " + pet.pos() + " tiempo=" + pet.getContadores().TiempoExistencia,
+			admin.sendMessage(" mascota " + pet.getName() + " esta en " + pet.pos() + " tiempo=" + pet.counters().TiempoExistencia,
 					FontType.FONTTYPE_SERVER);
 		});
 	}

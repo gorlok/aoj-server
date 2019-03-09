@@ -43,7 +43,7 @@ public class Spell implements Constants {
     boolean Maldicion      = false;
     boolean RemoverMaldicion = false;
     boolean Bendicion      = false;
-    boolean Estupidez      = false;
+    boolean estupidez      = false;
     boolean Ceguera        = false;
     boolean Revivir        = false;
     boolean Morph          = false;
@@ -54,7 +54,7 @@ public class Spell implements Constants {
     /* Tipo */
     SpellAction spellAction;
     
-    public short WAV   = 0;
+    public byte  WAV   = 0;
     public short FXgrh = 0;
     public char  loops = 0;
     
@@ -125,6 +125,10 @@ public class Spell implements Constants {
 		return inmoviliza;
 	}
     
+    public boolean isEstupidez() {
+    	return estupidez;
+    }
+    
     public void load(IniFile ini) {
         String section = "HECHIZO" + this.Numero;
         this.Nombre          = ini.getString(section, "Nombre");
@@ -136,7 +140,7 @@ public class Spell implements Constants {
         
         this.spellAction    = SpellAction.value(ini.getShort(section, "Tipo"));
         
-        this.WAV     = ini.getShort(section, "WAV");
+        this.WAV     = (byte) ini.getShort(section, "WAV");
         this.FXgrh   = ini.getShort(section, "FXgrh");
         this.loops   = (char) ini.getShort(section, "loops");
         
@@ -182,7 +186,7 @@ public class Spell implements Constants {
         this.Maldicion       = ini.getShort(section, "Maldicion") == 1;
         this.RemoverMaldicion= ini.getShort(section, "RemoverMaldicion") == 1;
         this.Bendicion       = ini.getShort(section, "Bendicion") == 1;
-        this.Estupidez       = ini.getShort(section, "Estupidez") == 1;
+        this.estupidez       = ini.getShort(section, "Estupidez") == 1;
         this.RemoverEstupidez = ini.getShort(section, "RemoverEstupidez") == 1;
         this.Ceguera         = ini.getShort(section, "Ceguera") == 1;
         this.Revivir         = ini.getShort(section, "Revivir") == 1;

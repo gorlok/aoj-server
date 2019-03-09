@@ -519,7 +519,7 @@ public class Map implements Constants {
         npc.pos().set(this.mapNumber, x, y);
       
         this.areasData.loadNpc(npc);
-        sendToArea(x, y, npc.createCC());
+        sendToArea(x, y, npc.characterCreate());
         
         return true;
     }
@@ -741,7 +741,7 @@ public class Map implements Constants {
     /** send NPCs in map */
     public void sendNpcs(Player player) {
         for (Npc npc : this.npcs) {
-            player.sendPacket(npc.createCC());
+            player.sendPacket(npc.characterCreate());
         }
     }
     
@@ -764,7 +764,6 @@ public class Map implements Constants {
         // le asignamos la nueva posición al usuario
         player.pos().set(this.mapNumber, x, y);
         
-		//JAO: Nuevo sistema de areas !!
         this.areasData.sendToAreaButIndex(this, x, y, player.getId(), 
         		new CharacterMoveResponse(player.getId(), x, y));
         this.areasData.checkUpdateNeededUser(player, player.infoChar().heading());
@@ -1227,7 +1226,7 @@ public class Map implements Constants {
         for (Object element : this.npcs) {
             Npc npc = (Npc) element;
             // ¿esta vivo?
-            if (npc.isNpcActive() && npc.esHostil() && npc.stats.alineacion == 2) {
+            if (npc.isNpcActive() && npc.isHostile() && npc.stats.alineacion == 2) {
                 cant++;
             }
         }
@@ -1389,7 +1388,7 @@ public class Map implements Constants {
     }
     
     public void construirAreaNpc(Player player, Npc npc) {
-    	player.sendPacket(npc.createCC());
+    	player.sendPacket(npc.characterCreate());
     }
     
     public void doFX() {

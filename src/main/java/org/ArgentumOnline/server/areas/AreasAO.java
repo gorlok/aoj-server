@@ -22,6 +22,7 @@ import java.util.BitSet;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjType;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.net.ServerPacket;
@@ -43,7 +44,7 @@ public class AreasAO implements Constants {
 	 * if a new user enter in the game, or change map,
 	 * we defined your area using a head that does not exists
 	 */
-	public final static byte USER_NUEVO = heading_w + 1;
+	public final static Heading USER_NUEVO = Heading.NONE;
 	
 	//JAO: aqu{i almacenamos una áreaID para cada POS del usuario
 	public int[][] areasInfo = new int[101][101];
@@ -105,7 +106,7 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos cuando un usuario cambia de área, y updatea el área ID y adyacentes
 	 */
-	public void checkUpdateNeededUser(Player user, short dir) {
+	public void checkUpdateNeededUser(Player user, Heading heading) {
 		
 		var userArea = user.getUserArea();
 		
@@ -119,8 +120,8 @@ public class AreasAO implements Constants {
 		minX = userArea.minX;
 		minY = userArea.minY;
 		
-		switch (dir) {
-		case heading_n:
+		switch (heading) {
+		case NORTH:
 			maxY = minY - 1;
 			minY = minY - 9;
 			maxX = minX + 26;
@@ -128,7 +129,7 @@ public class AreasAO implements Constants {
 			userArea.minY = minY;
 			break;
 			
-		case heading_s:
+		case SOUTH:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
@@ -136,7 +137,7 @@ public class AreasAO implements Constants {
 			userArea.minY = minY - 18;
 			break;
 			
-		case heading_w:
+		case WEST:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
@@ -144,7 +145,7 @@ public class AreasAO implements Constants {
 			userArea.minY = minY;
 			break;
 			
-		case heading_e:
+		case EAST:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
@@ -194,14 +195,14 @@ public class AreasAO implements Constants {
     				user.sendPacket(other.characterCreate());
     				other.sendPacket(user.characterCreate());
     				
-    			} else if (dir == USER_NUEVO) {
+    			} else if (heading == USER_NUEVO) {
     				user.sendPacket(user.characterCreate());
     			}
     			
     			}
     			
     			if (map.hasNpc(x, y)) {
-    				user.sendPacket(map.getNpc(x, y).createCC());
+    				user.sendPacket(map.getNpc(x, y).characterCreate());
     			}
     			
     			if (map.hasObject(x, y)) {
@@ -232,7 +233,7 @@ public class AreasAO implements Constants {
 	/**
 	 * ídem que el método checkUpdateNeededUser, pero con Npcs
 	 */
-	public void checkUpdateNeededNpc(Npc npc, byte dir) {
+	public void checkUpdateNeededNpc(Npc npc, Heading heading) {
 		
 		if (npc.getArea() == areasInfo[npc.pos().x][npc.pos().y]) return;
 		
@@ -242,8 +243,8 @@ public class AreasAO implements Constants {
 		minX = npc.minX;
 		minY = npc.minY;
 		
-		switch (dir) {
-		case heading_n:
+		switch (heading) {
+		case NORTH:
 			maxY = minY - 1;
 			minY = minY - 9;
 			maxX = minX + 26;
@@ -251,7 +252,7 @@ public class AreasAO implements Constants {
 			npc.minY = minY;
 			break;
 			
-		case heading_s:
+		case SOUTH:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
@@ -259,7 +260,7 @@ public class AreasAO implements Constants {
 			npc.minY = minY - 18;
 			break;
 			
-		case heading_w:
+		case WEST:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
@@ -267,7 +268,7 @@ public class AreasAO implements Constants {
 			npc.minY = minY;
 			break;
 			
-		case heading_e:
+		case EAST:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
@@ -307,7 +308,7 @@ public class AreasAO implements Constants {
         		for(byte y = (byte) minY; y < maxY; y++) {
         			if (map.hasPlayer(x, y)) {
         				Player jao = map.getPlayer(x, y);
-        				jao.sendPacket(npc.createCC());
+        				jao.sendPacket(npc.characterCreate());
         			}
         		}
     		}

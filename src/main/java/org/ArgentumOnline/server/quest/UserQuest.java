@@ -46,7 +46,7 @@ public class UserQuest {
     }
     
     public void checkNpcEnemigo(Player player, Npc npc) {
-        if (this.m_enQuest && npc.esDeQuest()) {
+        if (this.m_enQuest && npc.isQuest()) {
             Quest quest  = this.server.quest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;

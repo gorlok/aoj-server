@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-09
+- se reimplementan los hechizos que lanzan los NPCs
+
 ### 2019-03-08
 - se reimplementa y revisan todo el sistema de hechizos... ni el Mago Blanco se animó a tanto (?)
 

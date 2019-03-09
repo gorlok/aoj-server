@@ -22,9 +22,9 @@ Please note that sources are keep in ISO-8859-1.
 
 # Argentum Online Client
 
-It's planned to build a proper client using libGDX (OpenGL).
+It's planned to be build a proper client using libGDX (OpenGL).
 
-By the time being, you can use any AO Client compatible. Currently tested with [GS-Zone AO v.12.3-Final](https://www.gs-zone.org/temas/cliente-servidor-v0-12-3-completos-y-funcionales.31776/).
+By the time being, you can use any AO Client compatible. Currently tested with [this one](https://github.com/gorlok/aoj-client), based on GS-Zone AO v.12.3-Final.
 
 ## History
 

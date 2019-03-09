@@ -40,12 +40,12 @@ import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.Terrain;
-import org.ArgentumOnline.server.map.MapPos.Heading;
 import org.ArgentumOnline.server.map.Zone;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
@@ -455,7 +455,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		if (!npc.esNoble()) {
+		if (!npc.isNoble()) {
 			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
 					npc.getId());
 			return;
@@ -464,7 +464,7 @@ public class Player extends AbstractCharacter {
 			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
 			return;
 		}
-		if (!npc.esFaccion()) {
+		if (!npc.isFaction()) {
 			userFaction().enlistarArmadaReal(npc);
 		} else {
 			userFaction().enlistarCaos(npc);
@@ -477,7 +477,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		if (!npc.esNoble()) {
+		if (!npc.isNoble()) {
 			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
 					npc.getId());
 			return;
@@ -485,7 +485,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive("¡¡Estás muerto!! Busca un sacerdote y no me hagas perder el tiempo!")) {
 			return;
 		}
-		if (!npc.esFaccion()) {
+		if (!npc.isFaction()) {
 			if (!userFaction().ArmadaReal) {
 				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
@@ -659,7 +659,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
-		if (npc != null && npc.esNoble()) {
+		if (npc != null && npc.isNoble()) {
 			retirarUsuarioFaccion(npc);
 	}
 	}
@@ -668,14 +668,14 @@ public class Player extends AbstractCharacter {
 		// Se quiere retirar de la armada
 		if (checkNpcNear(npc, DISTANCE_FACTION)) {
 			if (this.faction.ArmadaReal) {
-				if (!npc.esFaccion()) {
+				if (!npc.isFaction()) {
 					this.faction.expulsarFaccionReal();
 					hablar(COLOR_BLANCO, "Serás bienvenido a las fuerzas imperiales si deseas regresar.", npc.getId());
 				} else {
 					hablar(COLOR_BLANCO, "¡¡¡Sal de aquí bufón!!!", npc.getId());
 				}
 			} else if (this.faction.FuerzasCaos) {
-				if (npc.esFaccion()) {
+				if (npc.isFaction()) {
 					this.faction.expulsarFaccionCaos();
 					hablar(COLOR_BLANCO, "Ya volverás arrastrándote.", npc.getId());
 				} else {
@@ -1015,7 +1015,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		// ¿El Npc puede comerciar?
-		if (!npc.comercia()) {
+		if (!npc.isTrade()) {
 			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
@@ -1043,7 +1043,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		// ¿El Npc puede comerciar?
-		if (!npc.comercia()) {
+		if (!npc.isTrade()) {
 			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
@@ -1113,7 +1113,7 @@ public class Player extends AbstractCharacter {
 		Npc npc = getNearNpcSelected(DISTANCE_MERCHANT);
 		if (npc != null) {
 			// ¿El Npc puede comerciar?
-			if (!npc.comercia()) {
+			if (!npc.isTrade()) {
 				if (npc.getDesc().length() > 0) {
 					hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 				}
@@ -1686,7 +1686,7 @@ public class Player extends AbstractCharacter {
 				tu = this.server.playerById(flags().TargetUser);
 				Npc npc = this.server.npcById(flags().TargetNpc);
 				if (npc != null) {
-					if (!npc.getAttackable()) {
+					if (!npc.isAttackable()) {
 						return;
 					}
 				} else {
@@ -1876,7 +1876,7 @@ public class Player extends AbstractCharacter {
 							sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
 							return;
 						}
-						if (npc.atacadoPorUsuario()) {
+						if (npc.isAttackedByUser()) {
 							sendMessage("No puedes domar una criatura que está luchando con un jugador.", FontType.FONTTYPE_INFO);
 							return;
 						}
@@ -1964,7 +1964,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		if (!npc.esFaccion()) {
+		if (!npc.isFaction()) {
 			if (!this.faction.ArmadaReal) {
 				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
@@ -2023,11 +2023,11 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		if (!npc.esSacerdote() && !npc.esSacerdoteNewbies()) {
+		if (!npc.isPriest() && !npc.isPriestNewbies()) {
 			sendMessage("No poseo el poder de revivir a otros, mejor encuentra un sacerdote.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (npc.esSacerdoteNewbies() && !isNewbie()) {
+		if (npc.isPriestNewbies() && !isNewbie()) {
 			sendMessage("Lo siento, sólo puedo resucitar newbies.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2052,7 +2052,7 @@ public class Player extends AbstractCharacter {
 		if (npc == null) {
 			return;
 		}
-		if (!npc.esSacerdote() && !npc.esSacerdoteNewbies()) {
+		if (!npc.isPriest() && !npc.isPriestNewbies()) {
 			sendMessage("No poseo el poder para curar a otros, mejor encuentra un sacerdote.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2110,7 +2110,7 @@ public class Player extends AbstractCharacter {
             }
         }
         
-	    this.infoChar.heading = newHeading;
+	    this.infoChar.heading = Heading.value(newHeading);
         sendCharacterChange();
 	}
 
@@ -2235,7 +2235,7 @@ public class Player extends AbstractCharacter {
 					}
 				} else if ((npc = mapa.getNPC(x, y)) != null) {
 					flags().TargetNpc = npc.getId();
-					if (npc.comercia()) {
+					if (npc.isTrade()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
 						commerceStart();
 					} else if (npc.isBankCashier()) {
@@ -2247,7 +2247,7 @@ public class Player extends AbstractCharacter {
 						if (checkNpcNear(npc, DISTANCE_CASHIER)) {
 							iniciarDeposito();
 						}
-					} else if (npc.esSacerdote() || npc.esSacerdoteNewbies()) {
+					} else if (npc.isPriest() || npc.isPriestNewbies()) {
 						// Extensión de AOJ - 01/02/2007
 						// Doble clic sobre el sacerdote hace /RESUCITAR o /CURAR
 						if (isAlive()) {
@@ -2748,7 +2748,7 @@ public class Player extends AbstractCharacter {
 		var pets = getUserPets().getPets().stream().collect(Collectors.toList());
 
 		pets.forEach(pet -> {
-			if (pet.getContadores().TiempoExistencia > 0) {
+			if (pet.counters().TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa
 				getUserPets().removePet(pet);
 			} else if (pet.puedeReSpawn()) {
@@ -2756,7 +2756,7 @@ public class Player extends AbstractCharacter {
 
 				Map oldMapa = this.server.getMap(pet.pos().map);
 				Map newMapa = this.server.getMap(pos().map);
-				MapPos lugarLibre = newMapa.closestLegalPosNpc(pos().x, pos().y, pet.esAguaValida(), pet.esTierraInvalida(), true);
+				MapPos lugarLibre = newMapa.closestLegalPosNpc(pos().x, pos().y, pet.isWaterValid(), pet.isLandInvalid(), true);
 
 				if (lugarLibre != null) {
 					// La mascota lo sigue al nuevo mapa, y mantiene su control.
@@ -2887,7 +2887,7 @@ public class Player extends AbstractCharacter {
 
 		getUserPets().addPet(npc);
 		npc.setPetUserOwner(this);
-		npc.getContadores().TiempoExistencia = IntervaloInvocacion; // Duración que tendrá la invocación
+		npc.counters().TiempoExistencia = IntervaloInvocacion; // Duración que tendrá la invocación
 		npc.setSpellSpawnedPet(true);
 		npc.setGiveGLD(0);
 		npc.followMaster();
@@ -2906,7 +2906,7 @@ public class Player extends AbstractCharacter {
 				(short)this.infoChar.body(),
 				(short)this.infoChar.head(),
 
-				(byte)this.infoChar.heading(),
+				(byte)this.infoChar.heading().value(),
 				(byte)pos().x,
 				(byte)pos().y,
 
@@ -2949,7 +2949,7 @@ public class Player extends AbstractCharacter {
 				getId(),
 				this.infoChar.body(),
 				this.infoChar.head(),
-				this.infoChar.heading(),
+				this.infoChar.heading().value(),
 
 				pos().x, pos().y,
 				this.infoChar.weapon(),
@@ -2967,7 +2967,7 @@ public class Player extends AbstractCharacter {
 				getId(),
 				this.infoChar.body(),
 				this.infoChar.head(),
-				this.infoChar.heading(),
+				this.infoChar.heading().value(),
 
 				this.infoChar.weapon(),
 				this.infoChar.shield(),
@@ -3759,7 +3759,7 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			MapPos attackPos = pos().copy();
-			attackPos.moveToHeading(Heading.value(this.infoChar.heading()));
+			attackPos.moveToHeading(this.infoChar.heading());
 			// Exit if not legal
 			if (!attackPos.isValid()) {
 				sendWave(SOUND_SWING);
@@ -3777,7 +3777,7 @@ public class Player extends AbstractCharacter {
 			// Look for Npc
 			Npc attackedNpc = mapa.getNPC(attackPos.x, attackPos.y);
 			if (attackedNpc != null) {
-				if (attackedNpc.getAttackable()) {
+				if (attackedNpc.isAttackable()) {
 					if (attackedNpc.getPetUserOwner() != null && mapa.isSafeMap()) {
 						sendMessage("No podés atacar mascotas en zonas seguras", FONTTYPE_FIGHT);
 						return;
@@ -4023,7 +4023,7 @@ public class Player extends AbstractCharacter {
 
 	public void allPetsAttackUser(Player objetivo) {
 		getUserPets().getPets().forEach(pet -> {
-			pet.setAttackedBy(objetivo.getNick());
+			pet.attackedByUserName(objetivo.getNick());
 			pet.defenderse();
 		});
 	}
@@ -4125,7 +4125,7 @@ public class Player extends AbstractCharacter {
 
 	public void npcAtacado(Npc npc) {
 		// Guardamos el usuario que ataco el npc
-		npc.setAttackedBy(this.userName);
+		npc.attackedByUserName(this.userName);
 		if (npc.getPetUserOwner() != null) {
 			npc.getPetUserOwner().allPetsAttackUser(this);
 		}
@@ -4643,9 +4643,9 @@ public class Player extends AbstractCharacter {
 
 	private void checkSummonTimeout() {
 		getUserPets().getPets().forEach(pet -> {
-			if (pet.getContadores().TiempoExistencia > 0) {
-				pet.getContadores().TiempoExistencia--;
-				if (pet.getContadores().TiempoExistencia == 0) {
+			if (pet.counters().TiempoExistencia > 0) {
+				pet.counters().TiempoExistencia--;
+				if (pet.counters().TiempoExistencia == 0) {
 					removePet(pet);
 					pet.muereNpc(null);
 				}

@@ -69,15 +69,15 @@ public class UserPets {
 	 */
 	public void petsFollowMaster(Npc targetNpc) {
 		pets.stream()
-			.filter(pet -> pet.getTargetNpc() == targetNpc)
+			.filter(pet -> pet.targetNpc() == targetNpc)
 			.forEach(pet -> pet.followMaster());
 	}
 
 	public void petsFollowMaster(short target) {
 		pets.stream()
-			.filter(pet -> pet.getTargetUser()== target)
+			.filter(pet -> pet.targetUser()== target)
 			.forEach(pet -> {
-				pet.setTargetUser(0);
+				pet.targetUser(0);
 				pet.followMaster();
 			});
 	}

@@ -32,7 +32,7 @@ import org.ArgentumOnline.server.Clazz;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.inventory.InventoryObject;
-import org.ArgentumOnline.server.map.MapPos.Heading;
+import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
@@ -115,14 +115,14 @@ public class UserStorage {
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
 		user.homeland = (byte) ini.getShort("INIT", "Hogar");
-		user.infoChar().heading = (byte)ini.getShort("INIT", "Heading");
+		user.infoChar().heading = Heading.value(ini.getShort("INIT", "Heading"));
 
 		user.origChar().head = ini.getShort("INIT", "Head");
 		user.origChar().body = ini.getShort("INIT", "Body");
 		user.origChar().weapon = ini.getShort("INIT", "Arma");
 		user.origChar().shield = ini.getShort("INIT", "Escudo");
 		user.origChar().helmet = ini.getShort("INIT", "Casco");
-		user.origChar().heading = (byte)(short)Heading.SOUTH.ordinal();
+		user.origChar().heading = Heading.SOUTH;
 
 		user.bannedBy = ini.getString("BAN", "BannedBy");
 		user.bannedReason = ini.getString("BAN", "Reason");
@@ -366,7 +366,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Clase", user.clazz().id());
 			ini.setValue("INIT", "Password", user.password);
 			ini.setValue("INIT", "Desc", user.description);
-			ini.setValue("INIT", "Heading", user.infoChar().heading);
+			ini.setValue("INIT", "Heading", user.infoChar().heading.value());
 
 			if (user.flags().Muerto || user.flags().Invisible || user.flags().Navegando) {
 				ini.setValue("INIT", "Head", user.origChar().head);

@@ -608,7 +608,7 @@ public class UserSpells implements Constants {
 			result = true;
 		}
 		
-		if (spell.Estupidez) {
+		if (spell.estupidez) {
 			if (targetUser == player) {
 		    	this.player.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
 		    	return false;
@@ -636,11 +636,11 @@ public class UserSpells implements Constants {
 		// hechizoEstadoNPC
 		if (spell.Invisibilidad) {
 			sendInfoSpell();
-			npc.hacerInvisible();
+			npc.makeInvisible();
 			return true;
 		}
 		if (spell.Envenena) {
-			if (!npc.getAttackable()) {
+			if (!npc.isAttackable()) {
 				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
@@ -654,23 +654,23 @@ public class UserSpells implements Constants {
 			return true;
 		}
 		if (spell.Maldicion) {
-			if (!npc.getAttackable()) {
+			if (!npc.isAttackable()) {
 				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
 			sendInfoSpell();
-			npc.volverMaldito();
+			npc.turnDamned();
 			return true;
 		}
 		if (spell.RemoverMaldicion) {
 			sendInfoSpell();
-			npc.quitarMaldicion();
+			npc.removeDamned();
 			return true;
 		}
 		if (spell.Bendicion) {
 			// No hay contra-hechizo de bendicion???
 			sendInfoSpell();
-			npc.volverBendito();
+			npc.turnBlessed();
 			return true;
 		}
 		if (spell.isParaliza()) {
@@ -683,7 +683,7 @@ public class UserSpells implements Constants {
 			this.player.sendMessage("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
 		}
 		if (spell.RemoverParalisis) {
-			if (npc.estaParalizado() || npc.estaInmovilizado()) {
+			if (npc.isParalized() || npc.isInmovilized()) {
 				if (npc.getPetUserOwner() == this.player) {
 					sendInfoSpell();
 					npc.desparalizar();
@@ -732,7 +732,7 @@ public class UserSpells implements Constants {
 			
 		} else if (spell.SubeHP == 2) {
 			// Dañar la salud
-			if (!npc.getAttackable()) {
+			if (!npc.isAttackable()) {
 				//this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
@@ -849,13 +849,13 @@ public class UserSpells implements Constants {
 			int daño = Util.Azar(spell.MinHam, spell.MaxHam);
 			targetUser.stats.quitarHambre(daño);
 			if (this.player != targetUser) {
-				this.player.sendMessage("Le has quitado " + daño
+				this.player.sendMessage("Le has provocado " + daño
 						+ " puntos de hambre a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.player.getNick() + " te ha quitado " + daño
+				targetUser.sendMessage(this.player.getNick() + " te ha provocado " + daño
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
-				this.player.sendMessage("Te has quitado " + daño
+				this.player.sendMessage("Te has provocado " + daño
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			if (targetUser.stats.eaten < 1) {
@@ -898,14 +898,14 @@ public class UserSpells implements Constants {
 			int daño = Util.Azar(spell.MinSed, spell.MaxSed);
 			targetUser.stats.quitarSed(daño);
 			if (this.player != targetUser) {
-				this.player.sendMessage("Le has quitado " + daño
+				this.player.sendMessage("Le has provocado " + daño
 						+ " puntos de sed a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.player.getNick() + " te ha quitado " + daño
+				targetUser.sendMessage(this.player.getNick() + " te ha provocado " + daño
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				this.player.sendMessage(
-						"Te has quitado " + daño + " puntos de sed.",
+						"Te has provocado " + daño + " puntos de sed.",
 						FONTTYPE_FIGHT);
 			}
 			if (targetUser.stats.drinked < 1) {
