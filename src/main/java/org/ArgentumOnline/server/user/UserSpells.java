@@ -206,7 +206,7 @@ public class UserSpells implements Constants {
 		// LanzarHechizo
 		if (canCastSpell(spell)) {
 			switch (spell.Target) {
-			case User:
+			case USER:
 				if (this.player.flags().TargetUser > 0) {
 					handleSpellTargetUser(spell);
 				} else {
@@ -214,7 +214,7 @@ public class UserSpells implements Constants {
 							FontType.FONTTYPE_INFO);
 				}
 				break;
-			case Npc:
+			case NPC:
 				if (this.player.flags().TargetNpc > 0) {
 					handleSpellTargetNPC(spell);
 				} else {
@@ -222,7 +222,7 @@ public class UserSpells implements Constants {
 							FontType.FONTTYPE_INFO);
 				}
 				break;
-			case UserAndNpc:
+			case USER_AND_NPC:
 				if (this.player.flags().TargetUser > 0) {
 					handleSpellTargetUser(spell);
 				} else if (this.player.flags().TargetNpc > 0) {
@@ -231,7 +231,7 @@ public class UserSpells implements Constants {
 					this.player.sendMessage("Target inválido.", FontType.FONTTYPE_INFO);
 				}
 				break;
-			case Terrain:
+			case TERRAIN:
 				handleSpellTargetTerrain(spell);
 				break;
 			}

@@ -3,10 +3,10 @@ package org.ArgentumOnline.server.user;
 public enum SpellTarget {
 	NONE,
 	
-    /*1*/ User,
-    /*2*/ Npc,
-    /*3*/ UserAndNpc,
-    /*4*/ Terrain;
+    /*1*/ USER,
+    /*2*/ NPC,
+    /*3*/ USER_AND_NPC,
+    /*4*/ TERRAIN;
 	
 	public byte value() { 
 		return (byte) (this.ordinal());
