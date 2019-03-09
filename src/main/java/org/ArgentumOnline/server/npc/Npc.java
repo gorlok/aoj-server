@@ -775,7 +775,7 @@ End Enum
             player.stats().incNPCsMuertos();
             player.quest().checkNpcEnemigo(player, this);
 
-            if (this.stats.Alineacion == 0) {
+            if (this.stats.alineacion == 0) {
             	// TODO: ¿No debería compararse con NpcType==2? Hay otros guardias aparte del npcNumber=6
                 if (this.npcNumber == GUARDIAS) {
                     player.volverCriminal();
@@ -783,11 +783,11 @@ End Enum
                 if (!player.isGod()) {
                     player.reputation().incAsesino(vlAsesino);
                 }
-            } else if (this.stats.Alineacion == 1) {
+            } else if (this.stats.alineacion == 1) {
                 player.reputation().incPlebe(vlCazador);
-            } else if (this.stats.Alineacion == 2) {
+            } else if (this.stats.alineacion == 2) {
                 player.reputation().incNoble(vlAsesino / 2);
-            } else if (this.stats.Alineacion == 4) {
+            } else if (this.stats.alineacion == 4) {
                 player.reputation().incPlebe(vlCazador);
             }
             // Controla el nivel del usuario
@@ -1357,9 +1357,9 @@ End Enum
             // ¿Es un guardia?
             if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL || this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
                 guardiasAI();
-            } else if (esHostil() && this.stats.Alineacion != 0) {
+            } else if (esHostil() && this.stats.alineacion != 0) {
                 hostilMalvadoAI();
-            } else if (esHostil() && this.stats.Alineacion == 0) {
+            } else if (esHostil() && this.stats.alineacion == 0) {
                 hostilBuenoAI();
             }
         } else {
@@ -1716,8 +1716,9 @@ End Enum
         ini.setValue(section, "Hostil", this.flags.get(FLAG_HOSTIL));
         ini.setValue(section, "InvReSpawn", this.flags.get(FLAG_INV_RESPAWN));
         // Stats
-        ini.setValue(section, "Alineacion", this.stats.Alineacion);
-        ini.setValue(section, "DEF", this.stats.Def);
+        ini.setValue(section, "Alineacion", this.stats.alineacion);
+        ini.setValue(section, "DEF", this.stats.defensa);
+        ini.setValue(section, "DEFm", this.stats.defensaMagica);
         ini.setValue(section, "MaxHit", this.stats.MaxHIT);
         ini.setValue(section, "MaxHp", this.stats.MaxHP);
         ini.setValue(section, "MinHit", this.stats.MinHIT);
@@ -1781,9 +1782,9 @@ End Enum
         this.stats.MaxHIT	= ini.getInt(section, "MaxHIT");
         this.stats.MinHIT	= ini.getInt(section, "MinHIT");
 
-        this.stats.Alineacion    = ini.getShort(section, "Alineacion");
-        this.stats.Def           = ini.getShort(section, "DEF");
-        this.stats.ImpactRate    = ini.getShort(section, "ImpactRate");
+        this.stats.alineacion    = ini.getShort(section, "Alineacion");
+        this.stats.defensa           = ini.getShort(section, "DEF");
+        this.stats.defensaMagica    		 = ini.getShort(section, "DEFm");
 
         this.inflation   = ini.getInt(section, "Inflacion");
 

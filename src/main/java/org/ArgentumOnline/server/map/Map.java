@@ -1227,7 +1227,7 @@ public class Map implements Constants {
         for (Object element : this.npcs) {
             Npc npc = (Npc) element;
             // ¿esta vivo?
-            if (npc.isNpcActive() && npc.esHostil() && npc.stats.Alineacion == 2) {
+            if (npc.isNpcActive() && npc.esHostil() && npc.stats.alineacion == 2) {
                 cant++;
             }
         }

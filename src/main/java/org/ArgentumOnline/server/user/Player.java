@@ -3560,7 +3560,7 @@ public class Player extends AbstractCharacter {
 		if (flags().Navegando) {
 			daño += Util.Azar(this.userInv.getBarco().MinHIT, this.userInv.getBarco().MaxHIT);
 		}
-		daño -= npc.stats().Def;
+		daño -= npc.stats().defensa;
 		if (daño < 0) {
 			daño = 0;
 		}
@@ -3671,7 +3671,7 @@ public class Player extends AbstractCharacter {
 				npc.getPetUserOwner().getUserPets().petsFollowMaster();
 			} else {
 				// Al matarlo no lo sigue mas
-				if (npc.stats().Alineacion == 0) {
+				if (npc.stats().alineacion == 0) {
 					npc.restoreOldMovement();
 				}
 			}
@@ -3693,7 +3693,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("Debes quitar el seguro para atacar a una mascota de un ciudadano.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		if (npc.stats().Alineacion == 0 && flags().Seguro) {
+		if (npc.stats().alineacion == 0 && flags().Seguro) {
 			sendMessage("Debes quitar el seguro para atacar a una criatura no hostil.", FontType.FONTTYPE_WARNING);
 			return;
 		}
@@ -4134,13 +4134,13 @@ public class Player extends AbstractCharacter {
 			npc.defenderse();
 		} else {
 			// Reputacion
-			if (npc.stats().Alineacion == 0 && npc.getPetUserOwner() == null) {
+			if (npc.stats().alineacion == 0 && npc.getPetUserOwner() == null) {
 				if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_REAL) {
 					volverCriminal();
 				} else {
 					this.reputation.incBandido(vlAsalto);
 				}
-			} else if (npc.stats().Alineacion == 1) {
+			} else if (npc.stats().alineacion == 1) {
 				this.reputation.incPlebe(vlCazador / 2);
 			}
 			// hacemos que el npc se defienda

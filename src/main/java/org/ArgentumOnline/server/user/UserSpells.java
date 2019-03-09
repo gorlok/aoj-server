@@ -23,13 +23,16 @@ import org.ArgentumOnline.server.Clazz;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
+import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcType;
 import org.ArgentumOnline.server.protocol.BlindResponse;
 import org.ArgentumOnline.server.protocol.ChangeSpellSlotResponse;
+import org.ArgentumOnline.server.protocol.CreateFXResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
@@ -200,6 +203,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void hitSpell(Spell spell) {
+		// LanzarHechizo
 		if (canCastSpell(spell)) {
 			switch (spell.Target) {
 			case User:
@@ -233,6 +237,7 @@ public class UserSpells implements Constants {
 			}
 		}
 		this.player.flags().Trabajando = false;
+		this.player.flags().Oculto = false;
 	}
 
 	private boolean hechizoEstadoUsuario() {
@@ -628,6 +633,7 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoEstadoNPC(Npc npc, Spell spell) {
+		// hechizoEstadoNPC
 		if (spell.Invisibilidad) {
 			sendInfoSpell();
 			npc.hacerInvisible();
@@ -712,6 +718,7 @@ public class UserSpells implements Constants {
 	}
 
 	private boolean hechizoPropNPC(Npc npc, Spell spell) {
+		// HechizoPropNPC
 		// Salud
 		if (spell.SubeHP == 1) {
 			// Curar la salud
@@ -726,9 +733,51 @@ public class UserSpells implements Constants {
 		} else if (spell.SubeHP == 2) {
 			// Dañar la salud
 			if (!npc.getAttackable()) {
-				this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
+				//this.player.sendMessage("No puedes atacar a ese npc.", FontType.FONTTYPE_INFO);
 				return false;
 			}
+			
+			this.player.npcAtacado(npc);
+			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
+			daño += Util.porcentaje(daño, 3 * this.player.stats().ELV);
+			
+			if (spell.StaffAffected) {
+				if (player.clazz() == Clazz.Mage) {
+					if (player.userInv().tieneArmaEquipada()) {
+		                daño = (daño * (player.userInv().getArma().StaffDamageBonus + 70)) / 100;
+                        // Aumenta daño segun el staff-
+                        // Daño = (Daño* (70 + BonifBáculo)) / 100
+					} else {
+						daño = (int) (daño * 0.7f); // Baja daño a 70% del original
+					}
+				}
+			}
+			if (player.userInv().tieneAnilloEquipado() && 
+					(player.userInv().getAnillo().ObjIndex == LAUDMAGICO || player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
+				daño = (int) (daño * 1.04f); // laud magico de los bardos
+			}
+
+			sendInfoSpell();
+			
+			if (npc.getSonidoAtaqueExitoso() > 0) {
+				this.player.sendWave(npc.getSonidoAtaqueExitoso());
+			}
+			
+		    // Quizas tenga defenza magica el NPC. Pablo (ToxicWaste)
+		    daño = daño - npc.stats().defensaMagica;
+		    if (daño < 0) {
+		    	daño = 0;
+		    }
+			
+			npc.stats.removeHP(daño);
+			this.player.sendMessage("Le has causado " + daño
+					+ " puntos de daño a la criatura!", FONTTYPE_FIGHT);
+			npc.calcularDarExp(this.player, daño);
+			if (npc.stats.MinHP < 1) {
+				npc.muereNpc(this.player);
+			}
+			
+			/*
 			if (npc.getPetUserOwner() != null
 					&& (this.player.flags().Seguro || this.player.userFaction().ArmadaReal)) {
 				if (!npc.getPetUserOwner().isCriminal()) {
@@ -743,28 +792,14 @@ public class UserSpells implements Constants {
 					return false;
 				}
 			}
-
 			// FIX by AGUSH: we check if user can attack to guardians
 			if (npc.isNpcGuard() && this.player.hasSafeLock()) {
 				this.player.sendMessage("Tienes el seguro activado. Presiona la tecla *.",
 						FontType.FONTTYPE_INFO);
 				return false;
 			}
+			*/
 
-			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
-			daño += Util.porcentaje(daño, 3 * this.player.stats().ELV);
-			sendInfoSpell();
-			this.player.npcAtacado(npc);
-			if (npc.getSonidoAtaqueExitoso() > 0) {
-				this.player.sendWave(npc.getSonidoAtaqueExitoso());
-			}
-			npc.stats.removeHP(daño);
-			this.player.sendMessage("Le has causado " + daño
-					+ " puntos de daño a la criatura!", FONTTYPE_FIGHT);
-			npc.calcularDarExp(this.player, daño);
-			if (npc.stats.MinHP < 1) {
-				npc.muereNpc(this.player);
-			}
 			return true;
 		}
 		return false;
@@ -1219,21 +1254,24 @@ public class UserSpells implements Constants {
 
 	private boolean hechizoInvocacion() {
 		if (this.player.getUserPets().isFullPets()) {
-			this.player.sendMessage("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
+			//this.player.sendMessage("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
 			return false;
 		}
 
-		Map mapa = this.server.getMap(this.player.pos().map);
-
-		if (mapa.isSafeMap()) {
-			this.player.sendMessage("¡Estás en una zona segura!", FontType.FONTTYPE_INFO);
+		// No permitimos se invoquen criaturas en zonas seguras
+		Map map = this.server.getMap(this.player.pos().map);
+		if (map.isSafeMap() || map.getTrigger(player.pos().x, player.pos().y) == Trigger.TRIGGER_ZONA_SEGURA) {
+			this.player.sendMessage("En zona segura no puedes invocar criaturas.", FontType.FONTTYPE_INFO);
 			return false;
 		}
-
+				
 		boolean exito = false;
-		MapPos targetPos = MapPos.mxy(this.player.flags().TargetMap,
-				this.player.flags().TargetX, this.player.flags().TargetY);
+		MapPos targetPos = MapPos.mxy(
+								this.player.flags().TargetMap,
+								this.player.flags().TargetX, 
+								this.player.flags().TargetY);
 		Spell hechizo = this.server.getSpell(this.player.flags().Hechizo);
+		
 		for (int i = 0; i < hechizo.Cant; i++) {
 			// Considero que hubo exito si se pudo invocar alguna criatura.
 			exito = exito || (this.player.crearMascotaInvocacion(hechizo.NumNpc, targetPos) != null);
@@ -1243,18 +1281,60 @@ public class UserSpells implements Constants {
 	}
 
 	private void handleSpellTargetTerrain(Spell spell) {
+		if (!player.isInCombatMode()) {
+			this.player.sendMessage("Debes estar en modo de combate para lanzar este hechizo.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		
 		boolean exito = false;
 		switch (spell.spellAction) {
 		case SUMMON:
 			exito = hechizoInvocacion();
 			break;
+		case STATUS:
+			exito = hechizoTerrenoEstado();
+			break;
 		}
+		
 		if (exito) {
 			this.player.subirSkill(Skill.SKILL_Magia);
-			this.player.stats().quitarMana(spell.ManaRequerido);
+			
+			if (player.clazz() == Clazz.Druid && player.userInv().tieneAnilloEquipado() 
+					&& player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
+				this.player.stats().quitarMana((int) (spell.ManaRequerido * 0.7f));
+			} else {
+				this.player.stats().quitarMana(spell.ManaRequerido);
+			}
 			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 		}
+	}
+
+	private boolean hechizoTerrenoEstado() {
+		// HechizoTerrenoEstado
+		MapPos targetPos = MapPos.mxy(
+			this.player.flags().TargetMap,
+			this.player.flags().TargetX, 
+			this.player.flags().TargetY);
+		Map map = this.server.getMap(targetPos.map);
+		Spell spell = this.server.getSpell(this.player.flags().Hechizo);
+		
+		if (spell.RemueveInvisibilidadParcial) {
+			for (byte x = (byte) (targetPos.x - 8); x <= targetPos.x + 8; x++) {
+				for (byte y = (byte) (targetPos.y - 8); y <= targetPos.y + 8; y++) {
+					if (Pos.isValid(x, y)) {
+						if (map.hasPlayer(x, y)) {
+							Player tmpPlayer = map.getPlayer((byte)x, (byte)y);
+							if (tmpPlayer.isInvisible() && !tmpPlayer.flags().AdminInvisible) {
+								map.sendToArea(x, y, new CreateFXResponse(tmpPlayer.getId(), spell.FXgrh, (short)spell.loops));
+							}
+						}
+					}
+				}
+			}
+			sendInfoSpell();	
+		}
+		return true;
 	}
 
 	private void handleSpellTargetUser(Spell spell) {
@@ -1287,7 +1367,6 @@ public class UserSpells implements Constants {
         		this.player.stats().quitarMana(spell.ManaRequerido);
 		    }
 			
-			this.player.stats().quitarMana(spell.ManaRequerido);
 			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 			this.player.flags().TargetUser = 0;
@@ -1295,6 +1374,7 @@ public class UserSpells implements Constants {
 	}
 
 	private void handleSpellTargetNPC(Spell spell) {
+		// HandleHechizoNPC
 		boolean exito = false;
 		Npc targetNPC = this.server.npcById(this.player.flags().TargetNpc);
 		switch (spell.spellAction) {
@@ -1308,36 +1388,46 @@ public class UserSpells implements Constants {
 		if (exito) {
 			this.player.subirSkill(Skill.SKILL_Magia);
 			this.player.flags().TargetNpc = 0;
-			this.player.stats().quitarMana(spell.ManaRequerido);
+			
+		    // Bonificación para druidas.
+		    if (player.clazz() == Clazz.Druid 
+		    		&& player.userInv().tieneAnilloEquipado() 
+		    		&& player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA 
+		    		&& spell.Mimetiza) {
+		    	this.player.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
+		    } else {
+		    	this.player.stats().quitarMana(spell.ManaRequerido);
+		    }
+			
 			this.player.stats().quitarStamina(spell.StaRequerida);
 			this.player.sendUpdateUserStats();
 		}
 	}
 
 	public void sendInfoSpell() {
-		Map mapa = this.server.getMap(this.player.pos().map);
-		Spell hechizo = this.server.getSpell(this.player.flags().Hechizo);
-		this.player.decirPalabrasMagicas(hechizo.PalabrasMagicas);
-		this.player.sendWave(hechizo.WAV);
+		Map map = this.server.getMap(this.player.pos().map);
+		Spell spell = this.server.getSpell(this.player.flags().Hechizo);
+		this.player.decirPalabrasMagicas(spell.PalabrasMagicas);
+		this.player.sendWave(spell.WAV);
 		if (this.player.flags().TargetUser > 0) {
-			mapa.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetUser,
-					hechizo.FXgrh, hechizo.loops);
+			map.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetUser,
+					spell.FXgrh, spell.loops);
 		} else if (this.player.flags().TargetNpc > 0) {
-			mapa.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetNpc,
-					hechizo.FXgrh, hechizo.loops);
+			map.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetNpc,
+					spell.FXgrh, spell.loops);
 		}
 		if (this.player.flags().TargetUser > 0) {
 			if (this.player.getId() != this.player.flags().TargetUser) {
 				Player target = this.server.playerById(this.player.flags().TargetUser);
-				this.player.sendMessage(hechizo.HechiceroMsg + " " + target.userName,
+				this.player.sendMessage(spell.HechiceroMsg + " " + target.userName,
 						FONTTYPE_FIGHT);
-				target.sendMessage(this.player.getNick() + " " + hechizo.TargetMsg,
+				target.sendMessage(this.player.getNick() + " " + spell.TargetMsg,
 						FONTTYPE_FIGHT);
 			} else {
-				this.player.sendMessage(hechizo.PropioMsg, FONTTYPE_FIGHT);
+				this.player.sendMessage(spell.PropioMsg, FONTTYPE_FIGHT);
 			}
 		} else if (this.player.flags().TargetNpc > 0) {
-			this.player.sendMessage(hechizo.HechiceroMsg + "la criatura.",
+			this.player.sendMessage(spell.HechiceroMsg + "la criatura.",
 					FONTTYPE_FIGHT);
 		}
 	}

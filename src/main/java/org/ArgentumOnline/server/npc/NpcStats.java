@@ -29,9 +29,12 @@ public class NpcStats extends AbstractCharStats {
     }
     
     //NPC_INFO_STATS Stats;
-    public short Alineacion = 0;
+    public short alineacion = 0;
     
-    public short Def    = 0;
-    public short ImpactRate = 0;
+    /** Defensa */
+    public short defensa    = 0; // Def
+    
+    /** Defensa mágica */
+    public short defensaMagica   = 0; // defM
     
 }

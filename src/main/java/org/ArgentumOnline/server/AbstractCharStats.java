@@ -23,17 +23,15 @@ package org.ArgentumOnline.server;
  */
 public abstract class AbstractCharStats implements Constants {
     
+    /** Health Points (SALUD): Salud actual */
+    public int MinHP = 0;
     /** Health Points (SALUD): Maximo de salud */
     public int MaxHP = 0;
     
-    /** Health Points (SALUD): Salud actual */
-    public int MinHP = 0;
-    
-    /** Hit Points (GOLPE): Máximo de golpe */
-    public int MaxHIT = 0;
-
     /** Hit Points (GOLPE): Golpe actual */
     public int MinHIT = 0;
+    /** Hit Points (GOLPE): Máximo de golpe */
+    public int MaxHIT = 0;
 
     /** Aumentar máximo de SALUD. */
     public void addMaxHP(int cant) {

@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-08
+- se reimplementa y revisan todo el sistema de hechizos... ni el Mago Blanco se animó a tanto (?)
+
 ### 2019-03-07
 - se agregan más operaciones en la API
 - se refactorizan los hechizos, se agregan flags faltantes, bug fixes, etc
