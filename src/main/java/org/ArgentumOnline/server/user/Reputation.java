@@ -188,7 +188,7 @@ public class Reputation {
         }
         
         if ( !eraCriminal && player.isCriminal()) {
-        	player.refreshUpdateTagAndStatus();
+        	player.refreshCharStatus();
         }
     }
     

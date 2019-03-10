@@ -126,8 +126,11 @@ import io.netty.channel.Channel;
  * @author gorlok
  */
 public class Player extends AbstractCharacter {
-	private static Logger log = LogManager.getLogger();
 
+	private static Logger log = LogManager.getLogger();
+	
+	private static final int EXPERIENCE_BY_LEVEL_UP = 50;
+	
 	private Channel channel = null;
 
 	String userName = "";
@@ -167,6 +170,8 @@ public class Player extends AbstractCharacter {
 	String ip = "";
 	String bannedBy = "";
 	String bannedReason = "";
+	
+	boolean showName = true; // TODO
 
 	UserFlags flags = new UserFlags();
 
@@ -190,6 +195,10 @@ public class Player extends AbstractCharacter {
 
 	UserInventory userInv;
 	Inventory bankInv;
+	
+	// TODO
+    public short partyIndex = 0;  // index a la party q es miembro
+    public short partySolicitud = 0; // index a la party q solicito
 
 	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
 
@@ -3188,7 +3197,7 @@ public class Player extends AbstractCharacter {
 				if (this.faction.ArmadaReal) {
 					this.faction.expulsarFaccionReal();
 				}
-				refreshUpdateTagAndStatus();
+				refreshCharStatus();
 				System.out.println(this.getNick() + " ahora es criminal");
 			}
 		}
@@ -3225,8 +3234,8 @@ public class Player extends AbstractCharacter {
 				sendMessage("¡Has mejorado tu skill " + skill + " en un punto!. Ahora tienes " 
 							+ skills().get(skill) + " pts.", FontType.FONTTYPE_INFO);
 				
-				stats().addExp((byte) 50);
-				sendMessage("¡Has ganado 50 puntos de experiencia!", FONTTYPE_FIGHT);
+				stats().addExp((byte) EXPERIENCE_BY_LEVEL_UP);
+				sendMessage("¡Has ganado " + EXPERIENCE_BY_LEVEL_UP +" puntos de experiencia!", FONTTYPE_FIGHT);
 				checkUserLevel();
 			}
 		}
@@ -3935,19 +3944,25 @@ public class Player extends AbstractCharacter {
 			contarMuerte(victima);
 			getUserPets().petsFollowMaster(victima.getId());
 			actStats(victima);
+			victima.userDie();
 		}
 		// Controla el nivel del usuario
 		checkUserLevel();
 	}
 
 	public void actStats(Player victima) {
+		// ActStats
 		int daExp = victima.stats().ELV * 2;
 		stats().addExp(daExp);
+		
 		// Lo mata
-		this.sendMessage("Has matado " + victima.userName + "!", FONTTYPE_FIGHT);
+		sendMessage("Has matado a " + victima.userName + "!", FONTTYPE_FIGHT);
 		sendMessage("Has ganado " + daExp + " puntos de experiencia.", FONTTYPE_FIGHT);
+		
 		victima.sendMessage(this.userName + " te ha matado!", FONTTYPE_FIGHT);
+		
 		if (duelStatus(victima) != DuelStatus.DUEL_ALLOWED) {
+			boolean eraCriminal = isCriminal();
 			if (!victima.isCriminal()) {
 				this.reputation().incAsesino(vlAsesino * 2);
 				this.reputation().burguesRep = 0;
@@ -3956,12 +3971,23 @@ public class Player extends AbstractCharacter {
 			} else {
 				this.reputation().incNoble(vlNoble);
 			}
+			if (isCriminal()) {
+				if (!eraCriminal) {
+					refreshCharStatus();
+				}
+			} else {
+				if (eraCriminal) {
+					refreshCharStatus();
+				}
+			}
 		}
-		victima.userDie();
 		stats().incUsuariosMatados();
 		log.info("ASESINATO: " + this.userName + " asesino a " + victima.userName);
 	}
+/*
 
+ */
+	
 	public void contarMuerte(Player usuarioMuerto) {
 		if (usuarioMuerto.isNewbie()) {
 			return;
@@ -4751,28 +4777,30 @@ public class Player extends AbstractCharacter {
 	}
 
 	public String getTagsDesc() {
-		var msg = new StringBuilder()
-				.append(getNick());
-		if (isNewbie()) {
-			msg.append(" <NEWBIE>");
-		}
-		msg.append(getTituloFaccion());
-		if (getGuildInfo().esMiembroClan()) {
-			msg.append(" <" + this.guildUser.getGuildName() + ">");
-		}
-		if (this.description.length() > 0) {
-			msg.append(" - " + this.description);
-		}
-		if (isGod()) {
-			msg.append(" <GAME MASTER>");
-		} else if (isDemiGod()) {
-			msg.append(" <SEMIDIOS>");
-		} else if (isCounselor()) {
-			msg.append(" <CONSEJERO>");
-		} else if (isCriminal()) {
-			msg.append(" <CRIMINAL>");
-		} else {
-			msg.append(" <CIUDADANO>");
+		var msg = new StringBuilder();
+		if (showName) {
+			msg.append(getNick());
+			if (isNewbie()) {
+				msg.append(" <NEWBIE>");
+			}
+			msg.append(getTituloFaccion());
+			if (getGuildInfo().esMiembroClan()) {
+				msg.append(" <" + this.guildUser.getGuildName() + ">");
+			}
+			if (this.description.length() > 0) {
+				msg.append(" - " + this.description);
+			}
+			if (isGod()) {
+				msg.append(" <GAME MASTER>");
+			} else if (isDemiGod()) {
+				msg.append(" <SEMIDIOS>");
+			} else if (isCounselor()) {
+				msg.append(" <CONSEJERO>");
+			} else if (isCriminal()) {
+				msg.append(" <CRIMINAL>");
+			} else {
+				msg.append(" <CIUDADANO>");
+			}
 		}
 		return msg.toString();
 	}
@@ -4985,16 +5013,60 @@ public class Player extends AbstractCharacter {
 		boolean eraCrimi = isCriminal();
 		this.reputation.perdonar();
 		if (eraCrimi) {
-			refreshUpdateTagAndStatus();
+			refreshCharStatus();
 		}
 
 		System.out.println(this.getNick() + "ahora es ciuda");
 	}
 
-	public void refreshUpdateTagAndStatus() {
+	public void refreshCharStatus() {
+		// RefreshCharStatus
+		// Refreshes the status and tag of UserIndex.
+		
 		Map mapa = this.server.getMap(pos().map);
 		mapa.sendToArea(pos().x, pos().y,
 				new UpdateTagAndStatusResponse(getId(), isCriminal() ? (byte)1 : (byte)0, getTagsDesc()));
+        
+        // Si esta navengando, se cambia la barca.
+        if (isSailing()) {
+        	if (!isAlive()) {
+                infoChar().body = iFragataFantasmal;
+        	} else {
+        		ObjectInfo barco = userInv().getBarco();
+                if (isRoyalArmy()) {
+                    infoChar().body = iFragataReal;
+                } else if (isDarkLegion()) {
+                    infoChar().body = iFragataCaos;
+                } else {
+                    if (isCriminal()) {
+                    	switch (barco.Ropaje) {
+                            case iBarca:
+                            	infoChar().body = iBarcaPk;
+                                break;
+                            case iGalera:
+                            	infoChar().body = iGaleraPk;
+                                break;
+                            case iGaleon:
+                            	infoChar().body = iGaleonPk;
+                                break;
+                    	}
+                    } else {
+                    	switch (barco.Ropaje) {
+                        case iBarca:
+                        	infoChar().body = iBarcaCiuda;
+                            break;
+                        case iGalera:
+                        	infoChar().body = iGaleraCiuda;
+                            break;
+                        case iGaleon:
+                        	infoChar().body = iGaleonCiuda;
+                            break;
+                    	}
+                	}
+                }
+        	}
+            sendCharacterChange();
+        }
 	}
 
 	public void startQuitGame() {

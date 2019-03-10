@@ -557,14 +557,14 @@ public class UserSpells implements Constants {
 				}
 				
 				if (!eraCriminal && player.isCriminal()) {
-					player.refreshUpdateTagAndStatus();
+					player.refreshCharStatus();
 				}
 
 				targetUser.stats().drinked = 0;
 				targetUser.flags().Sed = true;
 				targetUser.stats().eaten = 0;
 				targetUser.flags().Hambre = true;
-				targetUser.refreshUpdateTagAndStatus();
+				targetUser.refreshCharStatus();
 				targetUser.revive();
 				
 				sendInfoSpell();

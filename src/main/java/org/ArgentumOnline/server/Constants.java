@@ -204,20 +204,20 @@ public interface Constants {
 	public final static short ELEMENTAL_FUEGO = 26;
 	public final static short ELEMENTAL_TIERRA = 28;
 
-/*
-Public Const iFragataFantasmal = 87
-Public Const iFragataReal = 190
-Public Const iFragataCaos = 189
-Public Const iBarca = 84
-Public Const iGalera = 85
-Public Const iGaleon = 86
-Public Const iBarcaCiuda = 395
-Public Const iBarcaPk = 396
-Public Const iGaleraCiuda = 397
-Public Const iGaleraPk = 398
-Public Const iGaleonCiuda = 399
-Public Const iGaleonPk = 400
+	public final static short iFragataFantasmal = 87;
+	public final static short iFragataReal = 190;
+	public final static short iFragataCaos = 189;
+	public final static short iBarca = 84;
+	public final static short iGalera = 85;
+	public final static short iGaleon = 86;
+	public final static short iBarcaCiuda = 395;
+	public final static short iBarcaPk = 396;
+	public final static short iGaleraCiuda = 397;
+	public final static short iGaleraPk = 398;
+	public final static short iGaleonCiuda = 399;
+	public final static short iGaleonPk = 400;
 
+/*
 Public Enum iMinerales
     HierroCrudo = 192
     PlataCruda = 193

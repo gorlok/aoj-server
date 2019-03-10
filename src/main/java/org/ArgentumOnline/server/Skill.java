@@ -21,28 +21,28 @@ package org.ArgentumOnline.server;
  * @author gorlok
  */
 public enum Skill {
-
-	/* 0*/ SKILL_Suerte("Suerte"),
-	/* 1*/ SKILL_Magia("Magia"),
-	/* 2*/ SKILL_Robar("Robar"),
-	/* 3*/ SKILL_Tacticas("Tacticas de combate"),
-	/* 4*/ SKILL_Armas("Combate con armas"),
-	/* 5*/ SKILL_Meditar("Meditar"),
-	/* 6*/ SKILL_Apuñalar("Apuñalar"),
-	/* 7*/ SKILL_Ocultarse("Ocultarse"),
-	/* 8*/ SKILL_Supervivencia("Supervivencia"),
-	/* 9*/ SKILL_Talar("Talar arboles"),
-	/*10*/ SKILL_Comerciar("Comercio"),
-	/*11*/ SKILL_Defensa("Defensa con escudos"),
-	/*12*/ SKILL_Pesca("Pesca"),
-	/*13*/ SKILL_Mineria("Mineria"),
-	/*14*/ SKILL_Carpinteria("Carpinteria"),
-	/*15*/ SKILL_Herreria("Herreria"),
-	/*16*/ SKILL_Liderazgo("Liderazgo"),
-	/*17*/ SKILL_Domar("Domar animales"),
-	/*18*/ SKILL_Proyectiles("Armas de proyectiles"),
-	/*19*/ SKILL_Wresterling("Wresterling"),
-	/*20*/ SKILL_Navegacion("Navegacion");
+	
+	/* 1*/ SKILL_Suerte("Suerte"),
+	/* 2*/ SKILL_Magia("Magia"),
+	/* 3*/ SKILL_Robar("Robar"),
+	/* 4*/ SKILL_Tacticas("Tacticas de combate"),
+	/* 5*/ SKILL_Armas("Combate con armas"),
+	/* 6*/ SKILL_Meditar("Meditar"),
+	/* 7*/ SKILL_Apuñalar("Apuñalar"),
+	/* 8*/ SKILL_Ocultarse("Ocultarse"),
+	/* 9*/ SKILL_Supervivencia("Supervivencia"),
+	/*10*/ SKILL_Talar("Talar arboles"),
+	/*11*/ SKILL_Comerciar("Comercio"),
+	/*12*/ SKILL_Defensa("Defensa con escudos"),
+	/*13*/ SKILL_Pesca("Pesca"),
+	/*14*/ SKILL_Mineria("Mineria"),
+	/*15*/ SKILL_Carpinteria("Carpinteria"),
+	/*16*/ SKILL_Herreria("Herreria"),
+	/*17*/ SKILL_Liderazgo("Liderazgo"),
+	/*18*/ SKILL_Domar("Domar animales"),
+	/*19*/ SKILL_Proyectiles("Armas de proyectiles"),
+	/*20*/ SKILL_Wresterling("Wresterling"),
+	/*21*/ SKILL_Navegacion("Navegacion");
     
 	public final static byte SKILL_FundirMetal = 88;
 	
@@ -68,13 +68,12 @@ public enum Skill {
     }
     
     private static final Skill[] VALUES = Skill.values();
-    
     public static Skill value(int index) {
-    	return VALUES[index];
+    	return VALUES[index-1];
     }
     
     public byte value() {
-    	return (byte) this.ordinal();
+    	return (byte) (this.ordinal() + 1);
     }
 
 }

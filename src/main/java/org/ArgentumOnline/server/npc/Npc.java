@@ -63,6 +63,7 @@ import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.NPCSwingResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
+import org.ArgentumOnline.server.user.Party;
 import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.user.Spell;
 import org.ArgentumOnline.server.util.Color;
@@ -721,37 +722,42 @@ End Enum
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
 
     public void calcularDarExp(Player player, int daño) {
-        // [Alejo]
-        // Modifique un poco el sistema de exp por golpe, ahora
-        // son 2/3 de la exp mientras esta vivo, el resto se
-        // obtiene al matarlo.
-        int expSinMorir = (2 * this.giveEXP ) / 3;
-        int totalNpcVida = stats().MaxHP;
-        if (totalNpcVida <= 0) {
-			return;
-		}
-        if (daño < 0) {
-			daño = 0;
-		}
-        if (daño > stats().MinHP) {
-			daño = stats().MinHP;
-		}
-        int expADar = (daño * expSinMorir) / totalNpcVida;
-
-        if (expADar <= 0) {
-			return;
-		}
-        if (expADar > this.expCount) {
-            expADar = this.expCount;
-            this.expCount = 0;
-        } else {
-            this.expCount -= expADar;
-        }
-        if (expADar > 0) {
-        	expADar = expADar * 1000;
-            player.stats().addExp(expADar);
-            player.sendMessage("Has ganado " + expADar + " puntos de experiencia.", FONTTYPE_FIGHT);
-            player.sendUpdateUserStats();
+    	int exp = 0;
+    	// Chekeamos que las variables sean validas para las operaciones
+    	if (daño < 0) {
+    		daño = 0;
+    	}
+    	if (stats().MaxHP <= 0) {
+    		return;
+    	}
+    	if (daño > stats().MinHP) {
+    		daño = stats().MinHP;
+    	}
+    	
+    	// La experiencia a dar es la porcion de vida quitada * toda la experiencia
+    	exp = (int) (daño * (this.giveEXP / stats().MaxHP));
+    	if (exp <= 0) {
+    		return;
+    	}
+    	
+    	// Vamos contando cuanta experiencia sacamos, porque se da toda la que no se dio al user que mata al NPC
+    	// Esto es porque cuando un elemental ataca, no se da exp, y tambien porque la cuenta que hicimos antes
+    	// podria dar un numero fraccionario. Esas fracciones se acumulan hasta formar enteros ;P
+    	if (exp > this.expCount) {
+			exp = this.expCount;
+			this.expCount = 0;
+    	} else {
+			this.expCount = this.expCount - exp;
+    	}
+    	
+    	// Le damos la exp al user
+        if (exp > 0) {
+            if (player.partyIndex > 0) {
+            	Party.obtenerExito(player, exp, pos());
+            } else {
+            	player.stats().addExp(exp);
+                player.sendMessage("Has ganado " + exp + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            }
             player.checkUserLevel();
         }
     }
@@ -804,7 +810,7 @@ End Enum
 
             //Agush: updateamos de ser necesario ;-)
             if (player.isCriminal() != eraCrimi && eraCrimi == true) {
-            	player.refreshUpdateTagAndStatus();
+            	player.refreshCharStatus();
             }
         }
 

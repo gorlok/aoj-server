@@ -34,11 +34,15 @@ public class UserSkills {
 	}
 	
 	public byte get(Skill skill) {
-		return this.userSkills[skill.value()];
+		return this.userSkills[skill.value()-1];
+	}
+	
+	public void add(Skill skill, byte value) {
+		this.userSkills[skill.value()-1] += value;
 	}
 	
 	public void set(Skill skill, int value) {
-		this.userSkills[skill.value()] = (byte) value;
+		this.userSkills[skill.value()-1] = (byte) value;
 	}
 	
 	public boolean validateSkills() {
@@ -70,22 +74,25 @@ public class UserSkills {
 	}
 
 	public void addSkillPoints(Skill skill, byte cant) {
-		skills()[skill.value()] += cant;
-		if (skills()[skill.value()] > Skill.MAX_SKILL_POINTS) {
-			skills()[skill.value()] = Skill.MAX_SKILL_POINTS;
+		add(skill, cant);
+		if (get(skill) > Skill.MAX_SKILL_POINTS) {
+			set(skill, Skill.MAX_SKILL_POINTS);
 		}
 	}
 
 	public void subirSkills(byte[] incSkills) {
+		// FIXME validar que Sum(skills) <= freeSkillPts
+		int i = 0;
 		for (Skill skill : Skill.values()) {
-			byte points = incSkills[skill.value()];
+			byte points = incSkills[i++];
 			
 			this.freeSkillPts -= points;
 			
-			skills()[skill.value()] += points;
-			if (skills()[skill.value()] > 100) {
-				this.freeSkillPts += (skills()[skill.value()] - 100); // devuelvo los sobrantes
-				skills()[skill.value()] = 100;
+			add(skill, points);
+			if (get(skill) > Skill.MAX_SKILL_POINTS) {
+				// devuelvo los sobrantes
+				this.freeSkillPts += get(skill) - Skill.MAX_SKILL_POINTS; 
+				set(skill, Skill.MAX_SKILL_POINTS);
 			}
 		}
 	}
