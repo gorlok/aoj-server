@@ -175,7 +175,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void moveSpell(int slot, short direction) {
-		if (direction == 1) {
+		if (direction == -1) {
 			// Move spell upward
 			if (slot == 1) {
 				this.player.sendMessage("No puedes mover el hechizo en esa direccion.",
@@ -187,7 +187,7 @@ public class UserSpells implements Constants {
 			setSpell(slot - 1, spell);
 			sendSpell(slot - 1);
 			sendSpell(slot);
-		} else if (direction == 2) {
+		} else if (direction == 1) {
 			// Move spell downward
 			if (slot == MAX_SPELLS) {
 				this.player.sendMessage("No puedes mover el hechizo en esa direccion.",

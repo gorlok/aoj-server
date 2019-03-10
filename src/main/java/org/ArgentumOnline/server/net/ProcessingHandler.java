@@ -347,7 +347,12 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleMoveSpell(MoveSpellRequest packet, Player player) {
-		player.moveSpell(packet.dir, packet.spell);
+		// Packet.dir is boolean. 
+		// - Upwards direction if TRUE(1)
+		// - Downward direction if FALSE(0).
+		// Packet.spell is Spell's Slot in ( 1 .. MAXSLOT )
+		player.moveSpell(packet.spell, 
+				(byte) (packet.dir == 1 ? -1 : 1));
 	}
 
 	private void handleChangeHeading(ChangeHeadingRequest packet, Player player) {

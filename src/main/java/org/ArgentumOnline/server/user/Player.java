@@ -5123,8 +5123,8 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void moveSpell(short dir, short slot) {
-		if (dir < 1 || dir > 2) {
+	public void moveSpell(byte slot, byte dir) {
+		if (dir != 1 && dir != -1) {
 			return;
 		}
 		if (slot < 1 || slot > MAX_SPELLS) {
