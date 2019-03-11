@@ -47,6 +47,9 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		log.debug("=> closed client connection");
+		var server = GameServer.instance();
+		var player = server.findPlayer(ctx.channel());
+		player.quitGame();
 		clients.remove(ctx.channel()); 
 	}
 

@@ -36,7 +36,7 @@ import org.ArgentumOnline.server.gm.Motd;
 import org.ArgentumOnline.server.guilds.GuildManager;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.net.NettyServer;
+import org.ArgentumOnline.server.net.NetworkServer;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
@@ -105,14 +105,14 @@ public class GameServer implements Constants {
 
     private Feedback feedback = new Feedback();// FIXME
 
-    private NettyServer ns;
+    private NetworkServer ns;
 
     private GameServer() {
     	// start API management server
     	new ManagerApi(this);
     	
     	// start network game server
-    	this.ns = new NettyServer(Constants.SERVER_PORT);
+    	this.ns = new NetworkServer(Constants.SERVER_PORT);
     	
     	
     	// initialize game server
@@ -381,10 +381,7 @@ public class GameServer implements Constants {
                 long wait = (1000 - ellapsed);
                 if (wait < 0) wait = 1;
                 if (wait > 40) wait = 40;
-                try {
-					Thread.sleep(wait);
-				} catch (InterruptedException ignore) {
-				}
+                Util.sleep(wait);
             }
         } finally {
             doBackup();

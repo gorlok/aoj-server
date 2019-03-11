@@ -158,7 +158,7 @@ public class UserFlags {
 	}
 
 	public boolean isGM() {
-		return privileges > 0;
+		return privileges > PlayerType.User.value();
 	}
 	
 	public boolean isRoleMaster() {

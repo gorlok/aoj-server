@@ -34,12 +34,15 @@ import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
+import org.ArgentumOnline.server.protocol.GoToCharRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
+import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
+import org.ArgentumOnline.server.protocol.SummonCharRequest;
 import org.ArgentumOnline.server.protocol.SystemMessageRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
@@ -47,6 +50,7 @@ import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
 import org.ArgentumOnline.server.protocol.WarpCharRequest;
+import org.ArgentumOnline.server.protocol.WhereRequest;
 import org.ArgentumOnline.server.protocol.WhisperRequest;
 import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
 import org.ArgentumOnline.server.protocol.WorkRequest;
@@ -346,6 +350,29 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case WarpChar:
 					handleWarpChar((WarpCharRequest)packet, player);
+					break;
+					
+				case Where:
+					server.manager().whereIsUser(player, ((WhereRequest)packet).userName);
+					break;
+					
+				case SummonChar:
+					server.manager().summonChar(player, ((SummonCharRequest)packet).userName);
+					break;
+					
+				case GoToChar:
+					server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
+					
+				case ServerTime:
+					server.manager().sendServerTime(player);
+					break;
+			
+				case SOSShowList:
+					server.manager().sendHelpRequests(player);
+					break;
+				
+				case SOSRemove:
+					server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
 					break;
 					
 				default:

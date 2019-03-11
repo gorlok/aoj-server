@@ -3,6 +3,10 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-11
+- corregido bug de usuarios que quedaban online al desconectarse el cliente (por cierre de app)
+- agregados más comandos de GM
+- corregido el apagado del servidor, para que sea más limpio, cerrando conexiones.
 
 ### 2019-03-10
 - arreglado el modo seguro

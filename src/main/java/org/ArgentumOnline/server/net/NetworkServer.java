@@ -21,13 +21,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NettyServer {
+public class NetworkServer {
 	private static Logger log = LogManager.getLogger();
 
 	private int port;
@@ -37,7 +38,7 @@ public class NettyServer {
 	// threads for clients, 1 per cpu thread/core
 	NioEventLoopGroup handlerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
-	public NettyServer(int port) {
+	public NetworkServer(int port) {
 		this.port = port;
 
 		ServerBootstrap b = new ServerBootstrap();

@@ -105,4 +105,10 @@ public class Util {
 		return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
 	}
 
+	public static void sleep(long millis) {
+        try {
+			Thread.sleep(millis);
+		} catch (InterruptedException ignore) {
+		}
+	}
 }

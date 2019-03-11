@@ -47,6 +47,7 @@ import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
+import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -287,7 +288,7 @@ public class ManagerServer {
 		helpRequests().remove(userName);
 	}
 
-	public void warpToUser(Player admin, String userName) {
+	public void goToChar(Player admin, String userName) {
 		// Comando /IRA
 		if ( !admin.flags().isGM() ) {
 			return;
@@ -504,6 +505,18 @@ public class ManagerServer {
 		if (!admin.flags().isGM()) {
 			return;
 		}
+		
+        Log.logGM(admin.getNick(), "/APAGAR");
+		this.server.sendToAll(new ConsoleMsgResponse(admin.getNick() + " VA A APAGAR EL SERVIDOR!!!", FontType.FONTTYPE_FIGHT.id()));
+		
+		// wait a few seconds...
+		Util.sleep(5 * 1000);
+		try {
+			List.copyOf(server.players()).forEach(p -> p.quitGame());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		log.info("SERVIDOR APAGADO POR " + admin.getNick());
 		Log.logGM(admin.getNick(), "APAGO EL SERVIDOR");
 		this.server.shutdown();
@@ -884,7 +897,7 @@ public class ManagerServer {
 		}
 	}
 
-	public void doSUM(Player admin, String s) {
+	public void summonChar(Player admin, String s) {
 		// Comando /SUM usuario
 		if (!admin.flags().isGM()) {
 			return;
