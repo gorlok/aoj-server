@@ -247,14 +247,14 @@ public class GameServer implements Constants {
 
     public List<String> getUsuariosConectados() {
     	return players().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
 			    	.map(Player::getNick)
 			    	.collect(Collectors.toList());
     }
 
     public void echarPjsNoPrivilegiados() {
     	var users = players().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.isGM())
+			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
 			    	.collect(Collectors.toList());
 
     	users.forEach(c -> {
@@ -286,7 +286,7 @@ public class GameServer implements Constants {
 
     public List<String> getGMsOnline() {
     	return players().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.isGM())
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.flags().isGM())
 		    	.map(Player::getNick)
 		    	.collect(Collectors.toList());
     }
@@ -682,7 +682,7 @@ public class GameServer implements Constants {
 
     public void sendToAdmins(ServerPacket packet) {
     	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
+            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
                 cli.sendPacket(packet);
             }
         }
@@ -690,7 +690,7 @@ public class GameServer implements Constants {
 
     public void sendMessageToAdmins(String msg, FontType fuente) {
     	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.isGM() && cli.isLogged()) {
+            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
                 cli.sendMessage(msg, fuente);
             }
         }
@@ -905,7 +905,7 @@ public class GameServer implements Constants {
 
     public void sendMessageToGMs(String msg) {
         for (Player cli: players()) {
-            if (cli.isLogged() && cli.isGM()) {
+            if (cli.isLogged() && cli.flags().isGM()) {
                 cli.sendMessage(msg, FontType.FONTTYPE_GM);
             }
         }

@@ -432,4 +432,15 @@ public class ObjectInfo implements Constants {
             this.objType != ObjType.Teleport;
     }
 
+    public boolean mostrarCantidad() {
+    	// MostrarCantidad
+    	return objType != ObjType.Puertas
+    			&& objType != ObjType.Foros
+    			&& objType != ObjType.Carteles
+    			&& objType != ObjType.Arboles
+    			&& objType != ObjType.Yacimiento
+    			&& objType != ObjType.Teleport;
+    }
+
+
 }

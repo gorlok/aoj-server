@@ -39,6 +39,7 @@ import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.net.ServerPacket;
+import org.ArgentumOnline.server.npc.Centinela;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
 import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
@@ -686,7 +687,7 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 if (cell(x,y).playerId() > 0) {
                     player = this.server.playerById(cell(x,y).playerId());
-                    if (player != null && (player.isGod() || player.isDemiGod())) {
+                    if (player != null && (player.flags().isGod() || player.flags().isDemiGod())) {
 						player.sendPacket(packet);
 					}
                 }
@@ -795,14 +796,23 @@ public class Map implements Constants {
     }    
     
     public boolean hasObject(byte  x, byte y) {
+    	if (!Pos.isValid(x, y)) {
+    		return false;
+    	}
         return (cell(x, y).hasObject());
     }
     
     public boolean hasPlayer(byte  x, byte y) {
-        return (cell(x, y).playerId() != 0 && getPlayer(x, y) != null); // FIXME
+    	if (!Pos.isValid(x, y)) {
+    		return false;
+    	}
+        return (cell(x, y).playerId() != 0 && getPlayer(x, y) != null);
     }
     
     public boolean hasNpc(byte  x, byte y) {
+    	if (!Pos.isValid(x, y)) {
+    		return false;
+    	}
         return (cell(x, y).npc() != null);
     }
     
@@ -860,7 +870,11 @@ public class Map implements Constants {
         // Ver si hay un objeto en los alrededores...
         MapObject obj = queryObject(x, y);
         if (obj != null) {
-            player.sendMessage(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+        	if (obj.getInfo().mostrarCantidad()) {
+        		player.sendMessage(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+        	} else {
+        		player.sendMessage(obj.getInfo().Nombre, FontType.FONTTYPE_INFO);
+        	}
             player.flags().TargetObj = obj.getInfo().ObjIndex;
             player.flags().TargetObjMap = this.mapNumber;
             player.flags().TargetObjX = obj.x;
@@ -868,42 +882,57 @@ public class Map implements Constants {
             foundSomething = true;
         }
         
+        // Ver si hay un jugador
+        Player anotherPlayer;
+        if ((anotherPlayer = queryPlayer(x, y)) != null) {
+        	if (!anotherPlayer.flags().AdminInvisible || player.flags().isGM()) {
+        		
+        		if (anotherPlayer.descRM.length() > 0 && !anotherPlayer.showName) {
+        			// tiene descRM y quiere que se vea su nombre.
+                    player.sendMessage(anotherPlayer.descRM, FontType.FONTTYPE_INFOBOLD);
+        		} else {
+        			player.sendMessage("Ves a " + anotherPlayer.userNameTagDesc(), anotherPlayer.getTagColor());
+        		}
+        		
+        		player.flags().TargetUser = anotherPlayer.getId();
+        		player.flags().TargetNpc = 0;
+        		player.flags().TargetObj = 0;
+        		player.flags().TargetMap = this.mapNumber;
+        		player.flags().TargetX = x;
+        		player.flags().TargetY = y;
+        		foundSomething = true;
+        	}
+        }
+        
         // Ver si hay un Npc...
         Npc npc;
         if ((npc = queryNpc(x, y)) != null) {
             foundSomething = true;
             if (npc.description.length() > 0) {
-                player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
-            } 
-            String msg = "";
-            if (npc.getPetUserOwner() != null) {
-                msg = npc.name + " es mascota de " + npc.getPetUserOwner().getNick();
+            	// tiene algo para decir
+            	player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
+            } else if (npc.getId() == Centinela.centinelaNPCIndex) {
+                // enviamos nuevamente el mensaje del Centinela, según quien pregunta
+                Centinela.centinelaSendClave(player);
             } else {
-                msg = npc.name;
+            	String npcName;
+            	if (npc.getPetUserOwner() != null) {
+            		npcName = npc.name + " es mascota de " + npc.getPetUserOwner().getNick();
+            	} else {
+            		npcName = npc.name;
+            	}
+            	player.sendMessage(npcName + " " + npc.healthDescription(player), FontType.FONTTYPE_INFO);
+            	if (player.flags().isGM() && npc.attackedFirstBy != "") {
+            		player.sendMessage("Le pegó primero: " + npc.attackedFirstBy + ".", FontType.FONTTYPE_INFO);
+            	}
             }
-            msg = msg + " " + npc.estadoVida(player);
-            player.sendMessage(msg, FontType.FONTTYPE_INFO);
+            
             player.flags().TargetNpc = npc.getId();
             player.flags().TargetMap = this.mapNumber;
             player.flags().TargetX = x;
             player.flags().TargetY = y;
             player.flags().TargetUser = 0;
             player.flags().TargetObj = 0;
-        }
-        
-        // Ver si hay un jugador
-        Player anotherPlayer;
-        if ((anotherPlayer = queryPlayer(x, y)) != null) {
-            if (!anotherPlayer.flags().AdminInvisible) {
-                player.sendMessage("Ves a " + anotherPlayer.getTagsDesc(), anotherPlayer.getTagColor());
-                player.flags().TargetUser = anotherPlayer.getId();
-                player.flags().TargetNpc = 0;
-                player.flags().TargetObj = 0;
-                player.flags().TargetMap = this.mapNumber;
-                player.flags().TargetX = x;
-                player.flags().TargetY = y;
-                foundSomething = true;
-            }
         }
         
         if (!foundSomething) {
@@ -919,10 +948,6 @@ public class Map implements Constants {
             player.flags().TargetY = y;
             player.sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
-
-        // FIXME: REVISAR SI ESTO VA...
-        player.flags().TargetX = x;
-        player.flags().TargetY = y;
     }
     
     public MapPos teleportTarget(byte  x, byte y) {
@@ -1445,7 +1470,7 @@ public class Map implements Constants {
     public boolean isForbbidenMap(Player player) {
     	// ¿Es mapa de newbies?
     	if (isNewbieMap()) {
-    		if (player.isNewbie() || player.isGM()) {
+    		if (player.isNewbie() || player.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un newbie/gm, "NO PASARÁS!"
@@ -1457,7 +1482,7 @@ public class Map implements Constants {
 		// ¿Es mapa de Armadas?
     	if (isRoyalArmyMap()) {
             // ¿El usuario es Armada?
-    		if (player.isRoyalArmy() || player.isGM()) {
+    		if (player.isRoyalArmy() || player.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/gm, "NO PASARÁS!"
@@ -1469,7 +1494,7 @@ public class Map implements Constants {
 		// ¿Es mapa de Caos?
     	if (isDarkLegionMap()) {
             // ¿El usuario es Caos?
-    		if (player.isDarkLegion() || player.isGM()) {
+    		if (player.isDarkLegion() || player.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un caos/gm, "NO PASARÁS!"
@@ -1481,7 +1506,7 @@ public class Map implements Constants {
 		// ¿Es mapa de faccionarios?
     	if (isFactionMap()) {
             // ¿El usuario es Caos?
-    		if (player.isRoyalArmy() || player.isDarkLegion() || player.isGM()) {
+    		if (player.isRoyalArmy() || player.isDarkLegion() || player.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/caos/gm, "NO PASARÁS!"

@@ -286,7 +286,7 @@ public class UserSpells implements Constants {
 		    }
 		    
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!player.isGM() && targetUser.isGM()) {
+		    if (!player.flags().isGM() && targetUser.flags().isGM()) {
 		    	return false;
 		    }
 		    
@@ -306,7 +306,7 @@ public class UserSpells implements Constants {
 				return false;
 			}
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!player.isGM() && targetUser.isGM()) {
+		    if (!player.flags().isGM() && targetUser.flags().isGM()) {
 		    	return false;
 		    }
 		    if (player.flags().Mimetizado) {
@@ -350,10 +350,9 @@ public class UserSpells implements Constants {
 			}
 			
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!player.isGM() && targetUser.isGM()) {
+		    if (!player.flags().isGM() && targetUser.flags().isGM()) {
 		    	return false;
 		    }
-			
 			
 		    // Para poder usar con un pk en el ring
 		    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
@@ -574,7 +573,7 @@ public class UserSpells implements Constants {
 		        // Agregado para quitar la penalización de vida en el ring y cambio de ecuacion. (NicoNZ)
 				if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
 		            // Solo saco vida si es User. no quiero que exploten GMs por ahi.
-		            if (!player.isGM()) {
+		            if (!player.flags().isGM()) {
 		            	player.stats().MinHP = (int) (player.stats().MinHP * (1 - player.stats().ELV * 0.015f));
 		            }
 				}
@@ -1341,7 +1340,7 @@ public class UserSpells implements Constants {
 		// HandleHechizoUsuario
 		boolean exito = false;
 		Player target = this.server.playerById(this.player.flags().TargetUser);
-		if (target == null || target.isGM()) {
+		if (target == null || target.flags().isGM()) {
 			return;
 		}
 		switch (spell.spellAction) {

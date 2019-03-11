@@ -18,9 +18,6 @@
 package org.ArgentumOnline.server.user;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.GameServer;
-import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.map.MapCell.Trigger;
 import org.ArgentumOnline.server.protocol.FameResponse;
 import org.ArgentumOnline.server.protocol.NobilityLostResponse;
 
@@ -174,7 +171,7 @@ public class Reputation {
         	return;
         }
         
-        if (!player.isGM() || player.isCounselor()) {
+        if (!player.flags().isGM() || player.flags().isCounselor()) {
         	// pierdo nobleza...
         	decNoble(noblePts);
 			// gano bandido...

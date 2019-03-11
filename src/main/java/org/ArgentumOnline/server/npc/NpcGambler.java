@@ -79,7 +79,7 @@ public class NpcGambler extends Npc {
 	}
 
 	public void balance(Player player) {
-		if (player.isGM()) {
+		if (player.flags().isGM()) {
 			var gamblerStats = server.getGamblerStats();
 			
             long earnings = gamblerStats.getGanancias() - gamblerStats.getPerdidas();

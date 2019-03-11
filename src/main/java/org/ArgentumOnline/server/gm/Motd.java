@@ -84,7 +84,7 @@ public class Motd {
 	public void startUpdateMOTD(Player player) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
-		if (!player.isGod()) {
+		if (!player.flags().isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;

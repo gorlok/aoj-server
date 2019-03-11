@@ -21,6 +21,7 @@ import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 import static org.ArgentumOnline.server.util.Color.COLOR_CYAN;
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -130,6 +131,8 @@ public class Player extends AbstractCharacter {
 	private static Logger log = LogManager.getLogger();
 	
 	private static final int EXPERIENCE_BY_LEVEL_UP = 50;
+
+	private static final String TAG_USER_INVISIBLE = "[INVISIBLE]";
 	
 	private Channel channel = null;
 
@@ -171,7 +174,8 @@ public class Player extends AbstractCharacter {
 	String bannedBy = "";
 	String bannedReason = "";
 	
-	boolean showName = true; // TODO
+	public boolean showName = true; // TODO
+	public String  descRM = ""; // TODO
 
 	UserFlags flags = new UserFlags();
 
@@ -335,22 +339,6 @@ public class Player extends AbstractCharacter {
 
 	public boolean isSailing() {
 		return flags().Navegando;
-	}
-
-	public boolean isGod() {
-		return flags().Privilegios == 3;
-	}
-
-	public boolean isDemiGod() {
-		return flags().Privilegios == 2;
-	}
-
-	public boolean isCounselor() {
-		return flags().Privilegios == 1;
-	}
-
-	public boolean isGM() {
-		return flags().Privilegios > 0;
 	}
 
 	public boolean isWorking() {
@@ -1106,7 +1094,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive()) {
 			return;
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			return;
 		}
 
@@ -1142,7 +1130,7 @@ public class Player extends AbstractCharacter {
 		if (flags().TargetUser > 0) {
             //User commerce...
             //Can he commerce??
-			if (isCounselor()) {
+			if (flags().isCounselor()) {
 				sendMessage("No puedes vender items.", FontType.FONTTYPE_WARNING);
                 return;
 			}
@@ -1550,43 +1538,46 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void doRobar(Player victima) {
+		if (victima.flags().isGM() || this.flags().isGM()) {
+			return;
+		}
+		
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa.isSafeMap() || duelStatus(victima) != DuelStatus.DUEL_MISSING) {
 			return;
 		}
-		if (flags().Privilegios < 2) {
-			if (suerteRobar()) {
-				// Exito robo
-				if ((Util.Azar(1, 50) < 25) && (this.clazz == Clazz.Thief)) {
-					if (victima.userInv.tieneObjetosRobables()) {
-						robarObjeto(victima);
-					} else {
-						sendMessage(victima.userName + " no tiene objetos.", FontType.FONTTYPE_INFO);
-					}
-				} else { // Roba oro
-					if (victima.stats().getGold() > 0) {
-						int cantidadRobada = Util.Azar(1, 100);
-						victima.stats().addGold( -cantidadRobada );
-						stats().addGold( cantidadRobada );
-						sendMessage("Le has robado " + cantidadRobada + " monedas de oro a " + victima.userName, FontType.FONTTYPE_INFO);
-					} else {
-						sendMessage(this.userName + " no tiene oro.", FontType.FONTTYPE_INFO);
-					}
+		
+		if (suerteRobar()) {
+			// Exito robo
+			if ((Util.Azar(1, 50) < 25) && (this.clazz == Clazz.Thief)) {
+				if (victima.userInv.tieneObjetosRobables()) {
+					robarObjeto(victima);
+				} else {
+					sendMessage(victima.userName + " no tiene objetos.", FontType.FONTTYPE_INFO);
 				}
-			} else {
-				sendMessage("¡No has logrado robar nada!", FontType.FONTTYPE_INFO);
-				victima.sendMessage("¡" + this.userName + " ha intentado robarte!", FontType.FONTTYPE_INFO);
-				victima.sendMessage("¡" + this.userName + " es un criminal!", FontType.FONTTYPE_INFO);
+			} else { // Roba oro
+				if (victima.stats().getGold() > 0) {
+					int cantidadRobada = Util.Azar(1, 100);
+					victima.stats().addGold( -cantidadRobada );
+					stats().addGold( cantidadRobada );
+					sendMessage("Le has robado " + cantidadRobada + " monedas de oro a " + victima.userName, FontType.FONTTYPE_INFO);
+				} else {
+					sendMessage(this.userName + " no tiene oro.", FontType.FONTTYPE_INFO);
+				}
 			}
-			if (!isCriminal()) {
-				volverCriminal();
-			}
-			if (this.faction.ArmadaReal) {
-				this.faction.expulsarFaccionReal();
-			}
-			this.reputation.incLandron(vlLadron);
-			subirSkill(Skill.SKILL_Robar);
+		} else {
+			sendMessage("¡No has logrado robar nada!", FontType.FONTTYPE_INFO);
+			victima.sendMessage("¡" + this.userName + " ha intentado robarte!", FontType.FONTTYPE_INFO);
+			victima.sendMessage("¡" + this.userName + " es un criminal!", FontType.FONTTYPE_INFO);
 		}
+		if (!isCriminal()) {
+			volverCriminal();
+		}
+		if (this.faction.ArmadaReal) {
+			this.faction.expulsarFaccionReal();
+		}
+		this.reputation.incLandron(vlLadron);
+		subirSkill(Skill.SKILL_Robar);
 	}
 
 	private boolean suertePescarCaña() {
@@ -1731,7 +1722,7 @@ public class Player extends AbstractCharacter {
 				if (!counters().intervaloPermiteLanzarSpell()) {
 					return;
 				}
-				if (isCounselor())
+				if (flags().isCounselor())
 					return;
 				mapa.lookAtTile(this, x, y);
 				if (flags().Hechizo > 0) {
@@ -2092,6 +2083,10 @@ public class Player extends AbstractCharacter {
 	    	return;
 	    }
 		
+		if (flags().Inmovilizado) {
+			return;
+		}
+		
 		int posX = 0;
 		int posY = 0;
 		Heading heading = Heading.value(newHeading);
@@ -2290,7 +2285,7 @@ public class Player extends AbstractCharacter {
 					new ChatOverHeadResponse(text, getId(),
 							Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO)));
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			Log.logGM(this.userName, "El consejero dijo: " + text);
 		}
 	}
@@ -2309,7 +2304,7 @@ public class Player extends AbstractCharacter {
 				new ChatOverHeadResponse(text, getId(),
 						Color.r(Color.COLOR_ROJO), Color.g(Color.COLOR_ROJO), Color.b(Color.COLOR_ROJO)));
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			Log.logGM(this.userName, "El consejero gritó: " + text);
 		}
 	}
@@ -2332,7 +2327,7 @@ public class Player extends AbstractCharacter {
 			if (map.buscarEnElArea(pos().x, pos().y, targetUser.getId()) == null) {
 				sendMessage("Estas muy lejos de " + targetUser.getNick(), FontType.FONTTYPE_INFO);
 			} else {
-				if (isCounselor()) {
+				if (flags().isCounselor()) {
 					Log.logGM(this.userName, "El consejero le susurró a " + targetUser.getNick() + ": " + text);
 				}
 
@@ -2343,7 +2338,7 @@ public class Player extends AbstractCharacter {
 				sendPacket(new ChatOverHeadResponse(text, getId(),
 						Color.r(Color.COLOR_AZUL), Color.g(Color.COLOR_AZUL), Color.b(Color.COLOR_AZUL)));
 
-				if (!isGM() || isCounselor()) {
+				if (!flags().isGM() || flags().isCounselor()) {
 					// send to admins at area
 					map.sendToAreaToAdminsButCounselor(pos().x, pos().y,
 							new ChatOverHeadResponse("a " + targetUser.getNick() + "> " + text, this.getId(),
@@ -2429,7 +2424,7 @@ public class Player extends AbstractCharacter {
 				boolean sendingData = pos().map != targetPos.map;
 				if (!enterIntoMap(targetPos.map, targetPos.x, targetPos.y, withFX, sendingData)) {
 					// if fails, go back to the closest original position
-					MapPos warpPos = map.closestLegalPosPlayer(oldPos.x, oldPos.y, flags().Navegando, isGM());
+					MapPos warpPos = map.closestLegalPosPlayer(oldPos.x, oldPos.y, flags().Navegando, flags().isGM());
 					warpMe(warpPos.map, warpPos.x, warpPos.y, true);
 				}
 			}
@@ -2443,7 +2438,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive("¡¡No puedes atacar a nadie por estar muerto!!")) {
 			return;
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			sendMessage("¡¡No puedes atacar a nadie!!", FontType.FONTTYPE_INFO);
 			return;
 		} else {
@@ -2469,7 +2464,7 @@ public class Player extends AbstractCharacter {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden recoger objetos.")) {
 			return;
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			sendMessage("No puedes recoger ningún objeto.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2484,7 +2479,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("No puedes tirar objetos mientras navegas.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			sendMessage("No puedes tirar ningún objeto.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2516,7 +2511,7 @@ public class Player extends AbstractCharacter {
 				} else {
 					// Quitamos el objeto
 					mapa.quitarObjeto(pos().x, pos().y);
-					if (isGM()) {
+					if (flags().isGM()) {
 						Log.logGM(this.userName, "Agarró: " + obj.obj_ind + " objeto=" + obj.getInfo().Nombre);
 					}
 				}
@@ -2639,7 +2634,7 @@ public class Player extends AbstractCharacter {
 			return false;
 		}
 
-		MapPos freePos = targetMap.closestLegalPosPlayer(x, y, flags().Navegando, isGM());
+		MapPos freePos = targetMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
 
 		// enter into the new map
 		if (!targetMap.enterMap(this, freePos.x, freePos.y)) {
@@ -2725,7 +2720,7 @@ public class Player extends AbstractCharacter {
 		// Si el destino es distinto a la posición actual
 		if (changingMap || pos().x != x || pos().y != y) {
 			Map newMap = this.server.getMap(targetMap);
-			MapPos pos_libre = newMap.closestLegalPosPlayer(x, y, flags().Navegando, isGM());
+			MapPos pos_libre = newMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
 			if (pos_libre == null) {
 				log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + targetMap + " x=" + x + " y=" + y);
 				return false;
@@ -2907,48 +2902,6 @@ public class Player extends AbstractCharacter {
 		return npc;
 	}
 
-	public Object[] ccParams() {
-		byte crimi = (byte) (isCriminal() ? 1 : 0);
-
-		Object[] params = {
-				(short)getId(),
-				(short)this.infoChar.body(),
-				(short)this.infoChar.head(),
-
-				(byte)this.infoChar.heading().value(),
-				(byte)pos().x,
-				(byte)pos().y,
-
-				(short)this.infoChar.weapon(),
-				(short)this.infoChar.shield(),
-				(short)this.infoChar.helmet(),
-
-				(short)this.infoChar.fx(),
-				(short)this.infoChar.loops(),
-
-				this.userName + tag(),
-				(byte)crimi,
-				(byte)flags().Privilegios };
-
-		return params;
-	}
-
-	private String tag() {
-		if (isGM()) {
-			if (isGod()) {
-				return " <GAME MASTER>";
-			}
-			if (isDemiGod()) {
-				return " <SEMIDIOS>";
-			}
-			return " <CONSEJERO>";
-		}
-		if (!getGuildInfo().esMiembroClan()) {
-			return "";
-		}
-		return " <" + this.guildUser.getGuildName() + ">";
-	}
-
 	public void sendCC() {
 		sendPacket(characterCreate());
 	}
@@ -2966,9 +2919,25 @@ public class Player extends AbstractCharacter {
 				this.infoChar.helmet(),
 				this.infoChar.fx(),
 				this.infoChar.loops,
-				this.userName + tag(),
+				userNameAndTagForCC(),
 				(byte) (this.isCriminal() ? 1 : 0),
-				(byte)flags().Privilegios);
+				(byte)flags().privileges);
+	}
+
+	private String userNameAndTagForCC() {
+        if (this.showName) {
+        	if (flags().isGM() && (flags().Invisible || flags().Oculto)) {
+        		return getNick() + " " + TAG_USER_INVISIBLE;
+        	} else {
+    			if (getGuildInfo().esMiembroClan()) {
+    				return getNick() + " <" + this.guildUser.getGuildName() + ">";
+    			} else {
+    				return getNick();
+    			}
+        	}
+        } else {
+            return "";
+        }
 	}
 
 	public CharacterChangeResponse characterChange() {
@@ -3032,7 +3001,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void userDie() {
-		if (isGM()) {
+		if (flags().isGM()) {
 			return;
 		}
 		Map map = this.server.getMap(pos().map);
@@ -3118,7 +3087,7 @@ public class Player extends AbstractCharacter {
 
 	public void tirarTodo() {
 		Map map = this.server.getMap(pos().map);
-		if (map.isArenaZone(pos().x, pos().y) || isGM()) {
+		if (map.isArenaZone(pos().x, pos().y) || flags().isGM()) {
 			return;
 		}
 		tirarTodosLosItems();
@@ -3177,7 +3146,7 @@ public class Player extends AbstractCharacter {
 					stats().addGold( -cantidad );
 					cantidad -= oi.cant;
 				}
-				if (isGM()) {
+				if (flags().isGM()) {
 					Log.logGM(this.userName,
 							"Tiró " + oi.cant + " unidades del objeto " + findObj(oi.objid).Nombre);
 				}
@@ -3191,14 +3160,13 @@ public class Player extends AbstractCharacter {
 		if (map.isArenaZone(pos().x, pos().y)) {
 			return;
 		}
-		if (flags().Privilegios < 2) {
+		if (!flags().isGM()) {
 			if (!isCriminal()) {
 				this.reputation.condenar();
 				if (this.faction.ArmadaReal) {
 					this.faction.expulsarFaccionReal();
 				}
 				refreshCharStatus();
-				System.out.println(this.getNick() + " ahora es criminal");
 			}
 		}
 	}
@@ -3661,7 +3629,7 @@ public class Player extends AbstractCharacter {
 			break;
 		}
 		sendPacket(new NPCHitUserResponse(lugar, (short)daño));
-		if (flags().Privilegios == 0) {
+		if (!flags().isGM()) {
 			stats().MinHP -= daño;
 		}
 
@@ -3722,6 +3690,11 @@ public class Player extends AbstractCharacter {
 
 	public void safeToggle() {
 		flags().Seguro = !flags().Seguro;
+		if (flags().Seguro) {
+			sendPacket(new SafeModeOnResponse());
+		} else {
+			sendPacket(new SafeModeOffResponse());
+		}
 	}
 	
 	public boolean isInCombatMode() {
@@ -3738,7 +3711,7 @@ public class Player extends AbstractCharacter {
 		flags().ModoCombate = !flags().ModoCombate;
 	}
 
-	public void doONLINE() {
+	public void showUsersOnline() {
 		// Comando /ONLINE
 		// Muestra los usuarios conectados.
 		StringBuffer msg = new StringBuffer();
@@ -4090,7 +4063,7 @@ public class Player extends AbstractCharacter {
 			return false;
 		}
 		// Se asegura que la victima no es un GM
-		if (victima.isGM()) {
+		if (victima.flags().isGM()) {
 			sendMessage("¡¡No puedes atacar a los administradores del juego!!", FontType.FONTTYPE_WARNING);
 			return false;
 		}
@@ -4101,7 +4074,7 @@ public class Player extends AbstractCharacter {
 		if (flags().Seguro) {
 			if (!victima.isCriminal()) {
 				sendMessage(
-						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla <S>.",
+						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla S",
 						FONTTYPE_FIGHT);
 				return false;
 			}
@@ -4333,17 +4306,17 @@ public class Player extends AbstractCharacter {
 			this.userStorage.loadUserFromStorage();
 
 			if (this.server.manager().isGod(this.userName)) {
-				flags().Privilegios = 3;
+				flags().setGod();
 				Log.logGM(this.userName, "El GM-DIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isDemiGod(this.userName)) {
-				flags().Privilegios = 2;
+				flags().setDemiGod();
 				Log.logGM(this.userName, "El GM-SEMIDIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isCounsellor(this.userName)) {
-				flags().Privilegios = 1;
+				flags().setCounselor();
 				Log.logGM(this.userName, "El GM-CONSEJERO se conectó desde la ip=" + this.ip);
 			} else {
 				// Usuario no privilegiado.
-				flags().Privilegios = 0;
+				flags().serOrdinaryUser();
 			}
 
 			// FIXME maximo de usuarios alcanzado?
@@ -4370,7 +4343,7 @@ public class Player extends AbstractCharacter {
 			sendInventoryToUser();
 			spells().sendSpells();
 			
-			if (isParalized() || flags().Inmovilizado) {
+			if (isParalized()) {
 				sendPacket(new ParalizeOKResponse());
 			}
 			
@@ -4668,7 +4641,9 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void checkSummonTimeout() {
-		getUserPets().getPets().forEach(pet -> {
+		// copy list of pets, to avoid concurrent issues
+		var pets = List.copyOf(getUserPets().getPets());
+		pets.forEach(pet -> {
 			if (pet.counters().TiempoExistencia > 0) {
 				pet.counters().TiempoExistencia--;
 				if (pet.counters().TiempoExistencia == 0) {
@@ -4697,13 +4672,13 @@ public class Player extends AbstractCharacter {
 				efectoCegueEstu();
 			}
 			if (isAlive()) {
-				if (flags().Desnudo && flags().Privilegios == 0) {
+				if (flags().Desnudo && !flags().isGM()) {
 					efectoFrio();
 				}
 				if (flags().Meditando) {
 					meditar();
 				}
-				if (flags().Envenenado && flags().Privilegios == 0) {
+				if (flags().Envenenado && !flags().isGM()) {
 					statsChanged = efectoVeneno();
 				}
 				if (!flags().AdminInvisible && flags().Invisible) {
@@ -4737,13 +4712,13 @@ public class Player extends AbstractCharacter {
 					}
 				}
 				// Verificar muerte por hambre
-				if (stats().eaten <= 0 && !isGM()) {
+				if (stats().eaten <= 0 && !flags().isGM()) {
 					sendMessage("¡¡Has muerto de hambre!!.", FontType.FONTTYPE_INFO);
 					stats().eaten = 0;
 					userDie();
 				}
 				// Verificar muerte de sed
-				if (stats().drinked <= 0 && !isGM()) {
+				if (stats().drinked <= 0 && !flags().isGM()) {
 					sendMessage("¡¡Has muerto de sed!!.", FontType.FONTTYPE_INFO);
 					stats().drinked = 0;
 					userDie();
@@ -4771,31 +4746,38 @@ public class Player extends AbstractCharacter {
 		if (this.faction.ArmadaReal) {
 			return " <Ejercito real> <" + this.faction.tituloReal() + ">";
 		} else if (this.faction.FuerzasCaos) {
-			return " <Fuerzas del caos> <" + this.faction.tituloCaos() + ">";
+			return " <Legión Oscura> <" + this.faction.tituloCaos() + ">";
 		}
 		return "";
 	}
 
-	public String getTagsDesc() {
+	public String userNameTagDesc() {
 		var msg = new StringBuilder();
 		if (showName) {
 			msg.append(getNick());
-			if (isNewbie()) {
-				msg.append(" <NEWBIE>");
-			}
-			msg.append(getTituloFaccion());
-			if (getGuildInfo().esMiembroClan()) {
-				msg.append(" <" + this.guildUser.getGuildName() + ">");
-			}
+			
 			if (this.description.length() > 0) {
 				msg.append(" - " + this.description);
 			}
-			if (isGod()) {
+			
+			if (!flags().isGM() && isNewbie()) {
+				msg.append(" <NEWBIE>");
+			}
+			
+			msg.append(getTituloFaccion());
+			
+			if (getGuildInfo().esMiembroClan()) {
+				msg.append(" <" + this.guildUser.getGuildName() + ">");
+			}
+			
+			if (flags().isRoyalCouncil()) {
+				msg.append(" [CONSEJO DE BANDERBILL]");
+			} else if (flags().isChaosCouncil()) {
+				msg.append(" [CONCILIO DE LAS SOMBRAS]");
+			}
+			
+			if (flags().isGod() || flags().isDemiGod() || flags().isCounselor()) {
 				msg.append(" <GAME MASTER>");
-			} else if (isDemiGod()) {
-				msg.append(" <SEMIDIOS>");
-			} else if (isCounselor()) {
-				msg.append(" <CONSEJERO>");
 			} else if (isCriminal()) {
 				msg.append(" <CRIMINAL>");
 			} else {
@@ -4806,17 +4788,28 @@ public class Player extends AbstractCharacter {
 	}
 
 	public FontType getTagColor() {
-		if (isGod()) {
+		if (flags().isRoyalCouncil()) {
+			return FontType.FONTTYPE_CONSEJOVesA;
+		} else if (flags().isChaosCouncil()) {
+			return FontType.FONTTYPE_CONSEJOCAOSVesA;
+		}
+		
+		
+		if (flags().isGod()) {
 			return FontType.FONTTYPE_DIOS;
 		}
-		if (isDemiGod()) {
+		if (flags().isDemiGod()) {
 			return FontType.FONTTYPE_GM;
 		}
-		if (isCounselor()) {
+		if (flags().isCounselor()) {
 			return FontType.FONTTYPE_CONSEJO;
 		}
+		if (flags().isRoleMaster()) {
+			return FontType.FONTTYPE_EJECUCION;
+		}
+		
 		if (isCriminal()) {
-			return FontType.FONTTYPE_CITIZEN;
+			return FontType.FONTTYPE_FIGHT;
 		}
 		return FontType.FONTTYPE_CITIZEN;
 	}
@@ -5025,7 +5018,7 @@ public class Player extends AbstractCharacter {
 		
 		Map mapa = this.server.getMap(pos().map);
 		mapa.sendToArea(pos().x, pos().y,
-				new UpdateTagAndStatusResponse(getId(), isCriminal() ? (byte)1 : (byte)0, getTagsDesc()));
+				new UpdateTagAndStatusResponse(getId(), isCriminal() ? (byte)1 : (byte)0, userNameTagDesc()));
         
         // Si esta navengando, se cambia la barca.
         if (isSailing()) {

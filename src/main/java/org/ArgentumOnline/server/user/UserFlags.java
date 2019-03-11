@@ -100,20 +100,33 @@ public class UserFlags {
     public short AtacadoPorNpc = 0;
     public short AtacadoPorUser = 0;
     
-    /*
-Public Enum PlayerType
-    User = &H1
-    Consejero = &H2
-    SemiDios = &H4
-    Dios = &H8
-    Admin = &H10
-    RoleMaster = &H20
-    ChaosCouncil = &H40
-    RoyalCouncil = &H80
-End Enum
-	FIXME
-     */
-    public short Privilegios = 0;
+	public enum PlayerType {
+		
+	    User		(0x01),
+	    Consejero	(0x02),
+	    SemiDios	(0x04),
+	    Dios		(0x08),
+	    Admin		(0x10),
+	    RoleMaster	(0x20),
+	    ChaosCouncil(0x40),
+	    RoyalCouncil(0x80);
+	    
+	    private int value;
+	    private PlayerType(int value) {
+	    	this.value = value;
+		}
+	    
+	    public int value() {
+			return this.value;
+		}
+	}
+	
+	/**
+	 * This is a binary OR of PlayerType flags.
+	 * Ordinary user has privileges = 1.
+	 * GM has privileges > 1
+	 */
+    public int privileges = 0;
     
     public short ValCoDe = 0;
     
@@ -132,6 +145,48 @@ End Enum
     
     short indexDuel = 0;
     
+	public boolean isGod() {
+		return (privileges & PlayerType.Dios.value()) > 0;
+	}
+
+	public boolean isDemiGod() {
+		return (privileges & PlayerType.SemiDios.value()) > 0;
+	}
+
+	public boolean isCounselor() {
+		return (privileges & PlayerType.Consejero.value()) > 0;
+	}
+
+	public boolean isGM() {
+		return privileges > 0;
+	}
+	
+	public boolean isRoleMaster() {
+		return (privileges & PlayerType.RoleMaster.value()) > 0; 
+	}
+
+	public boolean isChaosCouncil() {
+		return (privileges & PlayerType.ChaosCouncil.value()) > 0; 
+	}
+
+	public boolean isRoyalCouncil() {
+		return (privileges & PlayerType.RoyalCouncil.value()) > 0; 
+	}
+	
+	public void setGod() {
+		this.privileges = PlayerType.Dios.value();
+	}
+
+	public void setDemiGod() {
+		this.privileges = PlayerType.SemiDios.value();
+	}
+
+	public void setCounselor() {
+		this.privileges = PlayerType.Consejero.value();
+	}
+	
+	public void serOrdinaryUser() {
+		this.privileges = PlayerType.User.value();
+	}
+    
 }
-
-

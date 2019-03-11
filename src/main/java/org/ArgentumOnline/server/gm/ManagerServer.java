@@ -259,7 +259,7 @@ public class ManagerServer {
 		admin.sendMessage("Comentario salvado...", FontType.FONTTYPE_INFO);
 	}
 
-	public void addHelpRequest(Player user) {
+	public void askForHelpToGM(Player user) {
 		// Comando /GM
 		// Pedir ayuda a los GMs.
 		var requests = helpRequests();
@@ -289,6 +289,9 @@ public class ManagerServer {
 
 	public void warpToUser(Player admin, String userName) {
 		// Comando /IRA
+		if ( !admin.flags().isGM() ) {
+			return;
+		}
 		if (userName.length() == 0) {
 			return;
 		}
@@ -308,6 +311,9 @@ public class ManagerServer {
 
 	public void turnInvisible(Player admin) {
 		// Comando /INVISIBLE
+		if ( !admin.flags().isGM() ) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "Hizo un /INVISIBLE");
 		
 		if (!admin.flags().AdminInvisible) {
@@ -464,7 +470,7 @@ public class ManagerServer {
 		admin.sendMessage("Usuarios trabajando: " + msg, FontType.FONTTYPE_INFO);
 	}
 
-	public void sendShowGMPanelForm(Player admin) {
+	public void showGmPanelForm(Player admin) {
 		// Comando /PANELGM
 		admin.sendPacket(new ShowGMPanelFormResponse());
 	}
@@ -493,8 +499,11 @@ public class ManagerServer {
 		this.server.guardarUsuarios();
 	}
 
-	public void doApagar(Player admin) {
+	public void shutdownServer(Player admin) {
 		// Comando /APAGAR
+		if (!admin.flags().isGM()) {
+			return;
+		}
 		log.info("SERVIDOR APAGADO POR " + admin.getNick());
 		Log.logGM(admin.getNick(), "APAGO EL SERVIDOR");
 		this.server.shutdown();
@@ -509,9 +518,12 @@ public class ManagerServer {
 		}
 	}
 
-	public void doSystemMsg(Player admin, String msg) {
+	public void sendSystemMsg(Player admin, String msg) {
 		// Mensaje del sistema
 		// Comando /SMSG
+		if (!admin.flags().isGM()) {
+			return;
+		}
 		msg = msg.trim();
 		Log.logGM(admin.getNick(), "Envió el mensaje del sistema: " + msg);
 		// FIXME
@@ -635,8 +647,11 @@ public class ManagerServer {
 		});
 	}
 
-	public void doUptime(Player admin) {
+	public void showUptime(Player admin) {
 		// Comando /UPTIME
+		if (!admin.flags().isGM()) {
+			return;
+		}
 		admin.sendMessage("Uptime: " + this.server.calculateUptime(), FontType.FONTTYPE_INFO);
 	}
 
@@ -857,12 +872,12 @@ public class ManagerServer {
 	 */
 	public void sendServerMessage(Player admin, String message) {
 		// Comando /RMSG
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "Mensaje Broadcast: " + message);
 		if (!message.equals("")) {
-			if (admin.isGM()) {
+			if (admin.flags().isGM()) {
 				Log.logGM(admin.getNick(), "Mensaje Broadcast:" + message);
 				server.sendToAll(new ConsoleMsgResponse(message, FontType.FONTTYPE_TALK.id()));
 			}
@@ -871,7 +886,7 @@ public class ManagerServer {
 
 	public void doSUM(Player admin, String s) {
 		// Comando /SUM usuario
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		if (s.length() == 0) {
@@ -893,7 +908,7 @@ public class ManagerServer {
 
 	public void doBan(Player admin, String nombre, String motivo) {
 		// Comando /BAN
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Player usuario = this.server.playerByUserName(nombre);
@@ -901,7 +916,7 @@ public class ManagerServer {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
+		if (usuario.flags().privileges > admin.flags().privileges) {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -911,7 +926,7 @@ public class ManagerServer {
 		this.server.sendMessageToAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 		// Ponemos el flag de ban a 1
 		usuario.flags().Ban = true;
-		if (usuario.isGM()) {
+		if (usuario.flags().isGM()) {
 			admin.flags().Ban = true;
 			admin.quitGame();
 			this.server.sendMessageToAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
@@ -924,7 +939,7 @@ public class ManagerServer {
 
 	public void doUnban(Player admin, String s) {
 		// Comando /UNBAN
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "/UNBAN " + s);
@@ -936,7 +951,7 @@ public class ManagerServer {
 	public void kickUser(Player admin, String userName) {
 		// Echar usuario
 		// Comando /ECHAR
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + userName);
@@ -945,7 +960,7 @@ public class ManagerServer {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
+		if (usuario.flags().privileges > admin.flags().privileges) {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -959,7 +974,7 @@ public class ManagerServer {
 
 	public void sendUserToJail(Player admin, String userName, byte minutes) {
 		// Comando /CARCEL minutos usuario
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /CARCEL " + userName);
@@ -968,7 +983,7 @@ public class ManagerServer {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().Privilegios > admin.flags().Privilegios) {
+		if (usuario.flags().privileges > admin.flags().privileges) {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -987,7 +1002,7 @@ public class ManagerServer {
 	public void pardonUser(Player admin, String userName) {
 		// Comando /PERDON usuario
 		// Perdonar a un usuario. Volverlo cuidadano.
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /PERDON " + userName);
@@ -1013,7 +1028,7 @@ public class ManagerServer {
 	public void condemnUser(Player admin, String s) {
 		// Comando /CONDEN usuario
 		// Condenar a un usuario. Volverlo criminal.
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /CONDEN " + s);
@@ -1033,7 +1048,7 @@ public class ManagerServer {
 
 	public void reviveUser(Player admin, String s) {
 		// Comando /REVIVIR
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /REVIVIR " + s);
@@ -1056,9 +1071,9 @@ public class ManagerServer {
 		}
 	}
 
-	public void sendGMsOnline(Player admin) {
+	public void showGmOnline(Player admin) {
 		// Comando /ONLINEGM
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		var gmsOnline = this.server.getGMsOnline();
@@ -1132,7 +1147,7 @@ public class ManagerServer {
 
 	public void doMensajeALosGM(Player admin, String s) {
 		// Mensaje para los GMs
-		if (!admin.isGM()) {
+		if (!admin.flags().isGM()) {
 			return;
 		}
 		if (s.length() > 0) {
@@ -1196,7 +1211,7 @@ public class ManagerServer {
 		}
 	}
 
-	public void doTeleportUsuario(Player admin, String nombre, short m, byte x, byte y) {
+	public void warpUserTo(Player admin, String nombre, short m, byte x, byte y) {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {
@@ -1211,11 +1226,12 @@ public class ManagerServer {
 			return;
 		}
 
+		if (!admin.flags().isGM() || admin.flags().isCounselor()) {
+			return;
+		}
+		
 		Player usuario = admin;
 		if (!nombre.equalsIgnoreCase("YO")) {
-			if (admin.flags().Privilegios < 2) {
-				return;
-			}
 			usuario = this.server.playerByUserName(nombre);
 		}
 		if (!Pos.isValid(x, y)) {

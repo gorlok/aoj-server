@@ -146,6 +146,7 @@ End Enum
     public short   oldMovement   = 0;
     
     public String  attackedBy = "";
+    public String  attackedFirstBy = ""; // FIXME
 
     int   targetUser    = 0;
     Npc   targetNpc = null;
@@ -750,6 +751,7 @@ End Enum
 			this.expCount = this.expCount - exp;
     	}
     	
+    	exp = exp * 1000; // FIXME EXPERIENCIA FACIL
     	// Le damos la exp al user
         if (exp > 0) {
             if (player.partyIndex > 0) {
@@ -782,7 +784,7 @@ End Enum
             }
             player.sendMessage("Has matado la criatura!", FONTTYPE_FIGHT);
             if (this.expCount > 0) {
-                player.stats().addExp(this.expCount);
+                player.stats().addExp(this.expCount * 1000); // FIXME experiencia FACIL
                 player.sendMessage("Has ganado " + this.expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
             } else {
                 player.sendMessage("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
@@ -795,7 +797,7 @@ End Enum
                 if (this.npcNumber == GUARDIAS) {
                     player.volverCriminal();
                 }
-                if (!player.isGod()) {
+                if (!player.flags().isGod()) {
                     player.reputation().incAsesino(vlAsesino);
                 }
             } else if (this.stats.alineacion == 1) {
@@ -1072,7 +1074,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.isGM()) {
+                    if (player.isAlive() && !player.flags().isGM()) {
                         // ¿ES CRIMINAL?
                     	if (npcType() != NpcType.NPCTYPE_GUARDIAS_CAOS) {
                     		if (player.isCriminal()) {
@@ -1127,7 +1129,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.isGM()) {
+                    if (player.isAlive() && !player.flags().isGM()) {
                         if (isMagical()) {
                             npcCastSpell(player);
                         }
@@ -1154,7 +1156,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
+                    if (player.isAlive() && !player.flags().isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
                         if (isMagical()) {
                             npcCastSpell(player);
                         }
@@ -1180,7 +1182,7 @@ End Enum
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
                         if (player != null) {
-                            if (player.isAlive() && !player.isInvisible() && !player.isGM()) {
+                            if (player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
                                 if (isMagical()) {
                                    npcCastSpell(player);
                                 }
@@ -1207,7 +1209,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
-                        if (!player.isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
+                        if (!player.flags().isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
                             if (getPetUserOwner() != null) {
 		                        if (	!getPetUserOwner().isCriminal() && !player.isCriminal() &&
 		                        		(getPetUserOwner().hasSafeLock() || getPetUserOwner().userFaction().ArmadaReal)) {
@@ -1259,7 +1261,7 @@ End Enum
 
                         if (player == null) break;
 
-                        if (player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.isGM()) {
+                        if (player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
                             if (isMagical()) {
                                 npcCastSpell(player);
                             }
@@ -1285,7 +1287,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
-                        if (!player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.isGM()) {
+                        if (!player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
                             if (isMagical()) {
                                 npcCastSpell(player);
                             }
@@ -1578,7 +1580,7 @@ End Enum
         }
 
         if (spell.SubeHP == 2) {
-            if (player.isGM()) {
+            if (player.flags().isGM()) {
     			return;
     		}
             daño = Util.Azar(spell.MinHP, spell.MaxHP);
@@ -1660,7 +1662,7 @@ End Enum
         if (!canAttack()) {
 			return;
 		}
-        if (player.isGM()) {
+        if (player.flags().isGM()) {
 			return;
 		}
         player.getUserPets().petsAttackNpc(this);
@@ -1969,14 +1971,19 @@ End Enum
     	return "(" + this.stats().MinHP + "/" + this.stats().MaxHP + ")";
     }
 
-    public String estadoVida(Player player) {
+    public String healthDescription(Player player) {
     	if (this.stats().MaxHP <= 0) {
 			return "";
 		}
-    	//agush: con esto los gms ahora ven la vida de los npcs
-    	if (!player.isGM() == false) {
+
+    	if (player.flags().isGM()) {
 			return estadoVidaExacta();
 		}
+    	
+    	if (!player.isAlive()) {
+    		return "";
+    	}
+    	
         short skSup = player.skills().get(Skill.SKILL_Supervivencia);
         double vidaPct = this.stats().MinHP / this.stats().MaxHP;
         if (skSup < 11) {

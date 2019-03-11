@@ -291,7 +291,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, cant);
                 player().sendInventorySlot(slot);
                 ObjectInfo iobj = findObj(objid);
-                if (player().isGM()) {
+                if (player().flags().isGM()) {
 					Log.logGM(player().getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
@@ -890,7 +890,7 @@ public class UserInventory extends Inventory implements Constants {
                         }
                         break;
                     case 6: // Pocion negra
-                        if (!player().isGM()) {
+                        if (!player().flags().isGM()) {
                         	player().userDie();
                             player().sendMessage("Sientes un gran mareo y pierdes el conocimiento.", FontType.FONTTYPE_INFO);
                         }

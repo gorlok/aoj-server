@@ -27,19 +27,22 @@ public class WarpCharRequest extends ClientPacket {
 		return ClientPacketID.WarpChar;
 	}
 	public String userName;
+	public short map;
 	public byte x;
 	public byte y;
-	public WarpCharRequest(String userName,byte x,byte y){
+	public WarpCharRequest(String userName,short map,byte x,byte y){
 		this.userName = userName;
+		this.map = map;
 		this.x = x;
 		this.y = y;
 	}
 	public static WarpCharRequest decode(ByteBuf in) {    
 		try {                                   
 			String userName = readStr(in);
+			short map = readShort(in);
 			byte x = readByte(in);
 			byte y = readByte(in);
-			return new WarpCharRequest(userName,x,y);                  
+			return new WarpCharRequest(userName,map,x,y);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        
 		}                                       

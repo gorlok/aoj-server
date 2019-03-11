@@ -1,5 +1,5 @@
 ;Archivo: charfile/b.chr
-;Ultima modificacion: 09/03/2019 21:15:46
+;Ultima modificacion: 10/03/2019 18:12:13
 
 [ATRIBUTOS]
 AT1=20
@@ -147,7 +147,7 @@ HEADING=3
 HOGAR=2
 LASTIP=192.168.0.186
 PASSWORD=b
-POSITION=1-54-57
+POSITION=59-43-52
 RAZA=3
 
 [INVENTORY]

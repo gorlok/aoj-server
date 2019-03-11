@@ -40,11 +40,13 @@ import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
+import org.ArgentumOnline.server.protocol.SystemMessageRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
+import org.ArgentumOnline.server.protocol.WarpCharRequest;
 import org.ArgentumOnline.server.protocol.WhisperRequest;
 import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
 import org.ArgentumOnline.server.protocol.WorkRequest;
@@ -243,6 +245,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.safeToggle();
 			break;
 			
+		case CombatModeToggle:
+			player.toggleCombatMode();
+			break;
+			
 		case TrainList:
 			player.doEntrenar();
 			break;
@@ -299,10 +305,61 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.spells().sendSpellInfo(((SpellInfoRequest)packet).spellSlot);
 			break;
 			
+		case GMRequest:
+			server.manager().askForHelpToGM(player);
+			break;
+			
+		case Online:
+			player.showUsersOnline();
+			break;
+			
 		default:
-			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+			if (player.flags().isGM()) {
+				switch (clientPacket.id()) {
+				case OnlineGM:
+					server.manager().showGmOnline(player);
+					break;
+					
+				case TurnOffServer:
+					server.manager().shutdownServer(player);
+					break;
+					
+				case GMPanel:
+					server.manager().showGmPanelForm(player);
+					break;
+					
+				case Invisible:
+					server.manager().turnInvisible(player);
+					break;
+					
+				case RainToggle:
+					server.manager().toggleRain();
+					break;
+					
+				case SystemMessage:
+					server.manager().sendSystemMsg(player, ((SystemMessageRequest)packet).message);
+					break;
+					
+				case Uptime:
+					server.manager().showUptime(player);
+					break;
+					
+				case WarpChar:
+					handleWarpChar((WarpCharRequest)packet, player);
+					break;
+					
+				default:
+					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+				}
+			} else {
+				System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+			}
 		}
 		
+	}
+
+	private void handleWarpChar(WarpCharRequest packet, Player admin) {
+		GameServer.instance().manager().warpUserTo(admin, packet.userName, packet.map, packet.x, packet.y);
 	}
 
 	private void handleForumPost(ForumPostRequest packet, Player player) {

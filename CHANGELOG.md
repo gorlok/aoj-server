@@ -3,6 +3,14 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+
+### 2019-03-10
+- arreglado el modo seguro
+- corregido en decoder del ClientPacketID que al ser signed byte podía ser negativo
+- corregido el checkSummonTimeout por modificación concurrente de listas
+- modificado lookAtTile y tags de usuarios,gm,etc
+- se implementan varios comandos de GM
+
 ### 2019-03-09
 - se reimplementan los hechizos que lanzan los NPCs
 - se corrigen bugs con la experiencia ganada y los skills

@@ -37,7 +37,7 @@ public class ManagerApi {
 
 		get("/raining", (request, response) -> game.isRaining());
 		post("/raining", (request, response) -> {
-			admin().toggleRain(); 
+			admin().toggleRain(); // FIXME 
 			return game.isRaining();	
 		});
 		

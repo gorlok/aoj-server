@@ -55,6 +55,7 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 		in.markReaderIndex();
 
 		int id = in.readByte();
+		id = id & 0xFF; // signed byte to unsigned
 		ClientPacketID packetId = ClientPacketID.value(id);
 		Packet packet = null;
 
