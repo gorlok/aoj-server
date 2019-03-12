@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import org.ArgentumOnline.server.Ciudad;
 import org.ArgentumOnline.server.Clazz;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.Skill;
@@ -114,7 +115,7 @@ public class UserStorage {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
-		user.homeland = (byte) ini.getShort("INIT", "Hogar");
+		user.homeland = Ciudad.value(ini.getShort("INIT", "Hogar"));
 		user.infoChar().heading = Heading.value(ini.getShort("INIT", "Heading"));
 
 		user.origChar().head = ini.getShort("INIT", "Head");
@@ -362,7 +363,7 @@ public class UserStorage {
 
 			ini.setValue("INIT", "Genero", user.gender.value());
 			ini.setValue("INIT", "Raza", user.race.value());
-			ini.setValue("INIT", "Hogar", user.homeland);
+			ini.setValue("INIT", "Hogar", user.homeland.id());
 			ini.setValue("INIT", "Clase", user.clazz().id());
 			ini.setValue("INIT", "Password", user.password);
 			ini.setValue("INIT", "Desc", user.description);

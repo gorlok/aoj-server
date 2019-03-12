@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.AbstractCharacter;
 import org.ArgentumOnline.server.CharInfo;
+import org.ArgentumOnline.server.Ciudad;
 import org.ArgentumOnline.server.Clazz;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -148,7 +149,7 @@ public class Player extends AbstractCharacter {
 	UserGender gender = UserGender.GENERO_HOMBRE;
 
 	String email = "";
-	short homeland = CIUDAD_ULLA;
+	Ciudad homeland = Ciudad.ULLATHORPE;
 
 	private UserSpells spells;
 
@@ -4180,7 +4181,7 @@ public class Player extends AbstractCharacter {
 		this.race = UserRace.value(race);
 		this.gender = UserGender.value(gender);
 		this.email = email;
-		this.homeland = homeland;
+		this.homeland = Ciudad.value(homeland);
 		// FIXME
 		// %%%%%%%%%%%%% PREVENIR HACKEO DE LOS ATRIBUTOS %%%%%%%%%%%%%
 		// if (!atributosValidos()) {
@@ -4246,16 +4247,6 @@ public class Player extends AbstractCharacter {
 	public boolean userExists() {
 		// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
 		return Util.existeArchivo(getPjFile(this.userName));
-	}
-
-	public short indiceCiudad(String ciudad) {
-		// TODO esto no tiene porque estar en esta clase...
-		for (short i = 0; i < Constants.CIUDADES_NOMBRES.length; i++) {
-			if (Constants.CIUDADES_NOMBRES[i].equalsIgnoreCase(ciudad)) {
-				return i;
-			}
-		}
-		return 0;
 	}
 
 	public void modifyAttributesByRace() {
@@ -4347,21 +4338,12 @@ public class Player extends AbstractCharacter {
 			}
 			
 			if (pos().map == 0) {
-				// Posicion de comienzo
-				if (this.homeland == CIUDAD_NIX) {
-					setPos(this.server.getCiudadPos(CIUDAD_NIX).copy());
-				} else if (this.homeland == CIUDAD_ULLA) {
-					setPos(this.server.getCiudadPos(CIUDAD_ULLA).copy());
-				} else if (this.homeland == CIUDAD_BANDER) {
-					setPos(this.server.getCiudadPos(CIUDAD_BANDER).copy());
-				} else if (this.homeland == CIUDAD_LINDOS) {
-					setPos(this.server.getCiudadPos(CIUDAD_LINDOS).copy());
-				} else {
-					this.homeland = CIUDAD_ULLA;
-					setPos(this.server.getCiudadPos(CIUDAD_ULLA).copy());
-				}
+				setPos(this.server.getCiudadPos(this.homeland));
 			}
-
+			if (pos().map == 0) {
+				setPos(this.server.getCiudadPos(Ciudad.ULLATHORPE));
+			}
+			
 			sendUserIndexInServer();
 			
 			if (!enterIntoMap(pos().map, pos().x, pos().y, true, true)) {

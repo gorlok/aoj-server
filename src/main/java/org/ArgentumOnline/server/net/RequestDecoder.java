@@ -49,7 +49,9 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 		log.debug("=> closed client connection");
 		var server = GameServer.instance();
 		var player = server.findPlayer(ctx.channel());
-		player.quitGame();
+		if (player.isPresent()) {
+			player.get().quitGame();
+		}
 		clients.remove(ctx.channel()); 
 	}
 

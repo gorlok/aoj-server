@@ -82,16 +82,16 @@ public class AreasAO implements Constants {
 					| ((i != 11) ? (int)Math.pow(2, i + 1) : 0);
 		}
 		
-		for(int y = 0; y < 101; y++) {
-			for(int x = 0; x < 101; x++) {
-				MAP_TO_AREA[x][y] = (x / 9 + 1) * (y / 9 + 1);
-			}
-		}
 //		for(int y = 0; y < 101; y++) {
 //			for(int x = 0; x < 101; x++) {
-//				MAP_TO_AREA[x][y] = (x / 9)*12 + (y / 9) + 1;
+//				MAP_TO_AREA[x][y] = (x / 9 + 1) * (y / 9 + 1);
 //			}
 //		}
+		for(int y = 0; y < 101; y++) {
+			for(int x = 0; x < 101; x++) {
+				MAP_TO_AREA[x][y] = (x / 9)*12 + (y / 9) + 1;
+			}
+		}
 		
 	}
 	
@@ -189,8 +189,8 @@ public class AreasAO implements Constants {
     	
     	user.sendPacket(new AreaChangedResponse(user.pos().x, user.pos().y));
     	
-    	System.out.println("POS " + user.pos());
-    	System.out.println("AREA X:" + minX + "-" + maxX + " Y:" + minY + "-" + maxY);
+//    	System.out.println("POS " + user.pos());
+//    	System.out.println("AREA X:" + minX + "-" + maxX + " Y:" + minY + "-" + maxY);
     	
     	for (byte x = (byte) minX; x <= maxX; x++) {
     		for (byte y = (byte) minY; y <= maxY; y++) {
@@ -207,7 +207,7 @@ public class AreasAO implements Constants {
     			}
     			
     			if (map.hasNpc(x, y)) {
-    				System.out.println("  ==> " + map.getNpc(x, y));
+//    				System.out.println("  ==> " + map.getNpc(x, y));
     				user.sendPacket(map.getNpc(x, y).characterCreate());
     			}
     			

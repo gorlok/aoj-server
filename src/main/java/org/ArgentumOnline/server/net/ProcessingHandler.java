@@ -17,6 +17,8 @@
  *******************************************************************************/
 package org.ArgentumOnline.server.net;
 
+import java.util.Optional;
+
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
@@ -70,7 +72,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
 		var server = GameServer.instance();
-		var player = server.findPlayer(ctx.channel());
+		Optional<Player> p = server.findPlayer(ctx.channel());
+		if (!p.isPresent()) {
+			return;
+		}
+		Player player = p.get();
 
 		// TODO
 		Gson gson = new Gson();

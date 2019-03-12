@@ -108,13 +108,7 @@ public interface Constants {
     
     final static int NUM_CLASES  = 17;
     
-    String[] CIUDADES_NOMBRES = { "Nix", "Ullathorpe", "Banderbill", "Lindos" };
-    final static short CIUDAD_NIX = 0;
-    final static short CIUDAD_ULLA = 1;
-    final static short CIUDAD_BANDER = 2;
-    final static short CIUDAD_LINDOS = 3;
-    
-    final static int CANT_MAPAS  = 285;
+	final static int CANT_MAPAS  = 285;
     final static int XMinMapSize = 1;
     final static int YMinMapSize = 1;
     final static int XMaxMapSize = 100;

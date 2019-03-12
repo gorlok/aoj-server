@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.api.ManagerApi;
@@ -489,11 +490,10 @@ public class GameServer implements Constants {
         return player;
     }
 
-    public Player findPlayer(Channel channel) {
+    public Optional<Player> findPlayer(Channel channel) {
     	return this.players.values().stream()
 		    		.filter(p -> p.getChannel() == channel)
-		    		.findFirst()
-		    		.get();
+		    		.findFirst();
     }
 
     public void deleteNpc(Npc npc) {
@@ -608,20 +608,26 @@ public class GameServer implements Constants {
     	log.trace("loading cities");
         try {
             IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
-            this.cities = new MapPos[4];
-            this.cities[CIUDAD_NIX] = MapPos.mxy(ini.getShort("NIX", "MAPA"), ini.getShort("NIX", "X"), ini.getShort("NIX", "Y"));
-            this.cities[CIUDAD_ULLA] = MapPos.mxy(ini.getShort("Ullathorpe", "MAPA"), ini.getShort("Ullathorpe", "X"), ini.getShort("Ullathorpe", "Y"));
-            this.cities[CIUDAD_BANDER] = MapPos.mxy(ini.getShort("Banderbill", "MAPA"), ini.getShort("Banderbill", "X"), ini.getShort("Banderbill", "Y"));
-            this.cities[CIUDAD_LINDOS] = MapPos.mxy(ini.getShort("Lindos", "MAPA"), ini.getShort("Lindos", "X"), ini.getShort("Lindos", "Y"));
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
+            this.cities = new MapPos[Ciudad.values().length];
+            loadCity(ini, Ciudad.NIX, "NIX");
+            loadCity(ini, Ciudad.ULLATHORPE, "Ullathorpe");
+            loadCity(ini, Ciudad.BANDERBILL, "Banderbill");
+            loadCity(ini, Ciudad.LINDOS, "Lindos");
+            loadCity(ini, Ciudad.ARGHAL, "Arghal");
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
     }
 
-    public MapPos getCiudadPos(short ciudad) {
-        return this.cities[ciudad];
+	private void loadCity(IniFile ini, Ciudad ciudad, String section) {
+		this.cities[ciudad.id()] = 
+				MapPos.mxy(ini.getShort(section, "MAPA"), 
+						ini.getShort(section, "X"), 
+						ini.getShort(section, "Y"));
+	}
+
+    public MapPos getCiudadPos(Ciudad ciudad) {
+        return this.cities[ciudad.id()];
     }
 
     private void FX_Timer() {
