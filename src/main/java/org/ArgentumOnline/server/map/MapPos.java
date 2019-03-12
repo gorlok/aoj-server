@@ -52,7 +52,7 @@ public class MapPos extends Pos {
 
 	@Override
 	public String toString() {
-		return "(map=" + this.map + ",x=" + this.x + ",y=" + this.y + ")";
+		return "MapPos(map=" + this.map + ",x=" + this.x + ",y=" + this.y + ")";
 	}
 
 	/**

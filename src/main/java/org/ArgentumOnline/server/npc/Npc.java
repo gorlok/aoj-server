@@ -442,7 +442,7 @@ End Enum
 
     @Override
 	public String toString() {
-        return this.name + " (id=" + this.getId() + ")";
+        return "npc(id=" + this.getId() + ",x=" + pos().x + ",y=" + pos().y + " name=" + this.name + ")";
     }
 
     public String getName() {

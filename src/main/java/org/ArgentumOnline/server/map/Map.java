@@ -435,8 +435,8 @@ public class Map implements Constants {
 		                        npc.getOrig().x = (byte)0;
 		                        npc.getOrig().y = (byte)0;                        
 	                        }
-	                        npc.activate();
 	                        area().loadNpc(this, npc);
+	                        npc.activate();
 	                    }
 	                }
 	                
@@ -462,7 +462,6 @@ public class Map implements Constants {
         cell(x, y).playerId(player.getId());
         sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
         player.pos().set(this.mapNumber, x, y);
-		area().loadUser(this, player);
         return true;
     }
     
@@ -860,6 +859,7 @@ public class Map implements Constants {
     }
     
     public void lookAtTile(Player player, byte  x, byte y) {
+        System.out.println("areaID:" + player.charArea().areaID);
     	if (!player.pos().inRangoVision(x, y)) {
             return;
         }
@@ -901,11 +901,12 @@ public class Map implements Constants {
         		foundSomething = true;
         	}
         }
-        
+
         // Ver si hay un Npc...
         Npc npc;
         if ((npc = queryNpc(x, y)) != null) {
             foundSomething = true;
+            System.out.println("NPC id:" + npc.getId() + " name:" + npc.getName() + " areaID:" + npc.charArea().areaID + " " + npc.pos().toString());
             if (npc.description.length() > 0) {
             	// tiene algo para decir
             	player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
@@ -1533,6 +1534,5 @@ public class Map implements Constants {
 	public boolean isNewbieMap() {
 		return "NEWBIE".equalsIgnoreCase(restricted);
 	}
-    
-    
+
 }

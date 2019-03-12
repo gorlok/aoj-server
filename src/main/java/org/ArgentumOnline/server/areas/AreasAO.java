@@ -82,16 +82,16 @@ public class AreasAO implements Constants {
 					| ((i != 11) ? (int)Math.pow(2, i + 1) : 0);
 		}
 		
-//		for(int x = 0; x < 101; x++) {
-//			for(int y = 0; y < 101; y++) {
-//				POS_TO_AREA[x][y] = (x / 9 + 1) * (y / 9 + 1);
-//			}
-//		}
-		for(int x = 0; x < 101; x++) {
-			for(int y = 0; y < 101; y++) {
-				MAP_TO_AREA[x][y] = (x / 9)*12 + (y / 9) + 1;
+		for(int y = 0; y < 101; y++) {
+			for(int x = 0; x < 101; x++) {
+				MAP_TO_AREA[x][y] = (x / 9 + 1) * (y / 9 + 1);
 			}
 		}
+//		for(int y = 0; y < 101; y++) {
+//			for(int x = 0; x < 101; x++) {
+//				MAP_TO_AREA[x][y] = (x / 9)*12 + (y / 9) + 1;
+//			}
+//		}
 		
 	}
 	
@@ -118,7 +118,10 @@ public class AreasAO implements Constants {
 			return;
 		}
 		
-		int minX = 0; int maxX = 0; int minY = 0; int maxY = 0;
+		int minX = 0; 
+		int maxX = 0; 
+		int minY = 0; 
+		int maxY = 0;
 			
 		minX = userArea.minX;
 		minY = userArea.minY;
@@ -168,16 +171,16 @@ public class AreasAO implements Constants {
 			break;
 		}
 		
-    	if (maxY > YMaxMapSize - 1) {
-    		maxY = YMaxMapSize - 1;
+    	if (maxY > YMaxMapSize) {
+    		maxY = YMaxMapSize;
     	}
     	
     	if (minY < YMinMapSize) {
     		minY = YMinMapSize;
     	}
 
-    	if (maxX > XMaxMapSize - 1) {
-    		maxX = XMaxMapSize - 1;
+    	if (maxX > XMaxMapSize) {
+    		maxX = XMaxMapSize;
     	}
     	if (minX < XMinMapSize) {
     		minX = XMinMapSize;
@@ -186,8 +189,11 @@ public class AreasAO implements Constants {
     	
     	user.sendPacket(new AreaChangedResponse(user.pos().x, user.pos().y));
     	
-    	for (byte x = (byte) minX; x < maxX;x++) {
-    		for (byte y = (byte) minY; y < maxY; y++) {
+    	System.out.println("POS " + user.pos());
+    	System.out.println("AREA X:" + minX + "-" + maxX + " Y:" + minY + "-" + maxY);
+    	
+    	for (byte x = (byte) minX; x <= maxX; x++) {
+    		for (byte y = (byte) minY; y <= maxY; y++) {
     			
     			if (map.hasPlayer(x, y)) {
     				Player other = map.getPlayer(x, y);
@@ -201,6 +207,7 @@ public class AreasAO implements Constants {
     			}
     			
     			if (map.hasNpc(x, y)) {
+    				System.out.println("  ==> " + map.getNpc(x, y));
     				user.sendPacket(map.getNpc(x, y).characterCreate());
     			}
     			
@@ -211,7 +218,6 @@ public class AreasAO implements Constants {
     				
     				if (obj.getInfo().objType == ObjType.Puertas) {
     					user.sendBlockedPosition(x, y, map.isBlocked(x, y));
-    					//user.sendBlockedPosition(x-1, y, map.isBlocked((byte)(x-1), y)); FIXME ?
     				}
     			}
     		}

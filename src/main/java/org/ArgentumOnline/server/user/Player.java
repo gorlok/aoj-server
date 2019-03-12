@@ -36,6 +36,7 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
+import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.guilds.Guild;
 import org.ArgentumOnline.server.guilds.GuildUser;
 import org.ArgentumOnline.server.inventory.Inventory;
@@ -2640,7 +2641,9 @@ public class Player extends AbstractCharacter {
 		if (sendingData) {
 			sendPacket(new ChangeMapResponse(mapNumber, targetMap.getVersion()));
 		}
-		sendPacket(characterCreate());
+		Map map = server.getMap(pos().map);
+		AreasAO.instance().loadUser(map, this);
+		//sendPacket(characterCreate());
 		sendPositionUpdate();
 
 		if (withFX) {

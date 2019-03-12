@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-12
+- corregido bugs de areas!! \o/
+
 ### 2019-03-11
 - corregido bug de usuarios que quedaban online al desconectarse el cliente (por cierre de app)
 - agregados más comandos de GM

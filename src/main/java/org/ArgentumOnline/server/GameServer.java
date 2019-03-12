@@ -367,8 +367,8 @@ public class GameServer implements Constants {
                     lastAutoSaveTimer = now;
                 }
                 if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
-                	System.out.format("fps: %2d   max-time: %3dms    online: %3d    gm: %3d\n", 
-                			fps, worstTime, getUsuariosConectados().size(), getGMsOnline().size());
+//                	System.out.format("fps: %2d   max-time: %3dms    online: %3d    gm: %3d\n", 
+//                			fps, worstTime, getUsuariosConectados().size(), getGMsOnline().size());
                 	fps = 0;
                 	worstTime = 0;
                     pasarSegundo();
