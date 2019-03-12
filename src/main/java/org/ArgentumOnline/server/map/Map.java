@@ -69,7 +69,6 @@ public class Map implements Constants {
     
     /** Número de mapa. */
     private short mapNumber;
-    public AreasAO areasData = new AreasAO();
     
     // Cabecera archivo .map
     private short version   = 0;
@@ -113,13 +112,15 @@ public class Map implements Constants {
     	this.server = server;
         this.mapNumber = nroMapa;
         
-        this.areasData.initAreas(server, this);
-        
         for (int x = 0; x < MAPA_ANCHO; x++) {
             for (int y = 0; y < MAPA_ALTO; y++) {
                 this.cells[x][y] = new MapCell((short)(x+1), (short)(y+1));
             }
         }
+    }
+    
+    private AreasAO area() {
+    	return AreasAO.instance();
     }
     
     public List<Player> getPlayers() {
@@ -435,9 +436,7 @@ public class Map implements Constants {
 		                        npc.getOrig().y = (byte)0;                        
 	                        }
 	                        npc.activate();
-	                        // JAO: Sistema de areas!!
-	                        //  this.areasData.setNpcArea(npc);
-	                        this.areasData.loadNpc(npc);
+	                        area().loadNpc(this, npc);
 	                    }
 	                }
 	                
@@ -463,6 +462,7 @@ public class Map implements Constants {
         cell(x, y).playerId(player.getId());
         sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
         player.pos().set(this.mapNumber, x, y);
+		area().loadUser(this, player);
         return true;
     }
     
@@ -471,11 +471,11 @@ public class Map implements Constants {
         short y = player.pos().y;
         try {
         	try {
-        		this.areasData.sendToUserArea(player, new RemoveCharDialogResponse(player.getId()));
-        		this.areasData.sendToUserArea(player, new CharacterRemoveResponse(player.getId()));
+        		area().sendToUserArea(this, player, new RemoveCharDialogResponse(player.getId()));
+        		area().sendToUserArea(this, player, new CharacterRemoveResponse(player.getId()));
         	} finally {
         		this.players.remove(player);
-        		this.areasData.resetUser(player);
+        		player.charArea().reset();
         	}
         } finally {
 	        if (cell(x,y).playerId() != player.getId()) {
@@ -494,8 +494,8 @@ public class Map implements Constants {
         this.cells[npc.pos().x-1][npc.pos().y-1].npc(null);
         cell(x, y).npc(npc);
         
-        this.areasData.checkUpdateNeededNpc(npc, npc.infoChar().heading());
-        this.areasData.sendToNPCArea(npc, new CharacterMoveResponse(npc.getId(), x, y));
+        area().checkUpdateNeededNpc(this, npc, npc.infoChar().heading());
+        area().sendToNPCArea(this, npc, new CharacterMoveResponse(npc.getId(), x, y));
     }
     
     public boolean isFree(byte  x, byte y) {
@@ -516,10 +516,9 @@ public class Map implements Constants {
         
         cell(x, y).npc(npc);
         this.npcs.add(npc);
-        
         npc.pos().set(this.mapNumber, x, y);
       
-        this.areasData.loadNpc(npc);
+        area().loadNpc(this, npc);
         sendToArea(x, y, npc.characterCreate());
         
         return true;
@@ -536,6 +535,7 @@ public class Map implements Constants {
 	        this.npcs.remove(npc);
 	        npc.pos().set(this.mapNumber, (short)0, (short)0);
         }
+        npc.charArea().reset();
         return true;
     }
     
@@ -582,10 +582,8 @@ public class Map implements Constants {
         this.objects.add(cell(x, y));
         short grhIndex = findObj(objid).GrhIndex;
         
-        if (DEBUG) 
-        	log.debug(grhIndex + "-" + x + "-" + y);
-        
-        this.areasData.sendToAreaByPos(this, x, y, new ObjectCreateResponse((byte)x ,(byte)y, (short)grhIndex));
+        area().sendToAreaByPos(this, x, y, 
+        		new ObjectCreateResponse(x , y, grhIndex));
         return true;
     }
     
@@ -662,7 +660,7 @@ public class Map implements Constants {
     }
         
     public void sendToAreaButIndex(byte pos_x, byte pos_y, int excepto, ServerPacket packet) {
-    	areasData.sendToAreaButIndex(this, pos_x, pos_y, excepto, packet);
+    	area().sendToAreaButIndex(this, pos_x, pos_y, excepto, packet);
     }
     
     public void sendToAreaToAdminsButCounselor(short pos_x, short pos_y, ServerPacket packet) {
@@ -765,9 +763,9 @@ public class Map implements Constants {
         // le asignamos la nueva posición al usuario
         player.pos().set(this.mapNumber, x, y);
         
-        this.areasData.sendToAreaButIndex(this, x, y, player.getId(), 
+        area().sendToAreaButIndex(this, x, y, player.getId(), 
         		new CharacterMoveResponse(player.getId(), x, y));
-        this.areasData.checkUpdateNeededUser(player, player.infoChar().heading());
+        area().checkUpdateNeededUser(this, player, player.infoChar().heading());
     }
     
     public boolean isTeleport(byte  x, byte y) {

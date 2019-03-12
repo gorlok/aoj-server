@@ -20,7 +20,6 @@ package org.ArgentumOnline.server.areas;
 import java.util.BitSet;
 
 import org.ArgentumOnline.server.Constants;
-import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
@@ -46,76 +45,80 @@ public class AreasAO implements Constants {
 	 */
 	public final static Heading USER_NUEVO = Heading.NONE;
 	
-	//JAO: aqu{i almacenamos una áreaID para cada POS del usuario
-	public int[][] areasInfo = new int[101][101];
-	
-	//JAO: aquí almacenamos un array de 11 bits
-	private int areasRecibe[] = new int[12];
-	
-	//Declaramos el AojServer, que se iniciará en el método initAreas
-	GameServer server;
-	
-	//Declaramos el mapa, que será iniciado en el initAreas
-	Map map;
+	/**
+	 * Divide a MAP in 144 areas of 9x9. 
+	 * AreaID from 1 to 144.
+	 */
+	private static int[][] MAP_TO_AREA = new int[101][101];
 	
 	/**
-	 * Devuelve un número que es igual a dos elevado a loopc, siendo loopc un integer que va de 0 a 11
-	 * Esta función reemplaza el iif de VB6
+	 * bitwise of areas to send
+	 * 
+	 * bit0 => send area-1
+	 * bit1 => send area-2
+	 * ...
+	 * bit11 => send area-12 
+	 * 
+	 * AREA_TO_SEND[00] = 000000000011
+	 * AREA_TO_SEND[01] = 000000000111
+	 * AREA_TO_SEND[02] = 000000001110
+	 * AREA_TO_SEND[03] = 000000011100
+	 * AREA_TO_SEND[04] = 000000111000
+	 * AREA_TO_SEND[05] = 000001110000
+	 * AREA_TO_SEND[06] = 000011100000
+	 * AREA_TO_SEND[07] = 000111000000
+	 * AREA_TO_SEND[08] = 001110000000
+	 * AREA_TO_SEND[09] = 011100000000
+	 * AREA_TO_SEND[10] = 111000000000
+	 * AREA_TO_SEND[11] = 110000000000
 	 */
-	private int beginBucle(int loopc) {
-		return (int) Math.pow(2, loopc);
-	}
+	private static int[] AREAS_TO_SEND = new int[12];
 	
-	/**
-	 * Devuelve un número que es igual a dos elevado a loopc - 1 cuando loopc es distinto que cero, siendo loopc un integer que va de 0 a 11
-	 * Esta función reemplaza el iif de VB6
-	 */
-	private int loopc1(int loopc) {
-		if (loopc != 0) return (int) Math.pow(2,loopc - 1);
-		return 0;
-	}
-	
-	/**
-	 * Devuelve un número que es igual a dos elevado a loopc + 1 cuando loopc es distinto que once, siendo loopc un integer que va de 0 a 11
-	 * Esta función reemplaza el iif de VB6
-	 */
-	private int loopc2(int loopc) {
-		if (loopc != 11) return (int) Math.pow(2,loopc + 1);
-		return 0;
-	}
-	
-	/**
-	 * Cargamos las áreas por mapa
-	 */
-	public void initAreas(GameServer server, Map map) {
-		
-		this.server = server;
-		this.map = map;
-
-		for(int loopc = 0; loopc < 12; loopc++) {
-			areasRecibe[loopc] = (short) (beginBucle(loopc) | loopc1(loopc) | loopc2(loopc));
+	static {
+		for(int i = 0; i < AREAS_TO_SEND.length; i++) {
+			AREAS_TO_SEND[i] = 
+					(int)(Math.pow(2, i)) 
+					| ((i != 0)  ? (int)Math.pow(2, i - 1) : 0) 
+					| ((i != 11) ? (int)Math.pow(2, i + 1) : 0);
 		}
+		
+//		for(int x = 0; x < 101; x++) {
+//			for(int y = 0; y < 101; y++) {
+//				POS_TO_AREA[x][y] = (x / 9 + 1) * (y / 9 + 1);
+//			}
+//		}
+		for(int x = 0; x < 101; x++) {
+			for(int y = 0; y < 101; y++) {
+				MAP_TO_AREA[x][y] = (x / 9)*12 + (y / 9) + 1;
+			}
+		}
+		
+	}
+	
+	public static void main(String[] args) {
+		
+		for(int i = 0; i < AREAS_TO_SEND.length; i++)
+			System.out.format("AREA_TO_SEND[%02d] = %s\n", i, Integer.toBinaryString(AREAS_TO_SEND[i]));
+		
 		
 		for(int x = 0; x < 101; x++) {
 			for(int y = 0; y < 101; y++) {
-				areasInfo[x][y] = (x / 9 + 1) * (y / 9 + 1);
+				System.out.format("[%d][%d]=%d ", x, y, MAP_TO_AREA[x][y]);
 			}
+			System.out.println();
 		}
+		
 	}
 	
-	/**
-	 * Envío de datos cuando un usuario cambia de área, y updatea el área ID y adyacentes
-	 */
-	public void checkUpdateNeededUser(Player user, Heading heading) {
+	
+	public void checkUpdateNeededUser(Map map, Player user, Heading heading) {
 		
-		var userArea = user.getUserArea();
-		
-		if (userArea.getArea() == areasInfo[user.pos().x][user.pos().y]) {
+		var userArea = user.charArea();
+		if (userArea.areaID == MAP_TO_AREA[user.pos().x][user.pos().y]) {
 			return;
 		}
 		
 		int minX = 0; int maxX = 0; int minY = 0; int maxY = 0;
-		short tempInt = 0;
 			
 		minX = userArea.minX;
 		minY = userArea.minY;
@@ -183,22 +186,18 @@ public class AreasAO implements Constants {
     	
     	user.sendPacket(new AreaChangedResponse(user.pos().x, user.pos().y));
     	
-    	for(byte x = (byte) minX; x < maxX;x++) {
-    		for(byte y = (byte) minY; y < maxY; y++) {
+    	for (byte x = (byte) minX; x < maxX;x++) {
+    		for (byte y = (byte) minY; y < maxY; y++) {
     			
     			if (map.hasPlayer(x, y)) {
-    				tempInt = map.getPlayer(x, y).getId();
-    			
-    			
-    			if (user.getId() != tempInt && tempInt > 0) {
-    				Player other = this.server.playerById(tempInt);
-    				user.sendPacket(other.characterCreate());
-    				other.sendPacket(user.characterCreate());
-    				
-    			} else if (heading == USER_NUEVO) {
-    				user.sendPacket(user.characterCreate());
-    			}
-    			
+    				Player other = map.getPlayer(x, y);
+    				if (user == other && heading == USER_NUEVO) {
+    					user.sendPacket(user.characterCreate());
+    				}
+	    			if (user != other) {
+	    				user.sendPacket(other.characterCreate());
+	    				other.sendPacket(user.characterCreate());
+	    			}	
     			}
     			
     			if (map.hasNpc(x, y)) {
@@ -212,68 +211,66 @@ public class AreasAO implements Constants {
     				
     				if (obj.getInfo().objType == ObjType.Puertas) {
     					user.sendBlockedPosition(x, y, map.isBlocked(x, y));
-    					byte px = (byte) (x - 1);
-    					user.sendBlockedPosition(x - 1, y, map.isBlocked(px, y));
+    					//user.sendBlockedPosition(x-1, y, map.isBlocked((byte)(x-1), y)); FIXME ?
     				}
     			}
     		}
     	}
     	
-    	tempInt = (short) (user.pos().x / 9);
-    	userArea.setAreaRecibeX(areasRecibe[tempInt]);
-    	userArea.setAreaPerteneceX((int) Math.pow(2, tempInt));
+    	int areaX = user.pos().x / 9;
+    	userArea.areasToSendX = AREAS_TO_SEND[areaX];
+    	userArea.currentAreaX = (int) Math.pow(2, areaX);
     	
-    	tempInt = (short) (user.pos().y / 9);
-    	userArea.setAreaRecibeY(areasRecibe[tempInt]);
-    	userArea.setAreaPerteneceY( (int) Math.pow(2, tempInt));
+    	int areaY = user.pos().y / 9;
+    	userArea.areasToSendY = AREAS_TO_SEND[areaY];
+    	userArea.currentAreaY = (int) Math.pow(2, areaY);
     	
-    	userArea.setArea(areasInfo[user.pos().x][user.pos().y]);
+    	userArea.areaID = MAP_TO_AREA[user.pos().x][user.pos().y];
 	}
 	
-	/**
-	 * ídem que el método checkUpdateNeededUser, pero con Npcs
-	 */
-	public void checkUpdateNeededNpc(Npc npc, Heading heading) {
-		
-		if (npc.getArea() == areasInfo[npc.pos().x][npc.pos().y]) return;
+	public void checkUpdateNeededNpc(Map map, Npc npc, Heading heading) {
+
+		var npcArea = npc.charArea();
+		if (npcArea.areaID == MAP_TO_AREA[npc.pos().x][npc.pos().y]) {
+			return;
+		}
 		
 		int minX = 0; int maxX = 0; int minY = 0; int maxY = 0;
-		short tempInt = 0;
 			
-		minX = npc.minX;
-		minY = npc.minY;
+		minX = npcArea.minX;
+		minY = npcArea.minY;
 		
 		switch (heading) {
 		case NORTH:
 			maxY = minY - 1;
 			minY = minY - 9;
 			maxX = minX + 26;
-			npc.minX = minX;
-			npc.minY = minY;
+			npcArea.minX = minX;
+			npcArea.minY = minY;
 			break;
 			
 		case SOUTH:
 			maxY = minY + 35;
 			minY = minY + 27;
 			maxX = minX + 26;
-			npc.minX = minX;
-			npc.minY = minY - 18;
+			npcArea.minX = minX;
+			npcArea.minY = minY - 18;
 			break;
 			
 		case WEST:
 			maxX = minX - 1;
 			minX = minX - 9;
 			maxY = minY + 26;
-			npc.minX = minX;
-			npc.minY = minY;
+			npcArea.minX = minX;
+			npcArea.minY = minY;
 			break;
 			
 		case EAST:
 			maxX = minX + 35;
 			minX = minX + 27;
 			maxY = minY + 26;
-			npc.minX = minX - 18;
-			npc.minY = minY;
+			npcArea.minX = minX - 18;
+			npcArea.minY = minY;
 			break;
 			
 		default: //user nuevo
@@ -283,8 +280,8 @@ public class AreasAO implements Constants {
 			minX = ((npc.pos().x / 9) * 9);
 			maxX = minX + 26;
 			
-			npc.minX = minX;
-			npc.minY = minY;
+			npcArea.minX = minX;
+			npcArea.minY = minY;
 			break;
 		}
 		
@@ -303,80 +300,49 @@ public class AreasAO implements Constants {
 	    }
     	
     	if (map.getPlayersCount() > 0) {
-    		
-    		for(byte x = (byte) minX; x < maxX;x++) {
-        		for(byte y = (byte) minY; y < maxY; y++) {
+    		for (byte x = (byte) minX; x < maxX; x++) {
+        		for (byte y = (byte) minY; y < maxY; y++) {
         			if (map.hasPlayer(x, y)) {
-        				Player jao = map.getPlayer(x, y);
-        				jao.sendPacket(npc.characterCreate());
+        				Player player = map.getPlayer(x, y);
+        				player.sendPacket(npc.characterCreate());
         			}
         		}
     		}
     	}
     	
-    	tempInt = (short) (npc.pos().x / 9);
-    	npc.setAreaRecibeX(areasRecibe[tempInt]);
-    	npc.setAreaPerteneceX((int) Math.pow(2, tempInt));
+    	int areaX = npc.pos().x / 9;
+    	npcArea.areasToSendX = AREAS_TO_SEND[areaX];
+    	npcArea.currentAreaX = (int) Math.pow(2, areaX);
     	
-    	tempInt = (short) (npc.pos().y / 9);
-    	npc.setAreaRecibeY(areasRecibe[tempInt]);
-    	npc.setAreaPerteneceY( (int) Math.pow(2, tempInt));
+    	int areaY = npc.pos().y / 9;
+    	npcArea.areasToSendY = AREAS_TO_SEND[areaY];
+    	npcArea.currentAreaY = (int) Math.pow(2, areaY);
     	
-    	npc.setArea(areasInfo[npc.pos().x][npc.pos().y]);
+    	npcArea.areaID = MAP_TO_AREA[npc.pos().x][npc.pos().y];
 	}
 	
-	public void resetNpc(Npc npc) {
-		npc.setArea(0);
-		npc.setAreaPerteneceX(0);
-		npc.setAreaPerteneceY(0);
-		npc.setAreaRecibeX(0);
-		npc.setAreaRecibeY(0);
+	public void loadNpc(Map map, Npc npc) {
+		npc.charArea().reset();
+		checkUpdateNeededNpc(map, npc, USER_NUEVO);
 	}
 	
-	public void resetUser(Player user) {
-		var userArea = user.getUserArea();
-		userArea.setArea(0);
-		userArea.setAreaPerteneceX(0);
-		userArea.setAreaPerteneceY(0);
-		userArea.setAreaRecibeX(0);
-		userArea.setAreaRecibeY(0);
-	}
-	
-	public void loadNpc(Npc npc) {
-		npc.setArea(0);
-		npc.setAreaPerteneceX(0);
-		npc.setAreaPerteneceY(0);
-		npc.setAreaRecibeX(0);
-		npc.setAreaRecibeY(0);
-		checkUpdateNeededNpc(npc, USER_NUEVO);
-	}
-	
-	public void loadUser(Player user) {
-		resetUser(user);
-		checkUpdateNeededUser(user, USER_NUEVO);
+	public void loadUser(Map map, Player user) {
+		user.charArea().reset();
+		checkUpdateNeededUser(map, user, USER_NUEVO);
 	}
 	
 	/**
 	 * JAO: Enviamos la área según la posición que se pase por el parámetro. Este método se utiliza frecuentemente
 	 * para enviar al usuarios los objetos en el piso
 	 */
-	public void sendToAreaByPos(Map map, int areaX, int areaY, ServerPacket packet) {
-		areaX = (int) Math.pow(2, areaX / 9);
-		areaY = (int) Math.pow(2, areaY / 9);
+	public void sendToAreaByPos(Map map, byte x, byte y, ServerPacket packet) {
+		int areaX = (int) Math.pow(2, x / 9);
+		int areaY = (int) Math.pow(2, y / 9);
 
-		for(Player player : map.getPlayers()) {
-			int tempInt = (player.getUserArea().areaRecibeX & areaX);
-			BitSet gral = new BitSet();
-			gral.set(tempInt);
-			
-			if (gral.cardinality() > 0) {
-				
-				tempInt = (player.getUserArea().areaRecibeY & areaY);
-				gral.set(tempInt);
-				
-				if (gral.cardinality() > 0) {
+		for (Player player : map.getPlayers()) {
+			if ( ((player.charArea().areasToSendX & areaX) > 0) &&
+				 ((player.charArea().areasToSendY & areaY) > 0) ) {
 					player.sendPacket(packet);
-				}
 			}
 		}
 	}
@@ -388,13 +354,13 @@ public class AreasAO implements Constants {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
-		for(Player player : map.getPlayers()) {
-			int tempInt = (player.getUserArea().areaRecibeX & areaX);
+		for (Player player : map.getPlayers()) {
+			int tempInt = (player.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 
 			if (gral.cardinality() > 0) {
-				tempInt = (player.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
@@ -409,19 +375,19 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del user, y adyacentes
 	 */
-	public void sendToUserArea(Player user, ServerPacket packet) {
-		var userArea = user.getUserArea();
+	public void sendToUserArea(Map map, Player user, ServerPacket packet) {
+		var userArea = user.charArea();
 		
-		int areaX = userArea.areaPerteneceX;
-		int areaY = userArea.areaPerteneceY;
+		int areaX = userArea.currentAreaX;
+		int areaY = userArea.currentAreaY;
 		
-		for(Player player : map.getPlayers()) {
-			int tempInt = (player.getUserArea().areaRecibeX & areaX);
+		for (Player player : map.getPlayers()) {
+			int tempInt = (player.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
-				tempInt = (player.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
@@ -434,20 +400,20 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
-	public void sendToUserAreaButIndex(Player user, ServerPacket packet) {
-		var userArea = user.getUserArea();
+	public void sendToUserAreaButIndex(Map map, Player user, ServerPacket packet) {
+		var userArea = user.charArea();
 
-		int areaX = userArea.areaPerteneceX;
-		int areaY = userArea.areaPerteneceY;
+		int areaX = userArea.currentAreaX;
+		int areaY = userArea.currentAreaY;
 		
-		for(Player player : map.getPlayers()) {
-			int tempInt = (player.getUserArea().areaRecibeX & areaX);
+		for (Player player : map.getPlayers()) {
+			int tempInt = (player.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (player.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
@@ -462,25 +428,33 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del NPC, y adyacentes
 	 */
-	public void sendToNPCArea(Npc npc, ServerPacket packet) {
+	public void sendToNPCArea(Map map, Npc npc, ServerPacket packet) {
 
-		int areaX = npc.areaPerteneceX;
-		int areaY = npc.areaPerteneceY;
+		int areaX = npc.charArea().currentAreaX;
+		int areaY = npc.charArea().currentAreaY;
 		
-		for(Player player : map.getPlayers()) {
-			int tempInt = (player.getUserArea().areaRecibeX & areaX);
+		for (Player player : map.getPlayers()) {
+			int tempInt = (player.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (player.getUserArea().areaRecibeY & areaY);
+				tempInt = (player.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
 					player.sendPacket(packet);
 				}
 			}
 		}
+	}
+
+	private static AreasAO instance = null;
+	public static AreasAO instance() {
+		if (instance == null)  {
+			instance = new AreasAO();
+		}
+		return instance;
 	}
 
 }

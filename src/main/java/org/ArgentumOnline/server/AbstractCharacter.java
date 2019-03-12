@@ -18,6 +18,7 @@
 package org.ArgentumOnline.server;
 
 import org.ArgentumOnline.server.map.MapPos;
+import org.ArgentumOnline.server.user.CharArea;
 
 /**
  * Character base class
@@ -32,6 +33,8 @@ public abstract class AbstractCharacter implements Constants {
 
     protected CharInfo infoChar = new CharInfo();
     protected CharInfo origChar = new CharInfo();
+    
+	CharArea charArea = new CharArea();
 
 	public short getId() {
 		return this.id;
@@ -56,5 +59,10 @@ public abstract class AbstractCharacter implements Constants {
     protected void setPos(MapPos newPos) {
     	pos().set(newPos.map, newPos.x, newPos.y);
     }
+    
+    
+	public CharArea charArea() {
+		return this.charArea;
+	}
 
 }

@@ -191,8 +191,6 @@ public class Player extends AbstractCharacter {
 
 	public UserTrade userTrade;
 
-	UserArea userArea = new UserArea();
-
 	UserStorage userStorage;
 
 	private UserQuest quest;
@@ -269,10 +267,6 @@ public class Player extends AbstractCharacter {
 
 	public Inventory getBankInventory() {
 		return this.bankInv;
-	}
-
-	public UserArea getUserArea() {
-		return this.userArea;
 	}
 
 	public UserPets getUserPets() {
@@ -2647,8 +2641,6 @@ public class Player extends AbstractCharacter {
 			sendPacket(new ChangeMapResponse(mapNumber, targetMap.getVersion()));
 		}
 		sendPacket(characterCreate());
-
-		targetMap.areasData.loadUser(this);
 		sendPositionUpdate();
 
 		if (withFX) {
