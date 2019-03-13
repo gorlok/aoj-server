@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-13
+- corregido bug de clones con el warpMe \o/
+
 ### 2019-03-12
 - corregido bugs de areas!! \o/
 

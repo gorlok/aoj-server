@@ -76,7 +76,7 @@ public class Map implements Constants {
     
     // Información del archivo .dat
     String  name  = "";
-    String  music = "";
+    int music = 0;
     
     int     numUsers = 0; // FIXME se usa?
     int     mapVersion = 0; // FIXME se usa?
@@ -143,7 +143,7 @@ public class Map implements Constants {
         return this.zone;
     }
     
-    public String getMusic() {
+    public int getMusic() {
         return this.music;
     }
     
@@ -254,7 +254,7 @@ public class Map implements Constants {
 		}
         String section = "Mapa" + this.mapNumber;
         this.name = ini.getString(section, "Name");
-        this.music = ini.getString(section, "MusicNum");
+        this.music = ini.getInt(section, "MusicNum");
         // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
         this.pk = (ini.getInt(section, "PK") == 0); 
 
@@ -460,7 +460,7 @@ public class Map implements Constants {
 		}
         this.players.add(player);
         cell(x, y).playerId(player.getId());
-        sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
+        //sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
         player.pos().set(this.mapNumber, x, y);
         return true;
     }
@@ -471,7 +471,13 @@ public class Map implements Constants {
         try {
         	try {
         		area().sendToUserArea(this, player, new RemoveCharDialogResponse(player.getId()));
-        		area().sendToUserArea(this, player, new CharacterRemoveResponse(player.getId()));
+        		
+        		if (player.flags().AdminInvisible) {
+        			player.sendPacket(new CharacterRemoveResponse(player.getId()));
+        		} else {
+        			sendToArea(player.pos().x, player.pos().y, new CharacterRemoveResponse(player.getId()));
+        		}
+        		
         	} finally {
         		this.players.remove(player);
         		player.charArea().reset();

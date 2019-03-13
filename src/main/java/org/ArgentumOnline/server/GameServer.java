@@ -803,7 +803,7 @@ public class GameServer implements Constants {
         // fired every minute
     	
     	SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
-    	System.out.println("[autoSaveTimer] " + df.format(new Date()));
+//    	System.out.println("[autoSaveTimer] " + df.format(new Date()));
     	
         this.minsRunning++;
         if (this.minsRunning == 60) {

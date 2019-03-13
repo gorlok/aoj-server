@@ -42,6 +42,7 @@ import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
+import org.ArgentumOnline.server.protocol.ReviveCharRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.SummonCharRequest;
@@ -379,6 +380,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 				
 				case SOSRemove:
 					server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
+					break;
+					
+				case RequestUserList:
+					server.manager().sendUserNameList(player);
+					break;
+					
+				case ReviveChar:
+					server.manager().reviveUser(player, ((ReviveCharRequest)packet).userName);
 					break;
 					
 				default:

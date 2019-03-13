@@ -18,6 +18,7 @@
 package org.ArgentumOnline.server.areas;
 
 import java.util.BitSet;
+import java.util.List;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.ObjType;
@@ -28,6 +29,7 @@ import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.AreaChangedResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
+import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
 import org.ArgentumOnline.server.user.Player;
 
 
@@ -200,10 +202,33 @@ public class AreasAO implements Constants {
     				if (user == other && heading == USER_NUEVO) {
     					user.sendPacket(user.characterCreate());
     				}
-	    			if (user != other) {
-	    				user.sendPacket(other.characterCreate());
+//	    			if (user != other) {
+//	    				user.sendPacket(other.characterCreate());
+//	    				other.sendPacket(user.characterCreate());
+//	    			}
+	    			
+                    // Solo avisa al otro cliente si no es un admin invisible
+                    if (!other.flags().AdminInvisible) {
+                    	user.sendPacket(other.characterCreate());
+                        
+                        // Si el user estaba invisible le avisamos al nuevo cliente de eso
+                    	if (other.flags().Invisible || other.flags().Oculto) {
+                    		if (!user.flags().isGM()) {
+                    			user.sendPacket(new SetInvisibleResponse(other.getId(), (byte)1));
+                    		}
+                    	}
+                    }
+                    
+                    // Solo avisa al otro cliente si no es un admin invisible
+                    if (!user.flags().AdminInvisible) {
 	    				other.sendPacket(user.characterCreate());
-	    			}	
+                        
+	    				if (user.flags().Invisible || user.flags().Oculto) {
+	    					if (!other.flags().isGM()) {
+	    						other.sendPacket(new SetInvisibleResponse(user.getId(), (byte)1));
+	    					}
+	    				}
+                    }
     			}
     			
     			if (map.hasNpc(x, y)) {
@@ -439,7 +464,7 @@ public class AreasAO implements Constants {
 		int areaX = npc.charArea().currentAreaX;
 		int areaY = npc.charArea().currentAreaY;
 		
-		for (Player player : map.getPlayers()) {
+		for (Player player : List.copyOf(map.getPlayers())) {
 			int tempInt = (player.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);

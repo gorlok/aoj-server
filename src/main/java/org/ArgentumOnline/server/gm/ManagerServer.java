@@ -476,7 +476,7 @@ public class ManagerServer {
 		admin.sendPacket(new ShowGMPanelFormResponse());
 	}
 
-	public void doListaUsuarios(Player admin) {
+	public void sendUserNameList(Player admin) {
 		// Comando LISTUSU
 		String userNamesList = String.join("" + Constants.NULL_CHAR, this.server.getUsuariosConectados());
 		admin.sendPacket(new UserNameListResponse(userNamesList));

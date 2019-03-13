@@ -71,6 +71,7 @@ import org.ArgentumOnline.server.protocol.ChangeMapResponse;
 import org.ArgentumOnline.server.protocol.ChangeUserTradeSlotResponse;
 import org.ArgentumOnline.server.protocol.CharacterChangeResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
+import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
 import org.ArgentumOnline.server.protocol.CommerceInitResponse;
@@ -86,12 +87,15 @@ import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
 import org.ArgentumOnline.server.protocol.MiniStatsResponse;
 import org.ArgentumOnline.server.protocol.NPCHitUserResponse;
 import org.ArgentumOnline.server.protocol.NPCKillUserResponse;
+import org.ArgentumOnline.server.protocol.NavigateToggleRequest;
 import org.ArgentumOnline.server.protocol.NavigateToggleResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
+import org.ArgentumOnline.server.protocol.PlayMidiResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.PosUpdateResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
+import org.ArgentumOnline.server.protocol.RemoveAllDialogsResponse;
 import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
 import org.ArgentumOnline.server.protocol.RestOKResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
@@ -2655,11 +2659,12 @@ public class Player extends AbstractCharacter {
 		}
 
 		sendCharIndexInServer();
-		if (sendingData) {
-			targetMap.sendPlayers(this);
-			targetMap.sendObjects(this);
-			targetMap.sendBlockedPositions(this);
-		}
+		// FIXME esto va???
+//		if (sendingData) {
+//			targetMap.sendPlayers(this);
+//			targetMap.sendObjects(this);
+//			targetMap.sendBlockedPositions(this);
+//		}
 
 		if (originalPos.map != mapNumber) {
 			warpPets();
@@ -2704,41 +2709,63 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean warpMe(short targetMap, byte x, byte y, boolean withFX) {
-		MapPos oldPos = pos().copy();
-		// Quitar el dialogo
+		// WarpUserChar
+		// FIXME
 		Map map = this.server.getMap(pos().map);
-		if (map != null) {
-			map.sendToArea(x, y, new RemoveCharDialogResponse(getId()));
-		}
-
+		map.sendToArea(pos().x, pos().y, new RemoveCharDialogResponse(getId()));
+		sendPacket(new RemoveAllDialogsResponse());
+		
+		MapPos oldPos = pos().copy();
+		
+		// quitamos al char del mapa
+		map.exitMap(this); // FIXME revisar
+		
 		boolean changingMap = pos().map != targetMap;
+		
+		Map newMap = this.server.getMap(targetMap);
 
-		// Si el destino es distinto a la posición actual
-		if (changingMap || pos().x != x || pos().y != y) {
-			Map newMap = this.server.getMap(targetMap);
-			MapPos pos_libre = newMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
-			if (pos_libre == null) {
-				log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + targetMap + " x=" + x + " y=" + y);
-				return false;
-			}
-			x = pos_libre.x;
-			y = pos_libre.y;
-			if (!enterIntoMap(targetMap, x, y, false, changingMap)) {
-				// try to go back to the original pos
-				enterIntoMap(oldPos.map, x, y, false, false);
-			}
+		// Si el mapa destino es distinto al actual
+		if (changingMap) {
+			sendPacket(new ChangeMapResponse(targetMap, newMap.getVersion()));
+			sendPacket(new PlayMidiResponse((byte) newMap.getMusic(), (short)45));
 		}
-		sendPositionUpdate();
-
+		
+		MapPos freePos = newMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
+		if (freePos == null) {
+			log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + targetMap + " x=" + x + " y=" + y);
+			return false;
+		}
+		
+		newMap.enterMap(this, freePos.x, freePos.y);
+		AreasAO.instance().loadUser(newMap, this);
+		sendPacket(new UserCharIndexInServerResponse(getId()));
+		
 		// Seguis invisible al pasar de mapa
 		if ((flags().Invisible || flags().Oculto) && !flags().AdminInvisible) {
-			map.sendToArea(x, y, new SetInvisibleResponse(getId(), (byte)1));
+			map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
 		}
+		
 		if (withFX && !flags().AdminInvisible) {
 			sendWave(SOUND_WARP);
 			sendCreateFX(FXWARP, 0);
 		}
+		
 		warpPets();
+		
+		// Automatic toggle navigate
+//		if (!flags().isGM() && flags().isCounselor()) {
+//			if (newMap.isWater(x, y)) {
+//				if (!isSailing()) {
+//					flags().Navegando = true;
+//					sendPacket(new NavigateToggleResponse());
+//				}
+//			} else {
+//				if (isSailing()) {
+//					flags().Navegando = false;
+//					sendPacket(new NavigateToggleResponse());
+//				}
+//			}
+//		}
 
 		return true;
 	}
