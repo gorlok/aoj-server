@@ -71,6 +71,7 @@ import org.ArgentumOnline.server.protocol.ChangeMapResponse;
 import org.ArgentumOnline.server.protocol.ChangeUserTradeSlotResponse;
 import org.ArgentumOnline.server.protocol.CharacterChangeResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
+import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
 import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
@@ -81,6 +82,7 @@ import org.ArgentumOnline.server.protocol.DisconnectResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
+import org.ArgentumOnline.server.protocol.ForceCharMoveResponse;
 import org.ArgentumOnline.server.protocol.LevelUpResponse;
 import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
 import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
@@ -98,6 +100,9 @@ import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.protocol.RemoveAllDialogsResponse;
 import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
 import org.ArgentumOnline.server.protocol.RestOKResponse;
+import org.ArgentumOnline.server.protocol.ResuscitateRequest;
+import org.ArgentumOnline.server.protocol.ResuscitationSafeOffResponse;
+import org.ArgentumOnline.server.protocol.ResuscitationSafeOnResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOnResponse;
 import org.ArgentumOnline.server.protocol.SendSkillsResponse;
@@ -2231,13 +2236,17 @@ public class Player extends AbstractCharacter {
 			} else {
 				// ¿Hay un objeto que ocupa más de un tile?
 				MapObject obj = mapa.queryObject(x, y);
-				Npc npc;
 				if (obj != null) {
 					flags().TargetObj = obj.getInfo().ObjIndex;
 					if (obj.getInfo().objType == ObjType.Puertas) {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
+						return;
 					}
-				} else if ((npc = mapa.getNPC(x, y)) != null) {
+				} 
+				
+				// Hay un npc?
+				Npc npc;
+				if ((npc = mapa.getNPC(x, y)) != null) {
 					flags().TargetNpc = npc.getId();
 					if (npc.isTrade()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
@@ -2401,7 +2410,14 @@ public class Player extends AbstractCharacter {
 		map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)0));
 	}
 
+	/**
+	 * Move player in the heading direction.
+	 * If newPos has a "casper" (ghost or died user), both positions are swapped.
+	 * Invisible Admins can't move over caspers.
+	 * @param heading
+	 */
 	private void move(Heading heading) {
+		Player casper;
 		MapPos oldPos = pos().copy();
 		Map map = this.server.getMap(pos().map);
 		if (map == null) {
@@ -2410,11 +2426,21 @@ public class Player extends AbstractCharacter {
 
 		infoChar().heading(heading);
 		MapPos newPos = pos().copy().moveToHeading(heading);
-		if (newPos.isValid()
-				&& map.isFree(newPos.x, newPos.y)
-				&& !map.isBlocked(newPos.x, newPos.y)) {
-
-			map.movePlayer(this, newPos.x, newPos.y);
+		if ( map.isLegalPos(newPos, isSailing(), !isSailing())) {
+			casper = map.getPlayer(newPos.x, newPos.y);
+			if (casper != null) {
+				if (flags().AdminInvisible) {
+					// los admins invisibles no pueden patear caspers
+					// player can't move
+					sendPositionUpdate();
+					return;
+				} 
+				Heading casperHeading = heading.invertHeading();
+            	casper.infoChar().heading(casperHeading);
+				map.movePlayerSwapping(this, newPos, casper);
+			} else {
+				map.movePlayer(this, newPos);
+			}
 
 			// TELEPORT PLAYER
 			if (map.isTeleport(newPos.x, newPos.y)) {
@@ -2429,7 +2455,7 @@ public class Player extends AbstractCharacter {
 				}
 			}
 		} else {
-			// player can not move
+			// player can't move
 			sendPositionUpdate();
 		}
 	}
@@ -3039,6 +3065,16 @@ public class Player extends AbstractCharacter {
 		flags().AtacadoPorUser = 0;
 		flags().Envenenado = false;
 		flags().Muerto = true;
+		
+        // SeguroResu: No se activa en arenas
+		if (duelStatus(this) != DuelStatus.DUEL_ALLOWED) {
+			flags().SeguroResu = true;
+			sendPacket(new ResuscitationSafeOnResponse());
+		} else {
+			flags().SeguroResu = false;
+			sendPacket(new ResuscitationSafeOffResponse());
+		}
+        
 		if (flags().AtacadoPorNpc > 0) {
 			Npc npc = this.server.npcById(flags().AtacadoPorNpc);
 			if (npc != null) {
@@ -3720,6 +3756,17 @@ public class Player extends AbstractCharacter {
 		}
 	}
 	
+	public void resuscitationToggle() {
+		// HandleResuscitationToggle
+		flags().SeguroResu = !flags().SeguroResu;
+		
+		if (flags().SeguroResu) {
+			sendPacket(new ResuscitationSafeOnResponse());
+		} else {
+			sendPacket(new ResuscitationSafeOffResponse());
+		}
+	}
+	
 	public boolean isInCombatMode() {
 		return flags().ModoCombate;
 	}
@@ -4353,6 +4400,14 @@ public class Player extends AbstractCharacter {
 				this.infoChar.helmet = NingunCasco;
 			}
 
+			if (isAlive()) {
+				flags().SeguroResu = false;
+				sendPacket(new ResuscitationSafeOffResponse());
+			} else {
+				flags().SeguroResu = true;
+				sendPacket(new ResuscitationSafeOnResponse());
+			}
+			
 			sendInventoryToUser();
 			spells().sendSpells();
 			

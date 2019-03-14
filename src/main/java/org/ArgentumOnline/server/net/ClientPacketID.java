@@ -100,7 +100,7 @@ public enum ClientPacketID {
     TrainList               ,//  /ENTRENAR
     Rest                    ,//  /DESCANSAR
     Meditate                ,//  /MEDITAR
-    Resucitate              ,//  /RESUCITAR
+    Resuscitate             ,//  /RESUCITAR
     Heal                    ,//  /CURAR
     Help                    ,//  /AYUDA
     RequestStats            ,//  /EST

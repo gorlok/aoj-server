@@ -45,6 +45,7 @@ import org.ArgentumOnline.server.protocol.BlockPositionResponse;
 import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
 import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
+import org.ArgentumOnline.server.protocol.ForceCharMoveResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ObjectDeleteResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
@@ -760,17 +761,36 @@ public class Map implements Constants {
         }
     }
     
-    public void movePlayer(Player player, byte x, byte y) {
-    	// lo quitamos de la posición anterior
+    public void movePlayer(Player player, MapPos newPos) {
         cell(player.pos().x, player.pos().y).playerId((short) 0);
-        // lo agregamos a la nueva posición
-        cell(x, y).playerId(player.getId());
-        // le asignamos la nueva posición al usuario
-        player.pos().set(this.mapNumber, x, y);
+        cell(newPos.x, newPos.y).playerId(player.getId());
         
-        area().sendToAreaButIndex(this, x, y, player.getId(), 
-        		new CharacterMoveResponse(player.getId(), x, y));
+        player.pos().set(this.mapNumber, newPos.x, newPos.y);
+        
+        area().sendToAreaButIndex(this, newPos.x, newPos.y, player.getId(), 
+        		new CharacterMoveResponse(player.getId(), newPos.x, newPos.y));
         area().checkUpdateNeededUser(this, player, player.infoChar().heading());
+    }
+    
+    public void movePlayerSwapping(Player player, MapPos newPos, Player casper) {
+    	MapPos oldPos = player.pos().copy();
+    	
+        cell(oldPos.x, oldPos.y).playerId(casper.getId());
+        cell(newPos.x, newPos.y).playerId(player.getId());
+        
+        player.pos().set(this.mapNumber, newPos.x, newPos.y);
+        casper.pos().set(this.mapNumber, oldPos.x, oldPos.y);
+        
+    	area().sendToAreaButIndex(this, newPos.x, newPos.y, player.getId(), 
+    		new CharacterMoveResponse(player.getId(), newPos.x, newPos.y));
+        area().checkUpdateNeededUser(this, player, player.infoChar().heading());
+        
+        if (!casper.flags().AdminInvisible) {
+        	area().sendToAreaButIndex(this, oldPos.x, oldPos.y, casper.getId(), 
+            		new CharacterMoveResponse(casper.getId(), oldPos.x, oldPos.y));
+        }
+        casper.sendPacket(new ForceCharMoveResponse(casper.infoChar().heading().value()));
+        area().checkUpdateNeededUser(this, casper, casper.infoChar().heading());
     }
     
     public boolean isTeleport(byte  x, byte y) {
@@ -884,6 +904,7 @@ public class Map implements Constants {
             player.flags().TargetObjX = obj.x;
             player.flags().TargetObjY = obj.y;
             foundSomething = true;
+            System.out.println("OBJ " + obj.getInfo().Nombre + " OID:" + obj.getInfo().ObjIndex + " x="+obj.x + ",y="+obj.y);
         }
         
         // Ver si hay un jugador
@@ -891,8 +912,8 @@ public class Map implements Constants {
         if ((anotherPlayer = queryPlayer(x, y)) != null) {
         	if (!anotherPlayer.flags().AdminInvisible || player.flags().isGM()) {
         		
-        		if (anotherPlayer.descRM.length() > 0 && !anotherPlayer.showName) {
-        			// tiene descRM y quiere que se vea su nombre.
+        		if (anotherPlayer.descRM.length() > 0 || !anotherPlayer.showName) {
+        			// tiene descRM, o no quiere que se vea su nombre.
                     player.sendMessage(anotherPlayer.descRM, FontType.FONTTYPE_INFOBOLD);
         		} else {
         			player.sendMessage("Ves a " + anotherPlayer.userNameTagDesc(), anotherPlayer.getTagColor());

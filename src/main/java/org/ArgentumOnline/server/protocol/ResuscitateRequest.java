@@ -20,17 +20,17 @@ package org.ArgentumOnline.server.protocol;
 import org.ArgentumOnline.server.net.*;
 import io.netty.buffer.ByteBuf;
 
-public class ResucitateRequest extends ClientPacket {
+public class ResuscitateRequest extends ClientPacket {
 	// Resucitate
 	@Override
 	public ClientPacketID id() {
-		return ClientPacketID.Resucitate;
+		return ClientPacketID.Resuscitate;
 	}
-	public ResucitateRequest(){
+	public ResuscitateRequest(){
 	}
-	public static ResucitateRequest decode(ByteBuf in) {    
+	public static ResuscitateRequest decode(ByteBuf in) {    
 		try {                                   
-			return new ResucitateRequest();                  
+			return new ResuscitateRequest();                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        
 		}                                       

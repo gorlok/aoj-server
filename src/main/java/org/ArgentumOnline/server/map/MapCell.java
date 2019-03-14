@@ -21,6 +21,7 @@ import java.util.BitSet;
 
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.npc.Npc;
+import org.ArgentumOnline.server.user.Player;
 
 /**
  * @author gorlok
@@ -105,6 +106,10 @@ public class MapCell {
     public void setObj(short obj_ind, int cant) {
         this.objIndex = obj_ind;
         this.objCount = cant;
+    }
+    
+    public Player player() {
+    	return GameServer.instance().playerById(this.playerId);
     }
     
     public Npc npc() {
@@ -207,18 +212,26 @@ public class MapCell {
     }
     
     public boolean isLegalPos(boolean canWater, boolean canLand) {
+    	boolean isDeadChar = false;
+    	boolean isAdminInvisible = false;
+    	
+	    if (playerId() > 0) {
+	        isDeadChar = !player().isAlive();
+	        isAdminInvisible = player().flags().AdminInvisible;
+	    }
+    	
         if (canWater && canLand) {
             return !isBlocked() 
-            	&& playerId() == 0 
+            	&& (playerId() == 0 || isAdminInvisible) 
             	&& npc() == null; 
         } else if (canLand && !canWater) {
             return !isBlocked() 
-                	&& playerId() == 0 
+                	&& (playerId() == 0 || isDeadChar || isAdminInvisible) 
                 	&& npc() == null 
                 	&& !isWater();
         } else if (canWater && !canLand) {
             return !isBlocked() 
-                	&& playerId() == 0 
+                	&& (playerId() == 0 || isDeadChar || isAdminInvisible) 
                 	&& npc() == null 
                 	&& isWater();
         }

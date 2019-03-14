@@ -299,8 +299,8 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 		case Meditate:
 			packet = MeditateRequest.decode(in);
 			break;
-		case Resucitate:
-			packet = ResucitateRequest.decode(in);
+		case Resuscitate:
+			packet = ResuscitateRequest.decode(in);
 			break;
 		case Heal:
 			packet = HealRequest.decode(in);

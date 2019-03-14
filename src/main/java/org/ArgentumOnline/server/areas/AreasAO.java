@@ -243,6 +243,7 @@ public class AreasAO implements Constants {
     				
     				if (obj.getInfo().objType == ObjType.Puertas) {
     					user.sendBlockedPosition(x, y, map.isBlocked(x, y));
+    					user.sendBlockedPosition(x-1, y, map.isBlocked((byte)(x-1), y));
     				}
     			}
     		}

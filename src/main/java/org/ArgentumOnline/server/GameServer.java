@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -791,12 +790,10 @@ public class GameServer implements Constants {
         }
     }
 
-    long minutos = 0;
-    long minsRunning = 0;
-    long minutosLatsClean = 0;
-    long minsSocketReset  = 0;
-    long minsPjesSave = 0;
-    long horas = 0;
+    long minutesWorldSave = 0;
+    long minutesLastClean = 0;
+    long minutesRunning = 0;
+    long hoursRunning = 0;
     DailyStats dayStats = new DailyStats();
 
     private void autoSaveTimer() {
@@ -805,28 +802,28 @@ public class GameServer implements Constants {
     	SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
 //    	System.out.println("[autoSaveTimer] " + df.format(new Date()));
     	
-        this.minsRunning++;
-        if (this.minsRunning == 60) {
-            this.horas++;
-            if (this.horas == 24) {
+        this.minutesRunning++;
+        if (this.minutesRunning == 60) {
+            this.hoursRunning++;
+            if (this.hoursRunning == 24) {
                 saveDayStats();
                 this.dayStats.reset();
                 getGuildMngr().dayElapsed();
-                this.horas = 0;
+                this.hoursRunning = 0;
             }
-            this.minsRunning = 0;
+            this.minutesRunning = 0;
         }
-        this.minutos++;
-        if (this.minutos >= IntervaloMinutosWs) {
+        this.minutesWorldSave++;
+        if (this.minutesWorldSave >= IntervaloMinutosWs) {
             doBackup();
-            this.minutos = 0;
+            this.minutesWorldSave = 0;
         }
-        if (this.minutosLatsClean >= 15) {
-            this.minutosLatsClean = 0;
+        if (this.minutesLastClean >= 15) {
+            this.minutesLastClean = 0;
             reSpawnOrigPosNpcs(); // respawn de los guardias en las pos originales
             limpiarMundo();
         } else {
-            this.minutosLatsClean++;
+            this.minutesLastClean++;
         }
         purgePenalties();
         checkIdleUser();

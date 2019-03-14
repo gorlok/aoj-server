@@ -65,8 +65,7 @@ public class UserFlags {
     public short TipoPocion = 0;
     
     public boolean Seguro = true;
-    public boolean SeguroResu; // FIXME    
-    
+    public boolean SeguroResu = true; // FIXME    
     
     public boolean Ban = false;
     public boolean AdministrativeBan = false;

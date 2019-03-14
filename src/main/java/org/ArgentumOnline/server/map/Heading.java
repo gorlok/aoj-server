@@ -18,4 +18,21 @@ public enum Heading {
     public static Heading value(int heading) {
     	return values[heading];
     }
+    
+    public Heading invertHeading() {
+    	// Returns the opposite heading 
+    	switch (this) {
+		case EAST:
+			return WEST;
+		case WEST:
+			return EAST;
+		case SOUTH:
+			return NORTH;
+		case NORTH:
+			return SOUTH;
+		default:
+			return NONE;
+    	}
+    }
+    
 }

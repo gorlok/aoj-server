@@ -272,7 +272,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.doCurar();
 			break;
 			
-		case Resucitate:
+		case Resuscitate:
 			player.doResucitar();
 			break;
 			
@@ -322,6 +322,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case Online:
 			player.showUsersOnline();
+			break;
+			
+		case ResuscitationToggle:
+			player.resuscitationToggle();
 			break;
 			
 		default:
