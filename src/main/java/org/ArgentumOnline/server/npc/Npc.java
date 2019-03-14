@@ -797,7 +797,7 @@ End Enum
         // Es mascota ????
         if (this.petUserOwner != null) {
             // es una posicion legal ???
-            if (mapa.isLegalPos(newPos, false)) {
+            if (mapa.isLegalPos(newPos, false, true)) {
                 if (!isWaterValid() && mapa.isWater(newPos.x, newPos.y)) {
 					return;
 				}

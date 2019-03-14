@@ -1226,7 +1226,8 @@ public class Player extends AbstractCharacter {
 		sendPacket(reputation().createFameResponse());
 	}
 
-	public void doNavega() {
+	public void sailingToggle() {
+		// DoNavega
 		double modNave = this.clazz().modNavegacion();
 		ObjectInfo barco = this.userInv.getBarco();
 		if (skills().get(Skill.SKILL_Navegacion) / modNave < barco.MinSkill) {
@@ -1234,6 +1235,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("Necesitas " + (int) (barco.MinSkill * modNave) + " puntos en navegacion.", FontType.FONTTYPE_INFO);
 			return;
 		}
+		
 		if (!flags().Navegando) {
 			this.infoChar.head = 0;
 			if (isAlive()) {
@@ -1278,7 +1280,7 @@ public class Player extends AbstractCharacter {
 	public void tratarDeHacerFogata() {
 		MapPos targetPos = MapPos.mxy(flags().TargetObjMap, flags().TargetObjX, flags().TargetObjY);
 		Map mapa = this.server.getMap(targetPos.map);
-		if (!mapa.isLegalPos(targetPos, false)) {
+		if (!mapa.isLegalPos(targetPos, false, true)) {
 			return;
 		}
 

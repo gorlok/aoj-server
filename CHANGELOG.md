@@ -7,6 +7,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 - corregido el enviar objetos al entrar en área, que las puertas no enviaban el blocked/unblocked izquierdo.
 - corregido en el doble-clic el seleccionar NCP para Comerciar o alguna otra acción por defecto (cuando tenía objetos cerca).
 - al moverse un jugador sobre un casper, ahora intercambian posiciones. En la jerga AO: "patea al casper" :D (un "casper" un fantasma, un usuario mortito)
+- corregido, que permitía usar la barca estando en tierra sin agua.
 
 ### 2019-03-13
 - corregido bug de clones con el warpMe \o/

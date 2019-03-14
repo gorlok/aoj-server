@@ -27,3 +27,4 @@
 * telep de las mascotas?
 * revisar inventario inicial
 * refactorizar sistemas de comercio, trabajo, hechizos, combate
+* MoveNPCChar revisar Caspers y WriteForceCharMove

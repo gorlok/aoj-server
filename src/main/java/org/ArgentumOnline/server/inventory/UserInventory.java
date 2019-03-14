@@ -1046,17 +1046,18 @@ public class UserInventory extends Inventory implements Constants {
                 		return;
             		}
             	}
+            	
                 short m = player().pos().map;
                 short x = player().pos().x;
                 short y = player().pos().y;
-                if (((map.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true) 
-                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true) 
-                		|| map.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true) 
-                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true)) 
+                if (((map.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true, false) 
+                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true, false) 
+                		|| map.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true, false) 
+                		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true, false)) 
                 		&& !player().flags().Navegando) 
                 	|| player().flags().Navegando) {
 		                    this.barcoSlot = slot;
-		                    player().doNavega();
+		                    player().sailingToggle();
                 } else {
             		player().sendMessage("¡Debes aproximarte al agua para usar el barco!", FontType.FONTTYPE_INFO);
                 }

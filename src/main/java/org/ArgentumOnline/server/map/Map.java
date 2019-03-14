@@ -1116,10 +1116,6 @@ public class Map implements Constants {
     }
 
     
-    public boolean isLegalPos(MapPos pos, boolean canWater) {
-    	return isLegalPos(pos, canWater, true);
-    }
-    
     public boolean isLegalPos(MapPos pos, boolean canWater, boolean canLand) {
         if (!pos.isValid()) {
 			return false;
