@@ -29,13 +29,13 @@ public class Log {
     }
     
     public static String getTimestamp() {
-        SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmssSSS");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         return df.format(new Date());
     }
 
     /** TODO */
     public static void logGM(String nickGM, String msg) {
-        System.out.println(getTimestamp() + "GM " + nickGM + "> " + msg);
+        System.out.println(getTimestamp() + " GM " + nickGM + "> " + msg);
     }
     
     /** TODO */
