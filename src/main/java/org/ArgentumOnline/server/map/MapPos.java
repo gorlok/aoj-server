@@ -167,4 +167,14 @@ public class MapPos extends Pos {
 	public int hashCode() {
 		return this.x + this.y * 100 + this.map * 100 * 100;
 	}
+
+	public void reset() {
+		this.map = 0;
+		this.x = 0;
+		this.y = 0;
+	}
+	
+	public boolean isEmpty() {
+		return this.map == 0 && this.x == 0 && this.y == 0;
+	}
 }

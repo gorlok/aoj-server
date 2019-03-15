@@ -180,7 +180,8 @@ public class UserStorage {
 		for (int i = 1; i <= cantMascotas; i++) {
 			short npcNumber = ini.getShort("Mascotas", "Mas" + i);
 			Npc pet = server.createNpc(npcNumber);
-			user.getUserPets().addPet(pet);
+			user.addTamedPet(pet);
+			pet.activate();
 		}
 
 		user.guildUser.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;

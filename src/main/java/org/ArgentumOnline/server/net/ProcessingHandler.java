@@ -328,6 +328,16 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.resuscitationToggle();
 			break;
 			
+		case PetFollow:
+			player.petFollowMaster();
+			break;
+			
+		case PetStand:
+			player.petStand();
+			break;
+			
+			
+			
 		default:
 			if (player.flags().isGM()) {
 				switch (clientPacket.id()) {

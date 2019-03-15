@@ -71,8 +71,6 @@ import org.ArgentumOnline.server.protocol.ChangeMapResponse;
 import org.ArgentumOnline.server.protocol.ChangeUserTradeSlotResponse;
 import org.ArgentumOnline.server.protocol.CharacterChangeResponse;
 import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
-import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
-import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CommerceEndResponse;
 import org.ArgentumOnline.server.protocol.CommerceInitResponse;
@@ -82,14 +80,12 @@ import org.ArgentumOnline.server.protocol.DisconnectResponse;
 import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ErrorMsgResponse;
-import org.ArgentumOnline.server.protocol.ForceCharMoveResponse;
 import org.ArgentumOnline.server.protocol.LevelUpResponse;
 import org.ArgentumOnline.server.protocol.LoggedMessageResponse;
 import org.ArgentumOnline.server.protocol.MeditateToggleResponse;
 import org.ArgentumOnline.server.protocol.MiniStatsResponse;
 import org.ArgentumOnline.server.protocol.NPCHitUserResponse;
 import org.ArgentumOnline.server.protocol.NPCKillUserResponse;
-import org.ArgentumOnline.server.protocol.NavigateToggleRequest;
 import org.ArgentumOnline.server.protocol.NavigateToggleResponse;
 import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
@@ -100,7 +96,6 @@ import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.protocol.RemoveAllDialogsResponse;
 import org.ArgentumOnline.server.protocol.RemoveCharDialogResponse;
 import org.ArgentumOnline.server.protocol.RestOKResponse;
-import org.ArgentumOnline.server.protocol.ResuscitateRequest;
 import org.ArgentumOnline.server.protocol.ResuscitationSafeOffResponse;
 import org.ArgentumOnline.server.protocol.ResuscitationSafeOnResponse;
 import org.ArgentumOnline.server.protocol.SafeModeOffResponse;
@@ -241,8 +236,8 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void init(GameServer aoserver) {
-		this.userStorage = new UserStorage(this.server, this);
 		this.server = aoserver;
+		this.userStorage = new UserStorage(this.server, this);
 
 		this.setId(this.server.nextId());
 		this.spells = new UserSpells(this.server, this);
@@ -524,14 +519,6 @@ public class Player extends AbstractCharacter {
 		return this.ip;
 	}
 
-	public void doSeguir() {
-		// Comando /SEGUIR
-		if (flags().TargetNpc > 0) {
-			Npc npc = this.server.npcById(flags().TargetNpc);
-			npc.seguirUsuario(this.userName);
-		}
-	}
-
 	public void doInfoUsuario(String s) {
 		// INFO DE USER
 		// Comando /INFO usuario
@@ -588,7 +575,7 @@ public class Player extends AbstractCharacter {
 				+ " en mapa " + usuario.pos().map, FontType.FONTTYPE_INFO);
 	}
 
-	public void doQuieto() {
+	public void petStand() {
 		// Comando /QUIETO
 		// Comando a mascotas
 		if (!checkAlive()) {
@@ -604,7 +591,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doAcompañar() {
+	public void petFollowMaster() {
 		// Comando /ACOMPAÑAR
 		if (!checkAlive()) {
 			return;
@@ -1384,15 +1371,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	private double calcularPoderDomador() {
-		return stats().attr().get(Attribute.CARISMA) *
-				(skills().get(Skill.SKILL_Domar) / this.clazz().modDomar())
-					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3)
-					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3)
-					+ Util.Azar(1, stats().attr().get(Attribute.CARISMA) / 3);
-	}
-
-	private void doDomar(Npc npc) {
+	private void tameCreature(Npc npc) {
 		if (getUserPets().isFullPets()) {
 			sendMessage("No podes controlar mas criaturas.", FontType.FONTTYPE_INFO);
 			return;
@@ -1407,24 +1386,55 @@ public class Player extends AbstractCharacter {
 			sendMessage("La criatura ya tiene amo.", FontType.FONTTYPE_INFO);
 			return;
 		}
+		
+	    if (!getUserPets().canTame(npc.getNumero())) {
+			sendMessage("No puedes domar más de una criatura del mismo tipo.", FontType.FONTTYPE_INFO);
+			return;
+	    }
 
-		double suerteDoma = calcularPoderDomador();
-		if (npc.domable() <= suerteDoma) {
-			getUserPets().addPet(npc);
-			npc.setPetUserOwner(this);
-			npc.followMaster();
+	    
+	    int puntosDomar = stats().attr().get(Attribute.CARISMA) * skills().get(Skill.SKILL_Domar);
+	    int puntosRequeridos = npc.domable();
+	    if (clazz() == Clazz.Druid && userInv().tieneAnilloEquipado() && userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
+	    	puntosRequeridos = (int) (puntosRequeridos * 0.8);
+	    }
+
+	    if (puntosRequeridos <= puntosDomar && Util.Azar(1, 5) == 1) {
+			addTamedPet(npc);
 			sendMessage("La criatura te ha aceptado como su amo.", FontType.FONTTYPE_INFO);
 			subirSkill(Skill.SKILL_Domar);
 			// y hacemos respawn del npc original para reponerlo.
-			Npc.spawnNpc(npc.getNumero(), MapPos.mxy(npc.pos().map, (short) 0, (short) 0), false, true);
+			Npc.spawnNpc(npc.getNumero(), npc.getOrig(), false, true);
+			
+	        // Es zona segura?
+			Map map = server.getMap(pos().map);
+	        
+	        if (map.isSafeMap()) {
+	        	map.exitNpc(npc);
+	        	npc.pos().reset();
+        		sendMessage("No se permiten mascotas en zonas seguras. Te esperará afuera.", FontType.FONTTYPE_INFO);
+	        }
+			
 		} else {
 			if (flags().UltimoMensaje != 5) {
 				sendMessage("No has logrado domar la criatura.", FontType.FONTTYPE_INFO);
 				flags().UltimoMensaje = 5;
 			}
 		}
+	    
+	    // Entreno domar. Es un 30% más dificil si no sos druida.
+	    if (clazz() == Clazz.Druid || Util.Azar(1,  3) < 3) {
+	        subirSkill(Skill.SKILL_Domar);
+	    }
 	}
 
+	public void addTamedPet(Npc npc) {
+		getUserPets().addPet(npc);
+		npc.setPetUserOwner(this);
+		npc.followMaster();
+		npc.setSpellSpawnedPet(false);
+	}
+	
 	private boolean suerteMineria() {
 		final short[] suerte = { 35, 30, 28, 24, 22, 20, 18, 15, 10, 7, 7 };
 		short rango = (suerte[(short) (skills().get(Skill.SKILL_Mineria) / 10)]);
@@ -1708,7 +1718,7 @@ public class Player extends AbstractCharacter {
 					if (flags().Seguro) {
 						if (!tu.isCriminal()) {
 							sendMessage(
-									"No puedes atacar a ciudadanos, para hacerlo, antes debes desactivar el seguro con la tecla S",
+									"No puedes atacar a ciudadanos. Para hacerlo, antes debes desactivar el seguro.",
 									FONTTYPE_FIGHT);
 							return;
 						}
@@ -1746,16 +1756,16 @@ public class Player extends AbstractCharacter {
 					return;
 				}
 				if (!this.userInv.tieneArmaEquipada()) {
-					sendMessage("Deberías equiparte la caña o la red.", FontType.FONTTYPE_INFO);
+					sendMessage("Deberías equiparte una caña o una red.", FontType.FONTTYPE_INFO);
 					return;
 				}
 				if (this.userInv.getArma().ObjIndex != OBJ_INDEX_CAÑA
 						&& this.userInv.getArma().ObjIndex != OBJ_INDEX_RED_PESCA) {
-					sendMessage("Deberías equiparte la caña o la red.", FontType.FONTTYPE_INFO);
+					sendMessage("Deberías equiparte una caña o una red.", FontType.FONTTYPE_INFO);
 					return;
 				}
 				if (mapa.isUnderRoof(pos().x,  pos().y)) {
-					sendMessage("No puedes pescar desde donde te encuentras.", FontType.FONTTYPE_INFO);
+					sendMessage("No puedes pescar desde dónde te encuentras.", FontType.FONTTYPE_INFO);
 					return;
 				}
 				if (mapa.isWater(x, y)) {
@@ -1773,7 +1783,7 @@ public class Player extends AbstractCharacter {
 						break;
 					}
 				} else {
-					sendMessage("No hay agua donde pescar. Busca un lago, rio o mar.", FontType.FONTTYPE_INFO);
+					sendMessage("No hay agua donde pescar. Busca un lago, río o mar.", FontType.FONTTYPE_INFO);
 				}
 				break;
 
@@ -1789,21 +1799,21 @@ public class Player extends AbstractCharacter {
 						if (tu.isAlive()) {
 							MapPos wpaux = MapPos.mxy(pos().map, x, y);
 							if (wpaux.distance(pos()) > 2) {
-								sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+								sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 								return;
 							}
 							// Nos aseguramos que el trigger le permite robar
 							if (mapa.isSafeZone(tu.pos().x, tu.pos().y)) {
-								sendMessage("No podes robar aquí.", FontType.FONTTYPE_WARNING);
+								sendMessage("No puedes robar aquí.", FontType.FONTTYPE_WARNING);
 								return;
 							}
 							doRobar(tu);
 						}
 					} else {
-						sendMessage("No hay a quien robarle!.", FontType.FONTTYPE_INFO);
+						sendMessage("¡No hay a quién robarle!", FontType.FONTTYPE_INFO);
 					}
 				} else {
-					sendMessage("¡No podes robarle en zonas seguras!.", FontType.FONTTYPE_INFO);
+					sendMessage("¡No puedes robar en zonas seguras!", FontType.FONTTYPE_INFO);
 				}
 				break;
 
@@ -1824,7 +1834,7 @@ public class Player extends AbstractCharacter {
 				if (obj != null) {
 					MapPos wpaux = MapPos.mxy(pos().map, x, y);
 					if (wpaux.distance(pos()) > 2) {
-						sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+						sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 						return;
 					}
 					// ¿Hay un arbol donde cliqueo?
@@ -1833,7 +1843,7 @@ public class Player extends AbstractCharacter {
 						doTalar();
 					}
 				} else {
-					sendMessage("No hay ningun arbol ahi.", FontType.FONTTYPE_INFO);
+					sendMessage("No hay ningún árbol ahí.", FontType.FONTTYPE_INFO);
 				}
 				break;
 
@@ -1854,7 +1864,7 @@ public class Player extends AbstractCharacter {
 				if (obj != null) {
 					MapPos wpaux = MapPos.mxy(pos().map, x, y);
 					if (wpaux.distance(pos()) > 2) {
-						sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+						sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 						return;
 					}
 					// ¿Hay un yacimiento donde cliqueo?
@@ -1862,37 +1872,34 @@ public class Player extends AbstractCharacter {
 						sendWave(SOUND_MINERO);
 						doMineria();
 					} else {
-						sendMessage("Ahi no hay ningun yacimiento.", FontType.FONTTYPE_INFO);
+						sendMessage("Ahí no hay ningún yacimiento.", FontType.FONTTYPE_INFO);
 					}
 				} else {
-					sendMessage("Ahi no hay ningun yacimiento.", FontType.FONTTYPE_INFO);
+					sendMessage("Ahí no hay ningún yacimiento.", FontType.FONTTYPE_INFO);
 				}
 				break;
 
 
 			case SKILL_Domar:
-				// Modificado 25/11/02
-				// Optimizado y solucionado el bug de la doma de
-				// criaturas hostiles.
 				mapa.lookAtTile(this, x, y);
 				if (flags().TargetNpc > 0) {
 					npc = this.server.npcById(flags().TargetNpc);
 					if (npc.domable() > 0) {
 						MapPos wpaux = MapPos.mxy(pos().map, x, y);
 						if (wpaux.distance(pos()) > 2) {
-							sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+							sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 							return;
 						}
 						if (npc.isAttackedByUser()) {
 							sendMessage("No puedes domar una criatura que está luchando con un jugador.", FontType.FONTTYPE_INFO);
 							return;
 						}
-						doDomar(npc);
+						tameCreature(npc);
 					} else {
 						sendMessage("No puedes domar a esa criatura.", FontType.FONTTYPE_INFO);
 					}
 				} else {
-					sendMessage("No hay ninguna criatura alli!.", FontType.FONTTYPE_INFO);
+					sendMessage("¡No hay ninguna criatura alli!", FontType.FONTTYPE_INFO);
 				}
 				break;
 
@@ -1905,10 +1912,10 @@ public class Player extends AbstractCharacter {
 						this.userInv.sendBlacksmithArmors();
 						sendPacket(new ShowBlacksmithFormResponse());
 					} else {
-						sendMessage("Ahi no hay ningun yunque.", FontType.FONTTYPE_INFO);
+						sendMessage("Ahí no hay ningún yunque.", FontType.FONTTYPE_INFO);
 					}
 				} else {
-					sendMessage("Ahi no hay ningun yunque.", FontType.FONTTYPE_INFO);
+					sendMessage("Ahí no hay ningún yunque.", FontType.FONTTYPE_INFO);
 				}
 				break;
 			}
@@ -2144,7 +2151,10 @@ public class Player extends AbstractCharacter {
 		try {
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa != null && mapa.hasPlayer(this)) {
-				getUserPets().removeAll();
+				getUserPets().removeInvocationPets();				
+				for (Npc pet: getUserPets().getPets()) {
+					mapa.exitNpc(pet);
+				}
 				mapa.exitMap(this);
 			}
 			if (wasLogged) {
@@ -2162,6 +2172,8 @@ public class Player extends AbstractCharacter {
 			if (wasLogged) {
 				try {
 					saveUser();
+					// remove pets AFTER persit'em
+					getUserPets().removeAll();
 				} catch (Exception ex) {
 					log.fatal("ERROR EN doSALIR() - saveUser(): ", ex);
 				}
@@ -2815,9 +2827,14 @@ public class Player extends AbstractCharacter {
 
 				if (lugarLibre != null) {
 					// La mascota lo sigue al nuevo mapa, y mantiene su control.
-					oldMapa.exitNpc(pet);
-					if (!newMapa.enterNpc(pet, lugarLibre.x, lugarLibre.y)) {
-						// FIXME !!!
+					if (oldMapa != null) {
+						oldMapa.exitNpc(pet);
+					}
+					// No se permiten mascotas en zonas seguras, esperan afuera.
+					if (!newMapa.isSafeMap()) {
+						newMapa.enterNpc(pet, lugarLibre.x, lugarLibre.y);
+					} else {
+						pet.pos().reset();
 					}
 				} else {
 					// La mascota no puede seguirlo al nuevo mapa, asi que pierde su control.
@@ -2830,7 +2847,18 @@ public class Player extends AbstractCharacter {
 		});
 
 		if (pets.size() < getUserPets().getPets().size()) {
-			sendMessage("Pierdes el control de tus mascotas.", FontType.FONTTYPE_INFO);
+			sendMessage("Pierdes el control de tus invocaciones.", FontType.FONTTYPE_INFO);
+		}
+		
+		boolean petsWaitingOutside = false;
+		for (Npc pet: getUserPets().getPets()) {
+			if (pet.pos().isEmpty()) {
+				petsWaitingOutside = true;
+				break;
+			}
+		}
+		if (petsWaitingOutside) {
+			sendMessage("No se permiten mascotas en zonas seguras. Te esperarán afuera.", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -4455,7 +4483,7 @@ public class Player extends AbstractCharacter {
 			server.getMotd().sendMOTD(this);
 			
 
-			// FIXME respawn pets
+			warpPets();
 			// FIXME conectar clan
 			
 			sendLogged();

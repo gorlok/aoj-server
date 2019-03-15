@@ -8,6 +8,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 - corregido en el doble-clic el seleccionar NCP para Comerciar o alguna otra acción por defecto (cuando tenía objetos cerca).
 - al moverse un jugador sobre un casper, ahora intercambian posiciones. En la jerga AO: "patea al casper" :D (un "casper" un fantasma, un usuario mortito)
 - corregido, que permitía usar la barca estando en tierra sin agua.
+- corregido la persistencia de las mascotas domadas al reconectarse. Y que las mascotas no entren en zonas seguras.
 
 ### 2019-03-13
 - corregido bug de clones con el warpMe \o/

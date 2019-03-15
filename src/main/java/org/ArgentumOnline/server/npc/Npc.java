@@ -319,8 +319,9 @@ End Enum
     	return this.movement == Npc.MOV_ESTATICO;
     }
 
-    public void makeStatic() {
+    public Npc makeStatic() {
     	this.movement = Npc.MOV_ESTATICO;
+    	return this;
     }
 
     public boolean isQuest() {
@@ -880,7 +881,7 @@ End Enum
     }
 
     /** Seguir a un usuario / Follow user */
-    public void seguirUsuario(String nombreUsuario) {
+    public void followUser(String nombreUsuario) {
         // doFollow
         if (isFollowing()) {
             this.attackedBy = "";
@@ -904,9 +905,9 @@ End Enum
         this.targetNpc  = null;
     }
 
-    public void expresar() {
+    public Npc expresar() {
         if (this.petUserOwner == null) {
-			return;
+			return this;
 		}
         if (this.expressionsCount > 0) {
             int azar = Util.Azar(0, this.expressionsCount - 1);
@@ -915,6 +916,7 @@ End Enum
                 hablarAlArea(Color.COLOR_BLANCO, this.expressions[azar]);
             }
         }
+        return this;
     }
 
     public void hablarAlArea(int color, String texto) {

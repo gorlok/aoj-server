@@ -27,7 +27,7 @@ import org.ArgentumOnline.server.npc.Npc;
 public class UserPets {
 	
 	private List<Npc> pets = new ArrayList<>();
-
+	
 	public List<Npc> getPets() {
 		return pets;
 	}
@@ -44,14 +44,21 @@ public class UserPets {
 		this.pets.add(pet);
 	}
 	
-	public int removeAll() {
-		int count = pets.size();
+	public void removeAll() {
 		pets.forEach(pet -> {
 			pet.releasePet();
 			pet.quitarNPC();
 		});
 		pets.clear();
-		return count;
+	}
+	
+	public void removeInvocationPets() {
+		List.copyOf(pets).forEach(pet -> {
+			if (pet.isSpellSpawnedPet()) {
+				removePet(pet);
+				pet.quitarNPC();
+			}
+		});
 	}
 	
 	/** Ordenar a las mascotas del usuario atacar a un Npc */
@@ -87,6 +94,19 @@ public class UserPets {
 			pets.remove(npc);
 			npc.releasePet();
 		}
+	}
+	
+	public boolean canTame(int npcNumber) {
+		// DomarMascota
+		// This function checks how many NPCs of the same type have been tamed by the user.
+		// Returns True if that amount is less than two.
+		for (Npc pet: pets) {
+			// y si es mascota de invocación?
+			if (pet.getNumero() == npcNumber) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }
