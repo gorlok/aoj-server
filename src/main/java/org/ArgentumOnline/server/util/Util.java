@@ -48,6 +48,15 @@ public class Util {
 		return (short) (((n & 0xff) << 8) | (((n & 0xff00) >> 8) & 0xff));
 	}
 
+	public static byte[] intToLittleEndian(long value) {
+		byte[] b = new byte[4];
+		b[0] = (byte) (value & 0xFF);
+		b[1] = (byte) ((value >> 8) & 0xFF);
+		b[2] = (byte) ((value >> 16) & 0xFF);
+		b[3] = (byte) ((value >> 24) & 0xFF);
+		return b;
+	}	
+
 	public static double distance(int x1, int y1, int x2, int y2) {
 		// Encuentra la distancia entre dos puntos
 		return Math.sqrt(((y1 - y2) * (y1 - y2)) + ((x1 - x2) * (x1 - x2)));

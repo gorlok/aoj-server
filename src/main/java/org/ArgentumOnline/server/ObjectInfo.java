@@ -207,11 +207,10 @@ public class ObjectInfo implements Constants {
         this.flags.set(FLAG_NEWBIE, (ini.getInt(section, "Newbie") == 1));
         
         if (this.GrhIndex == 0) {
-            log.warn("<<<<< ADVERTENCIA EN this.DAT >>>>");
-            log.warn("i=" + index + " seccion=" + section);
-            log.warn("Obj nombre=" + this.Nombre);
-            log.warn("Obj m_body=" + this.Texto);
-            log.warn("Obj grhIndex=" + this.GrhIndex);
+            log.warn("Obj.DAT => " + section + 
+            		" Name=" + this.Nombre + 
+            		" ObjType=" + this.objType + 
+            		" GrhIndex=" + this.GrhIndex);
         }
 
         switch (this.objType) {

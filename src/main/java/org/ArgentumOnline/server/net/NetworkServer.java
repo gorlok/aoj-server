@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -65,6 +64,10 @@ public class NetworkServer {
 			log.fatal("Can't start server", e);
 		}
 	}
+	
+	public int getPort() {
+		return port;
+	} 
 
 	public void shutdown() {
 		acceptorGroup.shutdownGracefully();

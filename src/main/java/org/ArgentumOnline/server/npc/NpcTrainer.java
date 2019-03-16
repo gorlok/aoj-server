@@ -89,8 +89,8 @@ public class NpcTrainer extends Npc {
     }
     
     @Override
-    protected void leerNpc(IniFile ini, int npc_ind) {
-    	super.leerNpc(ini, npc_ind);
+    protected void loadNpc(IniFile ini, int npc_ind) {
+    	super.loadNpc(ini, npc_ind);
         String section = "NPC" + npc_ind;
     	
         int count = (byte) ini.getShort(section, "NroCriaturas");
@@ -104,6 +104,20 @@ public class NpcTrainer extends Npc {
         	String npcName = ini.getString(section, "CN" + (i+1));
         	this.creatureList[i] = new TrainerMascot(npcIndex, npcName);
         }
+    }
+    
+    @Override
+    public void backupNpc(IniFile ini) {
+    	super.backupNpc(ini);
+        String section = "NPC" + this.npcNumber;
+        
+    	ini.setValue(section, "NroCriaturas", this.creatureList.length);
+    	int size = 0;
+    	for (TrainerMascot mascot : this.creatureList) {
+    		size++;
+            ini.setValue(section, "CI" + size, mascot.npc_index);
+            ini.setValue(section, "CN" + size, mascot.npc_name);
+    	};
     }
     
     public boolean isTrainerIsFull() {

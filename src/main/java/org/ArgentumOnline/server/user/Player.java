@@ -45,7 +45,7 @@ import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
 import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.map.MapCell.Trigger;
+import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.Terrain;
@@ -1345,7 +1345,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("Has obtenido un lingote!!!", FontType.FONTTYPE_INFO);
 			Map mapa = this.server.getMap(pos().map);
 			if (this.userInv.agregarItem(info.LingoteIndex, 1) < 1) {
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(info.LingoteIndex, 1));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(info.LingoteIndex, 1));
 			}
 			sendMessage("¡Has obtenido un lingote!", FontType.FONTTYPE_INFO);
 		} else {
@@ -1453,7 +1453,7 @@ public class Player extends AbstractCharacter {
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
 				Map mapa = this.server.getMap(pos().map);
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
 			}
 			sendMessage("¡Has extraido algunos minerales!", FontType.FONTTYPE_INFO);
 		} else {
@@ -1481,7 +1481,7 @@ public class Player extends AbstractCharacter {
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				// Tiro al piso los items no agregados
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
 			}
 			sendMessage("¡Has conseguido algo de leña!", FontType.FONTTYPE_INFO);
 		} else {
@@ -1538,7 +1538,7 @@ public class Player extends AbstractCharacter {
 			Map mapa = this.server.getMap(pos().map);
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
 			}
 			sendInventorySlot(slot);
 			ObjectInfo info = findObj(objid);
@@ -1608,7 +1608,7 @@ public class Player extends AbstractCharacter {
 		if (suertePescarCaña()) {
 			Map mapa = this.server.getMap(pos().map);
 			if (this.userInv.agregarItem(OBJ_PESCADO, 1) < 1) {
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(OBJ_PESCADO, 1));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(OBJ_PESCADO, 1));
 			}
 			sendMessage("¡Has pescado un lindo pez!", FontType.FONTTYPE_INFO);
 		} else {
@@ -1639,7 +1639,7 @@ public class Player extends AbstractCharacter {
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
 				Map mapa = this.server.getMap(pos().map);
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, cant - agregados));
 			}
 			sendMessage("¡Has pescado algunos peces!", FontType.FONTTYPE_INFO);
 		} else {
@@ -1838,7 +1838,7 @@ public class Player extends AbstractCharacter {
 						return;
 					}
 					// ¿Hay un arbol donde cliqueo?
-					if (obj.getInfo().objType == ObjType.Arboles) {
+					if (obj.objInfo().objType == ObjType.Arboles) {
 						sendWave(SOUND_TALAR);
 						doTalar();
 					}
@@ -1868,7 +1868,7 @@ public class Player extends AbstractCharacter {
 						return;
 					}
 					// ¿Hay un yacimiento donde cliqueo?
-					if (obj.getInfo().objType == ObjType.Yacimiento) {
+					if (obj.objInfo().objType == ObjType.Yacimiento) {
 						sendWave(SOUND_MINERO);
 						doMineria();
 					} else {
@@ -2230,8 +2230,8 @@ public class Player extends AbstractCharacter {
 			// ¿Hay un objeto en el tile?
 			if (mapa.hasObject(x, y)) {
 				MapObject obj = mapa.getObject(x, y);
-				flags().TargetObj = obj.getInfo().ObjIndex;
-				switch (obj.getInfo().objType) {
+				flags().TargetObj = obj.objInfo().ObjIndex;
+				switch (obj.objInfo().objType) {
 				case Puertas:
 					mapa.accionParaPuerta(x, y, this);
 					break;
@@ -2249,10 +2249,10 @@ public class Player extends AbstractCharacter {
 				}
 			} else {
 				// ¿Hay un objeto que ocupa más de un tile?
-				MapObject obj = mapa.queryObject(x, y);
+				MapObject obj = mapa.lookForNearbyObject(x, y);
 				if (obj != null) {
-					flags().TargetObj = obj.getInfo().ObjIndex;
-					if (obj.getInfo().objType == ObjType.Puertas) {
+					flags().TargetObj = obj.objInfo().ObjIndex;
+					if (obj.objInfo().objType == ObjType.Puertas) {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
 						return;
 					}
@@ -2347,7 +2347,7 @@ public class Player extends AbstractCharacter {
 		}
 		Player targetUser = this.server.playerById(targetIndex);
 		if (targetUser != null) {
-			if (map.buscarEnElArea(pos().x, pos().y, targetUser.getId()) == null) {
+			if (map.lookForPlayerAtArea(pos().x, pos().y, targetUser.getId()) == null) {
 				sendMessage("Estas muy lejos de " + targetUser.getNick(), FontType.FONTTYPE_INFO);
 			} else {
 				if (flags().isCounselor()) {
@@ -2541,18 +2541,18 @@ public class Player extends AbstractCharacter {
 		if (mapa.hasObject(pos().x, pos().y)) {
 			// ¿Esta permitido agarrar este obj?
 			MapObject obj = mapa.getObject(pos().x, pos().y);
-			if (!obj.getInfo().esAgarrable()) {
+			if (!obj.objInfo().esAgarrable()) {
 				sendMessage("El objeto no se puede agarrar.", FontType.FONTTYPE_INFO);
 			} else {
 				int agregados = this.userInv.agregarItem(obj.obj_ind, obj.obj_cant);
 				if (agregados < obj.obj_cant) {
 					mapa.quitarObjeto(pos().x, pos().y);
-					mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(obj.obj_ind, obj.obj_cant - agregados));
+					mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(obj.obj_ind, obj.obj_cant - agregados));
 				} else {
 					// Quitamos el objeto
 					mapa.quitarObjeto(pos().x, pos().y);
 					if (flags().isGM()) {
-						Log.logGM(this.userName, "Agarró: " + obj.obj_ind + " objeto=" + obj.getInfo().Nombre);
+						Log.logGM(this.userName, "Agarró: " + obj.obj_ind + " objeto=" + obj.objInfo().Nombre);
 					}
 				}
 			}
@@ -3193,7 +3193,7 @@ public class Player extends AbstractCharacter {
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
 					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
-						m.tirarItemAlPiso(pos().x, pos().y, obj_inv);
+						m.dropItemOnFloor(pos().x, pos().y, obj_inv);
 					}
 				}
 			}
@@ -3210,7 +3210,7 @@ public class Player extends AbstractCharacter {
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
 					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
-						map.tirarItemAlPiso(pos().x, pos().y, obj_inv);
+						map.dropItemOnFloor(pos().x, pos().y, obj_inv);
 					}
 				}
 			}
@@ -3239,7 +3239,7 @@ public class Player extends AbstractCharacter {
 					Log.logGM(this.userName,
 							"Tiró " + oi.cant + " unidades del objeto " + findObj(oi.objid).Nombre);
 				}
-				m.tirarItemAlPiso(pos().x, pos().y, oi);
+				m.dropItemOnFloor(pos().x, pos().y, oi);
 			}
 		}
 	}
@@ -5047,7 +5047,7 @@ public class Player extends AbstractCharacter {
 				sendMessage("Has construido la armadura!.", FontType.FONTTYPE_INFO);
 			}
 			if (this.userInv.agregarItem(objid, 1) < 1) {
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, 1));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Herreria);
 			sendInventoryToUser();
@@ -5076,7 +5076,7 @@ public class Player extends AbstractCharacter {
 			carpinteroQuitarMateriales(objid);
 			sendMessage("¡Has construido el objeto!", FontType.FONTTYPE_INFO);
 			if (this.userInv.agregarItem(objid, 1) < 1) {
-				mapa.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(objid, 1));
+				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, 1));
 			}
 			subirSkill(Skill.SKILL_Carpinteria);
 			sendInventoryToUser();

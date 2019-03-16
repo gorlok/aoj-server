@@ -13,17 +13,16 @@
 * server configuration (jcommander - parameters) and config file.
 * rest api for managing, web app ?
 	* use spark web server (https rest-api?)
-	* web app patterfly? angular?
+	* web app
 
 
+* centinelas
 * role masters
-* add SeguroResu
 * chatColor in user flags
 * En Comercio, REVISAR si se hace el chequeo de 
 	' Cantidad maxima de objetos por slot de inventario
 	Public Const MAX_INVENTORY_OBJS As Integer = 10000
 * implementar Party system
 * los npcs hacen respawn cerca del usuario
-* telep de las mascotas?
 * refactorizar sistemas de comercio, trabajo, hechizos, combate
 * MoveNPCChar revisar Caspers y WriteForceCharMove

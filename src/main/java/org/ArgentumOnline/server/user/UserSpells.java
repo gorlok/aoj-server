@@ -27,7 +27,7 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.map.MapCell.Trigger;
+import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcType;
 import org.ArgentumOnline.server.protocol.BlindResponse;

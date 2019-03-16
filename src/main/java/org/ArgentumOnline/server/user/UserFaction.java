@@ -187,7 +187,7 @@ public class UserFaction implements Constants {
             short armadura = this.player.clazz().getArmaduraImperial(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
-                mapa.tirarItemAlPiso(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
+                mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraReal = true;
         }
@@ -234,7 +234,7 @@ public class UserFaction implements Constants {
             short armadura = this.player.clazz().getArmaduraCaos(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
-                mapa.tirarItemAlPiso(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
+                mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraCaos = true;
         }

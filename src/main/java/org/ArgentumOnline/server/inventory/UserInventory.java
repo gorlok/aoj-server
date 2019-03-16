@@ -728,7 +728,7 @@ public class UserInventory extends Inventory implements Constants {
             if (element.objid > 0) {
                 ObjectInfo obj = findObj(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
-                    mapa.tirarItemAlPiso(player().pos().x, player().pos().y, element);
+                    mapa.dropItemOnFloor(player().pos().x, player().pos().y, element);
                 }
             }
         }
@@ -964,7 +964,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(infoObjInv.IndexAbierta, 1) == 0) {
-                    map.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexAbierta, 1));
+                    map.dropItemOnFloor(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexAbierta, 1));
                 }
                 break;
                 
@@ -978,7 +978,7 @@ public class UserInventory extends Inventory implements Constants {
                 player().sendUpdateHungerAndThirst();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(infoObjInv.IndexCerrada, 1) == 0) {
-                    map.tirarItemAlPiso(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexCerrada, 1));
+                    map.dropItemOnFloor(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexCerrada, 1));
                 }
                 break;
                 

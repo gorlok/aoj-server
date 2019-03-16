@@ -239,9 +239,9 @@ public class AreasAO implements Constants {
     			if (map.hasObject(x, y)) {
     				MapObject obj = map.getObject(x, y);
  
-    				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.getInfo().GrhIndex));
+    				user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, obj.objInfo().GrhIndex));
     				
-    				if (obj.getInfo().objType == ObjType.Puertas) {
+    				if (obj.objInfo().objType == ObjType.Puertas) {
     					user.sendBlockedPosition(x, y, map.isBlocked(x, y));
     					user.sendBlockedPosition(x-1, y, map.isBlocked((byte)(x-1), y));
     				}

@@ -37,7 +37,7 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
-import org.ArgentumOnline.server.map.MapCell.Trigger;
+import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Centinela;
 import org.ArgentumOnline.server.npc.Npc;
@@ -67,6 +67,10 @@ public class Map implements Constants {
 
     final static String FOLDER_MAPS = "maps";
     final static String FOLDER_WORLDBACKUP = "worldBackup";
+
+	private static final byte FLAG_TELEPORT = 1;
+	private static final byte FLAG_NPC 		= 2;
+	private static final byte FLAG_OBJECT 	= 4;
     
     /** Número de mapa. */
     private short mapNumber;
@@ -74,6 +78,8 @@ public class Map implements Constants {
     // Cabecera archivo .map
     private short version   = 0;
     private String desc = "";
+    private int crc = 0;
+    private int magicWord = 0;
     
     // Información del archivo .dat
     String  name  = "";
@@ -91,7 +97,7 @@ public class Map implements Constants {
 
     Zone zone = Zone.COUNTRY;
     
-    String  restricted = ""; // Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
+    MapConstraint restricted = MapConstraint.NONE;
     
     /** player killing enabled */
     public boolean pk = false;
@@ -102,9 +108,9 @@ public class Map implements Constants {
     
     GameServer server;
     
-    MapCell cells[][] = new MapCell[MAPA_ANCHO][MAPA_ALTO];
+    Tile tiles[][] = new Tile[MAPA_ANCHO][MAPA_ALTO];
     
-    private List<MapCell> objects = new ArrayList<MapCell>();
+    private List<Tile> objects = new ArrayList<Tile>();
     private List<Player> players = new ArrayList<Player>();
     private List<Npc> npcs = new ArrayList<Npc>();
     
@@ -115,7 +121,7 @@ public class Map implements Constants {
         
         for (int x = 0; x < MAPA_ANCHO; x++) {
             for (int y = 0; y < MAPA_ALTO; y++) {
-                this.cells[x][y] = new MapCell((short)(x+1), (short)(y+1));
+                this.tiles[x][y] = new Tile((short)(x+1), (short)(y+1));
             }
         }
     }
@@ -153,8 +159,8 @@ public class Map implements Constants {
     }
     
     public MapObject getObject(byte x, byte y) {
-    	if (cell(x, y).hasObject()) {
-			return new MapObject(cell(x, y).objIndex(), cell(x, y).objCount(), x, y);
+    	if (tile(x, y).hasObject()) {
+			return new MapObject(tile(x, y).objIndex(), tile(x, y).objCount(), x, y);
 		}
 		return null;
     }
@@ -164,28 +170,28 @@ public class Map implements Constants {
 	}
 	
     public Npc getNPC(byte  x, byte y) {
-        return cell(x, y).npc();
+        return tile(x, y).npc();
     }
     
     // FIXME
     public Trigger getTrigger(byte  x, byte y) {
-        return cell(x, y).trigger();
+        return tile(x, y).trigger();
     }
     
     public boolean isUnderRoof(byte x, byte y) {
-    	return cell(x, y).isUnderRoof();
+    	return tile(x, y).isUnderRoof();
     }
     
     public boolean isAntiPiquete(byte x, byte y) {
-    	return cell(x, y).isAntiPiquete();
+    	return tile(x, y).isAntiPiquete();
     }
     
     public void setTrigger(byte  x, byte y, Trigger value) {
-        cell(x, y).trigger(value);
+        tile(x, y).trigger(value);
     }
     
     public boolean testSpawnTriggerNpc(byte  x, byte y, boolean underRoof) {
-    	return cell(x, y).testSpawnTriggerNpc(underRoof);
+    	return tile(x, y).testSpawnTriggerNpc(underRoof);
     }
     
     public boolean testSpawnTriggerNpc(MapPos pos, boolean underRoof) {
@@ -194,7 +200,7 @@ public class Map implements Constants {
     
     public boolean isWater(byte x, byte y) {
     	if (Pos.isValid(x, y)) {
-    		return cell(x, y).isWater();
+    		return tile(x, y).isWater();
     	}
     	return false;
     }
@@ -205,7 +211,7 @@ public class Map implements Constants {
     
     /** intemperie */
     public boolean isOutdoor(byte  x, byte y) {
-       	return (this.zone != Zone.DUNGEON) && cell(x, y).isOutdoor();
+       	return (this.zone != Zone.DUNGEON) && tile(x, y).isOutdoor();
     }
     
     public int getPlayersCount() {
@@ -217,22 +223,22 @@ public class Map implements Constants {
     }
     
     public boolean isSafeZone(byte x, byte y) {
-    	return cell(x, y).isSafeZone();
+    	return tile(x, y).isSafeZone();
     }
     
     public boolean isArenaZone(byte x, byte y) {
-    	return cell(x, y).isArenaZone();
+    	return tile(x, y).isArenaZone();
     }
     
     public boolean isTournamentZone(byte x, byte y) {
-    	return cell(x, y).isTournamentZone();
+    	return tile(x, y).isTournamentZone();
     }
     
     public void load(boolean loadBackup) {
         try {
-            loadDatFile("Mapa" + this.mapNumber + ".dat", loadBackup);
-            loadMapFile("Mapa" + this.mapNumber + ".map", loadBackup);
-            loadInfFile("Mapa" + this.mapNumber + ".inf", loadBackup);
+            loadDatFile(loadBackup);
+            loadMapFile(loadBackup);
+            loadInfFile(loadBackup);
         } catch (java.io.FileNotFoundException e) {
             log.warn("Archivo de mapa %d faltante.", this.mapNumber);
         } catch (java.io.IOException e) {
@@ -243,8 +249,9 @@ public class Map implements Constants {
     }
     
     
-    private void loadDatFile(String datFileName, boolean loadBackup) 
+    private void loadDatFile(boolean loadBackup) 
     throws java.io.FileNotFoundException, java.io.IOException {
+    	String datFileName = "Mapa" + this.mapNumber + ".dat";
     	log.trace("loading file %s", datFileName);
         // Cargar información del archivo .dat
         IniFile ini = new IniFile();
@@ -256,16 +263,16 @@ public class Map implements Constants {
         String section = "Mapa" + this.mapNumber;
         this.name = ini.getString(section, "Name");
         this.music = ini.getInt(section, "MusicNum");
+        
         // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
         this.pk = (ini.getInt(section, "PK") == 0); 
-
         
         this.MagiaSinEfecto = (ini.getInt(section, "MagiaSinEfecto") == 1);
         this.InviSinEfecto = (ini.getInt(section, "InviSinEfecto") == 1);
         this.ResuSinEfecto = (ini.getInt(section, "ResuSinEfecto") == 1);
         this.NoEncriptarMP = (ini.getInt(section, "NoEncriptarMP") == 1);
         
-        this.restricted = ini.getString(section, "Restringir");
+        this.restricted = MapConstraint.value(ini.getString(section, "Restringir"));
         this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
         if (tipo_terreno.equals("BOSQUE")) {
@@ -299,7 +306,7 @@ public class Map implements Constants {
             this.startPos.y = Byte.parseByte(y);
         }
         if (this.startPos.map == 0) {
-			this.startPos.map = 45;
+			this.startPos.map = this.mapNumber;
 		}
         if (this.startPos.x == 0) {
 			this.startPos.x = 45;
@@ -314,8 +321,9 @@ public class Map implements Constants {
      * Carga el archivo .map dentro de la carpeta backup
      * by Agush
      */
-    private void loadMapFile(String mapFileName, boolean loadBackup)
+    private void loadMapFile(boolean loadBackup)
     throws java.io.IOException {
+    	String mapFileName = "Mapa" + this.mapNumber + ".map";
     	log.trace("loading file %s", mapFileName);
 	    
     	Path path = Paths.get(FOLDER_WORLDBACKUP + File.separator + mapFileName);
@@ -334,12 +342,13 @@ public class Map implements Constants {
             var reader = new BytesReader();
             reader.setBytes(bytes);
             
-            this.version = reader.readShort();
-            reader.skipBytes(255);
-            
-            reader.readInt();
-            reader.readInt();
-            reader.skipBytes(8);
+            // HEADER
+            this.version = Short.reverseBytes(reader.readShort());
+            this.desc = new String(reader.getBytes(255));
+            reader.skipBytes(255);// getBytes doesn't avance pointer
+            this.crc = Integer.reverseBytes(reader.readInt());
+            this.magicWord = Integer.reverseBytes(reader.readInt());
+            reader.skipBytes(8); // FILL 8 bytes
             
             for (int y = 0; y < MAPA_ALTO; y++) {
                 for (int x = 0; x < MAPA_ANCHO; x++) {
@@ -347,28 +356,28 @@ public class Map implements Constants {
                 	byflags = reader.readByte();
                 	
                 	if ((byflags & 1) == 1) {
-                		this.cells[x][y].blocked(true);
+                		this.tiles[x][y].blocked(true);
                 	}
                     
-                	this.cells[x][y].setGrh(0, Util.leShort(reader.readShort()));
+                	this.tiles[x][y].setGrh(0, Util.leShort(reader.readShort()));
                     
                     if ((byflags & 2) == 2) {
-                    	this.cells[x][y].setGrh(1, Util.leShort(reader.readShort()));
+                    	this.tiles[x][y].setGrh(1, Util.leShort(reader.readShort()));
                     }
                     
                     if ((byflags & 4) == 4) {
-                    	this.cells[x][y].setGrh(2, Util.leShort(reader.readShort()));
+                    	this.tiles[x][y].setGrh(2, Util.leShort(reader.readShort()));
                     }
                     if ((byflags & 8) == 8) {
-                    	this.cells[x][y].setGrh(3, Util.leShort(reader.readShort()));
+                    	this.tiles[x][y].setGrh(3, Util.leShort(reader.readShort()));
                     }
                     
                     if ((byflags & 16) == 16) {
-                    	short value = Util.leShort(reader.readShort());
+                    	short value = Util.leShort(reader.readShort()); // byte ?
                     	if (value > Trigger.values().length-1 || value < 0) {
                     		log.warn("Trigger fuera de rango: " + value + " en mapa:" + mapFileName + " x:" + (x+1) + " y:" +(y+1));
                     	} else {
-                    		this.cells[x][y].trigger(Trigger.values()[value]);
+                    		this.tiles[x][y].trigger(Trigger.values()[value]);
                     	}
                     }
                     
@@ -384,8 +393,9 @@ public class Map implements Constants {
      * Carga el archivo .inf de la carpeta backup
      * by Agush
      */
-    private void loadInfFile(String infFileName, boolean loadBackup) 
+    private void loadInfFile(boolean loadBackup) 
     throws java.io.IOException {
+    	String infFileName = "Mapa" + this.mapNumber + ".inf";
     	log.trace("load file %s", infFileName);
 
         Path path = Paths.get(FOLDER_WORLDBACKUP + File.separator + infFileName);
@@ -413,17 +423,19 @@ public class Map implements Constants {
 	            	
 	            	byflags = reader.readByte();
 	            	
-	            	if ((byflags & 1) == 1) {
-						this.cells[x][y].teleport(MapPos.mxy(Util.leShort(reader.readShort())
-								,Util.leShort(reader.readShort()), Util.leShort(reader.readShort())));
+	            	if ((byflags & FLAG_TELEPORT) > 0) {
+						this.tiles[x][y].teleport(MapPos.mxy(
+							Util.leShort(reader.readShort()),
+							Util.leShort(reader.readShort()),
+							Util.leShort(reader.readShort())));
 	            	}
 	                
-	                if ((byflags & 2) == 2) {
+	                if ((byflags & FLAG_NPC) > 0) {
 	                    short npcId = Util.leShort(reader.readShort());
 	                    if (npcId > 0) {
 	                        // Crear un nuevo Npc.
-	                        this.cells[x][y].npc(this.server.createNpc(npcId));
-	                        npc = this.cells[x][y].npc();
+	                        this.tiles[x][y].npc(this.server.createNpc(npcId));
+	                        npc = this.tiles[x][y].npc();
 	                        this.npcs.add(npc);
 	                        npc.pos().map = this.mapNumber;
 	                        npc.pos().x = (byte) (x+1);
@@ -441,7 +453,7 @@ public class Map implements Constants {
 	                    }
 	                }
 	                
-	                if ((byflags & 4) == 4) {
+	                if ((byflags & FLAG_OBJECT) > 0) {
 						short obj_ind = Util.leShort(reader.readShort());
 						short obj_cant = Util.leShort(reader.readShort());
 						agregarObjeto(obj_ind, obj_cant, (byte)(x+1), (byte)(y+1)); // FIXME ignora el resultado ? y si no pudo agregarlo?
@@ -456,11 +468,11 @@ public class Map implements Constants {
     }
     
     public boolean enterMap(Player player, byte  x, byte y) {
-        if (cell(x, y).playerId() != 0) {
+        if (tile(x, y).playerId() != 0) {
 			return false;
 		}
         this.players.add(player);
-        cell(x, y).playerId(player.getId());
+        tile(x, y).playerId(player.getId());
         //sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
         player.pos().set(this.mapNumber, x, y);
         return true;
@@ -484,43 +496,43 @@ public class Map implements Constants {
         		player.charArea().reset();
         	}
         } finally {
-	        if (cell(x,y).playerId() != player.getId()) {
+	        if (tile(x,y).playerId() != player.getId()) {
 	        	log.fatal("INCONSISTENCIA: el jugador no se encuentra donde debería");
 	            return false;
 	        }
-	        cell(x,y).playerId((short) 0);
+	        tile(x,y).playerId((short) 0);
         }
         return true;
     }
     
     public void moverNpc(Npc npc, byte x, byte y) {
-        if (cell(x, y).npc() != null) {
+        if (tile(x, y).npc() != null) {
 			log.fatal("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
 		}
-        this.cells[npc.pos().x-1][npc.pos().y-1].npc(null);
-        cell(x, y).npc(npc);
+        this.tiles[npc.pos().x-1][npc.pos().y-1].npc(null);
+        tile(x, y).npc(npc);
         
         area().checkUpdateNeededNpc(this, npc, npc.infoChar().heading());
         area().sendToNPCArea(this, npc, new CharacterMoveResponse(npc.getId(), x, y));
     }
     
     public boolean isFree(byte  x, byte y) {
-        return (cell(x, y).playerId() == 0) && (cell(x, y).npc() == null);
+        return (tile(x, y).playerId() == 0) && (tile(x, y).npc() == null);
     }
     
     public boolean isBlocked(byte  x, byte y) {
-        if (x < 1 || x > 100 || y < 1 || y > 100) {
-			return true;
-		}
-        return cell(x, y).isBlocked();
+    	if (!Pos.isValid(x, y)) {
+    		return true;
+    	}
+        return tile(x, y).isBlocked();
     }
     
     public boolean enterNpc(Npc npc, byte  x, byte y) {
-        if (cell(x, y).npc() != null) {
+        if (tile(x, y).npc() != null) {
 			return false;
 		}
         
-        cell(x, y).npc(npc);
+        tile(x, y).npc(npc);
         this.npcs.add(npc);
         npc.pos().set(this.mapNumber, x, y);
       
@@ -537,7 +549,7 @@ public class Map implements Constants {
         	sendToArea(x, y, new RemoveCharDialogResponse(npc.getId()));
 	        sendToArea(x, y, new CharacterRemoveResponse(npc.getId()));
         } finally {
-            cell(x, y).npc(null);
+            tile(x, y).npc(null);
 	        this.npcs.remove(npc);
 	        npc.pos().set(this.mapNumber, (short)0, (short)0);
         }
@@ -565,7 +577,7 @@ public class Map implements Constants {
         Npc npc;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-            	npc = cell(x,y).npc();
+            	npc = tile(x,y).npc();
                 if (npc != null) { 
                 	
                 	//agush: fix mascotas ;-)
@@ -584,8 +596,8 @@ public class Map implements Constants {
             log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.mapNumber + " x=" + x + " y=" + y);
     		return false;
     	}
-    	cell(x, y).setObj(objid, cant);
-        this.objects.add(cell(x, y));
+    	tile(x, y).setObj(objid, cant);
+        this.objects.add(tile(x, y));
         short grhIndex = findObj(objid).GrhIndex;
         
         area().sendToAreaByPos(this, x, y, 
@@ -594,35 +606,35 @@ public class Map implements Constants {
     }
     
     public void quitarObjeto(byte  x, byte y) {
-    	this.objects.remove(cell(x, y));
-        cell(x, y).removeObject();
+    	this.objects.remove(tile(x, y));
+        tile(x, y).removeObject();
         sendToArea(x, y, new ObjectDeleteResponse(x,y));
     }
     
-    public void bloquearTerreno(byte x, byte y) {
-        cell(x, y).blocked(true);
-        cell(x, y).modified(true);
+    public void blockTile(byte x, byte y) {
+        tile(x, y).blocked(true);
+        tile(x, y).modified(true);
         sendToArea(x, y, new BlockPositionResponse(x, y, (byte)1));
     }
     
-    public void desbloquearTerreno(byte x, byte y) {
-        cell(x, y).blocked(false);
-        cell(x, y).modified(true);
+    public void unblockTile(byte x, byte y) {
+        tile(x, y).blocked(false);
+        tile(x, y).modified(true);
         sendToArea(x, y, new BlockPositionResponse(x, y, (byte)0));
     }
     
     public void toggleDoor(MapObject obj) {
-        if (obj.getInfo().objType == ObjType.Puertas) {
+        if (obj.objInfo().objType == ObjType.Puertas) {
             // Es un objeto tipo puerta.
-            if (obj.getInfo().estaCerrada()) {
+            if (obj.objInfo().estaCerrada()) {
                 // Abrir puerta.
                 quitarObjeto(obj.x, obj.y);
-                ObjectInfo info = findObj(obj.getInfo().IndexAbierta);
+                ObjectInfo info = findObj(obj.objInfo().IndexAbierta);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             } else {
                 // Cerrar puerta
                 quitarObjeto(obj.x, obj.y);
-                ObjectInfo info = findObj(obj.getInfo().IndexCerrada);
+                ObjectInfo info = findObj(obj.objInfo().IndexCerrada);
                 agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             }
             obj = getObject(obj.x, obj.y);
@@ -632,16 +644,16 @@ public class Map implements Constants {
     }
     
     private void sendDoorUpdate(MapObject obj) {
-        if (obj.getInfo().objType == ObjType.Puertas) {
+        if (obj.objInfo().objType == ObjType.Puertas) {
             // Es un objeto tipo puerta.
-            if (obj.getInfo().estaCerrada()) {
-                bloquearTerreno((byte) (obj.x-1), obj.y);
-                bloquearTerreno(obj.x, obj.y);
+            if (obj.objInfo().estaCerrada()) {
+                blockTile((byte) (obj.x-1), obj.y);
+                blockTile(obj.x, obj.y);
             } else {
-                desbloquearTerreno((byte) (obj.x-1), obj.y);
-                desbloquearTerreno(obj.x, obj.y);
+                unblockTile((byte) (obj.x-1), obj.y);
+                unblockTile(obj.x, obj.y);
             }
-            sendToArea(obj.x,obj.y, new ObjectCreateResponse(obj.x, obj.y, (short)obj.getInfo().GrhIndex));
+            sendToArea(obj.x,obj.y, new ObjectCreateResponse(obj.x, obj.y, (short)obj.objInfo().GrhIndex));
         }
     }
     
@@ -689,8 +701,8 @@ public class Map implements Constants {
         Player player;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (cell(x,y).playerId() > 0) {
-                    player = this.server.playerById(cell(x,y).playerId());
+                if (tile(x,y).playerId() > 0) {
+                    player = this.server.playerById(tile(x,y).playerId());
                     if (player != null && (player.flags().isGod() || player.flags().isDemiGod())) {
 						player.sendPacket(packet);
 					}
@@ -699,7 +711,7 @@ public class Map implements Constants {
         }
     }
     
-    public Player buscarEnElArea(short pos_x, short pos_y, short cli_id) {
+    public Player lookForPlayerAtArea(short pos_x, short pos_y, short cli_id) {
         short x1 = (short) (pos_x - MinXBorder + 1);
         short x2 = (short) (pos_x + MaxXBorder + 1);
         short y1 = (short) (pos_y - MinYBorder + 1);
@@ -718,8 +730,8 @@ public class Map implements Constants {
 		}
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (cell(x, y).playerId() == cli_id) {
-					return this.server.playerById(cell(x,y).playerId());
+                if (tile(x, y).playerId() == cli_id) {
+					return this.server.playerById(tile(x,y).playerId());
 				}
             }
         }
@@ -738,7 +750,7 @@ public class Map implements Constants {
     
     /** Send objects in map */
     public void sendObjects(Player player) {
-        for (MapCell object : this.objects) {
+        for (Tile object : this.objects) {
             player.sendObject(object.objIndex(), object.x(), object.y());
         }
     }
@@ -754,16 +766,16 @@ public class Map implements Constants {
     public void sendBlockedPositions(Player player) {
         for (int y = 0; y < MAPA_ALTO; y++) {
             for (int x = 0; x < MAPA_ANCHO; x++) {
-                if (this.cells[x][y].isModified()) {
-					player.sendBlockedPosition(x+1, y+1, this.cells[x][y].isBlocked());
+                if (this.tiles[x][y].isModified()) {
+					player.sendBlockedPosition(x+1, y+1, this.tiles[x][y].isBlocked());
 				}
             }
         }
     }
     
     public void movePlayer(Player player, MapPos newPos) {
-        cell(player.pos().x, player.pos().y).playerId((short) 0);
-        cell(newPos.x, newPos.y).playerId(player.getId());
+        tile(player.pos().x, player.pos().y).playerId((short) 0);
+        tile(newPos.x, newPos.y).playerId(player.getId());
         
         player.pos().set(this.mapNumber, newPos.x, newPos.y);
         
@@ -775,8 +787,8 @@ public class Map implements Constants {
     public void movePlayerSwapping(Player player, MapPos newPos, Player casper) {
     	MapPos oldPos = player.pos().copy();
     	
-        cell(oldPos.x, oldPos.y).playerId(casper.getId());
-        cell(newPos.x, newPos.y).playerId(player.getId());
+        tile(oldPos.x, oldPos.y).playerId(casper.getId());
+        tile(newPos.x, newPos.y).playerId(player.getId());
         
         player.pos().set(this.mapNumber, newPos.x, newPos.y);
         casper.pos().set(this.mapNumber, oldPos.x, oldPos.y);
@@ -794,18 +806,18 @@ public class Map implements Constants {
     }
     
     public boolean isTeleport(byte  x, byte y) {
-        return cell(x, y).isTeleport();
+        return tile(x, y).isTeleport();
     }
     
     public boolean isTeleportObject(byte x, byte y) {
     	return isTeleport(x, y) 
     			&& hasObject(x, y) 
-				&& (getObject(x, y).getInfo().objType == ObjType.Teleport);    	
+				&& (getObject(x, y).objInfo().objType == ObjType.Teleport);    	
     }
     
     public void createTeleport(byte x, byte y, short dest_mapa, byte dest_x, byte dest_y) {
         if (dest_mapa > 0 && dest_x > 0 && dest_y > 0) {
-			cell(x, y).teleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
+			tile(x, y).teleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
 		}
         agregarObjeto(OBJ_TELEPORT, 1, x, y);
     }
@@ -815,39 +827,36 @@ public class Map implements Constants {
 			return;
 		}
         quitarObjeto(x, y);
-        cell(x, y).teleport(null);
+        tile(x, y).teleport(null);
     }    
     
     public boolean hasObject(byte  x, byte y) {
-    	if (!Pos.isValid(x, y)) {
-    		return false;
-    	}
-        return (cell(x, y).hasObject());
+        return Pos.isValid(x, y) 
+        		&& (tile(x, y).hasObject());
     }
     
     public boolean hasPlayer(byte  x, byte y) {
-    	if (!Pos.isValid(x, y)) {
-    		return false;
-    	}
-        return (cell(x, y).playerId() != 0 && getPlayer(x, y) != null);
+        return Pos.isValid(x, y) 
+        		&& (tile(x, y).playerId() != 0 
+        		&& getPlayer(x, y) != null);
     }
     
     public boolean hasNpc(byte  x, byte y) {
     	if (!Pos.isValid(x, y)) {
     		return false;
     	}
-        return (cell(x, y).npc() != null);
+        return (tile(x, y).npc() != null);
     }
     
     public Player getPlayer(byte  x, byte y) {
-        return this.server.playerById(cell(x, y).playerId());
+        return this.server.playerById(tile(x, y).playerId());
     }
     
     public Npc getNpc(byte  x, byte y) {
-        return cell(x, y).npc();
+        return tile(x, y).npc();
     }
     
-    public MapObject queryObject(byte  x, byte y) {
+    public MapObject lookForNearbyObject(byte  x, byte y) {
         // Ver si hay un objeto en los alrededores...
         if (hasObject(x, y)) {
             return getObject(x, y);
@@ -863,7 +872,8 @@ public class Map implements Constants {
         }
         return null;
     }
-    public Player queryPlayer(byte  x, byte y) {
+    
+    public Player lookForNearbyPlayer(byte  x, byte y) {
         // Ver si hay un jugador en los alrededores...
         if (hasPlayer(x, (byte) (y+1))) {
             return getPlayer(x, (byte) (y+1));
@@ -873,7 +883,8 @@ public class Map implements Constants {
         }
         return null;
     }
-    public Npc queryNpc(byte  x, byte y) {
+    
+    public Npc lookForNearbyNpc(byte  x, byte y) {
         // Ver si hay un NPC en los alrededores...
         if (hasNpc(x, (byte) (y+1))) {
             return getNpc(x, (byte) (y+1));
@@ -892,24 +903,24 @@ public class Map implements Constants {
         boolean foundSomething = false;
         
         // Ver si hay un objeto en los alrededores...
-        MapObject obj = queryObject(x, y);
+        MapObject obj = lookForNearbyObject(x, y);
         if (obj != null) {
-        	if (obj.getInfo().mostrarCantidad()) {
-        		player.sendMessage(obj.getInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+        	if (obj.objInfo().mostrarCantidad()) {
+        		player.sendMessage(obj.objInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
         	} else {
-        		player.sendMessage(obj.getInfo().Nombre, FontType.FONTTYPE_INFO);
+        		player.sendMessage(obj.objInfo().Nombre, FontType.FONTTYPE_INFO);
         	}
-            player.flags().TargetObj = obj.getInfo().ObjIndex;
+            player.flags().TargetObj = obj.objInfo().ObjIndex;
             player.flags().TargetObjMap = this.mapNumber;
             player.flags().TargetObjX = obj.x;
             player.flags().TargetObjY = obj.y;
             foundSomething = true;
-            System.out.println("OBJ " + obj.getInfo().Nombre + " OID:" + obj.getInfo().ObjIndex + " x="+obj.x + ",y="+obj.y);
+            System.out.println("OBJ " + obj.objInfo().Nombre + " OID:" + obj.objInfo().ObjIndex + " x="+obj.x + ",y="+obj.y);
         }
         
         // Ver si hay un jugador
         Player anotherPlayer;
-        if ((anotherPlayer = queryPlayer(x, y)) != null) {
+        if ((anotherPlayer = lookForNearbyPlayer(x, y)) != null) {
         	if (!anotherPlayer.flags().AdminInvisible || player.flags().isGM()) {
         		
         		if (anotherPlayer.descRM.length() > 0 || !anotherPlayer.showName) {
@@ -931,7 +942,7 @@ public class Map implements Constants {
 
         // Ver si hay un Npc...
         Npc npc;
-        if ((npc = queryNpc(x, y)) != null) {
+        if ((npc = lookForNearbyNpc(x, y)) != null) {
             foundSomething = true;
             System.out.println("NPC id:" + npc.getId() + " name:" + npc.getName() + " areaID:" + npc.charArea().areaID + " " + npc.pos().toString());
             if (npc.description.length() > 0) {
@@ -977,7 +988,7 @@ public class Map implements Constants {
     }
     
     public MapPos teleportTarget(byte  x, byte y) {
-        return cell(x, y).teleport();
+        return tile(x, y).teleport();
     }
     
     public void accionParaRamita(byte x, byte y, Player player) {
@@ -986,7 +997,7 @@ public class Map implements Constants {
             return;
         }
         
-        if (cell(x, y).isSafeZone() && isSafeMap()) {
+        if (tile(x, y).isSafeZone() && isSafeMap()) {
             player.sendMessage("En zona segura no puedes hacer fogatas.", FontType.FONTTYPE_INFO);
             return;
         }
@@ -1012,8 +1023,8 @@ public class Map implements Constants {
 		player.subirSkill(Skill.SKILL_Supervivencia);
     }
 
-	private MapCell cell(int x, int y) {
-		return this.cells[x-1][y-1];
+	private Tile tile(int x, int y) {
+		return this.tiles[x-1][y-1];
 	}
     
     public void accionParaForo(byte  x, byte y, Player player) {
@@ -1023,10 +1034,10 @@ public class Map implements Constants {
         }
         // ¿Hay mensajes?
         MapObject obj = getObject(x, y);
-        if (obj == null || obj.getInfo().objType != ObjType.Foros) {
+        if (obj == null || obj.objInfo().objType != ObjType.Foros) {
             return;
         }
-        String foroId = obj.getInfo().ForoID;
+        String foroId = obj.objInfo().ForoID;
         this.server.getForumManager().sendForumPosts(foroId, player);
     }
     
@@ -1036,12 +1047,12 @@ public class Map implements Constants {
             return;
         }
         MapObject obj = getObject(x, y);
-        if (obj == null || obj.getInfo().objType != ObjType.Puertas) {
+        if (obj == null || obj.objInfo().objType != ObjType.Puertas) {
 			return;
 		}
-        if (obj.getInfo().Clave == 0) {
+        if (obj.objInfo().Clave == 0) {
             toggleDoor(obj);
-            player.flags().TargetObj = obj.getInfo().ObjIndex;
+            player.flags().TargetObj = obj.objInfo().ObjIndex;
         } else {
             player.sendMessage("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
@@ -1049,16 +1060,17 @@ public class Map implements Constants {
     
     public void accionParaCartel(byte  x, byte y, Player player) {
         MapObject obj = getObject(x, y);
-        if (obj == null || obj.getInfo().objType != ObjType.Carteles) {
+        if (obj == null || obj.objInfo().objType != ObjType.Carteles) {
 			return;
 		}
-        if (obj.getInfo().Texto.length() > 0) {
-        	player.sendPacket(new ShowSignalResponse(obj.getInfo().Texto, obj.getInfo().GrhSecundario));
+        if (obj.objInfo().Texto.length() > 0) {
+        	player.sendPacket(new ShowSignalResponse(obj.objInfo().Texto, obj.objInfo().GrhSecundario));
         }
     }
     
-    public MapPos tirarItemAlPiso(byte  x, byte y, InventoryObject obj) {
-        MapPos newPos = tilelibre(x, y);
+    public MapPos dropItemOnFloor(byte  x, byte y, InventoryObject obj) {
+    	// tirarItemAlPiso
+        MapPos newPos = freeTile(x, y);
         if (newPos != null) {
 	        log.debug("tirarItemAlPiso: x=" + newPos.x + " y=" + newPos.y);
 	        if (newPos != null) {
@@ -1070,18 +1082,16 @@ public class Map implements Constants {
         return null;
     }
     
-    public boolean esPosLibreObjeto(byte  x, byte y) {
-    	if (!Pos.isValid(x, y)) {
-			return false;
-		}
-        return cell(x, y).isFreeForObject();
+    public boolean isFreeForObject(byte  x, byte y) {
+        return Pos.isValid(x, y) 
+        		&& tile(x, y).isFreeForObject();
     }
     
     /** 
-     * Busca una posicion libre para depositar un objeto y que sea lo más cercana a la posición original 
+     * Look for a free tile to drop an object, that it's closest to the original position. 
      */
-    public MapPos tilelibre(byte orig_x, byte orig_y) {
-        if (esPosLibreObjeto(orig_x, orig_y)) {
+    private MapPos freeTile(byte orig_x, byte orig_y) {
+        if (isFreeForObject(orig_x, orig_y)) {
 			return MapPos.mxy(this.mapNumber, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 15; radio++) {
@@ -1092,22 +1102,22 @@ public class Map implements Constants {
             // Recorrer los lados superior e inferior del borde.
             for (byte x = x1; x <= x2; x++) {
                 // lado superior
-                if (esPosLibreObjeto(x, y1)) {
+                if (isFreeForObject(x, y1)) {
 					return MapPos.mxy(this.mapNumber, x, y1);
 				}
                 // lado inferior
-                if (esPosLibreObjeto(x, y2)) {
+                if (isFreeForObject(x, y2)) {
 					return MapPos.mxy(this.mapNumber, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (byte y = (byte) (y1+1); y < y2; y++) {
                 // lado izquierdo
-                if (esPosLibreObjeto(x1, y)) {
+                if (isFreeForObject(x1, y)) {
 					return MapPos.mxy(this.mapNumber, x1, y);
 				}
                 // lado derecho
-                if (esPosLibreObjeto(x2, y)) {
+                if (isFreeForObject(x2, y)) {
 					return MapPos.mxy(this.mapNumber, x2, y);
 				}
             }
@@ -1117,26 +1127,28 @@ public class Map implements Constants {
 
     
     public boolean isLegalPos(MapPos pos, boolean canWater, boolean canLand) {
-        if (!pos.isValid()) {
-			return false;
-		}
-        return cell(pos.x,pos.y).isLegalPos(canWater, canLand);
+        return pos.isValid() 
+        		&& tile(pos.x,pos.y).isLegalPos(canWater, canLand);
     }
     
     public boolean isLegalPosNPC(MapPos pos, boolean canWater) {
-        if (!pos.isValid()) {
-			return false;
-		}
-        return cell(pos.x,pos.y).isFreeForNpc(canWater);
+        return pos.isValid() 
+        		&& tile(pos.x,pos.y).isFreeForNpc(canWater);
     }
     
     private boolean isFreePosForPlayer(byte  x, byte y, boolean sailing, boolean isAdmin) {
     	if (isAdmin) {
 			return isFreePosForAdmin(x, y); // Los Admins no respetan las leyes de la física :P
+			
 		} else if (sailing) {
-			return isFreePosWithWater(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
+			return isFreePosWithWater(x, y) 
+					&& !isTeleport(x, y) 
+					&& !isBlocked(x, y);
+			
 		} else {
-			return isFreePosWithoutWater(x, y) && !isTeleport(x, y) && !isBlocked(x, y);
+			return isFreePosWithoutWater(x, y) 
+					&& !isTeleport(x, y) 
+					&& !isBlocked(x, y);
 		}
     }
     
@@ -1238,31 +1250,19 @@ public class Map implements Constants {
     }
     
     private boolean isFreePosWithWater(byte  x, byte y) {
-        if (x < 1 || x > 100 || y < 1 || y > 100) {
-			return false;
-		}
-        return !cell(x, y).isBlocked() && 
-        cell(x, y).playerId() == 0 &&
-        cell(x, y).npc() == null && 
-        isWater(x,y);
+        return Pos.isValid(x, y) 
+        		&& tile(x, y).isFreePosWithWater();
     }
     
     private boolean isFreePosWithoutWater(byte  x, byte y) {
-        if (x < 1 || x > 100 || y < 1 || y > 100) {
-			return false;
-		}
-        return !cell(x, y).isBlocked() &&
-        cell(x, y).playerId() == 0 &&
-        cell(x, y).npc() == null &&
-        !isWater(x,y);
+        return Pos.isValid(x, y) 
+        		&& tile(x, y).isFreePosWithoutWater();
     }
     
     private boolean isFreePosForAdmin(byte  x, byte y) {
-    	// Los Admins no respetan las leyes de la física :P
-        if (x < 1 || x > 100 || y < 1 || y > 100) {
-			return false;
-		}
-        return cell(x, y).playerId() == 0 && cell(x, y).npc() == null;
+        // Los Admins no respetan las leyes de la física :P
+        return Pos.isValid(x, y) 
+        		&& tile(x, y).isFreePosForAdmin();
     }
     
     /** Devuelve la cantidad de enemigos que hay en el mapa */
@@ -1280,43 +1280,46 @@ public class Map implements Constants {
         return cant;
     }
     
-    //Agus: ARREGLAR ESTO MOMENTANEAMENTE DESACTIVADO
-    // FIXME
-    public void saveMapData() {
-        // Public Sub SaveMapData(ByVal N As Integer)
-       // saveInfFile("worldBackup" + File.separator + "Mapa" + this.nroMapa + ".inf");
-       // saveMapFile("worldBackup" + File.separator + "Mapa" + this.nroMapa + ".map");
-       // saveDat("worldBackup" + File.separator + "Mapa" + this.nroMapa + ".dat");
+    public void saveMapBackup() {
+        saveInfFile();
+        saveMapFile();
+        saveDatFile();
     }
     
-    private void saveDat(String datFileName) {
+    private void saveDatFile() {
         // Escribir archivo .dat
+    	String filename = "worldBackup" + File.separator + "Mapa" + this.mapNumber + ".dat";
         try {
             IniFile ini = new IniFile();
             String section = "Mapa" + this.mapNumber;
             ini.setValue(section, "Name", this.name);
             ini.setValue(section, "MusicNum", this.music);
-            ini.setValue(section, "StartPos", this.startPos.map + "-" + this.startPos.x + "-" + this.startPos.y);
-            ini.setValue(section, "Terreno", this.terrain.toString());
-            ini.setValue(section, "Zona", this.zone.toString());
-            ini.setValue(section, "Restringir", this.restricted);
-            ini.setValue(section, "BackUp", this.backup);
             // PK está invertido
             ini.setValue(section, "PK", !this.pk);
             
-            ini.setValue(section, "MagiaSinefecto", MagiaSinEfecto);
+            ini.setValue(section, "MagiaSinEfecto", MagiaSinEfecto);
             ini.setValue(section, "InviSinEfecto", InviSinEfecto);
             ini.setValue(section, "ResuSinEfecto", ResuSinEfecto);
+            ini.setValue(section, "NoEncriptarMP", NoEncriptarMP);
+            
+            ini.setValue(section, "Restringir", this.restricted.toString());
+            ini.setValue(section, "BackUp", this.backup);
+            ini.setValue(section, "Terreno", this.terrain.toString());
+            ini.setValue(section, "Zona", this.zone.toString());
+            
+            ini.setValue(section, "StartPos", 
+            		this.startPos.map + "-" + this.startPos.x + "-" + this.startPos.y);
             	    
-            ini.store(datFileName);
+            ini.store(filename);
         } catch (Exception e) {
             log.fatal("ERROR GUARDANDO MAPA " + this.mapNumber, e);
         }
     }
     
-    private void saveMapFile(String filename) {
+    private void saveMapFile() {
         ////////// ARCHIVO .MAP
         // guardar cabecera del archivo .map
+    	String filename = "worldBackup" + File.separator + "Mapa" + this.mapNumber + ".map";
         log.info("Guardando mapa: " + filename);
         try {
             DataOutputStream f =
@@ -1324,26 +1327,51 @@ public class Map implements Constants {
             new BufferedOutputStream(
             new FileOutputStream(filename)));
             try {
-                f.writeShort(Util.leShort(this.version));
-                byte tmp[] = new byte[255];
+            	// HEADER
+                f.writeShort(Short.reverseBytes(this.version));
+                byte descBytes[] = new byte[255];
                 for (int i = 0; i < this.desc.length() && i < 256; i++) {
-					tmp[i] = (byte)this.desc.charAt(i);
+					descBytes[i] = (byte)this.desc.charAt(i);
 				}
-                f.write(tmp); // 255 bytes... por que no 256??
-                f.writeInt(0); // crc
-                f.writeInt(0); // mw
-                f.writeLong(0); // 8 bytes de relleno.
-                // leer detalle del archivo .map
+                f.write(descBytes); // 255 bytes... por que no 256??
+                f.writeInt(Integer.reverseBytes(this.crc));
+                f.writeInt(Integer.reverseBytes(this.magicWord));
+                f.writeLong(0); // FILL 8 bytes
+                
                 for (int y = 0; y < MAPA_ALTO; y++) {
                     for (int x = 0; x < MAPA_ANCHO; x++) {
-                    	f.writeByte(this.cells[x][y].isBlocked() ? 1 : 0);
-                    	// FIXME
-                        //f.writeShort(this.m_cells[x][y].hayAgua() ? Util.leShort((short)1505) : 0);
-                        f.writeShort(0);
-                        f.writeShort(0);
-                        f.writeShort(0);
-                        f.writeShort(Util.leShort((short) this.cells[x][y].trigger().ordinal()));
-                        f.writeShort(0); // 2 bytes de relleno.
+                    	byte flags = 0;
+                    	
+                    	if (this.tiles[x][y].isBlocked()) {
+                    		flags += 1;
+                    	}
+                    	if (this.tiles[x][y].getGrh(1) != 0) {
+                    		flags += 2;                    		
+                    	}
+                    	if (this.tiles[x][y].getGrh(2) != 0) {
+                    		flags += 4;                    		
+                    	}
+                    	if (this.tiles[x][y].getGrh(3) != 0) {
+                    		flags += 8;                    		
+                    	}
+                    	if (this.tiles[x][y].trigger() != Trigger.TRIGGER_NADA) {
+                    		flags += 16;                    		
+                    	}
+                    	
+                    	f.writeByte(flags);
+                    	f.writeShort(Util.leShort((short) this.tiles[x][y].getGrh(0)));
+                    	if ((flags & 2) > 0) {
+                        	f.writeShort(Util.leShort((short) this.tiles[x][y].getGrh(1)));
+                    	}
+                    	if ((flags & 4) > 0) {
+                        	f.writeShort(Util.leShort((short) this.tiles[x][y].getGrh(2)));
+                    	}
+                    	if ((flags & 8) > 0) {
+                        	f.writeShort(Util.leShort((short) this.tiles[x][y].getGrh(3)));
+                    	}
+                    	if ((flags & 16) > 0) { // byte?
+                        	f.writeShort(Util.leShort((short) this.tiles[x][y].trigger().ordinal()));
+                    	}
                     }
                 }
             } finally {
@@ -1354,9 +1382,9 @@ public class Map implements Constants {
         }
     }
     
-    // FIXME!!!
-    private void saveInfFile(String filename) {
+    private void saveInfFile() {
         //////// ARCHIVO .INF
+    	String filename = "worldBackup" + File.separator + "Mapa" + this.mapNumber + ".inf";
         log.info("Guardando mapa: " + filename);
         try {
             DataOutputStream f =
@@ -1369,30 +1397,35 @@ public class Map implements Constants {
                 // leer detalle del archivo .inf
                 for (short y = 0; y < MAPA_ALTO; y++) {
                     for (short x = 0; x < MAPA_ANCHO; x++) {
-                        // Es el destino a otro lugar (para teleports, etc.)
-                        // Son cero (0) si no hay un Teleport en esta celda.
-                        if (this.cells[x][y].isTeleport()) {
-                            f.writeShort(Util.leShort(this.cells[x][y].teleport().map));
-                            f.writeShort(Util.leShort(this.cells[x][y].teleport().x));
-                            f.writeShort(Util.leShort(this.cells[x][y].teleport().y));
-                        } else {
-                            f.writeShort(0);
-                            f.writeShort(0);
-                            f.writeShort(0);
+                    	byte flags = 0;
+                    	if (this.tiles[x][y].isTeleport()) {
+                    		flags += FLAG_TELEPORT;
+                    	}
+                    	// FIXME todos los npcs se guardan?
+                    	if (this.tiles[x][y].hasNpc()) {
+                    		flags += FLAG_NPC;
+                    	}
+                        if (this.tiles[x][y].hasObject()) {
+                        	flags += FLAG_OBJECT;
                         }
-                        // Indice del Npc que esta en este bloque.
-                        // Es cero (0) si no hay Npc.
-                        f.writeShort((this.cells[x][y].npc() != null) ? Util.leShort((short)this.cells[x][y].npc().getNumero()) : 0);
-                        // Indice del Objeto que esta en este bloque.
-                        // Es cero (0) si no hay objeto.
-                        if (this.cells[x][y].hasObject()) {
-                            f.writeShort(Util.leShort(getObject((byte)(x+1), (byte)(y+1)).getInfo().ObjIndex));
-                            f.writeShort(Util.leShort((short)getObject((byte)(x+1), (byte)(y+1)).obj_cant));
-                        } else {
-                            f.writeInt(0);
+                        
+                        f.writeByte(flags);
+                    	
+                        if ((flags & FLAG_TELEPORT) > 0) {
+                            f.writeShort(Util.leShort(this.tiles[x][y].teleport().map));
+                            f.writeShort(Util.leShort(this.tiles[x][y].teleport().x));
+                            f.writeShort(Util.leShort(this.tiles[x][y].teleport().y));
                         }
-                        f.writeShort(0); // Indice del jugador que esta en este bloque.
-                        f.writeShort(0); // Saltear 2 bytes de relleno...
+                        
+                        if ((flags & FLAG_NPC) > 0) {
+                        	f.writeShort(Util.leShort((short)this.tiles[x][y].npc().getNumero()));
+                        }
+                        
+                        if ((flags & FLAG_OBJECT) > 0) {
+                        	MapObject mObj = getObject((byte)(x+1), (byte)(y+1));
+                            f.writeShort(Util.leShort(mObj.objInfo().ObjIndex));
+                            f.writeShort(Util.leShort((short)mObj.obj_cant));
+                        }
                     }
                 }
             } finally {
@@ -1422,7 +1455,7 @@ public class Map implements Constants {
 		}
         for (byte y = y1; y <= y2; y++) {
             for (byte x = x1; x <= x2; x++) {
-                if (hasObject(x, y) && getObject(x, y).getInfo().itemNoEsDeMapa()) {
+                if (hasObject(x, y) && getObject(x, y).objInfo().itemNoEsDeMapa()) {
                     quitarObjeto(x, y);
                 }
             }
@@ -1431,7 +1464,7 @@ public class Map implements Constants {
     
     public void construirAreaObj(Player player, byte  x, byte y) {
     	MapObject obj = getObject(x,y);
-    	if (obj != null) player.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.getInfo().GrhIndex));
+    	if (obj != null) player.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.objInfo().GrhIndex));
     }
     
     public void construirAreaNpc(Player player, Npc npc) {
@@ -1543,19 +1576,19 @@ public class Map implements Constants {
     }
 
 	public boolean isFactionMap() {
-		return "FACCION".equalsIgnoreCase(restricted);
+		return this.restricted == MapConstraint.FACTION;
 	}
 
 	public boolean isDarkLegionMap() {
-		return "CAOS".equalsIgnoreCase(restricted);
+		return this.restricted == MapConstraint.DARK_LEGION;
 	}
 
 	public boolean isRoyalArmyMap() {
-		return "ARMADA".equalsIgnoreCase(restricted);
+		return this.restricted == MapConstraint.ROYAL_ARMY;
 	}
 
 	public boolean isNewbieMap() {
-		return "NEWBIE".equalsIgnoreCase(restricted);
+		return this.restricted == MapConstraint.NEWBIE;
 	}
 
 }

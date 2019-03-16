@@ -33,7 +33,7 @@ import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.map.MapCell.Trigger;
+import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.ShowGMPanelFormResponse;
@@ -516,7 +516,8 @@ public class ManagerServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+    	this.server.doBackup();
+
 		log.info("SERVIDOR APAGADO POR " + admin.getNick());
 		Log.logGM(admin.getNick(), "APAGO EL SERVIDOR");
 		this.server.shutdown();
@@ -769,7 +770,7 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa != null) {
-			mapa.saveMapData();
+			mapa.saveMapBackup();
 			admin.sendMessage("Mapa guardado.", FontType.FONTTYPE_INFO);
 		}
 	}
@@ -791,10 +792,10 @@ public class ManagerServer {
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa != null) {
 			if (mapa.isBlocked(admin.pos().x, admin.pos().y)) {
-				mapa.desbloquearTerreno(admin.pos().x, admin.pos().y);
+				mapa.unblockTile(admin.pos().x, admin.pos().y);
 				admin.sendMessage("Posicion desbloqueada.", FontType.FONTTYPE_INFO);
 			} else {
-				mapa.bloquearTerreno(admin.pos().x, admin.pos().y);
+				mapa.blockTile(admin.pos().x, admin.pos().y);
 				admin.sendMessage("Posicion bloqueada.", FontType.FONTTYPE_INFO);
 			}
 		}

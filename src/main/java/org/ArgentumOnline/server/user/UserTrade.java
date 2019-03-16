@@ -145,7 +145,7 @@ public class UserTrade {
 			if (agregados < obj2_cant) {
 				// Tiro al piso lo que no pude guardar en el inventario.
 				Map mapa = player.server.getMap(player.pos().map);
-				mapa.tirarItemAlPiso(player.pos().x, player.pos().y,
+				mapa.dropItemOnFloor(player.pos().x, player.pos().y,
 						new InventoryObject(obj2_objid, obj2_cant - agregados));
 			}
 			targetPlayer.quitarObjetos(obj2_objid, obj2_cant);
@@ -164,7 +164,7 @@ public class UserTrade {
 			if (agregados < obj1_cant) {
 				// Tiro al piso los items que no se agregaron al inventario.
 				Map mapa = player.server.getMap(targetPlayer.pos().map);
-				mapa.tirarItemAlPiso(targetPlayer.pos().x, targetPlayer.pos().y,
+				mapa.dropItemOnFloor(targetPlayer.pos().x, targetPlayer.pos().y,
 						new InventoryObject(obj1_objid, obj1_objid - agregados));
 			}
 			player.quitarObjetos(obj1_objid, obj1_cant);

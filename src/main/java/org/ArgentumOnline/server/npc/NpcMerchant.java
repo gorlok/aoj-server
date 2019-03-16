@@ -36,8 +36,8 @@ public class NpcMerchant extends Npc {
 	}
 	
 	@Override
-	protected void leerNpc(IniFile ini, int npc_ind) {
-		super.leerNpc(ini, npc_ind);
+	protected void loadNpc(IniFile ini, int npc_ind) {
+		super.loadNpc(ini, npc_ind);
 		
         loadInventario(ini);
 	}	
@@ -71,7 +71,22 @@ public class NpcMerchant extends Npc {
 				}
             }
         }
-    }        
+    }
+    
+    @Override
+    public void backupNpc(IniFile ini) {
+    	super.backupNpc(ini);
+        String section = "NPC" + this.npcNumber;
+        
+    	ini.setValue(section, "NROITEMS", npcInv().getCantObjs());
+    	int size = 0;
+    	for (InventoryObject iObj : npcInv()) {
+    		if (!iObj.estaVacio()) {
+	    		size++;
+	            ini.setValue(section, "Obj" + size, iObj.objid + "-" + iObj.cant);
+    		}
+    	};
+    }
 	
     public void sendNpcInventoryToUser(Player player) {
         // Enviamos el inventario del npc con el cual el user va a comerciar...

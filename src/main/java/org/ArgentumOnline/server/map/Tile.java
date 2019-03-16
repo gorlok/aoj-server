@@ -26,7 +26,7 @@ import org.ArgentumOnline.server.user.Player;
 /**
  * @author gorlok
  */
-public class MapCell {
+public class Tile {
     // del archivo .map    
     
     private final static int FLAG_BLOQUED = 0;
@@ -65,7 +65,7 @@ public class MapCell {
     
     private int grh[] = new int[4];
     
-    public MapCell(short x, short y) {
+    public Tile(short x, short y) {
     	this.x = (byte)x;
     	this.y = (byte)y;
     }
@@ -114,6 +114,10 @@ public class MapCell {
     
     public Npc npc() {
         return GameServer.instance().npcById(this.npcId);
+    }
+    
+    public boolean hasNpc() {
+    	return this.npcId > 0 && this.npc() != null;
     }
     
     public void npc(Npc npc) {
@@ -264,5 +268,26 @@ public class MapCell {
     public boolean isTournamentZone() {
     	return this.trigger == Trigger.TRIGGER_ARENA_TORNEO;
     }
+
+    public boolean isFreePosWithWater() {
+        return !isBlocked() 
+        		&& playerId() == 0 
+        		&& npc() == null 
+        		&& isWater();
+    }
     
-}
+    public boolean isFreePosWithoutWater() {
+        return !isBlocked() 
+        		&& playerId() == 0 
+        		&& npc() == null 
+        		&& !isWater();
+    }
+            
+    public boolean isFreePosForAdmin() {
+        // Los Admins no respetan las leyes de la física :P
+        return playerId() == 0 
+        		&& npc() == null;
+    }
+
+}    
+    

@@ -38,13 +38,14 @@ public class MapObject {
 		this.y = y;
 	}
 
-	public ObjectInfo getInfo() {
+	public ObjectInfo objInfo() {
 		return GameServer.instance().getObjectInfoStorage().getInfoObjeto(this.obj_ind); // FIXME
 	}
 
 	@Override
 	public String toString() {
-		return "obj(id=" + this.obj_ind + ",cnt=" + this.obj_cant + ",x=" + this.x + ",y=" + this.y
-				+ ")";
+		return "obj(id=" + this.obj_ind + 
+				",cnt=" + this.obj_cant + 
+				",x=" + this.x + ",y=" + this.y	+ ")";
 	}
 }

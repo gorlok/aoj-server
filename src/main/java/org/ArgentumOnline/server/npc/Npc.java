@@ -599,7 +599,7 @@ End Enum
 
     private void loadInfoNPC(int npc_ind, boolean loadBackup) {
         IniFile ini = this.server.getNpcLoader().getIniFile(npc_ind, loadBackup);
-        leerNpc(ini, npc_ind);
+        loadNpc(ini, npc_ind);
     }
 
 
@@ -730,7 +730,7 @@ End Enum
             for (int i = 1; i <= this.npcInv().size(); i++) {
                 if (this.npcInv().getObjeto(i) != null && this.npcInv().getObjeto(i).objid > 0) {
                     Map m = this.server.getMap(pos().map);
-                    m.tirarItemAlPiso(pos().x, pos().y, 
+                    m.dropItemOnFloor(pos().x, pos().y, 
                     		new InventoryObject(
                     				this.npcInv().getObjeto(i).objid,
                     				this.npcInv().getObjeto(i).cant));
@@ -876,7 +876,7 @@ End Enum
         // SI EL NPC TIENE ORO LO TIRAMOS
         if (this.giveGLD > 0) {
             Map m = this.server.getMap(pos().map);
-            m.tirarItemAlPiso(pos().x, pos().y, new InventoryObject(OBJ_ORO, this.giveGLD));
+            m.dropItemOnFloor(pos().x, pos().y, new InventoryObject(OBJ_ORO, this.giveGLD));
         }
     }
 
@@ -1727,7 +1727,7 @@ End Enum
         }
     }
 
-    public void backup(IniFile ini) {
+    public void backupNpc(IniFile ini) {
         // Sub BackUPnPc(NpcIndex As Integer)
         // General
         String section = "NPC" + this.npcNumber;
@@ -1745,10 +1745,6 @@ End Enum
         ini.setValue(section, "GiveEXP", this.giveEXP);
         ini.setValue(section, "GiveGLD", this.giveGLD);
         ini.setValue(section, "Inflacion", this.inflation);
-        ini.setValue(section, "Attackable", this.flags().get(FLAG_ATACABLE));
-        ini.setValue(section, "Comercia", this.flags().get(FLAG_COMERCIA));
-        ini.setValue(section, "Hostil", this.flags().get(FLAG_HOSTIL));
-        ini.setValue(section, "InvReSpawn", this.flags().get(FLAG_INV_RESPAWN));
         // Stats
         ini.setValue(section, "Alineacion", this.stats.alineacion);
         ini.setValue(section, "DEF", this.stats.defensa);
@@ -1758,74 +1754,90 @@ End Enum
         ini.setValue(section, "MinHit", this.stats.MinHIT);
         ini.setValue(section, "MinHp", this.stats.MinHP);
         // Flags
-        ini.setValue(section, "ReSpawn", !this.flags().get(FLAG_RESPAWN));
-        ini.setValue(section, "BackUp", this.flags().get(FLAG_BACKUP));
+        ini.setValue(section, "AguaValida", this.flags().get(FLAG_AGUA_VALIDA));
+        ini.setValue(section, "TierraInvalida", this.flags().get(FLAG_TIERRA_INVALIDA));
+        ini.setValue(section, "Faccion", this.flags().get(FLAG_FACCION));
+        ini.setValue(section, "Veneno", this.flags().get(FLAG_ENVENENA));
+        ini.setValue(section, "Attackable", this.flags().get(FLAG_ATACABLE));
+        ini.setValue(section, "Comercia", this.flags().get(FLAG_COMERCIA));
+        ini.setValue(section, "Hostile", this.flags().get(FLAG_HOSTIL));
+        ini.setValue(section, "InvReSpawn", this.flags().get(FLAG_INV_RESPAWN));
+        ini.setValue(section, "ReSpawn", this.flags().get(FLAG_RESPAWN));
+        ini.setValue(section, "Backup", this.flags().get(FLAG_BACKUP));
+        ini.setValue(section, "OrigPos", this.flags().get(FLAG_RESPAWN_ORIG_POS));
+        ini.setValue(section, "AfectaParalisis", this.flags().get(FLAG_AFECTA_PARALISIS));
+        ini.setValue(section, "GolpeExacto", this.flags().get(FLAG_GOLPE_EXACTO));
+        
         ini.setValue(section, "Domable", this.domable);
-        // Inventario
-        ini.setValue(section, "NroItems", this.npcInv().size());
-        for (int i = 1; i <= this.npcInv().size(); i++) {
-            ini.setValue(section, "Obj" + i, this.npcInv().getObjeto(i).objid + "-" + this.npcInv().getObjeto(i).cant);
+        ini.setValue(section, "PoderAtaque", this.poderAtaque);
+        ini.setValue(section, "PoderEvasion", this.poderEvasion);
+
+        ini.setValue(section, "Snd1", this.snd1);
+        ini.setValue(section, "Snd2", this.snd2);
+        ini.setValue(section, "Snd3", this.snd3);
+        ini.setValue(section, "Snd4", this.snd4);
+        
+        //Spells
+        ini.setValue(section, "LanzaSpells", this.spellsCount); 
+        if (this.spellsCount > 0) {
+            for (int k = 0; k < (this.spellsCount); k++) {
+                ini.setValue(section, "Sp" + (k+1), this.spells[k]);
+            }
         }
+
+        ini.setValue(section, "DeQuest", this.isQuest);
     }
 
 
     /** Cargar un NPC desde un ini. */
-    protected void leerNpc(IniFile ini, int npc_ind) {
+    protected void loadNpc(IniFile ini, int npc_ind) {
         String section = "NPC" + npc_ind;
 
+        this.npcType = NpcType.value(ini.getShort(section, "NpcType"));
+        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
+        	this.guardiaPersigue = ini.getShort(section, "GuardiaPersigue");
+        }
         this.name = ini.getString(section, "Name");
         this.description = ini.getString(section, "Desc");
-
+        this.infoChar.head   = ini.getShort(section, "Head");
+        this.infoChar.body   = ini.getShort(section, "Body");
+        this.infoChar.heading      = Heading.value(ini.getShort(section, "Heading"));
         this.movement = ini.getShort(section, "Movement");
         this.oldMovement = this.movement;
+        this.tipoItems = ini.getShort(section, "TipoItems"); // Tipo de items con los que comercia
+        this.giveEXP   = ini.getInt(section, "GiveEXP");
+        this.giveGLD        = ini.getInt(section, "GiveGLD");
+        this.expCount  = this.giveEXP / 2;
+        this.inflation   = ini.getInt(section, "Inflacion");
+        
+        // stats
+        this.stats.alineacion    = ini.getShort(section, "Alineacion");
+        this.stats.defensa       = ini.getShort(section, "DEF");
+        this.stats.defensaMagica = ini.getShort(section, "DEFm");
+        this.stats.MaxHP	= ini.getInt(section, "MaxHP");
+        this.stats.MinHP	= ini.getInt(section, "MinHP");
+        this.stats.MaxHIT	= ini.getInt(section, "MaxHIT");
+        this.stats.MinHIT	= ini.getInt(section, "MinHIT");
+        
+        // flags
         this.flags().set(FLAG_AGUA_VALIDA, ini.getInt(section, "AguaValida") == 1);
         this.flags().set(FLAG_TIERRA_INVALIDA, ini.getInt(section, "TierraInvalida") == 1);
         this.flags().set(FLAG_FACCION, ini.getInt(section, "Faccion") == 1);
-
-        this.npcType = NpcType.value(ini.getShort(section, "NpcType"));
-
-        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
-            this.guardiaPersigue = ini.getShort(section, "GuardiaPersigue");
-        }
-        this.isQuest = (ini.getShort(section, "DeQuest") == 1);
-
-        this.infoChar.body   = ini.getShort(section, "Body");
-        this.infoChar.head   = ini.getShort(section, "Head");
-        this.infoChar.heading      = Heading.value(ini.getShort(section, "Heading"));
-
         this.flags().set(FLAG_ENVENENA, ini.getInt(section, "Veneno") == 1);
         this.flags().set(FLAG_ATACABLE, ini.getInt(section, "Attackable") == 1);
         this.flags().set(FLAG_COMERCIA, ini.getInt(section, "Comercia") == 1);
         this.flags().set(FLAG_HOSTIL,   ini.getInt(section, "Hostile") == 1);
         this.flags().set(FLAG_INV_RESPAWN, ini.getInt(section, "InvReSpawn") == 1);
         this.flags().set(FLAG_OLD_HOSTILE, this.flags().get(FLAG_HOSTIL));
-
-        this.giveEXP   = ini.getInt(section, "GiveEXP");
-        //m_expDada   = m_giveEXP;
-        this.expCount  = this.giveEXP / 2;
-
-        this.domable = ini.getShort(section, "Domable");
         this.flags().set(FLAG_RESPAWN, ini.getInt(section, "ReSpawn") != 1);
-
-        this.giveGLD         = ini.getInt(section, "GiveGLD");
-        this.poderAtaque	= ini.getInt(section, "PoderAtaque");
-        this.poderEvasion	= ini.getInt(section, "PoderEvasion");
-
-        this.stats.MaxHP	= ini.getInt(section, "MaxHP");
-        this.stats.MinHP	= ini.getInt(section, "MinHP");
-        this.stats.MaxHIT	= ini.getInt(section, "MaxHIT");
-        this.stats.MinHIT	= ini.getInt(section, "MinHIT");
-
-        this.stats.alineacion    = ini.getShort(section, "Alineacion");
-        this.stats.defensa           = ini.getShort(section, "DEF");
-        this.stats.defensaMagica    		 = ini.getShort(section, "DEFm");
-
-        this.inflation   = ini.getInt(section, "Inflacion");
-
         this.flags().set(FLAG_BACKUP, ini.getInt(section, "Backup") == 1);
         this.flags().set(FLAG_RESPAWN_ORIG_POS, ini.getInt(section, "OrigPos") == 1);
         this.flags().set(FLAG_AFECTA_PARALISIS, ini.getInt(section, "AfectaParalisis") == 1);
         this.flags().set(FLAG_GOLPE_EXACTO, ini.getInt(section, "GolpeExacto") == 1);
+
+        this.domable = ini.getShort(section, "Domable");
+        this.poderAtaque	= ini.getInt(section, "PoderAtaque");
+        this.poderEvasion	= ini.getInt(section, "PoderEvasion");
 
         this.snd1  = (byte) ini.getShort(section, "Snd1");
         this.snd2  = (byte) ini.getShort(section, "Snd2");
@@ -1850,8 +1862,8 @@ End Enum
                 m_expresiones[i] = ini.getString(section, "Exp" + (i+1));
             }
         }
-        // Tipo de items con los que comercia
-        this.tipoItems = ini.getShort(section, "TipoItems");
+        
+        this.isQuest = (ini.getShort(section, "DeQuest") == 1);
     }
 
     public Heading heading() {

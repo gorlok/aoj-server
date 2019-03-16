@@ -404,6 +404,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().reviveUser(player, ((ReviveCharRequest)packet).userName);
 					break;
 					
+				case DoBackUp:
+					server.manager().doBackup(player);
+					break;
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}

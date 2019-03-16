@@ -49,6 +49,7 @@ public class ManagerApi {
 		});
 		
 		post("/shutdown", (request, response) -> {
+			GameServer.instance().doBackup();
 			GameServer.instance().shutdown();
 			return "bye!";
 		});

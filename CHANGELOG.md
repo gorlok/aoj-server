@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-16
+- corregido worldSave, guardados de mapas.
+
 ### 2019-03-14
 - corregido el enviar objetos al entrar en área, que las puertas no enviaban el blocked/unblocked izquierdo.
 - corregido en el doble-clic el seleccionar NCP para Comerciar o alguna otra acción por defecto (cuando tenía objetos cerca).

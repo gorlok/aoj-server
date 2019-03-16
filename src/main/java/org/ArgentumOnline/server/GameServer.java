@@ -41,6 +41,7 @@ import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
+import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.quest.Quest;
 import org.ArgentumOnline.server.user.Player;
@@ -968,23 +969,22 @@ public class GameServer implements Constants {
     }
 
     private synchronized void worldSave() {
-    	// FIXME
-        //enviarATodos("||%%%% POR FAVOR ESPERE, INICIANDO WORLDSAVE %%%%" + FontType.FONTTYPE_INFO);
+        sendToAll(new ConsoleMsgResponse("Servidor> Iniciando WorldSave", FontType.FONTTYPE_SERVER.id()));
         // Hacer un respawn de los guardias en las pos originales.
         reSpawnOrigPosNpcs();
-        // Ver cuantos m_mapas necesitan backup.
+        // Ver cuántos mapas necesitan backup.
         int cant = 0;
         for (Map mapa: this.maps) {
             if (mapa.backup) {
 				cant++;
 			}
         }
-        // Guardar los m_mapas
+        // Guardar los mapas
         this.feedback.init("Guardando m_mapas modificados", cant);
         int i = 0;
         for (Map mapa: this.maps) {
             if (mapa.backup) {
-                mapa.saveMapData();
+                mapa.saveMapBackup();
                 this.feedback.step("Mapa " + (++i));
             }
         }
@@ -994,7 +994,7 @@ public class GameServer implements Constants {
             IniFile ini = new IniFile();
             for (Npc npc: npcs()) {
                 if (npc.getBackup()) {
-                    npc.backup(ini);
+                    npc.backupNpc(ini);
                 }
             }
             // Guardar todo
@@ -1002,7 +1002,7 @@ public class GameServer implements Constants {
         } catch (Exception e) {
             log.fatal("worldSave(): ERROR EN BACKUP NPCS", e);
         }
-        //enviarATodos("||%%%% WORLDSAVE LISTO %%%%" + FontType.FONTTYPE_INFO);
+        sendToAll(new ConsoleMsgResponse("Servidor> WorldSave ha concluído", FontType.FONTTYPE_SERVER.id()));
     }
 
     private void reSpawnOrigPosNpcs() {
@@ -1010,7 +1010,7 @@ public class GameServer implements Constants {
         for (Npc npc: npcs()) {
             if (npc.isNpcActive()) {
                 if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
-                    npc.quitarNPC(); // fixme, lo elimina del server??? revisar.
+                    npc.quitarNPC(); // FIXME, lo elimina del server??? revisar.
                     spawnNPCs.add(npc);
                 } else if (npc.counters().TiempoExistencia > 0) {
                     npc.muereNpc(null);
