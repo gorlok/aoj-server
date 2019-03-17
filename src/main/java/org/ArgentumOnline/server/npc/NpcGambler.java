@@ -38,27 +38,27 @@ public class NpcGambler extends Npc {
 		// Comando /APOSTAR
 		
 		if (gold < 0) {
-			player.hablar(COLOR_BLANCO, "Has ingresado una apuesta inválida.", getId());
+			player.talk(COLOR_BLANCO, "Has ingresado una apuesta inválida.", getId());
 			return;
 		}
 		
 		if (gold < 1) {
-			player.hablar(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", getId());
+			player.talk(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", getId());
 			return;
 		}
 		
 		if (gold > APUESTA_MAXIMA) {
-			player.hablar(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", getId());
+			player.talk(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", getId());
 			return;
 		}
 		
 		if (player.stats().getGold() < gold) {
 			switch (player.gender()) {
 			case GENERO_HOMBRE:
-				player.hablar(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
+				player.talk(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
 				break;
 			case GENERO_MUJER:
-				player.hablar(COLOR_BLANCO, "No tienes esa cantidad, embustera!", getId());
+				player.talk(COLOR_BLANCO, "No tienes esa cantidad, embustera!", getId());
 				break;
 			};
 			return;
@@ -66,12 +66,12 @@ public class NpcGambler extends Npc {
 		
 		if (Util.Azar(1, 100) <= 45) {
 			player.stats().addGold( gold );
-			player.hablar(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
+			player.talk(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
 			
 			server.getGamblerStats().incrementLost(gold);
 		} else {
 			player.stats().addGold( -gold );
-			player.hablar(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
+			player.talk(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
 			
 			server.getGamblerStats().incrementWins(gold);
 		}

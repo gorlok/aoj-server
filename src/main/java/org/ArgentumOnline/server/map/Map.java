@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.ArgentumOnline.server.Constants;
@@ -1265,19 +1266,66 @@ public class Map implements Constants {
         		&& tile(x, y).isFreePosForAdmin();
     }
     
-    /** Devuelve la cantidad de enemigos que hay en el mapa */
-    public int getHostilesCount() {
-        // NPCHostiles
-    	// FIXME revisar
-        int cant = 0;
-        for (Object element : this.npcs) {
-            Npc npc = (Npc) element;
+    
+    public void sendCreaturesInMap(Player admin) {
+    	
+    	// List of creatures per npc name
+    	var hostiles = new HashMap<String, List<Npc>>();
+    	var others = new HashMap<String, List<Npc>>();
+    	
+        for (Npc npc : this.npcs) {
             // ¿esta vivo?
             if (npc.isNpcActive() && npc.isHostile() && npc.stats.alineacion == 2) {
-                cant++;
+            	// Ya estaba este número de NPC en la lista?
+                if (!hostiles.containsKey(npc.getName())) {
+                	hostiles.put(npc.getName(), new ArrayList<Npc>());
+                }
+            	hostiles.get(npc.getName()).add(npc);
+            } else {
+            	if (!others.containsKey(npc.getName())) {
+            		others.put(npc.getName(), new ArrayList<Npc>());
+            	}
+        		others.get(npc.getName()).add(npc);
             }
         }
-        return cant;
+        
+        admin.sendMessage("Npcs Hostiles en mapa: ", FontType.FONTTYPE_WARNING);
+        
+        if (hostiles.isEmpty()) {
+        	admin.sendMessage("No hay.", FontType.FONTTYPE_INFO);
+        } else {
+        	for (List<Npc> list : hostiles.values()) {
+        		StringBuffer sb = new StringBuffer();
+        		sb.append(String.format("%3d ", list.size()));
+        		sb.append(list.get(0).getName());
+        		String sep = ": "; 
+        		for (Npc npc : list) {
+        			sb.append(sep).append("(").append(npc.pos().x).append(",").append(npc.pos().y).append(")");
+        			sep = ", ";
+        		}
+        		admin.sendMessage(sb.toString(), FontType.FONTTYPE_INFO);
+        	}
+        }
+        
+        admin.sendMessage("Otros Npcs en mapa: ", FontType.FONTTYPE_WARNING);
+        if (others.isEmpty()) {
+    		admin.sendMessage("No hay.", FontType.FONTTYPE_INFO);
+        } else {
+        	for (List<Npc> list : others.values()) {
+        		StringBuffer sb = new StringBuffer();
+        		sb.append(String.format("%3d ", list.size()));
+        		sb.append(list.get(0).getName());
+        		String sep = ": "; 
+        		for (Npc npc : list) {
+        			sb.append(sep).append("(").append(npc.pos().x).append(",").append(npc.pos().y).append(")");
+        			sep = ", ";
+        		}
+        		admin.sendMessage(sb.toString(), FontType.FONTTYPE_INFO);
+        	}
+        }
+        
+        admin.sendMessage("El total de NPCs en el mapa " + this.getMapNumber() + " es de " + this.npcs.size(), 
+        		FontType.FONTTYPE_WARNING);
     }
     
     public void saveMapBackup() {
@@ -1418,7 +1466,7 @@ public class Map implements Constants {
                         }
                         
                         if ((flags & FLAG_NPC) > 0) {
-                        	f.writeShort(Util.leShort((short)this.tiles[x][y].npc().getNumero()));
+                        	f.writeShort(Util.leShort((short)this.tiles[x][y].npc().getNumber()));
                         }
                         
                         if ((flags & FLAG_OBJECT) > 0) {

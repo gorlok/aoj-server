@@ -157,32 +157,32 @@ public class UserFaction implements Constants {
     
     public void enlistarArmadaReal(Npc npc) {
         if (this.ArmadaReal) {
-            this.player.hablar(COLOR_BLANCO, "¡Ya perteneces a las tropas reales! Ve a combatir criminales!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "¡Ya perteneces a las tropas reales! Ve a combatir criminales!!!", npc.getId());
             return;
         }
         if (this.FuerzasCaos) {
-            this.player.hablar(COLOR_BLANCO, "¡Maldito insolente! Vete de aqui seguidor de las sombras!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "¡Maldito insolente! Vete de aqui seguidor de las sombras!!!", npc.getId());
             return;
         }
         if (this.player.isCriminal()) {
-            this.player.hablar(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
             return;
         }
         if (this.CriminalesMatados < 10) {
-            this.player.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.CriminalesMatados, npc.getId());
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.CriminalesMatados, npc.getId());
             return;
         }
         if (this.player.stats().ELV < 18) {
-            this.player.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
             return;
         }
         if (this.CiudadanosMatados > 0) {
-            this.player.hablar(COLOR_BLANCO, "Has asesinado gente inocente, no aceptamos asesinos en las tropas reales!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Has asesinado gente inocente, no aceptamos asesinos en las tropas reales!", npc.getId());
             return;
         }
         this.ArmadaReal = true;
         this.RecompensasReal = (short) (this.CriminalesMatados / 100);
-        this.player.hablar(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
+        this.player.talk(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
             short armadura = this.player.clazz().getArmaduraImperial(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
@@ -202,34 +202,34 @@ public class UserFaction implements Constants {
 
     public void enlistarCaos(Npc npc) {
         if (!this.player.isCriminal()) {
-            this.player.hablar(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
             return;
         }
         if (this.FuerzasCaos) {
-            this.player.hablar(COLOR_BLANCO, "Ya perteneces a las tropas del Caos!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Ya perteneces a las tropas del Caos!!!", npc.getId());
             return;
         }
         if (this.ArmadaReal) {
-            this.player.hablar(COLOR_BLANCO, "Las sombras reinarán en Argentum, lárgate de aqui estúpido ciudadano.!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Las sombras reinarán en Argentum, lárgate de aqui estúpido ciudadano.!!!", npc.getId());
             return;
         }
         // Si era miembro de la Armada Real no se puede enlistar
         if (this.RecibioExpInicialReal) { 
             // Tomamos el valor de ahí: ¿Recibio la experiencia para entrar?
-            this.player.hablar(COLOR_BLANCO, "No permitiré que ningún insecto real ingrese ¡Traidor del Rey!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "No permitiré que ningún insecto real ingrese ¡Traidor del Rey!", npc.getId());
             return;
         }
         if (this.CiudadanosMatados < 150) {
-            this.player.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.CiudadanosMatados + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.CiudadanosMatados + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
             return;
         }
         if (this.player.stats().ELV < 25) {
-            this.player.hablar(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
             return;
         }
         this.FuerzasCaos = true;
         this.RecompensasCaos = (short) (this.CiudadanosMatados / 100);
-        this.player.hablar(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
+        this.player.talk(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
             short armadura = this.player.clazz().getArmaduraCaos(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
@@ -249,9 +249,9 @@ public class UserFaction implements Constants {
 
     public void recompensaArmadaReal(Npc npc) {
         if (this.CriminalesMatados / 100 == this.RecompensasReal) {
-            this.player.hablar(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
         } else {
-            this.player.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.player.stats().addExp(EXP_X_100);
             this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
@@ -261,9 +261,9 @@ public class UserFaction implements Constants {
 
     public void recompensaCaos(Npc npc) {
         if (this.CiudadanosMatados / 100 == this.RecompensasCaos) {
-            this.player.hablar(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
         } else {
-            this.player.hablar(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
+            this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
             this.player.stats().addExp(EXP_X_100);
             this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;

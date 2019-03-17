@@ -29,7 +29,7 @@ public class NpcStats extends AbstractCharStats {
     }
     
     //NPC_INFO_STATS Stats;
-    public short alineacion = 0;
+    public short alineacion = 0; // enum FIXME
     
     /** Defensa */
     public short defensa    = 0; // Def

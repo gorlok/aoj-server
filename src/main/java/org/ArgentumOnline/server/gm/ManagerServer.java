@@ -227,11 +227,11 @@ public class ManagerServer {
 			return;
 		}
 		bannedIPs.add(ip);
-		this.server.sendMessageToAdmins(admin.getNick() + " Baneo la IP " + ip, FontType.FONTTYPE_FIGHT);
+		sendMessageToAdmins(admin, admin.getNick() + " Baneo la IP " + ip, FontType.FONTTYPE_FIGHT);
 		if (usuario != null) {
 			this.server.logBan(usuario.getNick(), admin.getNick(), "Ban por IP desde Nick");
-			this.server.sendMessageToAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-			this.server.sendMessageToAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+			sendMessageToAdmins(admin, admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+			sendMessageToAdmins(admin, admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 			// Ponemos el flag de ban a 1
 			usuario.flags().Ban = true;
 			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
@@ -444,31 +444,81 @@ public class ManagerServer {
 		}
 	}
 
-	public void sendUsersOnlineMap(Player admin) {
+	public void sendUsersOnlineMap(Player admin, int map) {
 		// Comando /ONLINEMAP
 		// Devuelve la lista de usuarios en el mapa.
-		Map mapa = this.server.getMap(admin.pos().map);
+		if ( !admin.isGM() ) {
+			return;
+		}
+		
+		Map mapa = this.server.getMap(map);
 		if (mapa == null) {
 			return;
 		}
-		String userNames = mapa.getPlayers().stream().map(Player::getNick).collect(Collectors.joining(","));
-		admin.sendMessage("Hay " + mapa.getPlayers().size() + 
-				" usuarios en el mapa: " + userNames, FontType.FONTTYPE_INFO);
+		var userNames = mapa.getPlayers().stream()
+				.filter(p -> !p.isGod())
+				.map(Player::getNick)
+				.collect(Collectors.toList());
+		
+		admin.sendMessage("Hay " + userNames.size() + 
+				" usuarios en el mapa: " + String.join(", ", userNames), 
+				FontType.FONTTYPE_INFO);
 	}
 
 	public void sendUsersWorking(Player admin) {
 		// Comando /TRABAJANDO
 		// Devuelve la lista de usuarios trabajando.
-		var msg = new StringBuilder();
-		int cant = 0;
-		for (String usuario : this.server.getUsuariosTrabajando()) {
-			if (cant > 0) {
-				msg.append(",");
-			}
-			cant++;
-			msg.append(usuario);
+		if ( !admin.isGM() ) {
+			return;
 		}
-		admin.sendMessage("Usuarios trabajando: " + msg, FontType.FONTTYPE_INFO);
+		
+    	// FIXME agregar un (*) al nick del usuario que esté siendo monitoreado por el Centinela
+		var users = server.players().stream()
+			    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
+			    	.map(Player::getNick)
+			    	.collect(Collectors.toList());
+		
+		admin.sendMessage("Usuarios trabajando: " + String.join(", ", users), FontType.FONTTYPE_INFO);
+	}
+	
+	public void sendUsersHiding(Player admin) {
+		// Devuelve la lista de usuarios ocultándose.
+		if ( !admin.isGM() ) {
+			return;
+		}
+		
+		var users = server.players().stream()
+			    	.filter(c -> c.isLogged() && c.hasNick() && c.isHidden()) // FIMXE c.counters().Ocultando > 0
+			    	.map(Player::getNick)
+			    	.collect(Collectors.toList());
+		
+		admin.sendMessage("Usuarios ocultándose: " + String.join(", ", users), FontType.FONTTYPE_INFO);
+	}
+
+	public void sendOnlineRoyalArmy(Player admin) {
+		if ( !admin.isGM() ) {
+			return;
+		}
+		
+		var users = server.players().stream()
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.isRoyalArmy())
+		    	.map(Player::getNick)
+		    	.collect(Collectors.toList());
+	
+		admin.sendMessage("Usuarios de la Armada Real: " + String.join(", ", users), FontType.FONTTYPE_INFO);
+	}
+	
+	public void	sendOnlineChaosLegion(Player admin) {
+		if ( !admin.isGM() ) {
+			return;
+		}
+
+		var users = server.players().stream()
+		    	.filter(c -> c.isLogged() && c.hasNick() && c.isDarkLegion())
+		    	.map(Player::getNick)
+		    	.collect(Collectors.toList());
+	
+		admin.sendMessage("Usuarios de la Legión Oscura: " + String.join(", ", users), FontType.FONTTYPE_INFO);
 	}
 
 	public void showGmPanelForm(Player admin) {
@@ -897,6 +947,52 @@ public class ManagerServer {
 			}
 		}
 	}
+	
+    public void sendMessageToAdmins(Player admin, String msg, FontType fuente) {
+		if (!admin.flags().isGM()) {
+			return;
+		}
+    	for (Player cli: server.players()) {
+            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
+                cli.sendMessage(msg, fuente);
+            }
+        }
+    }
+
+    public void sendMessageToRoyalArmy(Player admin, String msg) {
+		if (!admin.flags().isGM()) {
+			return;
+		}
+    	for (Player cli: server.players()) {
+            if (cli != null && cli.getId() > 0 && cli.isLogged() 
+            		&& (cli.flags().isGM() || cli.isRoyalArmy())) {
+                cli.sendMessage("ARMADA REAL> " + msg, FontType.FONTTYPE_TALK);
+            }
+        }
+    }
+
+    public void sendMessageToDarkLegion(Player admin, String msg) {
+		if (!admin.flags().isGM()) {
+			return;
+		}
+    	for (Player cli: server.players()) {
+            if (cli != null && cli.getId() > 0 && cli.isLogged() 
+            		&& (cli.flags().isGM() || cli.isDarkLegion())) {
+                cli.sendMessage("LEGION OSCURA> " + msg, FontType.FONTTYPE_TALK);
+            }
+        }
+    }
+
+    public void sendMessageToCitizens(Player admin, String msg) {
+		if (!admin.flags().isGM()) {
+			return;
+		}
+    	for (Player cli: server.players()) {
+            if (cli != null && cli.getId() > 0 && cli.isLogged()) {
+                cli.sendMessage("CIUDADANOS> " + msg, FontType.FONTTYPE_TALK);
+            }
+        }
+    }
 
 	public void summonChar(Player admin, String s) {
 		// Comando /SUM usuario
@@ -936,14 +1032,14 @@ public class ManagerServer {
 		}
 		Log.logGM(admin.getNick(), "/BAN " + nombre + " por: " + motivo);
 		this.server.logBan(usuario.getNick(), admin.getNick(), motivo);
-		this.server.sendMessageToAdmins(admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-		this.server.sendMessageToAdmins(admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+		sendMessageToAdmins(admin, admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
+		sendMessageToAdmins(admin, admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
 		// Ponemos el flag de ban a 1
 		usuario.flags().Ban = true;
 		if (usuario.flags().isGM()) {
 			admin.flags().Ban = true;
 			admin.quitGame();
-			this.server.sendMessageToAdmins(admin.getNick() + " banned from this server por bannear un Administrador.",
+			sendMessageToAdmins(admin, admin.getNick() + " banned from this server por bannear un Administrador.",
 					FontType.FONTTYPE_FIGHT);
 		}
 		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
@@ -1199,8 +1295,8 @@ public class ManagerServer {
 				usuario.pos().map + ", " + usuario.pos().x + ", " + usuario.pos().y + ".", 
 				FontType.FONTTYPE_INFO);
 	}
-
-	public void sendHostilesCount(Player admin, short mapNumber) {
+	
+	public void sendCreaturesInMap(Player admin, short mapNumber) {
 		if (mapNumber < 1) {
 			admin.sendMessage("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;
@@ -1208,12 +1304,12 @@ public class ManagerServer {
 		Map map = this.server.getMap(mapNumber);
 		if (map != null) {
 			Log.logGM(admin.getNick(), "Consultó el número de enemigos en el mapa, /NENE " + mapNumber);
-			// FIXME
-			admin.sendMessage("Hay " + map.getHostilesCount() + " en el mapa.", FontType.FONTTYPE_INFO);
+			map.sendCreaturesInMap(admin);
 		} else {
 			admin.sendMessage("El mapa no existe.", FontType.FONTTYPE_INFO);
 		}
 	}
+	
 
 	public void doTeleploc(Player admin) {
 		// Comando /TELEPLOC

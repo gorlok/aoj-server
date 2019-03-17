@@ -482,7 +482,7 @@ End Enum
         return this.description;
     }
 
-    public int getNumero() {
+    public int getNumber() {
         return this.npcNumber;
     }
 
@@ -1249,7 +1249,7 @@ End Enum
 	                    Npc npc = mapa.getNPC(x, y);
 	                    if (npc != null) {
 	                        if (this.targetNpc == npc) {
-	                        	if (getNumero() == ELEMENTAL_FUEGO) {
+	                        	if (getNumber() == ELEMENTAL_FUEGO) {
 	                        		npcLanzaUnSpellSobreNpc(npc);
 	                        		if (npc.npcType() == NpcType.NPCTYPE_DRAGON) {
 	                        			// contraataque
@@ -1277,7 +1277,7 @@ End Enum
         				Npc npc = mapa.getNPC(x, y);
         				if (npc != null) {
         					if (this.targetNpc == npc) {
-	                        	if (getNumero() == ELEMENTAL_FUEGO) {
+	                        	if (getNumber() == ELEMENTAL_FUEGO) {
 	                        		npcLanzaUnSpellSobreNpc(npc);
 	                        		if (npc.npcType() == NpcType.NPCTYPE_DRAGON) {
 	                        			// contraataque

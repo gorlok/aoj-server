@@ -264,13 +264,6 @@ public class GameServer implements Constants {
     	});
     }
 
-    public List<String> getUsuariosTrabajando() {
-    	return players().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
-		    	.map(Player::getNick)
-		    	.collect(Collectors.toList());
-    }
-
     public void shutdown() {
         this.running = false;
         this.ns.shutdown();
@@ -691,14 +684,6 @@ public class GameServer implements Constants {
         }
     }
 
-    public void sendMessageToAdmins(String msg, FontType fuente) {
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
-                cli.sendMessage(msg, fuente);
-            }
-        }
-    }
-
     long minutosLloviendo = 0;
     long minutosSinLluvia = 0;
 
@@ -1009,7 +994,7 @@ public class GameServer implements Constants {
         List<Npc> spawnNPCs = new ArrayList<>();
         for (Npc npc: npcs()) {
             if (npc.isNpcActive()) {
-                if (npc.getNumero() == GUARDIAS && npc.getOrig().isValid()) {
+                if (npc.getNumber() == GUARDIAS && npc.getOrig().isValid()) {
                     npc.quitarNPC(); // FIXME, lo elimina del server??? revisar.
                     spawnNPCs.add(npc);
                 } else if (npc.counters().TiempoExistencia > 0) {

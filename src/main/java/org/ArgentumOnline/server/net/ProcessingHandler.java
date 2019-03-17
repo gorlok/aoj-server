@@ -27,14 +27,18 @@ import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
 import org.ArgentumOnline.server.protocol.BankExtractItemRequest;
 import org.ArgentumOnline.server.protocol.CastSpellRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
+import org.ArgentumOnline.server.protocol.ChaosLegionMessageRequest;
+import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
 import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
 import org.ArgentumOnline.server.protocol.CommerceSellRequest;
 import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
 import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
+import org.ArgentumOnline.server.protocol.CreaturesInMapRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
+import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
@@ -42,11 +46,16 @@ import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
+import org.ArgentumOnline.server.protocol.OnlineMapRequest;
 import org.ArgentumOnline.server.protocol.ReviveCharRequest;
+import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
+import org.ArgentumOnline.server.protocol.ServerMessageRequest;
+import org.ArgentumOnline.server.protocol.SetMOTDRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.SummonCharRequest;
 import org.ArgentumOnline.server.protocol.SystemMessageRequest;
+import org.ArgentumOnline.server.protocol.TalkAsNPCRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
@@ -59,6 +68,7 @@ import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
 import org.ArgentumOnline.server.protocol.WorkRequest;
 import org.ArgentumOnline.server.protocol.YellRequest;
 import org.ArgentumOnline.server.user.Player;
+import org.ArgentumOnline.server.util.FontType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -383,6 +393,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case GoToChar:
 					server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
+					break;
 					
 				case ServerTime:
 					server.manager().sendServerTime(player);
@@ -396,6 +407,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
 					break;
 					
+				case CleanSOS:
+					server.manager().clearAllHelpRequestToGm(player);
+					break;
+					
 				case RequestUserList:
 					server.manager().sendUserNameList(player);
 					break;
@@ -406,6 +421,64 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case DoBackUp:
 					server.manager().doBackup(player);
+					break;
+					
+				case ChangeMOTD:
+					server.getMotd().startUpdateMOTD(player);
+					break;
+					
+				case SetMOTD:
+					server.getMotd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
+					break;
+					
+				case TalkAsNPC:
+					player.talkAsNpc(((TalkAsNPCRequest)packet).message);
+					break;
+					
+				case GMMessage:
+					server.manager().sendMessageToAdmins(player,
+							player.getNick() + "> " + ((GMMessageRequest)packet).message, 
+							FontType.FONTTYPE_GMMSG);
+					break;
+					
+				case ServerMessage:
+					server.manager().sendServerMessage(player, ((ServerMessageRequest)packet).message);
+					break;
+					
+				case RoyalArmyMessage:
+					server.manager().sendMessageToRoyalArmy(player, ((RoyalArmyMessageRequest)packet).message);
+					break;
+					
+				case ChaosLegionMessage:
+					server.manager().sendMessageToDarkLegion(player, ((ChaosLegionMessageRequest)packet).message);
+					break;
+					
+				case CitizenMessage:
+					server.manager().sendMessageToCitizens(player, ((CitizenMessageRequest)packet).message);
+					break;
+					
+				case CreaturesInMap:
+					server.manager().sendCreaturesInMap(player, ((CreaturesInMapRequest)packet).map);
+					break;
+					
+				case OnlineMap:
+					server.manager().sendUsersOnlineMap(player, ((OnlineMapRequest)packet).map);
+					break;
+					
+				case OnlineRoyalArmy:
+					server.manager().sendOnlineRoyalArmy(player);
+					break;
+					
+				case OnlineChaosLegion:
+					server.manager().sendOnlineChaosLegion(player);
+					break;
+					
+				case Working:
+					server.manager().sendUsersWorking(player);
+					break;
+					
+				case Hiding:
+					server.manager().sendUsersHiding(player);
 					break;
 					
 				default:

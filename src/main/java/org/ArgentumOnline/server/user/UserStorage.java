@@ -464,7 +464,7 @@ public class UserStorage {
 			for (Npc pet: pets) {
 				// Se guardan las mascotas que no fueron invocadas
 				if ( ! pet.isSpellSpawnedPet() ) {
-					ini.setValue("MASCOTAS", "MAS" + (++savedCount), pet.getNumero());
+					ini.setValue("MASCOTAS", "MAS" + (++savedCount), pet.getNumber());
 				}
 			}
 			ini.setValue("MASCOTAS", "NroMascotas", savedCount);

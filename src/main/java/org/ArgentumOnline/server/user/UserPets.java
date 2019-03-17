@@ -102,7 +102,7 @@ public class UserPets {
 		// Returns True if that amount is less than two.
 		for (Npc pet: pets) {
 			// y si es mascota de invocación?
-			if (pet.getNumero() == npcNumber) {
+			if (pet.getNumber() == npcNumber) {
 				return false;
 			}
 		}

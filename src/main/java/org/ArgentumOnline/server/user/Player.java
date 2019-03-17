@@ -45,10 +45,10 @@ import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.inventory.UserInventory;
 import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.map.Map;
-import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.map.MapObject;
 import org.ArgentumOnline.server.map.MapPos;
 import org.ArgentumOnline.server.map.Terrain;
+import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.map.Zone;
 import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.npc.Npc;
@@ -117,6 +117,7 @@ import org.ArgentumOnline.server.protocol.UserSwingResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.quest.UserQuest;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
+import org.ArgentumOnline.server.user.UserFlags.PlayerType;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -320,7 +321,36 @@ public class Player extends AbstractCharacter {
 	public boolean isCriminal() {
 		return this.reputation.esCriminal();
 	}
+	
+	public boolean isGM() {
+		return flags().isGM();
+	}
+	
+	public boolean isGod() {
+		return flags().isGod();
+	}
+	
+	public boolean isDemiGod() {
+		return flags().isDemiGod();
+	}
+	
+	public boolean isCounselor() {
+		return flags().isCounselor();
+	}
+	
+	public boolean isRoleMaster() {
+		return flags().isRoleMaster();
+	}
+	
+	public boolean isChaosCouncil() {
+		return flags().isChaosCouncil(); 
+	}
 
+	public boolean isRoyalCouncil() {
+		return flags().isRoyalCouncil(); 
+	}
+	
+	
 	public boolean isAlive() {
 		return !flags().Muerto;
 	}
@@ -424,7 +454,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!npc.isGambler() || !(npc instanceof NpcGambler)) {
-			hablar(COLOR_BLANCO, "No tengo ningun interes en apostar.", npc.getId());
+			talk(COLOR_BLANCO, "No tengo ningun interes en apostar.", npc.getId());
 			return;
 		}
 
@@ -453,12 +483,12 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!npc.isNoble()) {
-			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
+			talk(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
 					npc.getId());
 			return;
 		}
 		if (pos().distance(npc.pos()) > 4) {
-			hablar(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
+			talk(COLOR_BLANCO, "Jeje, acércate o no podré escucharte. ¡Estás demasiado lejos!", npc.getId());
 			return;
 		}
 		if (!npc.isFaction()) {
@@ -475,7 +505,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!npc.isNoble()) {
-			hablar(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
+			talk(COLOR_BLANCO, "Lo siento, no puedo ayudarte. Debes buscar a alguien de la armada Real o del Caos.",
 					npc.getId());
 			return;
 		}
@@ -484,13 +514,13 @@ public class Player extends AbstractCharacter {
 		}
 		if (!npc.isFaction()) {
 			if (!userFaction().ArmadaReal) {
-				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
+				talk(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
 			}
 			userFaction().recompensaArmadaReal(npc);
 		} else {
 			if (!userFaction().FuerzasCaos) {
-				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
+				talk(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
 				return;
 			}
 			userFaction().recompensaCaos(npc);
@@ -659,19 +689,19 @@ public class Player extends AbstractCharacter {
 			if (this.faction.ArmadaReal) {
 				if (!npc.isFaction()) {
 					this.faction.expulsarFaccionReal();
-					hablar(COLOR_BLANCO, "Serás bienvenido a las fuerzas imperiales si deseas regresar.", npc.getId());
+					talk(COLOR_BLANCO, "Serás bienvenido a las fuerzas imperiales si deseas regresar.", npc.getId());
 				} else {
-					hablar(COLOR_BLANCO, "¡¡¡Sal de aquí bufón!!!", npc.getId());
+					talk(COLOR_BLANCO, "¡¡¡Sal de aquí bufón!!!", npc.getId());
 				}
 			} else if (this.faction.FuerzasCaos) {
 				if (npc.isFaction()) {
 					this.faction.expulsarFaccionCaos();
-					hablar(COLOR_BLANCO, "Ya volverás arrastrándote.", npc.getId());
+					talk(COLOR_BLANCO, "Ya volverás arrastrándote.", npc.getId());
 				} else {
-					hablar(COLOR_BLANCO, "Sal de aquí maldito criminal", npc.getId());
+					talk(COLOR_BLANCO, "Sal de aquí maldito criminal", npc.getId());
 				}
 			} else {
-				hablar(COLOR_BLANCO, "¡No perteneces a ninguna fuerza!", npc.getId());
+				talk(COLOR_BLANCO, "¡No perteneces a ninguna fuerza!", npc.getId());
 			}
 		}
 	}
@@ -979,7 +1009,7 @@ public class Player extends AbstractCharacter {
 
 		NpcTrainer npcTrainer = (NpcTrainer) npc;
 		if (npcTrainer.isTrainerIsFull()) {
-			hablar(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());
+			talk(COLOR_BLANCO, "No puedo traer mas criaturas, mata las existentes!", npc.getId());
 		} else {
 			npcTrainer.spawnTrainerPet(petIndex);
 		}
@@ -1005,7 +1035,7 @@ public class Player extends AbstractCharacter {
 		}
 		// ¿El Npc puede comerciar?
 		if (!npc.isTrade()) {
-			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+			talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
 		if (npc.npcInv().isSlotValid(slotNpc)) {
@@ -1033,7 +1063,7 @@ public class Player extends AbstractCharacter {
 		}
 		// ¿El Npc puede comerciar?
 		if (!npc.isTrade()) {
-			hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+			talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
 
@@ -1104,7 +1134,7 @@ public class Player extends AbstractCharacter {
 			// ¿El Npc puede comerciar?
 			if (!npc.isTrade()) {
 				if (npc.getDesc().length() > 0) {
-					hablar(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
+					talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 				}
 				return;
 			}
@@ -1387,7 +1417,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		
-	    if (!getUserPets().canTame(npc.getNumero())) {
+	    if (!getUserPets().canTame(npc.getNumber())) {
 			sendMessage("No puedes domar más de una criatura del mismo tipo.", FontType.FONTTYPE_INFO);
 			return;
 	    }
@@ -1404,7 +1434,7 @@ public class Player extends AbstractCharacter {
 			sendMessage("La criatura te ha aceptado como su amo.", FontType.FONTTYPE_INFO);
 			subirSkill(Skill.SKILL_Domar);
 			// y hacemos respawn del npc original para reponerlo.
-			Npc.spawnNpc(npc.getNumero(), npc.getOrig(), false, true);
+			Npc.spawnNpc(npc.getNumber(), npc.getOrig(), false, true);
 			
 	        // Es zona segura?
 			Map map = server.getMap(pos().map);
@@ -1980,18 +2010,18 @@ public class Player extends AbstractCharacter {
 		}
 		if (!npc.isFaction()) {
 			if (!this.faction.ArmadaReal) {
-				hablar(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
+				talk(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
 			}
-			hablar(COLOR_BLANCO,
+			talk(COLOR_BLANCO,
 					"Tu deber es combatir criminales, cada 100 criminales que derrotes te dare una recompensa.",
 					npc.getId());
 		} else {
 			if (!this.faction.FuerzasCaos) {
-				hablar(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
+				talk(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
 				return;
 			}
-			hablar(COLOR_BLANCO,
+			talk(COLOR_BLANCO,
 					"Tu deber es sembrar el caos y la desesperanza, cada 100 ciudadanos que derrotes te dare una recompensa.",
 					npc.getId());
 		}
@@ -2943,19 +2973,33 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void decirPalabrasMagicas(String palabrasMagicas) {
-		hablar(COLOR_CYAN, palabrasMagicas, getId());
+		talk(COLOR_CYAN, palabrasMagicas, getId());
 	}
 
-	public void hablar(int color, String texto, int quienId) {
-		if (texto.length() > MAX_TEXTO_HABLAR) {
-			texto = texto.substring(0, MAX_TEXTO_HABLAR);
+	public void talk(int color, String chat, int whoId) {
+		if (chat.length() > MAX_TEXTO_HABLAR) {
+			chat = chat.substring(0, MAX_TEXTO_HABLAR);
 		}
 
 		Map map = this.server.getMap(pos().map);
 		if (map != null) {
 			map.sendToArea(pos().x, pos().y,
-					new ChatOverHeadResponse(texto, (short)quienId,
+					new ChatOverHeadResponse(chat, (short)whoId,
 							Color.r(color), Color.g(color), Color.b(color)));
+		}
+	}
+	
+	public void talkAsNpc(String chat) {
+		// Solo dioses, admins y RMS
+		if (!flags().isGM()) {
+			return;
+		}
+		// Asegurarse haya un NPC seleccionado
+		Npc targetNpc = this.server.npcById(flags().TargetNpc);
+		if (targetNpc != null) {
+			talk(Color.COLOR_BLANCO, chat, targetNpc.getId());
+		} else {
+			sendMessage("Debes seleccionar el NPC que quieres que hable", FontType.FONTTYPE_INFO);
 		}
 	}
 

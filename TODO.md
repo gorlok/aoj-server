@@ -26,3 +26,4 @@
 * los npcs hacen respawn cerca del usuario
 * refactorizar sistemas de comercio, trabajo, hechizos, combate
 * MoveNPCChar revisar Caspers y WriteForceCharMove
+* NPC Alineacion debería ser un enum? Qué significan las constantes? !=0 parece ser Npc "malvado". En DAT hay 0 y 2, pero en códio hay 1 y 4 también :-/

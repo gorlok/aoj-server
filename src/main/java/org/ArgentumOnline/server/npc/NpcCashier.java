@@ -37,7 +37,7 @@ public class NpcCashier extends Npc {
 		if (!player.checkAlive()) {
 			return;
 		}
-		player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", getId());
+		player.talk(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", getId());
 	}
 
 	public void retirarOroBanco(Player player, int cant) {
@@ -55,9 +55,9 @@ public class NpcCashier extends Npc {
 		if (cant > 0 && cant <= player.stats().getBankGold()) {
 			player.stats().addBankGold( -cant );
 			player.stats().addGold( cant );
-			player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+			player.talk(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
-			player.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
+			player.talk(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
 		player.sendUpdateUserStats();
 	}
@@ -71,9 +71,9 @@ public class NpcCashier extends Npc {
 		if (cant > 0 && cant <= player.stats().getGold()) {
 			player.stats().addBankGold( cant );
 			player.stats().addGold( -cant );
-			player.hablar(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
+			player.talk(COLOR_BLANCO, "Tienes " + player.stats().getBankGold() + " monedas de oro en tu cuenta.", this.getId());
 		} else {
-			player.hablar(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
+			player.talk(COLOR_BLANCO, "No tienes esa cantidad.", this.getId());
 		}
 		player.sendUpdateUserStats();
 	}
