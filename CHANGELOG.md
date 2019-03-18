@@ -3,6 +3,10 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-17
+- nuevos comandos de GM: /showname, /ignored /navigate
+- refactory de AiType y agrego AI de NpcObjeto
+
 ### 2019-03-16
 - corregido worldSave, guardados de mapas.
 - se agregan comandos faltantes de GM.

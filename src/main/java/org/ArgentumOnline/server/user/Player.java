@@ -181,7 +181,7 @@ public class Player extends AbstractCharacter {
 	String bannedBy = "";
 	String bannedReason = "";
 	
-	public boolean showName = true; // TODO
+	public boolean showName = true; // Permite que los GMs oculten su nick con el comando /SHOWNAME
 	public String  descRM = ""; // TODO
 
 	UserFlags flags = new UserFlags();
@@ -330,6 +330,10 @@ public class Player extends AbstractCharacter {
 		return flags().isGod();
 	}
 	
+	public boolean isAdmin() {
+		return flags().isAdmin();
+	}
+	
 	public boolean isDemiGod() {
 		return flags().isDemiGod();
 	}
@@ -365,6 +369,10 @@ public class Player extends AbstractCharacter {
 
 	public boolean isHidden() {
 		return flags().Oculto;
+	}
+	
+	public boolean isAllowingChase() {
+		return flags().AdminPerseguible;
 	}
 
 	public boolean isSailing() {
@@ -4451,6 +4459,7 @@ public class Player extends AbstractCharacter {
 			} else {
 				// Usuario no privilegiado.
 				flags().serOrdinaryUser();
+				flags().AdminPerseguible = true;
 			}
 
 			// FIXME maximo de usuarios alcanzado?
@@ -5444,5 +5453,33 @@ public class Player extends AbstractCharacter {
 			sendTalk(Color.COLOR_BLANCO, "No entiendo de eso. Habla con alguien más.", getId());
 		}
 	}
+	
+	public void navigateToggleGM() {
+		if (!isGM() || isCounselor()) {
+			return;
+		}
+		
+		flags().Navegando = !flags().Navegando;
+		sendPacket(new NavigateToggleResponse());
+	}
+
+	public void ignoreToggleGM() {
+        if (isGM()) {
+        	flags().AdminPerseguible = !flags().AdminPerseguible;
+        	if (flags().AdminPerseguible) {
+        		sendMessage("Los NPCs hostiles te perseguirán.", FontType.FONTTYPE_INFO);
+        	} else {
+        		sendMessage("Los NPCs hostiles te ignorarán.", FontType.FONTTYPE_INFO);
+        	}
+        }
+	}
+
+	public void showNameToggleGM() {
+        if (isGod() || isAdmin() || isRoleMaster()) {
+        	showName = !showName; // Show/Hide the name
+        	refreshCharStatus();
+        }
+    }
+        
 	
 }

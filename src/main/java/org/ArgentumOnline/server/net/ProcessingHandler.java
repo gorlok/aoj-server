@@ -481,6 +481,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().sendUsersHiding(player);
 					break;
 					
+				case NavigateToggle:
+					player.navigateToggleGM();
+					break;
+					
+				case Ignored:
+					player.ignoreToggleGM();
+					break;
+					
+				case ShowName:
+					player.showNameToggleGM();
+					break;
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}

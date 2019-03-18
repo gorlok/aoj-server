@@ -82,38 +82,39 @@ public class Npc extends AbstractCharacter implements Constants {
 	// Damos a los NPCs el mismo rango de visión que un PJ
 	final static byte RANGO_VISION_X = 8;
 	final static byte RANGO_VISION_Y = 6;
-	
 
-	/* FIXME
-Public Enum TipoAI
-    ESTATICO = 1
-    MueveAlAzar = 2
-    NpcMaloAtacaUsersBuenos = 3
-    NPCDEFENSA = 4
-    GuardiasAtacanCriminales = 5
-    NpcObjeto = 6
-    SigueAmo = 8
-    NpcAtacaNpc = 9
-    NpcPathfinding = 10
+	public enum AiType {
+		NONE,
+		
+		/* 1*/ ESTATICO,
+		/* 2*/ MUEVE_AL_AZAR,
+		/* 3*/ NPC_MALO_ATACA_USUARIOS_BUENOS,
+		/* 4*/ NPC_DEFENSA,
+		/* 5*/ GUARDIAS_ATACAN_CRIMINALES,
+		/* 6*/ NPC_OBJETO,
+		/* 7*/ UNUSED,
+		/* 8*/ SIGUE_AMO,
+		/* 9*/ NPC_ATACA_NPC,
+		/*10*/ NPC_PATHFINDING,
+		/*11*/ GUARDIAS_ATACAN_CIUDADANOS; // DEPRECATED? Usado por [NPC102] "Guardia Armada WACHO"
+		
+		private static AiType[] VALUES = AiType.values();
+		
+		public static AiType value(int index) {
+			return VALUES[index];
+		}
+	}
     
-    'Pretorianos
+    /* FIXME
+'Pretorianos
     SacerdotePretorianoAi = 20
     GuerreroPretorianoAi = 21
     MagoPretorianoAi = 22
     CazadorPretorianoAi = 23
     ReyPretoriano = 24
 End Enum
-	 */
-    public final static short MOV_ESTATICO = 1;
-    public final static short MOV_MUEVE_AL_AZAR = 2;
-    public final static short MOV_NPC_MALO_ATACA_USUARIOS_BUENOS = 3;
-    public final static short MOV_NPCDEFENSA = 4;
-    public final static short MOV_GUARDIAS_ATACAN_CRIMINALES = 5;
-    public final static short MOV_SIGUE_AMO = 8;
-    public final static short MOV_NPC_ATACA_NPC = 9;
-    public final static short MOV_NPC_PATHFINDING = 10;
-    public final static short MOV_GUARDIAS_ATACAN_CIUDADANOS = 11;
-
+     */
+	
     public final static short GUARDIAS_PERSIGUEN_CIUDADANOS = 1;
     public final static short GUARDIAS_PERSIGUEN_CRIMINALES = 0;
 
@@ -130,8 +131,8 @@ End Enum
 
     private NpcFlags flags = new NpcFlags();
 
-    short movement   = 0;
-    public short   oldMovement   = 0;
+    AiType movement    = AiType.NONE;
+    AiType oldMovement = AiType.NONE;
     
     public String  attackedBy = "";
     public String  attackedFirstBy = ""; // FIXME
@@ -316,11 +317,11 @@ End Enum
 
 
     public boolean isStatic() {
-    	return this.movement == Npc.MOV_ESTATICO;
+    	return this.movement == AiType.ESTATICO;
     }
 
     public Npc makeStatic() {
-    	this.movement = Npc.MOV_ESTATICO;
+    	this.movement = AiType.ESTATICO;
     	return this;
     }
 
@@ -837,7 +838,7 @@ End Enum
                 mapa.moverNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             } else {
-                if (this.movement == MOV_NPC_PATHFINDING) {
+                if (this.movement == AiType.NPC_PATHFINDING) {
                     // Someone has blocked the npc's way, we must to seek a new path!
                     //////////// FIXME
                     this.current_step = 0;
@@ -891,7 +892,7 @@ End Enum
         } else {
             this.attackedBy = nombreUsuario;
             this.flags().set(FLAG_FOLLOW, true);
-            this.movement = MOV_NPCDEFENSA; // follow
+            this.movement = AiType.NPC_DEFENSA; // follow
             this.flags().set(FLAG_HOSTIL, false);
         }
     }
@@ -899,7 +900,7 @@ End Enum
     /** Seguir al amo / Follow master */
     public void followMaster() {
         this.flags().set(FLAG_FOLLOW, true);
-        this.movement  = MOV_SIGUE_AMO; // follow npc's master.
+        this.movement  = AiType.SIGUE_AMO; // follow npc's master.
         this.flags().set(FLAG_HOSTIL, false);
         this.targetUser = 0;
         this.targetNpc  = null;
@@ -929,7 +930,7 @@ End Enum
     }
 
     public void defenderse() {
-        this.movement = MOV_NPCDEFENSA;
+        this.movement = AiType.NPC_DEFENSA;
         this.flags().set(FLAG_HOSTIL, true);
     }
 
@@ -968,7 +969,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.flags().isGM()) {
+                    if (player.isAlive() && player.isAllowingChase()) {
                         // ¿ES CRIMINAL?
                     	if (npcType() != NpcType.NPCTYPE_GUARDIAS_CAOS) {
                     		if (player.isCriminal()) {
@@ -1023,7 +1024,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.flags().isGM()) {
+                    if (player.isAlive() && player.isAllowingChase()) {
                         if (isMagical()) {
                             npcCastSpell(player);
                         }
@@ -1050,7 +1051,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasPlayer(pos.x, pos.y)) {
                     Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && !player.flags().isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
+                    if (player.isAlive() && player.isAllowingChase() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
                         if (isMagical()) {
                             npcCastSpell(player);
                         }
@@ -1076,7 +1077,7 @@ End Enum
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
                         if (player != null) {
-                            if (player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
+                            if (player.isAlive() && !player.isInvisible() && player.isAllowingChase()) {
                                 if (isMagical()) {
                                    npcCastSpell(player);
                                 }
@@ -1155,7 +1156,7 @@ End Enum
 
                         if (player == null) break;
 
-                        if (player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
+                        if (player.isCriminal() && player.isAlive() && !player.isInvisible() && player.isAllowingChase()) {
                             if (isMagical()) {
                                 npcCastSpell(player);
                             }
@@ -1315,6 +1316,32 @@ End Enum
         	this.flags.set(FLAG_HOSTIL, this.flags.get(FLAG_OLD_HOSTILE));
         }
     }
+    
+    private void aiNpcObjeto() {
+    	//AiNpcObjeto
+        Map map = this.server.getMap(pos().map);
+        if (map == null) {
+			return;
+		}
+    	for (byte y = (byte) (pos().y-RANGO_VISION_Y); y <= (byte) (pos().y+RANGO_VISION_Y); y++) {
+    		for (byte x = (byte) (pos().x-RANGO_VISION_X); x <= (byte) (pos().x+RANGO_VISION_X); x++) {
+    			if (pos.isValid()) {
+    				if (map.hasPlayer(x, y)) {
+    					Player player = map.getPlayer(x, y);
+    					if (player.isAlive() && !player.isInvisible() && !player.isHidden() && player.isAllowingChase()) {
+    						// No quiero que ataque siempre al primero
+    						if (Util.Azar(1,  3) < 3) {
+    							if (flags().get(FLAG_LANZA_SPELLS)) {
+    								npcCastSpell(player);
+    								return;
+    							}
+    						}
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
 
     private void npcLanzaUnSpellSobreNpc(Npc targetNpc) {
     	if (isMagical()) {
@@ -1370,77 +1397,90 @@ End Enum
             } else if (isHostile() && this.stats.alineacion == 0) {
                 hostilBuenoAI();
             }
-        } else {
-            // Evitamos que ataque a su amo, a menos
-            // que el amo lo ataque.
-            // 'Call HostilBuenoAI(NpcIndex)
         }
-        // <<<<<<<<<<< Movimiento >>>>>>>>>>>>>>>>
+        
         switch (this.movement) {
-            case MOV_MUEVE_AL_AZAR:
-                if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
-                    if (Util.Azar(1, 12) == 3) {
-                        moverAlAzar();
-                    }
-                    persigueCriminal();
-                } else if (this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
-                    if (Util.Azar(1, 12) == 3) {
-                        moverAlAzar();
-                    }
-                    persigueCiudadano();
-                } else {
-                    if (Util.Azar(1, 12) == 3) {
-                        moverAlAzar();
-                    }
-                }
-                break;
-            case MOV_NPC_MALO_ATACA_USUARIOS_BUENOS:
-                // Va hacia el usuario cercano
-                irUsuarioCercano();
-                break;
-            case MOV_NPCDEFENSA:
-                // Va hacia el usuario que lo ataco(FOLLOW)
-                seguirAgresor();
-                break;
-            case MOV_GUARDIAS_ATACAN_CRIMINALES:
-                // Persigue criminales
-                persigueCriminal();
-                break;
-            case MOV_GUARDIAS_ATACAN_CIUDADANOS:
-                // Persigue criminales
-                persigueCiudadano();
-                break;
-            case MOV_SIGUE_AMO:
-                seguirAmo();
+    	case NONE: 
+    	case UNUSED:
+    	case ESTATICO:
+    		// do nothing.
+    		break;
+    		
+        case MUEVE_AL_AZAR:
+            if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
                 if (Util.Azar(1, 12) == 3) {
                     moverAlAzar();
                 }
-                break;
-            case MOV_NPC_ATACA_NPC:
-                aiNpcAtacaNpc();
-                break;
-            case MOV_NPC_PATHFINDING:
-                ////irUsuarioCercano();
-            	aiPathFinding();
-                break;
-                /********************** FIXME
-                 * case NPC_PATHFINDING:
-                 * if (reCalculatePath()) {
-                 * pathFindingAI();
-                 * // Existe el camino?
-                 * if (m_PFINFO.NoPath) { // Si no existe nos movemos al azar
-                 * // Move randomly
-                 * moverAlAzar();
-                 * }
-                 * } else {
-                 * if (!pathEnd()) {
-                 * followPath();
-                 * } else {
-                 * m_PFINFO.PathLenght = 0;
-                 * }
-                 * }
-                 * break;
-                 */////////////////
+                persigueCriminal();
+            } else if (this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
+                if (Util.Azar(1, 12) == 3) {
+                    moverAlAzar();
+                }
+                persigueCiudadano();
+            } else {
+                if (Util.Azar(1, 12) == 3) {
+                    moverAlAzar();
+                }
+            }
+            break;
+            
+        case NPC_MALO_ATACA_USUARIOS_BUENOS:
+            // Va hacia el usuario cercano
+            irUsuarioCercano();
+            break;
+            
+        case NPC_DEFENSA:
+            // Va hacia el usuario que lo ataco(FOLLOW)
+            seguirAgresor();
+            break;
+            
+        case GUARDIAS_ATACAN_CRIMINALES:
+            // Persigue criminales
+            persigueCriminal();
+            break;
+            
+        case GUARDIAS_ATACAN_CIUDADANOS:
+            // Persigue criminales
+            persigueCiudadano();
+            break;
+            
+        case SIGUE_AMO:
+            seguirAmo();
+            if (Util.Azar(1, 12) == 3) {
+                moverAlAzar();
+            }
+            break;
+            
+        case NPC_ATACA_NPC:
+            aiNpcAtacaNpc();
+            break;
+            
+        case NPC_OBJETO:
+        	aiNpcObjeto();
+        	break;
+            
+        case NPC_PATHFINDING:
+            ////irUsuarioCercano();
+        	aiPathFinding();
+            break;
+            /********************** FIXME
+             * case NPC_PATHFINDING:
+             * if (reCalculatePath()) {
+             * pathFindingAI();
+             * // Existe el camino?
+             * if (m_PFINFO.NoPath) { // Si no existe nos movemos al azar
+             * // Move randomly
+             * moverAlAzar();
+             * }
+             * } else {
+             * if (!pathEnd()) {
+             * followPath();
+             * } else {
+             * m_PFINFO.PathLenght = 0;
+             * }
+             * }
+             * break;
+             */////////////////
         }
     }
 
@@ -1551,6 +1591,10 @@ End Enum
     }
 
     private void npcAtacaUser(Player player) {
+    	if (player.flags().AdminInvisible || !player.isAllowingChase()) {
+    		return;
+    	}
+    	
         Map mapa = this.server.getMap(pos().map);
         // El npc puede atacar ???
         if (!canAttack()) {
@@ -1617,7 +1661,7 @@ End Enum
 		}
         this.flags().set(FLAG_PUEDE_ATACAR, false);
         victim.targetNpc = this;
-        victim.movement = MOV_NPC_ATACA_NPC;
+        victim.movement = AiType.NPC_ATACA_NPC;
 
         if (this.snd1 > 0) {
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x, pos().y));
@@ -1715,7 +1759,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasPlayer(x, y)) {
                         Player player = mapa.getPlayer(x, y);
-                        if (player.isAlive() && !player.isInvisible()) {
+                        if (player.isAlive() && !player.isInvisible() && !player.isHidden() && player.isAllowingChase()) {
                         	this.m_pfinfo = new PFINFO(MapPos.mxy(pos().map, x, y), player);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
@@ -1740,7 +1784,7 @@ End Enum
         ini.setValue(section, "Head", this.infoChar.head);
         ini.setValue(section, "Body", this.infoChar.body);
         ini.setValue(section, "Heading", this.infoChar.heading.value());
-        ini.setValue(section, "Movement", this.movement);
+        ini.setValue(section, "Movement", this.movement.ordinal());
         ini.setValue(section, "TipoItems", this.tipoItems);
         ini.setValue(section, "GiveEXP", this.giveEXP);
         ini.setValue(section, "GiveGLD", this.giveGLD);
@@ -1802,7 +1846,7 @@ End Enum
         this.infoChar.head   = ini.getShort(section, "Head");
         this.infoChar.body   = ini.getShort(section, "Body");
         this.infoChar.heading      = Heading.value(ini.getShort(section, "Heading"));
-        this.movement = ini.getShort(section, "Movement");
+        this.movement 	 = AiType.value(ini.getShort(section, "Movement"));
         this.oldMovement = this.movement;
         this.tipoItems = ini.getShort(section, "TipoItems"); // Tipo de items con los que comercia
         this.giveEXP   = ini.getInt(section, "GiveEXP");
@@ -1947,7 +1991,7 @@ End Enum
     		return;
     	}
 		this.targetNpc = targetNpc;
-		this.movement = Npc.MOV_NPC_ATACA_NPC;
+		this.movement = AiType.NPC_ATACA_NPC;
     }
 
 

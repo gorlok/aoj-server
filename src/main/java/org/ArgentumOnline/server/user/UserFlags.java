@@ -73,6 +73,7 @@ public class UserFlags {
     public boolean StatsChanged = false;
     
     public boolean AdminInvisible = false;
+    public boolean AdminPerseguible = false; // User can be followed by NPCs
     
     public short Hechizo = 0;
     public double Descuento = 0.0;
@@ -146,6 +147,10 @@ public class UserFlags {
     
 	public boolean isGod() {
 		return (privileges & PlayerType.Dios.value()) > 0;
+	}
+
+	public boolean isAdmin() {
+		return (privileges & PlayerType.Admin.value()) > 0;
 	}
 
 	public boolean isDemiGod() {

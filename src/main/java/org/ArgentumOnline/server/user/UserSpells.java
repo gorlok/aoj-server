@@ -1418,10 +1418,8 @@ public class UserSpells implements Constants {
 		if (this.player.flags().TargetUser > 0) {
 			if (this.player.getId() != this.player.flags().TargetUser) {
 				Player target = this.server.playerById(this.player.flags().TargetUser);
-				this.player.sendMessage(spell.HechiceroMsg + " " + target.userName,
-						FONTTYPE_FIGHT);
-				target.sendMessage(this.player.getNick() + " " + spell.TargetMsg,
-						FONTTYPE_FIGHT);
+				player.sendMessage(spell.HechiceroMsg + " " + (target.showName ? target.userName : "alguien"), FONTTYPE_FIGHT);
+				target.sendMessage((player.showName ? player.getNick() : "Alguien") + " " + spell.TargetMsg, FONTTYPE_FIGHT);
 			} else {
 				this.player.sendMessage(spell.PropioMsg, FONTTYPE_FIGHT);
 			}
