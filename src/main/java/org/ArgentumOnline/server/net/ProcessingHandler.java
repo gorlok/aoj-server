@@ -27,6 +27,7 @@ import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
 import org.ArgentumOnline.server.protocol.BankExtractItemRequest;
 import org.ArgentumOnline.server.protocol.CastSpellRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
+import org.ArgentumOnline.server.protocol.ChangePasswordRequest;
 import org.ArgentumOnline.server.protocol.ChaosLegionMessageRequest;
 import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
 import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
@@ -346,7 +347,9 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.petStand();
 			break;
 			
-			
+		case ChangePassword:
+			player.changePassword(((ChangePasswordRequest)packet).newPassword);
+			break;			
 			
 		default:
 			if (player.flags().isGM()) {

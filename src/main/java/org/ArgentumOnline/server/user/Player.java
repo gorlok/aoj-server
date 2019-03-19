@@ -34,6 +34,7 @@ import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjType;
 import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Pos;
+import org.ArgentumOnline.server.Security;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.anticheat.SpeedHackCheck;
 import org.ArgentumOnline.server.anticheat.SpeedHackException;
@@ -117,7 +118,6 @@ import org.ArgentumOnline.server.protocol.UserSwingResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.quest.UserQuest;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
-import org.ArgentumOnline.server.user.UserFlags.PlayerType;
 import org.ArgentumOnline.server.util.Color;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -144,7 +144,7 @@ public class Player extends AbstractCharacter {
 	private Channel channel = null;
 
 	String userName = "";
-	String password = ""; // FIXME SEGURIDAD
+	String passwordHash = "";
 
 	String description = ""; // Descripcion
 
@@ -959,7 +959,7 @@ public class Player extends AbstractCharacter {
 		sendPacket(new BankEndResponse());
 	}
 
-	public void cambiarPasswd(String newPassword) {
+	public void changePassword(String newPassword) {
 		// Comando /PASSWD
 		newPassword = newPassword.trim();
 		if (newPassword.length() < 6) {
@@ -967,8 +967,9 @@ public class Player extends AbstractCharacter {
 		} else if (newPassword.length() > 20) {
 			sendMessage("El password puede tener hasta 20 caracteres.", FontType.FONTTYPE_INFO);
 		} else {
-			sendMessage("El password ha sido cambiado. ¡Cuídalo!", FontType.FONTTYPE_INFO);
-			this.password = newPassword;
+			this.passwordHash = Security.hashPassword(userName, newPassword);
+			// FIXME actualizar el passwordHash en storage
+			sendMessage("El password ha sido cambiado. ¡Cuidalo!", FontType.FONTTYPE_INFO);
 		}
 	}
 
@@ -4348,7 +4349,7 @@ public class Player extends AbstractCharacter {
 		modifyAttributesByRace();
 		this.skills().freeSkillPts = 10;
 
-		this.password = password;
+		this.passwordHash = Security.hashPassword(userName, password);
 		this.infoChar.heading(Heading.SOUTH);
 		this.infoChar.ramdonBodyAndHead(race(), gender());
 		this.infoChar.weapon = NingunArma;
@@ -4420,7 +4421,6 @@ public class Player extends AbstractCharacter {
 
 	public void connectUser(String userName, String password) {
 		this.userName = userName;
-		this.password = password;
 		try {
 			// ¿Existe el personaje?
 			if (!userExists()) {
@@ -4440,8 +4440,9 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 
-			// ¿Es el password valido?
-			if (!this.password.equals(this.userStorage.loadPasswordFromStorage(this.userName))) {
+			// ¿El password es válido?
+			this.passwordHash = this.userStorage.passwordHashFromStorage(this.userName);
+			if (!Security.validatePassword(userName, password, passwordHash)) {
 				sendError("Clave incorrecta.");
 				return;
 			}

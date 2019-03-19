@@ -75,11 +75,11 @@ public class UserStorage {
 		return user.infoChar().validateChr() && user.skills().validateSkills();
 	}
 	
-	public String loadPasswordFromStorage(String nick) 
+	public String passwordHashFromStorage(String nick) 
 	throws FileNotFoundException, IOException {
 		IniFile ini = new IniFile(Player.getPjFile(user.getNick()));
 		
-		return ini.getString("INIT", "Password");
+		return ini.getString("INIT", "PasswordHash");
 	}
 
 	private void loadUserInit(IniFile ini) 
@@ -366,7 +366,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Raza", user.race.value());
 			ini.setValue("INIT", "Hogar", user.homeland.id());
 			ini.setValue("INIT", "Clase", user.clazz().id());
-			ini.setValue("INIT", "Password", user.password);
+			ini.setValue("INIT", "PasswordHash", user.passwordHash);
 			ini.setValue("INIT", "Desc", user.description);
 			ini.setValue("INIT", "Heading", user.infoChar().heading.value());
 
