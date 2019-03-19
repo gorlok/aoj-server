@@ -5,6 +5,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ### 2019-03-18
 - SEGURIDAD: no se guarda más el password del personaje, sino un hash salteado con papas.
+- bugfix con colores rgb
+- se agregan más comandos de GM (panel ME completo): showName, changeColor, SetCharDescription
+- se agregan otros comandos de GM: limpiar mundo, /REM 
 
 ### 2019-03-17
 - nuevos comandos de GM: /showname, /ignored /navigate

@@ -924,11 +924,6 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/RESETINV " + npc.toString());
 	}
 
-	public void doLimpiarMundo(Player admin) {
-		// Comando /LIMPIAR
-		this.server.limpiarMundo(admin);
-	}
-
 	/**
 	 * Broadcast a server message
 	 * @param admin sending a server message

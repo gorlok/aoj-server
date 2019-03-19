@@ -29,6 +29,12 @@ public class Color {
     public final static int COLOR_CYAN     = 0xffff00;
     public final static int COLOR_AMARILLO = 0x00ffff;
     
+    // The color of chats over head of dead characters.
+    public final static int CHAT_COLOR_DEAD_CHAR = 0xc0c0c0;
+
+    // The color of yells made by any kind of game administrator.
+    public final static int CHAT_COLOR_GM_YELL = 0x0f82ff;    
+    
     public static byte r(int color) {
     	return (byte) (color & COLOR_ROJO);
     }
@@ -40,7 +46,7 @@ public class Color {
     }
     
     public static int rgb(int r, int g, int b) {
-    	return r & (g << 2) & (b << 4);
+    	return r + (g << 8) + (b << 16);
     }
 
 }

@@ -189,8 +189,16 @@ public class UserFlags {
 		this.privileges = PlayerType.Consejero.value();
 	}
 	
-	public void serOrdinaryUser() {
+	public void setOrdinaryUser() {
 		this.privileges = PlayerType.User.value();
 	}
-    
+
+	public void setChaosCouncil() {
+		this.privileges = PlayerType.ChaosCouncil.value();
+	}
+
+	public void setRoyalCouncil() {
+		this.privileges = PlayerType.RoyalCouncil.value();
+	}
+
 }

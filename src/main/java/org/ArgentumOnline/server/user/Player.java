@@ -147,6 +147,8 @@ public class Player extends AbstractCharacter {
 	String passwordHash = "";
 
 	String description = ""; // Descripcion
+	
+	int chatColor = Color.COLOR_BLANCO;
 
 	Clazz clazz = Clazz.Hunter;
 
@@ -2130,6 +2132,18 @@ public class Player extends AbstractCharacter {
 		this.description = s;
 		sendMessage("La descripcion a cambiado.", FontType.FONTTYPE_INFO);
 	}
+	
+	public void changeCharDescription(String newDescRM) {
+		// Comando "/SETDESC "
+        if (isGod() || isAdmin() || isRoleMaster()) {
+        	Player targetUser = server.playerById(flags().TargetUser);
+        	if (targetUser != null) {
+                targetUser.descRM = newDescRM;
+        	} else {
+        		sendMessage("Haz click sobre un personaje antes!", FontType.FONTTYPE_INFO);
+        	}
+        }
+	}
 
 	public void changeHeading(byte newHeading) {
 		if (newHeading < 1 || newHeading > 4) {
@@ -2334,21 +2348,41 @@ public class Player extends AbstractCharacter {
 	}
 
 	/** Comando para hablar (;) */
-	public void talk(String text) {
+	public void talk(String chat) {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden comunicarse con el mundo de los vivos. ")) {
 			return;
 		}
-		if (text.length() > MAX_MENSAJE) {
-			text = text.substring(0, MAX_MENSAJE);
+		if (chat.length() > MAX_MENSAJE) {
+			chat = chat.substring(0, MAX_MENSAJE);
+		}
+		if (chat.trim().isEmpty()) {
+			return;
 		}
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa != null) {
-			mapa.sendToArea(pos().x, pos().y,
-					new ChatOverHeadResponse(text, getId(),
-							Color.r(COLOR_BLANCO), Color.g(COLOR_BLANCO), Color.b(COLOR_BLANCO)));
+			
+	        if ( !flags().AdminInvisible ) {
+	        	if (isAlive()) {
+	        		mapa.sendToArea(pos().x, pos().y,
+	        				new ChatOverHeadResponse(chat, getId(),
+	        						Color.r(chatColor), 
+	        						Color.g(chatColor), 
+	        						Color.b(chatColor)));
+	        	} else {
+	        		mapa.sendToArea(pos().x, pos().y,
+	        				new ChatOverHeadResponse(chat, getId(),
+	        						Color.r(Color.CHAT_COLOR_DEAD_CHAR), 
+	        						Color.g(Color.CHAT_COLOR_DEAD_CHAR), 
+	        						Color.b(Color.CHAT_COLOR_DEAD_CHAR)));
+	        	}
+	        } else {
+        		mapa.sendToArea(pos().x, pos().y,
+        				new ConsoleMsgResponse("GM> " + chat, FontType.FONTTYPE_GM.id()));
+	        }
+			
 		}
 		if (flags().isCounselor()) {
-			Log.logGM(this.userName, "El consejero dijo: " + text);
+			Log.logGM(this.userName, "El consejero dijo: " + chat);
 		}
 	}
 
@@ -4450,17 +4484,28 @@ public class Player extends AbstractCharacter {
 
 			if (this.server.manager().isGod(this.userName)) {
 				flags().setGod();
+				chatColor = Color.rgb(250, 250, 150);
 				Log.logGM(this.userName, "El GM-DIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isDemiGod(this.userName)) {
 				flags().setDemiGod();
+				chatColor = Color.rgb(0, 255, 0);
 				Log.logGM(this.userName, "El GM-SEMIDIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isCounsellor(this.userName)) {
 				flags().setCounselor();
+				chatColor = Color.rgb(0, 255, 0);
 				Log.logGM(this.userName, "El GM-CONSEJERO se conectó desde la ip=" + this.ip);
+				// FIXME
+//			} else if (this.server.manager().isRoyalCouncil(this.userName)) {
+//				flags().setRoyalCouncil();
+//				chatColor = Color.rgb(0, 255, 255);
+//			} else if (this.server.manager().isChaosCouncil(this.userName)) {
+//				flags().setChaosCouncil();
+//				chatColor = Color.rgb(255, 128, 64);
 			} else {
 				// Usuario no privilegiado.
-				flags().serOrdinaryUser();
+				flags().setOrdinaryUser();
 				flags().AdminPerseguible = true;
+				chatColor = Color.COLOR_BLANCO;
 			}
 
 			// FIXME maximo de usuarios alcanzado?
@@ -5481,6 +5526,14 @@ public class Player extends AbstractCharacter {
         	refreshCharStatus();
         }
     }
-        
+
+	public void changeChatColor(int red, int green, int blue) { 
+		// HandleChatColor
+		// /CHATCOLOR Change the user`s chat color
+		if (!isGod() && !isAdmin() && !isRoleMaster()) {
+			return;
+		}
+		this.chatColor = Color.rgb(red, green, blue);
+	}
 	
 }

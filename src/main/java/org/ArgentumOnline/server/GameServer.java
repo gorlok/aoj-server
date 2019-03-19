@@ -807,7 +807,7 @@ public class GameServer implements Constants {
         if (this.minutesLastClean >= 15) {
             this.minutesLastClean = 0;
             reSpawnOrigPosNpcs(); // respawn de los guardias en las pos originales
-            limpiarMundo();
+            cleanWorld();
         } else {
             this.minutesLastClean++;
         }
@@ -920,7 +920,7 @@ public class GameServer implements Constants {
         //enviarATodos(MSG_BKW);
       //  enviarATodos(MSG_TALK, "Servidor> Realizando WorldSave..." + FontType.SERVER);
         saveGuildsDB();
-        limpiarMundo();
+        cleanWorld();
         worldSave();
       //  enviarATodos(MSG_TALK, "Servidor> WorldSave terminado." + FontType.SERVER);
       //  enviarATodos(MSG_BKW);
@@ -935,14 +935,15 @@ public class GameServer implements Constants {
         /////////// FIXME
     }
 
-    public void limpiarMundo(Player cli) {
-    	int cant = limpiarMundo();
-        if (cli != null) {
-			cli.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " m_objetos.", FontType.FONTTYPE_SERVER);
+    public void cleanWorld(Player admin) {
+    	// Comando /LIMPIAR
+    	int cant = cleanWorld();
+        if (admin != null) {
+			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " objetos.", FontType.FONTTYPE_SERVER);
 		}
     }
 
-    private int limpiarMundo() {
+    private int cleanWorld() {
     	int cant = 0;
     	for (MapPos pos: this.trashCollector) {
             Map mapa = getMap(pos.map);

@@ -29,7 +29,9 @@ import org.ArgentumOnline.server.protocol.CastSpellRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
 import org.ArgentumOnline.server.protocol.ChangePasswordRequest;
 import org.ArgentumOnline.server.protocol.ChaosLegionMessageRequest;
+import org.ArgentumOnline.server.protocol.ChatColorRequest;
 import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
+import org.ArgentumOnline.server.protocol.CommentRequest;
 import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
 import org.ArgentumOnline.server.protocol.CommerceSellRequest;
 import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
@@ -52,6 +54,7 @@ import org.ArgentumOnline.server.protocol.ReviveCharRequest;
 import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.ServerMessageRequest;
+import org.ArgentumOnline.server.protocol.SetCharDescriptionRequest;
 import org.ArgentumOnline.server.protocol.SetMOTDRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.SummonCharRequest;
@@ -496,6 +499,22 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					player.showNameToggleGM();
 					break;
 					
+				case ChatColor:
+					handleChatColor((ChatColorRequest)packet, player);
+					break;
+					
+				case SetCharDescription:
+					player.changeCharDescription(((SetCharDescriptionRequest)packet).desc);
+					break;
+					
+				case Comment:
+					server.manager().saveGmComment(player, ((CommentRequest)packet).comment);
+					break;
+					
+				case CleanWorld:
+					server.cleanWorld(player);
+					break;
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}
@@ -504,6 +523,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			}
 		}
 		
+	}
+
+	private void handleChatColor(ChatColorRequest packet, Player admin) {
+		admin.changeChatColor(packet.red & 0xff, packet.green & 0xff, packet.blue & 0xff);
 	}
 
 	private void handleWarpChar(WarpCharRequest packet, Player admin) {

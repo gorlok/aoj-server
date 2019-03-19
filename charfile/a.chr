@@ -1,5 +1,5 @@
 ;Archivo: charfile/a.chr
-;Ultima modificacion: 18/03/2019 20:46:26
+;Ultima modificacion: 18/03/2019 22:48:37
 
 [ATRIBUTOS]
 AT1=20
@@ -143,7 +143,7 @@ DESC=
 ESCUDO=2
 GENERO=1
 HEAD=9
-HEADING=3
+HEADING=4
 HOGAR=2
 LASTIP=192.168.0.186
 PASSWORDHASH=$2a$08$U55NPo87mMY.aKqbYRirveog/EtKVdhE6kO7yYE9LMty6wSE52b2S
