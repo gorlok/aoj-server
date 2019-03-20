@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-20
+- se agregan comandos de GM: /BAL, /INV, /BOV, /STAT, /SKILLS
+
 ### 2019-03-19
 - se agregan comandos de GM: /CC, /MATA y /MASSKILL, /CT, /DT, /PISO, /MASSDEST, /INFO
 

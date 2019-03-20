@@ -80,19 +80,12 @@ public class UserFaction implements Constants {
     public boolean RecibioArmaduraReal   = false;
     public boolean RecibioArmaduraCaos   = false;
     
-	/* FIXME
-	UserList(UserIndex).Faccion.RecibioArmaduraCaos = CByte(UserFile.GetValue("FACCIONES", "rArCaos"))
-	UserList(UserIndex).Faccion.RecibioArmaduraReal = CByte(UserFile.GetValue("FACCIONES", "rArReal"))
-	UserList(UserIndex).Faccion.RecibioExpInicialCaos = CByte(UserFile.GetValue("FACCIONES", "rExCaos"))
-	UserList(UserIndex).Faccion.RecibioExpInicialReal = CByte(UserFile.GetValue("FACCIONES", "rExReal"))
-	UserList(UserIndex).Faccion.RecompensasCaos = CLng(UserFile.GetValue("FACCIONES", "recCaos"))
-	UserList(UserIndex).Faccion.RecompensasReal = CLng(UserFile.GetValue("FACCIONES", "recReal"))
-	UserList(UserIndex).Faccion.Reenlistadas = CByte(UserFile.GetValue("FACCIONES", "Reenlistadas"))
-	UserList(UserIndex).Faccion.NivelIngreso = CInt(UserFile.GetValue("FACCIONES", "NivelIngreso"))
-	UserList(UserIndex).Faccion.FechaIngreso = UserFile.GetValue("FACCIONES", "FechaIngreso")
-	UserList(UserIndex).Faccion.MatadosIngreso = CInt(UserFile.GetValue("FACCIONES", "MatadosIngreso"))
-	UserList(UserIndex).Faccion.NextRecompensa = CInt(UserFile.GetValue("FACCIONES", "NextRecompensa"))
-	*/
+    // FIXME THIS IS NEW
+    public int Reenlistadas = 0;
+    public int NivelIngreso = 0;
+    public String FechaIngreso = "No ingresó a ninguna Facción";
+    public int MatadosIngreso = 0;
+    public int NextRecompensa = 0;
     
     
     public UserFaction(GameServer server, Player player) {
@@ -100,7 +93,43 @@ public class UserFaction implements Constants {
         this.player = player;
     }
     
+	public void loadUserFaction(IniFile ini) {
+		this.ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
+		this.FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
+		this.CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
+		this.CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
+		this.RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
+		this.RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
+		this.RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
+		this.RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
+		this.RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
+		this.RecompensasReal = ini.getShort("FACCIONES", "recReal");
+	    this.Reenlistadas = ini.getInt("FACCIONES", "Reenlistadas");
+	    this.NivelIngreso = ini.getInt("FACCIONES", "NivelIngreso");
+	    this.FechaIngreso = ini.getString("FACCIONES", "FechaIngreso");
+	    this.MatadosIngreso = ini.getInt("FACCIONES", "MatadosIngreso");
+	    this.NextRecompensa = ini.getInt("FACCIONES", "NextRecompensa");
+	}
     
+	public void saveUserFaction(IniFile ini) {
+		ini.setValue("FACCIONES", "EjercitoReal", this.ArmadaReal);
+		ini.setValue("FACCIONES", "EjercitoCaos", this.FuerzasCaos);
+		ini.setValue("FACCIONES", "CiudMatados", this.CiudadanosMatados);
+		ini.setValue("FACCIONES", "CrimMatados", this.CriminalesMatados);
+		ini.setValue("FACCIONES", "rArCaos", this.RecibioArmaduraCaos);
+		ini.setValue("FACCIONES", "rArReal", this.RecibioArmaduraReal);
+		ini.setValue("FACCIONES", "rExCaos", this.RecibioExpInicialCaos);
+		ini.setValue("FACCIONES", "rExReal", this.RecibioExpInicialReal);
+		ini.setValue("FACCIONES", "recCaos", this.RecompensasCaos);
+		ini.setValue("FACCIONES", "recReal", this.RecompensasReal);
+	    ini.setValue("FACCIONES", "Reenlistadas", this.Reenlistadas);
+	    ini.setValue("FACCIONES", "NivelIngreso", this.NivelIngreso);
+	    ini.setValue("FACCIONES", "FechaIngreso", this.FechaIngreso);
+	    ini.setValue("FACCIONES", "MatadosIngreso", this.MatadosIngreso);
+	    ini.setValue("FACCIONES", "NextRecompensa", this.NextRecompensa);
+	}
+	
+	
 	public static void loadFactionArmors(IniFile ini) {
 		factionArmors[FactionArmors.ARMADURA_IMPERIAL_1.ordinal()] = ini.getShort("INIT", "ArmaduraImperial1");
 		factionArmors[FactionArmors.ARMADURA_IMPERIAL_2.ordinal()] = ini.getShort("INIT", "ArmaduraImperial2");

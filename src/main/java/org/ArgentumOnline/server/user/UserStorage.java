@@ -101,16 +101,7 @@ public class UserStorage {
 
 	private void loadUserInit(IniFile ini) 
 	throws java.io.IOException {
-		user.userFaction().ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
-		user.userFaction().FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
-		user.userFaction().CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
-		user.userFaction().CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
-		user.userFaction().RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
-		user.userFaction().RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
-		user.userFaction().RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
-		user.userFaction().RecibioExpInicialReal = ini.getShort("FACCIONES", "rExReal") == 1;
-		user.userFaction().RecompensasCaos = ini.getShort("FACCIONES", "recCaos");
-		user.userFaction().RecompensasReal = ini.getShort("FACCIONES", "recReal");
+		user.userFaction().loadUserFaction(ini);
 
 		user.flags().Muerto = ini.getShort("FLAGS", "Muerto") == 1;
 		user.flags().Escondido = ini.getShort("FLAGS", "Escondido") == 1;
@@ -210,7 +201,6 @@ public class UserStorage {
 		user.quest().m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
 	}
 
-
 	private void loadPets(IniFile ini) {
 		int cantMascotas = ini.getShort("Mascotas", "NroMascotas");
 		// Lista de mascotas.
@@ -278,16 +268,7 @@ public class UserStorage {
 
 			ini.setValue("COUNTERS", "Pena", user.counters().Pena);
 
-			ini.setValue("FACCIONES", "EjercitoReal", user.userFaction().ArmadaReal);
-			ini.setValue("FACCIONES", "EjercitoCaos", user.userFaction().FuerzasCaos);
-			ini.setValue("FACCIONES", "CiudMatados", user.userFaction().CiudadanosMatados);
-			ini.setValue("FACCIONES", "CrimMatados", user.userFaction().CriminalesMatados);
-			ini.setValue("FACCIONES", "rArCaos", user.userFaction().RecibioArmaduraCaos);
-			ini.setValue("FACCIONES", "rArReal", user.userFaction().RecibioArmaduraReal);
-			ini.setValue("FACCIONES", "rExCaos", user.userFaction().RecibioExpInicialCaos);
-			ini.setValue("FACCIONES", "rExReal", user.userFaction().RecibioExpInicialReal);
-			ini.setValue("FACCIONES", "recCaos", user.userFaction().RecompensasCaos);
-			ini.setValue("FACCIONES", "recReal", user.userFaction().RecompensasReal);
+			user.userFaction().saveUserFaction(ini);
 
 			ini.setValue("GUILD", "EsGuildLeader", user.guildUser.m_esGuildLeader);
 			ini.setValue("GUILD", "Echadas", user.guildUser.m_echadas);
@@ -444,5 +425,5 @@ public class UserStorage {
 			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
 		}
 	}
-	
+
 }

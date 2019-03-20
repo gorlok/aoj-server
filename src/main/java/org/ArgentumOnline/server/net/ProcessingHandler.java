@@ -52,8 +52,12 @@ import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.OnlineMapRequest;
+import org.ArgentumOnline.server.protocol.RequestCharBankRequest;
+import org.ArgentumOnline.server.protocol.RequestCharGoldRequest;
 import org.ArgentumOnline.server.protocol.RequestCharInfoRequest;
 import org.ArgentumOnline.server.protocol.RequestCharInventoryRequest;
+import org.ArgentumOnline.server.protocol.RequestCharSkillsRequest;
+import org.ArgentumOnline.server.protocol.RequestCharStatsRequest;
 import org.ArgentumOnline.server.protocol.ReviveCharRequest;
 import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
@@ -572,6 +576,23 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 				case RequestCharInventory:
 					server.manager().requestCharInv(player, ((RequestCharInventoryRequest)packet).userName);
 					break;
+					
+				case RequestCharStats:
+					server.manager().requestCharStats(player, ((RequestCharStatsRequest)packet).userName);
+					break;
+					
+				case RequestCharGold:
+					server.manager().requestCharGold(player, ((RequestCharGoldRequest)packet).userName);
+					break;
+					
+				case RequestCharBank:
+					server.manager().requestCharBank(player, ((RequestCharBankRequest)packet).userName);
+					break;
+					
+				case RequestCharSkills:
+					server.manager().requestCharSkills(player, ((RequestCharSkillsRequest)packet).userName);
+					break;
+					
 					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());

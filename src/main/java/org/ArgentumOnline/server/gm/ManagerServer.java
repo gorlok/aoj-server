@@ -1333,7 +1333,7 @@ public class ManagerServer {
 				return;
 			}
 		} 
-		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		admin.sendMessage(user.getNick() + " tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
 		for (int i = 1; i <= user.userInv().size(); i++) {
 			if (user.userInv().getObjeto(i).objid > 0) {
 				ObjectInfo info = findObj(user.userInv().getObjeto(i).objid);
@@ -1347,41 +1347,140 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/INV " + userName);
 	}
 
-	public void doBovUser(Player admin, String s) {
-		// Boveda del usuario
-		// Comando /BOV
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+	public void requestCharStats(Player admin, String userName) {
+		// Mini Stats del usuario
+		// Comando /STAT
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "/BOV " + s);
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
 
-		admin.sendMessage(usuario.getNick(), FontType.FONTTYPE_INFO);
-		admin.sendMessage(" Tiene " + usuario.getBankInventory().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
-		for (int i = 1; i <= usuario.getBankInventory().size(); i++) {
-			if (usuario.getBankInventory().getObjeto(i).objid > 0) {
-				ObjectInfo info = findObj(usuario.getBankInventory().getObjeto(i).objid);
-				admin.sendMessage(" Objeto " + i + " " + info.Nombre + " Cantidad:" + usuario.getBankInventory().getObjeto(i).cant,
-						FontType.FONTTYPE_INFO);
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		
+        admin.sendMessage("Pj: " + user.getNick(), FontType.FONTTYPE_INFO);
+        admin.sendMessage("CiudadanosMatados: " + user.userFaction().CiudadanosMatados 
+        		+ " CriminalesMatados: " + user.userFaction().CriminalesMatados 
+        		+ " UsuariosMatados: " + user.stats().usuariosMatados, FontType.FONTTYPE_INFO);
+        
+        admin.sendMessage("NPCsMuertos: " + user.stats().NPCsMuertos, FontType.FONTTYPE_INFO);
+        admin.sendMessage("Clase: " + user.clazz().toString(), FontType.FONTTYPE_INFO);
+        admin.sendMessage("Pena: " + user.counters().Pena, FontType.FONTTYPE_INFO);
+        
+        if (user.isRoyalArmy()) {
+            admin.sendMessage("Armada Real Desde: " + user.userFaction().FechaIngreso, FontType.FONTTYPE_INFO);
+            admin.sendMessage("Ingresó en Nivel: " + user.userFaction().NivelIngreso 
+            		+ " con " + user.userFaction().MatadosIngreso + " Ciudadanos matados.", FontType.FONTTYPE_INFO);
+            admin.sendMessage("Veces que Ingresó: " + user.userFaction().Reenlistadas, FontType.FONTTYPE_INFO);
+        
+        } else if (user.isDarkLegion()) {
+            admin.sendMessage("Legion Oscura Desde: " + user.userFaction().FechaIngreso, FontType.FONTTYPE_INFO);
+            admin.sendMessage("Ingresó en Nivel: " + user.userFaction().NivelIngreso, FontType.FONTTYPE_INFO);
+            admin.sendMessage("Veces que Ingresó: " + user.userFaction().Reenlistadas, FontType.FONTTYPE_INFO);
+        
+        } else if (user.userFaction().RecibioExpInicialReal) {
+            admin.sendMessage("Fue Armada Real", FontType.FONTTYPE_INFO);
+            admin.sendMessage("Veces que Ingresó: " + user.userFaction().Reenlistadas, FontType.FONTTYPE_INFO);
+        
+        } else if (user.userFaction().RecibioExpInicialCaos) {
+            admin.sendMessage("Fue Legionario", FontType.FONTTYPE_INFO);
+            admin.sendMessage("Veces que Ingresó: " + user.userFaction().Reenlistadas, FontType.FONTTYPE_INFO);
+        }
+        
+        admin.sendMessage("Asesino: " + user.reputation().getAsesinoRep(), FontType.FONTTYPE_INFO);
+        admin.sendMessage("Noble: " + user.reputation().getNobleRep(), FontType.FONTTYPE_INFO);
+        
+        if (user.guildInfo().esMiembroClan()) {
+        	admin.sendMessage("Clan: " + user.guildInfo().getGuildName(), FontType.FONTTYPE_INFO);
+        }	
+
+		Log.logGM(admin.getNick(), "/STAT " + userName);
+	}
+	
+	
+	public void requestCharGold(Player admin, String userName) {
+		// Balance del usuario
+		// Comando /BAL
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
+
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+		Log.logGM(admin.getNick(), "/BAL " + userName);
+
+		admin.sendMessage("El usuario " + user.getNick() + " tiene " + user.stats().getBankGold() + " en el banco", FontType.FONTTYPE_TALK);
+	}
+
+	public void requestCharBank(Player admin, String userName) {
+		// Boveda del usuario
+		// Comando /BOV
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
+
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+		Log.logGM(admin.getNick(), "/BOV " + userName);
+
+		admin.sendMessage(user.getNick() + " tiene " + user.getBankInventory().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		for (int i = 1; i <= user.getBankInventory().size(); i++) {
+			if (user.getBankInventory().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(user.getBankInventory().getObjeto(i).objid);
+				admin.sendMessage(" Objeto " + i + " " + info.Nombre 
+						+ " Cantidad:" + user.getBankInventory().getObjeto(i).cant,	FontType.FONTTYPE_INFO);
 			}
 		}
 	}
 
-	public void doSkillsUser(Player admin, String s) {
+	public void requestCharSkills(Player admin, String userName) {
 		// Skills del usuario
 		// Comando /SKILLS
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "/SKILLS " + s);
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
 
-		admin.sendMessage(usuario.getNick(), FontType.FONTTYPE_INFO);
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+		Log.logGM(admin.getNick(), "/SKILLS " + userName);
+
+		admin.sendMessage(user.getNick(), FontType.FONTTYPE_INFO);
 		for (Skill skill : Skill.values()) {
-			admin.sendMessage(" " + skill + " = " + usuario.skills().get(skill), FontType.FONTTYPE_INFO);
+			admin.sendMessage(" " + skill + ": " + user.skills().get(skill), FontType.FONTTYPE_INFO);
 		}
+		admin.sendMessage(" Libres: " + user.skills().getSkillPoints(), FontType.FONTTYPE_INFO);
 	}
 
 	public void doMensajeALosGM(Player admin, String s) {
