@@ -29,6 +29,6 @@ build/
 .classpath
 .project
 .settings/
-pjs/*
-worldBackup/
+charfile/*
+worldBackup/*
 
