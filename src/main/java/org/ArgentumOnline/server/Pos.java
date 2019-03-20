@@ -63,4 +63,13 @@ public class Pos implements Constants {
 				.toString();
 	}
 
+	public String toStringShort() {
+		return new StringBuilder()
+				.append("(")
+				.append(this.x)
+				.append(",")
+				.append(this.y)
+				.append(")")
+				.toString();
+	}
 }

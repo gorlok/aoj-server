@@ -36,6 +36,7 @@ import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
 import org.ArgentumOnline.server.protocol.CommerceSellRequest;
 import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
 import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
+import org.ArgentumOnline.server.protocol.CreateItemRequest;
 import org.ArgentumOnline.server.protocol.CreaturesInMapRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
@@ -43,6 +44,7 @@ import org.ArgentumOnline.server.protocol.EquipItemRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
+import org.ArgentumOnline.server.protocol.GoNearbyRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
@@ -50,17 +52,21 @@ import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.OnlineMapRequest;
+import org.ArgentumOnline.server.protocol.RequestCharInfoRequest;
+import org.ArgentumOnline.server.protocol.RequestCharInventoryRequest;
 import org.ArgentumOnline.server.protocol.ReviveCharRequest;
 import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.ServerMessageRequest;
 import org.ArgentumOnline.server.protocol.SetCharDescriptionRequest;
 import org.ArgentumOnline.server.protocol.SetMOTDRequest;
+import org.ArgentumOnline.server.protocol.SpawnCreatureRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.SummonCharRequest;
 import org.ArgentumOnline.server.protocol.SystemMessageRequest;
 import org.ArgentumOnline.server.protocol.TalkAsNPCRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
+import org.ArgentumOnline.server.protocol.TeleportCreateRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
@@ -515,6 +521,58 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.cleanWorld(player);
 					break;
 					
+				case SpawnListRequest:
+					server.manager().sendSpawnCreatureList(player);
+					break;
+					
+				case SpawnCreature:
+					server.manager().spawnCreature(player, ((SpawnCreatureRequest)packet).npc);
+					break;
+					
+				case KillNPCNoRespawn:
+					server.manager().killNPCNoRespawn(player);
+					break;
+					
+				case KillAllNearbyNPCs:
+					server.manager().killAllNearbyNPCs(player);
+					break;
+					
+				case TeleportCreate:
+					handleTeleportCreate((TeleportCreateRequest)packet, player);
+					break;
+					
+				case TeleportDestroy:
+					server.manager().destroyTeleport(player);
+					break;
+					
+				case CreateItem:
+					server.manager().createItem(player, ((CreateItemRequest)packet).objectIndex);
+					break;
+					
+				case DestroyItems:
+					server.manager().destroyItem(player);
+					break;
+					
+				case ItemsInTheFloor:
+					server.manager().sendItemsInTheFloor(player);
+					break;
+					
+				case DestroyAllItemsInArea:
+					server.manager().destroyAllItemsInArea(player);
+					break;
+					
+				case GoNearby:
+					server.manager().goToChar(player, ((GoNearbyRequest)packet).userName);
+					break;
+					
+				case RequestCharInfo:
+					server.manager().requestCharInfo(player, ((RequestCharInfoRequest)packet).userName);
+					break;
+					
+				case RequestCharInventory:
+					server.manager().requestCharInv(player, ((RequestCharInventoryRequest)packet).userName);
+					break;
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}
@@ -523,6 +581,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			}
 		}
 		
+	}
+
+	private void handleTeleportCreate(TeleportCreateRequest packet, Player admin) {
+		GameServer.instance().manager().createTeleport(admin, packet.mapa, packet.x, packet.y);
 	}
 
 	private void handleChatColor(ChatColorRequest packet, Player admin) {

@@ -18,6 +18,7 @@
 package org.ArgentumOnline.server.user;
 
 import org.ArgentumOnline.server.Skill;
+import org.ArgentumOnline.server.util.IniFile;
 
 /**
  * @author gorlok
@@ -95,6 +96,14 @@ public class UserSkills {
 				set(skill, Skill.MAX_SKILL_POINTS);
 			}
 		}
+	}
+
+	public void loadUserSkills(IniFile ini) {
+		int i = 1;
+		for (Skill skill : Skill.values()) {
+			set(skill, ini.getShort("SKILLS", "SK" + (i++)));
+		}
+		freeSkillPts = ini.getInt("STATS", "SkillPtsLibres");
 	}
 	
 }

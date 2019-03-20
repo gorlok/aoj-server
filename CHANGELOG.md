@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-19
+- se agregan comandos de GM: /CC, /MATA y /MASSKILL, /CT, /DT, /PISO, /MASSDEST, /INFO
+
 ### 2019-03-18
 - SEGURIDAD: no se guarda más el password del personaje, sino un hash salteado con papas.
 - bugfix con colores rgb

@@ -478,7 +478,8 @@ public class GameServer implements Constants {
     }
 
     public Player createPlayer(Channel channel) {
-        Player player = new Player(channel, this);
+        Player player = new Player(this);
+        player.setChannel(channel);
         this.players.put(player.getId(), player);
         return player;
     }

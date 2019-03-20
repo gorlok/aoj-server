@@ -53,22 +53,39 @@ public class UserStorage {
 		this.user = user;
 	}
 	
-
 	/**
 	 * Load user data from storage
 	 * @throws IOException
 	 */
-	void loadUserFromStorage() 
+	public void loadUserFromStorage()
 	throws IOException {
 		IniFile ini = new IniFile(Player.getPjFile(user.userName));
 		
 		loadUserInit(ini);
-		loadUserStats(ini);
+		user.stats().loadUserStats(ini);
+		user.skills().loadUserSkills(ini);
+		user.spells().loadSpells(ini);
+		user.reputation.loadUserReputacion(ini);
+		loadPets(ini);
 		if (!validateChr()) {
 			user.sendError("Error en el personaje.");
 			throw new RuntimeException("Error en el personaje." + user.getNick());
 		}
-		loadUserReputacion(ini, user.reputation());
+	}
+
+	/**
+	 * Load offline user from storage (partial load)
+	 * @throws IOException
+	 */
+	public void loadUserFromStorageOffline(String userName)
+	throws IOException {
+		user.userName = userName;
+		IniFile ini = new IniFile(Player.getPjFile(user.userName));
+		
+		loadUserInit(ini);
+		user.stats().loadUserStats(ini);
+		user.skills().loadUserSkills(ini);
+		user.reputation.loadUserReputacion(ini);
 	}
 	
 	private boolean validateChr() {
@@ -103,10 +120,11 @@ public class UserStorage {
 		user.flags().Envenenado = ini.getShort("FLAGS", "Envenenado") == 1;
 		user.flags().Paralizado = ini.getShort("FLAGS", "Paralizado") == 1;
 		user.flags().Ban = ini.getShort("FLAGS", "Ban") == 1;
+		user.flags().Desnudo = (ini.getShort("Inventory", "ArmourEqpSlot") == 0);
+		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
 		if (user.flags().Paralizado) {
 			user.counters().Paralisis = IntervaloParalizado;
 		}
-		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
 		user.counters().Pena = ini.getLong("COUNTERS", "Pena");
 		user.email = ini.getString("CONTACTO", "Email");
 		user.gender = UserGender.value(ini.getShort("INIT", "Genero"));
@@ -116,7 +134,6 @@ public class UserStorage {
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
 		user.homeland = Ciudad.value(ini.getShort("INIT", "Hogar"));
-		user.infoChar().heading = Heading.value(ini.getShort("INIT", "Heading"));
 
 		user.origChar().head = ini.getShort("INIT", "Head");
 		user.origChar().body = ini.getShort("INIT", "Body");
@@ -125,9 +142,7 @@ public class UserStorage {
 		user.origChar().helmet = ini.getShort("INIT", "Casco");
 		user.origChar().heading = Heading.SOUTH;
 
-		user.bannedBy = ini.getString("BAN", "BannedBy");
-		user.bannedReason = ini.getString("BAN", "Reason");
-
+		user.infoChar().heading = Heading.value(ini.getShort("INIT", "Heading"));
 		if (user.isAlive()) {
 			user.infoChar().head = user.origChar().head;
 			user.infoChar().body = user.origChar().body;
@@ -142,6 +157,9 @@ public class UserStorage {
 			user.infoChar().shield = NingunEscudo;
 			user.infoChar().helmet = NingunCasco;
 		}
+		
+		user.bannedBy = ini.getString("BAN", "BannedBy");
+		user.bannedReason = ini.getString("BAN", "Reason");
 
 		user.description = ini.getString("INIT", "Desc");
 		{
@@ -169,20 +187,10 @@ public class UserStorage {
 		}
 		user.userInv().setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
 		user.userInv().setArmaduraSlot(ini.getShort("Inventory", "ArmourEqpSlot"));
-		user.flags().Desnudo = (user.userInv().getArmaduraSlot() == 0);
 		user.userInv().setEscudoSlot(ini.getShort("Inventory", "EscudoEqpSlot"));
 		user.userInv().setCascoSlot(ini.getShort("Inventory", "CascoEqpSlot"));
 		user.userInv().setBarcoSlot(ini.getShort("Inventory", "BarcoSlot"));
 		user.userInv().setMunicionSlot(ini.getShort("Inventory", "MunicionSlot"));
-
-		int cantMascotas = ini.getShort("Mascotas", "NroMascotas");
-		// Lista de mascotas.
-		for (int i = 1; i <= cantMascotas; i++) {
-			short npcNumber = ini.getShort("Mascotas", "Mas" + i);
-			Npc pet = server.createNpc(npcNumber);
-			user.addTamedPet(pet);
-			pet.activate();
-		}
 
 		user.guildUser.m_fundoClan = ini.getShort("Guild", "FundoClan") == 1;
 		user.guildUser.m_esGuildLeader = ini.getShort("Guild", "EsGuildLeader") == 1;
@@ -201,6 +209,18 @@ public class UserStorage {
 		user.quest().m_enQuest = (ini.getShort("QUEST", "EnQuest") == 1);
 		user.quest().m_realizoQuest = (ini.getShort("QUEST", "RealizoQuest") == 1);
 	}
+
+
+	private void loadPets(IniFile ini) {
+		int cantMascotas = ini.getShort("Mascotas", "NroMascotas");
+		// Lista de mascotas.
+		for (int i = 1; i <= cantMascotas; i++) {
+			short npcNumber = ini.getShort("Mascotas", "Mas" + i);
+			Npc pet = server.createNpc(npcNumber);
+			user.addTamedPet(pet);
+			pet.activate();
+		}
+	}
 	
 	public static CharacterInfoResponse createCharacterInfoResponse(String userName) {
 		// ¿Existe el personaje?
@@ -211,7 +231,7 @@ public class UserStorage {
 			IniFile ini = new IniFile(Player.getPjFile(userName));
 			
 			Reputation tmpReputation = new Reputation();
-			loadUserReputacion(ini, tmpReputation);
+			tmpReputation.loadUserReputacion(ini);
 			
 			/*
         'Get previous guilds
@@ -240,62 +260,6 @@ public class UserStorage {
 			log.fatal("ERROR getChrInfo", e);
 		}
 		return null;
-	}
-
-	private void loadUserStats(IniFile ini) {
-		
-		int i = 1;
-		for (Attribute attr : Attribute.values()) {
-			user.stats().attr().set(attr, ini.getShort("ATRIBUTOS", "AT" + (i++)));
-		}
-		user.stats().attr().backupAttributes();
-
-		i = 1;
-		for (Skill skill : Skill.values()) {
-			user.skills().set(skill, ini.getShort("SKILLS", "SK" + (i++)));
-		}
-		user.skills().freeSkillPts = ini.getInt("STATS", "SkillPtsLibres");
-
-		user.stats().Exp = ini.getInt("STATS", "EXP");
-		user.stats().ELU = ini.getInt("STATS", "ELU");
-		user.stats().ELV = ini.getInt("STATS", "ELV");
-
-		for (int slot = 1; slot <= user.spells().getCount(); slot++) {
-			user.spells().setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
-		}
-
-		user.stats().setGold(ini.getInt("STATS", "GLD"));
-		user.stats().setBankGold(ini.getInt("STATS", "BANCO"));
-
-		user.stats().MaxHP = ini.getInt("STATS", "MaxHP");
-		user.stats().MinHP = ini.getInt("STATS", "MinHP");
-
-		user.stats().stamina = ini.getInt("STATS", "MinSTA");
-		user.stats().maxStamina = ini.getInt("STATS", "MaxSTA");
-
-		user.stats().maxMana = ini.getInt("STATS", "MaxMAN");
-		user.stats().mana = ini.getInt("STATS", "MinMAN");
-
-		user.stats().MaxHIT = ini.getInt("STATS", "MaxHIT");
-		user.stats().MinHIT = ini.getInt("STATS", "MinHIT");
-
-		user.stats().maxDrinked = ini.getInt("STATS", "MaxAGU");
-		user.stats().drinked = ini.getInt("STATS", "MinAGU");
-
-		user.stats().maxEaten = ini.getInt("STATS", "MaxHAM");
-		user.stats().eaten = ini.getInt("STATS", "MinHAM");
-
-		user.stats().usuariosMatados = ini.getInt("MUERTES", "UserMuertes");
-		user.stats().NPCsMuertos = ini.getInt("MUERTES", "NpcsMuertes");
-	}
-
-	private static void loadUserReputacion(IniFile ini, Reputation reputation) {
-		reputation.asesinoRep = ini.getDouble("REP", "Asesino");
-		reputation.bandidoRep = ini.getDouble("REP", "Bandido");
-		reputation.burguesRep = ini.getDouble("REP", "Burguesia");
-		reputation.ladronRep = ini.getDouble("REP", "Ladrones");
-		reputation.nobleRep = ini.getDouble("REP", "Nobles");
-		reputation.plebeRep = ini.getDouble("REP", "Plebe");
 	}
 
 	public void saveUserToStorage() {

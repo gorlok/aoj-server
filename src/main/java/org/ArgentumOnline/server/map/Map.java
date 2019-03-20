@@ -27,8 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -558,11 +558,11 @@ public class Map implements Constants {
         return true;
     }
     
-    public void quitarNpcsArea(short pos_x, short pos_y) {
-        short x1 = (short) (pos_x - MinXBorder + 1);
-        short x2 = (short) (pos_x + MaxXBorder + 1);
-        short y1 = (short) (pos_y - MinYBorder + 1);
-        short y2 = (short) (pos_y + MaxYBorder + 1);
+    public void quitarNpcsArea(Player admin) {
+        short x1 = (short) (admin.pos().x - MinXBorder + 1);
+        short x2 = (short) (admin.pos().x + MaxXBorder + 1);
+        short y1 = (short) (admin.pos().y - MinYBorder + 1);
+        short y2 = (short) (admin.pos().y + MaxYBorder + 1);
         if (x1 < 1) {
 			x1 = 1;
 		}
@@ -576,21 +576,56 @@ public class Map implements Constants {
 			y2 = 100;
 		}
         Npc npc;
+        int count = 0;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
             	npc = tile(x,y).npc();
-                if (npc != null) { 
-                	
-                	//agush: fix mascotas ;-)
-                	if (npc.getPetUserOwner() != null) {
-                		Player masterUser = (npc.getPetUserOwner());
-                		masterUser.removePet(npc);
-                	}
-                	exitNpc(npc);
+            	// gorlok: por seguridad, lo limito a sólo NPC hostiles que no sean mascotas
+                if (npc != null && npc.getPetUserOwner() == null && npc.isHostile()) {
+            		exitNpc(npc);
+            		count++;
                 }
             }
         }
+        String msg;
+        if (count == 0) {
+        	msg = "No se encontraron criaturas para eliminar";
+        } else if (count == 1) {
+        	msg = "Se ha eliminado una criatura";
+        } else {
+        	msg = "Se han eliminado " + count + " criaturas";
+        }
+        admin.sendMessage(msg, FontType.FONTTYPE_INFO);
     }    
+
+    public void sendItemsInTheFloor(Player admin) {
+    	// List of objects by name
+    	var objects = new TreeMap<String, List<String>>();
+    	for (int x = 5; x < MAPA_ANCHO - 5; x++) {
+    		for (int y = 5; y < MAPA_ALTO - 5; y++) {
+    			if (hasObject((byte)x, (byte)y)) {
+    				var oi = getObject((byte)x, (byte)y).objInfo();
+    				if (oi.objType != ObjType.Arboles
+    						&& oi.objType != ObjType.Llaves
+    						&& oi.objType != ObjType.Carteles) {
+    					if (!objects.containsKey(oi.Nombre)) {
+    						objects.put(oi.Nombre, new ArrayList<>());
+    					}
+    					objects.get(oi.Nombre).add(Pos.xy(x, y).toStringShort());
+    				}
+    			}
+    		}
+    	}
+    	
+    	admin.sendMessage("Objetos en el mapa:", FontType.FONTTYPE_WARNING);
+    	for (String name: objects.keySet()) {
+    		admin.sendMessage(String.format("%2d %s: %s", 
+    				objects.get(name).size(), name, String.join(", ", objects.get(name))), 
+    				FontType.FONTTYPE_INFO);
+    	}
+    	admin.sendMessage("Fueron encontrados " + objects.values().size() + " objetos", 
+    			FontType.FONTTYPE_WARNING);
+    }
     
     public boolean agregarObjeto(short objid, int cant, byte x, byte y) {
     	if (hasObject(x, y)) {
@@ -1268,10 +1303,9 @@ public class Map implements Constants {
     
     
     public void sendCreaturesInMap(Player admin) {
-    	
     	// List of creatures per npc name
-    	var hostiles = new HashMap<String, List<Npc>>();
-    	var others = new HashMap<String, List<Npc>>();
+    	var hostiles = new TreeMap<String, List<Npc>>();
+    	var others = new TreeMap<String, List<Npc>>();
     	
         for (Npc npc : this.npcs) {
             // ¿esta vivo?
@@ -1484,11 +1518,11 @@ public class Map implements Constants {
         }
     }
     
-    public void objectMassDestroy(byte pos_x, byte pos_y) {
-        byte x1 = (byte) (pos_x - MinXBorder + 1);
-        byte x2 = (byte) (pos_x + MaxXBorder + 1);
-        byte y1 = (byte) (pos_y - MinYBorder + 1);
-        byte y2 = (byte) (pos_y + MaxYBorder + 1);
+    public void objectMassDestroy(Player admin, byte pos_x, byte pos_y) {
+        int x1 = pos_x - MinXBorder + 1;
+        int x2 = pos_x + MaxXBorder + 1;
+        int y1 = pos_y - MinYBorder + 1;
+        int y2 = pos_y + MaxYBorder + 1;
         if (x1 < 1) {
 			x1 = 1;
 		}
@@ -1501,12 +1535,22 @@ public class Map implements Constants {
         if (y2 > 100) {
 			y2 = 100;
 		}
-        for (byte y = y1; y <= y2; y++) {
-            for (byte x = x1; x <= x2; x++) {
-                if (hasObject(x, y) && getObject(x, y).objInfo().itemNoEsDeMapa()) {
-                    quitarObjeto(x, y);
+        int count = 0;
+        for (int y = y1; y <= y2; y++) {
+        	for (int x = x1; x <= x2; x++) {
+                if (hasObject((byte) x, (byte) y) 
+                		&& getObject((byte) x, (byte) y).objInfo().itemNoEsDeMapa()) {
+                    quitarObjeto((byte) x, (byte) y);
+                    count++;
                 }
             }
+        }
+        if (count == 0) {
+        	admin.sendMessage("Se no encontraron objectos para eliminar.", FontType.FONTTYPE_WARNING);
+        } else if (count == 1) {
+        	admin.sendMessage("Se eliminaron objetos de un tile.", FontType.FONTTYPE_WARNING);
+        } else {
+        	admin.sendMessage("Se han eliminado objetos en " + count + " tiles.", FontType.FONTTYPE_WARNING);
         }
     }    
     

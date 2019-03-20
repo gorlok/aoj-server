@@ -42,6 +42,7 @@ import org.ArgentumOnline.server.protocol.UpdateStaResponse;
 import org.ArgentumOnline.server.user.Player.DuelStatus;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.FontType;
+import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1426,6 +1427,12 @@ public class UserSpells implements Constants {
 		} else if (this.player.flags().TargetNpc > 0) {
 			this.player.sendMessage(spell.HechiceroMsg + "la criatura.",
 					FONTTYPE_FIGHT);
+		}
+	}
+
+	public void loadSpells(IniFile ini) {
+		for (int slot = 1; slot <= getCount(); slot++) {
+			setSpell(slot, ini.getShort("HECHIZOS", "H" + slot));
 		}
 	}
 

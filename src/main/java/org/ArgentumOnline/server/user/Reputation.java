@@ -20,6 +20,7 @@ package org.ArgentumOnline.server.user;
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.protocol.FameResponse;
 import org.ArgentumOnline.server.protocol.NobilityLostResponse;
+import org.ArgentumOnline.server.util.IniFile;
 
 /**
  * @author gorlok
@@ -199,5 +200,15 @@ public class Reputation {
 				(int) this.plebeRep, 
 				(int) this.getPromedio());    	
     }
+
+	public void loadUserReputacion(IniFile ini) {
+		asesinoRep = ini.getDouble("REP", "Asesino");
+		bandidoRep = ini.getDouble("REP", "Bandido");
+		burguesRep = ini.getDouble("REP", "Burguesia");
+		ladronRep = ini.getDouble("REP", "Ladrones");
+		nobleRep = ini.getDouble("REP", "Nobles");
+		plebeRep = ini.getDouble("REP", "Plebe");
+	}
+
 }
 

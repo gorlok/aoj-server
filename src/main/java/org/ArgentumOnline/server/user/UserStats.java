@@ -20,6 +20,7 @@ package org.ArgentumOnline.server.user;
 import org.ArgentumOnline.server.AbstractCharStats;
 import org.ArgentumOnline.server.Clazz;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
+import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,9 +41,9 @@ public class UserStats extends AbstractCharStats {
 	private int bankGold = 0;
 
 	public int stamina = 0; // aguante actual
-	int maxStamina = 0; // máximo de aguante
+	public int maxStamina = 0; // máximo de aguante
 
-	int mana = 0; // maná actual
+	public int mana = 0; // maná actual
 	public int maxMana = 0; // máximo de maná
 
 	int eaten = 0; // comido, cuando llega a cero, muere de hambre
@@ -238,4 +239,40 @@ public class UserStats extends AbstractCharStats {
 		return this.stamina > 0 && this.stamina == this.maxStamina;
 	}
 
+	public void loadUserStats(IniFile ini) {
+		int i = 1;
+		for (Attribute attr : Attribute.values()) {
+			attr().set(attr, ini.getShort("ATRIBUTOS", "AT" + (i++)));
+		}
+		attr().backupAttributes();
+
+		Exp = ini.getInt("STATS", "EXP");
+		ELU = ini.getInt("STATS", "ELU");
+		ELV = ini.getInt("STATS", "ELV");
+
+		setGold(ini.getInt("STATS", "GLD"));
+		setBankGold(ini.getInt("STATS", "BANCO"));
+
+		MaxHP = ini.getInt("STATS", "MaxHP");
+		MinHP = ini.getInt("STATS", "MinHP");
+
+		stamina = ini.getInt("STATS", "MinSTA");
+		maxStamina = ini.getInt("STATS", "MaxSTA");
+
+		maxMana = ini.getInt("STATS", "MaxMAN");
+		mana = ini.getInt("STATS", "MinMAN");
+
+		MaxHIT = ini.getInt("STATS", "MaxHIT");
+		MinHIT = ini.getInt("STATS", "MinHIT");
+
+		maxDrinked = ini.getInt("STATS", "MaxAGU");
+		drinked = ini.getInt("STATS", "MinAGU");
+
+		maxEaten = ini.getInt("STATS", "MaxHAM");
+		eaten = ini.getInt("STATS", "MinHAM");
+
+		usuariosMatados = ini.getInt("MUERTES", "UserMuertes");
+		NPCsMuertos = ini.getInt("MUERTES", "NpcsMuertes");
+	}
+	
 }

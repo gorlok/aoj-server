@@ -279,7 +279,7 @@ End Enum
 
     public void reSpawnNpc() {
         //////////// FIXME - HAY QUE USAR LA POSICION ORIGINAL (m_orig) REVISAR !!!
-        if (puedeReSpawn()) {
+        if (canReSpawn()) {
         	if (respawnOrigPos()) {
         		spawnNpc(this.npcNumber, this.origPos, false, true); // TODO: PROBAR !!!
         	} else {
@@ -408,7 +408,7 @@ End Enum
         this.flags().set(FLAG_ENVENENA, false);
     }
 
-    public boolean puedeReSpawn() {
+    public boolean canReSpawn() {
         return this.flags().get(FLAG_RESPAWN);
     }
 

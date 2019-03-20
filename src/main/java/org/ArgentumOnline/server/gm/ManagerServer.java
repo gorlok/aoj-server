@@ -20,10 +20,9 @@ package org.ArgentumOnline.server.gm;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,7 @@ import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.protocol.UserNameListResponse;
 import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.user.UserFaction;
+import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -336,12 +336,11 @@ public class ManagerServer {
 	public void sendSpawnCreatureList(Player admin) {
 		// Crear criatura
 		// Comando /CC
-		List<String> params = new LinkedList<>();
-		params.add("" + getSpawnList().length);
-		for (String name : getSpawnListNames()) {
-			params.add(name);
+		
+		if (!admin.isGM() || admin.isCounselor()) {
+			return;
 		}
-		admin.sendPacket(new SpawnListResponse(Arrays.toString(params.toArray())));
+		admin.sendPacket(new SpawnListResponse(String.join("\0", getSpawnListNames())));
 	}
 
 	public void spawnCreature(Player admin, short index) {
@@ -604,9 +603,12 @@ public class ManagerServer {
 		admin.sendMessage("El ip de " + userName + " es " + usuario.getIP(), FontType.FONTTYPE_INFO);
 	}
 
-	public void doCrearTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
+	public void createTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
+		if (!admin.flags().isGM()) {
+			return;
+		}
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
@@ -633,38 +635,44 @@ public class ManagerServer {
 		admin.sendMessage("¡Teleport creado!", FontType.FONTTYPE_INFO);
 	}
 
-	public void doDestruirTeleport(Player admin) {
+	public void destroyTeleport(Player admin) {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
-		if (admin.flags().TargetMap == 0 || admin.flags().TargetX == 0 || admin.flags().TargetY == 0) {
+		if (!admin.flags().isGM()) {
+			return;
+		}
+		if (admin.flags().TargetObjMap == 0 || admin.flags().TargetObjX == 0 || admin.flags().TargetObjY == 0) {
 			admin.sendMessage("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		short m = admin.flags().TargetMap;
-		Map mapa = this.server.getMap(m);
-		if (mapa == null) {
+		Map map = this.server.getMap(admin.flags().TargetObjMap);
+		if (map == null) {
 			admin.sendMessage("Debes hacer clic sobre el Teleport que deseas destruir.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		byte x = admin.flags().TargetX;
-		byte y = admin.flags().TargetY;
-		if (!mapa.isTeleport(x, y)) {
+		byte x = admin.flags().TargetObjX;
+		byte y = admin.flags().TargetObjY;
+		if (!map.isTeleport(x, y)) {
 			admin.sendMessage("¡Debes hacer clic sobre el Teleport que deseas destruir!", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		Log.logGM(admin.getNick(), "Destruyó un teleport, con /DT mapa=" + m + " x=" + x + " y=" + y);
-		mapa.destroyTeleport(x, y);
+		Log.logGM(admin.getNick(), "Destruyó un teleport, con /DT mapa=" + map.getMapNumber() + " x=" + x + " y=" + y);
+		map.destroyTeleport(x, y);
 	}
 
-	public void doMataNpc(Player admin) {
+	public void killNPCNoRespawn(Player admin) {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
+		if (!admin.isGM() || admin.isDemiGod() || admin.isCounselor()) {
+			return;
+		}
 		Npc npc = this.server.npcById(admin.flags().TargetNpc);
 		if (npc == null) {
 			admin.sendMessage("Debés hacer clic sobre un Npc y luego escribir /MATA. PERO MUCHO CUIDADO!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		npc.quitarNPC();
+		admin.flags().TargetNpc = 0;
 		Log.logGM(admin.getNick(), "/MATA " + npc);
 	}
 
@@ -794,26 +802,7 @@ public class ManagerServer {
 			admin.sendMessage("Comando no permitido o inválido.", FontType.FONTTYPE_INFO);
 		}
 	}
-
-	public void doCrearItem(Player admin, short objid) {
-		// Crear Item
-		// Comando /CI
-		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
-		Map mapa = this.server.getMap(admin.pos().map);
-		if (mapa != null) {
-			if (mapa.hasObject(admin.pos().x, admin.pos().y)) {
-				return;
-			}
-			if (mapa.isTeleport(admin.pos().x, admin.pos().y)) {
-				return;
-			}
-			if (findObj(objid) == null) {
-				return;
-			}
-			mapa.agregarObjeto(objid, 1, admin.pos().x, admin.pos().y);
-		}
-	}
-
+	
 	public void doGuardaMapa(Player admin) {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
@@ -825,16 +814,63 @@ public class ManagerServer {
 		}
 	}
 
-	public void doDestObj(Player admin) {
-		// Destruir el objeto de la posición actual.
-		// Comando /DEST
-		Log.logGM(admin.getNick(), "/DEST " + admin.pos());
-		Map mapa = this.server.getMap(admin.pos().map);
-		if (mapa != null) {
-			mapa.quitarObjeto(admin.pos().x, admin.pos().y);
+	public void createItem(Player admin, short objid) {
+		// Crear Item
+		// Comando /CI
+		if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), "/CI " + objid + " pos=" + admin.pos());
+		Map map = this.server.getMap(admin.pos().map);
+		if (map != null) {
+			if (map.hasObject(admin.pos().x, admin.pos().y)) {
+				return;
+			}
+			if (map.isTeleport(admin.pos().x, admin.pos().y)) {
+				return;
+			}
+			if (findObj(objid) == null) {
+				return;
+			}
+			map.agregarObjeto(objid, 100, admin.pos().x, admin.pos().y);
+			admin.sendMessage("ATENCION: FUERON CREADOS ***100*** ITEMS! TIRE Y /DEST LOS QUE NO NECESITE!!", 
+					FontType.FONTTYPE_GUILD);
 		}
 	}
 
+	public void destroyItem(Player admin) {
+		// Destruir el objeto de la posición actual.
+		// Comando /DEST
+		if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), "/DEST " + admin.pos());
+		Map map = this.server.getMap(admin.pos().map);
+		if (map != null) {
+			if (!map.hasObject(admin.pos().x, admin.pos().y)) {
+				admin.sendMessage("No hay objetos para destruir en la posición actual", FontType.FONTTYPE_INFO);
+				return;
+			}
+			if (map.isTeleportObject(admin.pos().x, admin.pos().y)) {
+				admin.sendMessage("No se pueden destruir teleports así. Utilice /DT.", FontType.FONTTYPE_INFO);
+				return;
+			}
+			map.quitarObjeto(admin.pos().x, admin.pos().y);
+		}
+	}
+	
+	public void sendItemsInTheFloor(Player admin) {
+    	// HandleItemsInTheFloor
+		// Command /PISO
+    	if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+    		return;
+    	}
+		Map map = this.server.getMap(admin.pos().map);
+		if (map != null) {
+			map.sendItemsInTheFloor(admin);
+		}
+	}
+	
 	public void doBloqPos(Player admin) {
 		// Bloquear la posición actual.
 		// Comando /BLOQ
@@ -851,13 +887,16 @@ public class ManagerServer {
 		}
 	}
 
-	public void doMassKill(Player admin) {
+	public void killAllNearbyNPCs(Player admin) {
 		// Quita todos los NPCs del area.
 		// Comando /MASSKILL
+		if (!admin.isGM() || admin.isDemiGod() || admin.isCounselor()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "/MASSKILL " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa != null) {
-			mapa.quitarNpcsArea(admin.pos().x, admin.pos().y);
+			mapa.quitarNpcsArea(admin);
 		}
 	}
 
@@ -877,14 +916,17 @@ public class ManagerServer {
 		admin.sendMessage("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y).ordinal() + " en " + admin.pos(), FontType.FONTTYPE_INFO);
 	}
 
-	public void doMassDest(Player admin) {
+	public void destroyAllItemsInArea(Player admin) {
 		// Quita todos los objetos del area
 		// Comando /MASSDEST
+    	if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+    		return;
+    	}
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa == null) {
 			return;
 		}
-		mapa.objectMassDestroy(admin.pos().x, admin.pos().y);
+		mapa.objectMassDestroy(admin, admin.pos().x, admin.pos().y);
 		Log.logGM(admin.getNick(), "/MASSDEST ");
 	}
 
@@ -1190,27 +1232,119 @@ public class ManagerServer {
 		}
 	}
 
-	public void doInvUser(Player admin, String s) {
+	public void requestCharInfo(Player admin, String userName) {
 		// Inventario del usuario.
-		// Comando /INV
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+		// Comando /INFO
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "/INV " + s);
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
 
-		admin.sendMessage(usuario.getNick(), FontType.FONTTYPE_INFO);
-		admin.sendMessage(" Tiene " + usuario.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
-		for (int i = 1; i <= usuario.userInv().size(); i++) {
-			if (usuario.userInv().getObjeto(i).objid > 0) {
-				ObjectInfo info = findObj(usuario.userInv().getObjeto(i).objid);
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+
+		admin.sendMessage("Estadisticas de: " + user.getNick(), FontType.FONTTYPE_WARNING);
+		admin.sendMessage("Nivel: " + user.stats().ELV + "  EXP: " + user.stats().Exp + "/" + user.stats().ELU, FontType.FONTTYPE_INFO);
+		admin.sendMessage("Salud: " + user.stats().MinHP + "/" + user.stats().MaxHP + 
+				"  Mana: " + user.stats().mana + "/" + user.stats().maxMana + 
+				"  Vitalidad: " + user.stats().stamina + "/" + user.stats().maxStamina, FontType.FONTTYPE_INFO);
+
+		if (user.userInv().tieneArmaEquipada()) {
+			admin.sendMessage("Menor Golpe/Mayor Golpe: " + user.stats().MinHIT + "/" + user.stats().MaxHIT +
+					" (" + user.userInv().getArma().MinHIT + "/" + user.userInv().getArma().MaxHIT + ")", FontType.FONTTYPE_INFO);
+		} else {
+			admin.sendMessage("Menor Golpe/Mayor Golpe: " + user.stats().MinHIT + "/" + user.stats().MaxHIT, FontType.FONTTYPE_INFO);
+		}
+		
+		if (user.userInv().tieneArmaduraEquipada()) {
+			if (user.userInv().tieneEscudoEquipado()) {
+				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.userInv().getArmadura().MinDef + user.userInv().getEscudo().MinDef + "/" +
+						user.userInv().getArmadura().MaxDef + user.userInv().getEscudo().MaxDef, FontType.FONTTYPE_INFO);
+			} else {
+				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.userInv().getArmadura().MinDef + "/" +
+						user.userInv().getArmadura().MaxDef, FontType.FONTTYPE_INFO);
+			}
+		} else {
+			admin.sendMessage("(CUERPO) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
+		}
+		
+		if (user.userInv().tieneCascoEquipado()) {
+			admin.sendMessage("(CABEZA) Min Def/Max Def: " + user.userInv().getCasco().MinDef + "/" +
+					user.userInv().getCasco().MaxDef, FontType.FONTTYPE_INFO);
+		} else {
+			admin.sendMessage("(CABEZA) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
+		}
+		
+		if (user.guildInfo().esMiembroClan()) {
+			admin.sendMessage("Clan: " + user.guildInfo().getGuildName(), FontType.FONTTYPE_INFO);
+			if (user.guildInfo().esGuildLeader()) {
+				admin.sendMessage("Status: Lider", FontType.FONTTYPE_INFO);	
+			}
+		}
+
+		// FIXME UPTIME
+		
+		admin.sendMessage("Oro: " + user.stats().getGold() + "  Posición: " + 
+				user.pos().x + "," + user.pos().y + " en mapa " + user.pos().map, FontType.FONTTYPE_INFO);
+		admin.sendMessage("Dados: Fue. " + user.stats().attr().get(Attribute.FUERZA) +  
+				" Agi. " + user.stats().attr().get(Attribute.AGILIDAD) + 
+				" Int. " + user.stats().attr().get(Attribute.INTELIGENCIA) + 
+				" Car. " + user.stats().attr().get(Attribute.CARISMA) + 
+				" Con. " + user.stats().attr().get(Attribute.CONSTITUCION), FontType.FONTTYPE_INFO);
+		
+		/*
+		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		for (int i = 1; i <= user.userInv().size(); i++) {
+			if (user.userInv().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(user.userInv().getObjeto(i).objid);
 				admin.sendMessage(
 						" Objeto " + i + " " + info.Nombre + 
-						" Cantidad:" + usuario.userInv().getObjeto(i).cant,
+						" Cantidad:" + user.userInv().getObjeto(i).cant,
 						FontType.FONTTYPE_INFO);
 			}
 		}
+		*/
+
+		Log.logGM(admin.getNick(), "/INFO " + userName);
+	}
+
+	// FIXME
+	public void requestCharInv(Player admin, String userName) {
+		// Inventario del usuario.
+		// Comando /INV
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_WARNING);
+
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignore) {
+				return;
+			}
+		} 
+		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
+		for (int i = 1; i <= user.userInv().size(); i++) {
+			if (user.userInv().getObjeto(i).objid > 0) {
+				ObjectInfo info = findObj(user.userInv().getObjeto(i).objid);
+				admin.sendMessage(
+						" Objeto " + i + " " + info.Nombre + 
+						" Cantidad:" + user.userInv().getObjeto(i).cant,
+						FontType.FONTTYPE_INFO);
+			}
+		}
+
+		Log.logGM(admin.getNick(), "/INV " + userName);
 	}
 
 	public void doBovUser(Player admin, String s) {
@@ -1292,6 +1426,7 @@ public class ManagerServer {
 	}
 	
 	public void sendCreaturesInMap(Player admin, short mapNumber) {
+		// Command /NENE
 		if (mapNumber < 1) {
 			admin.sendMessage("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;

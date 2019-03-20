@@ -200,7 +200,7 @@ public class Player extends AbstractCharacter {
 
 	public UserTrade userTrade;
 
-	UserStorage userStorage;
+	public UserStorage userStorage;
 
 	private UserQuest quest;
 
@@ -214,17 +214,20 @@ public class Player extends AbstractCharacter {
 	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
 
 	GameServer server;
-
-	public Player(Channel channel, GameServer aoserver) {
+	
+	public Player(GameServer aoserver) {
 		init(aoserver);
-
 		this.userTrade = new UserTrade(this);
-
+	}
+	
+	public void setChannel(Channel channel) {
 		this.channel = channel;
-		java.net.InetSocketAddress addr = (java.net.InetSocketAddress) channel.remoteAddress();
-		if (addr != null) {
-			this.ip = addr.getAddress().getHostAddress();
-			log.info(this.userName + " conectado desde " + this.ip);
+		if (channel != null) {
+			java.net.InetSocketAddress addr = (java.net.InetSocketAddress) channel.remoteAddress();
+			if (addr != null) {
+				this.ip = addr.getAddress().getHostAddress();
+				log.info(this.userName + " conectado desde " + this.ip);
+			}
 		}
 	}
 	
@@ -2891,7 +2894,7 @@ public class Player extends AbstractCharacter {
 			if (pet.counters().TiempoExistencia > 0) {
 				// Es una mascota de invocación. Se pierde al cambiar de mapa
 				getUserPets().removePet(pet);
-			} else if (pet.puedeReSpawn()) {
+			} else if (pet.canReSpawn()) {
 				// Es una mascota domada que puede hacer respawn
 
 				Map oldMapa = this.server.getMap(pet.pos().map);
