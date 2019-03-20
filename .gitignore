@@ -29,6 +29,6 @@ build/
 .project
 .settings/
 
-charfile/*
+#charfile/*
 worldBackup/*
 log/*
