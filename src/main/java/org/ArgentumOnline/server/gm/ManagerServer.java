@@ -41,9 +41,10 @@ import org.ArgentumOnline.server.protocol.ShowSOSFormResponse;
 import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.protocol.UserNameListResponse;
 import org.ArgentumOnline.server.user.Player;
-import org.ArgentumOnline.server.user.UserFaction;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
+import org.ArgentumOnline.server.user.UserFaction;
 import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
+import org.ArgentumOnline.server.user.UserStorage;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
 import org.ArgentumOnline.server.util.Log;
@@ -1503,14 +1504,14 @@ public class ManagerServer {
 		admin.sendMessage(" Libres: " + user.skills().getSkillPoints(), FontType.FONTTYPE_INFO);
 	}
 
-	public void doMensajeALosGM(Player admin, String s) {
+	public void doMensajeALosGM(Player admin, String chat) {
 		// Mensaje para los GMs
 		if (!admin.flags().isGM()) {
 			return;
 		}
-		if (s.length() > 0) {
-			Log.logGM(admin.getNick(), "Mensaje para GMs: " + s);
-			this.server.sendMessageToGMs(admin.getNick() + "> " + s);
+		if (chat.length() > 0) {
+			Log.logGM(admin.getNick(), "Mensaje para GMs: " + chat);
+			this.server.sendMessageToGMs(admin.getNick() + "> " + chat);
 		}
 	}
 
@@ -1524,15 +1525,15 @@ public class ManagerServer {
 		admin.sendMessage("Hora: " + hora + " Fecha: " + fecha, FontType.FONTTYPE_INFO);
 	}
 
-	public void whereIsUser(Player admin, String s) {
+	public void whereIsUser(Player admin, String userName) {
 		// Comando /DONDE
 		// ¿Donde esta fulano?
-		s = s.trim();
+		userName = userName.trim();
 		Player usuario;
-		if (s.length() == 0) {
+		if (userName.length() == 0) {
 			usuario = admin;
 		} else {
-			usuario = this.server.playerByUserName(s);
+			usuario = this.server.playerByUserName(userName);
 			if (usuario == null) {
 				admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
@@ -1558,7 +1559,6 @@ public class ManagerServer {
 			admin.sendMessage("El mapa no existe.", FontType.FONTTYPE_INFO);
 		}
 	}
-	
 
 	public void doTeleploc(Player admin) {
 		// Comando /TELEPLOC
@@ -1574,7 +1574,7 @@ public class ManagerServer {
 		// Comando /TELEP
 		// Teleportar
 		if (m < 1) {
-			admin.sendMessage("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.FONTTYPE_WARNING);
+			admin.sendMessage("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.FONTTYPE_INFO);
 			return;
 		}
 		Map mapa = this.server.getMap(m);
@@ -1618,16 +1618,13 @@ public class ManagerServer {
 				admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
 				return;
 			}
-			user = this.server.playerByUserName(userName);
-			if (user == null) {
-				admin.sendMessage("El usuario está desconectado.", FontType.FONTTYPE_WARNING);
-				user = new Player(server);
-				try {
-					user.userStorage.loadUserFromStorageOffline(userName);
-				} catch (IOException ignored) {
-					return;
-				}
-			} 
+			admin.sendMessage("El usuario está desconectado.", FontType.FONTTYPE_INFO);
+			user = new Player(server);
+			try {
+				user.userStorage.loadUserFromStorageOffline(userName);
+			} catch (IOException ignored) {
+				return;
+			}
 		}
 		
 		if (user.flags().privileges > admin.flags().privileges) {
@@ -1639,6 +1636,60 @@ public class ManagerServer {
 		var ipList = user.userStorage.loadLastIPs();
 		admin.sendMessage("Últimas IP de " + userName + " son: " + String.join(", ", ipList), 
 				FontType.FONTTYPE_INFO);
+	}
+
+	public void requestCharEmail(Player admin, String userName) {
+		// Command /LASTEMAIL
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Log.logGM(admin.getNick(), "/LASTEMAIL " + userName);
+		String email;
+		try {
+			email = UserStorage.emailFromStorage(userName);
+			admin.sendMessage("Email de " + userName + " es: " + email, FontType.FONTTYPE_INFO);
+		} catch (IOException ignored) {
+		}
+	}
+
+	public void makeDumb(Player admin, String userName) {
+		// Command /ESTUPIDO
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (!user.isDumb()) {
+			Log.logGM(admin.getNick(), "/ESTUPIDO " + userName);
+			user.makeDumb();
+		} else {
+			admin.sendMessage("El usuario ya estaba atontado.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void makeNoDumb(Player admin, String userName) {
+		// Command /NOESTUPIDO
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
+			return;
+		} 
+		if (user.isDumb()) {
+			Log.logGM(admin.getNick(), "/NOESTUPIDO " + userName);
+			user.makeNoDumb();
+		} else {
+			admin.sendMessage("El usuario no estaba atontado.", FontType.FONTTYPE_INFO);
+		}
 	}
 
 }

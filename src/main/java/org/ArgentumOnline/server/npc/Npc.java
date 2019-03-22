@@ -1574,7 +1574,7 @@ End Enum
         }
         
         if (spell.isEstupidez()) { // turbación
-        	if (!player.flags().Estupidez) {
+        	if (!player.isDumb()) {
     			player.sendWave(spell.WAV);
     			player.sendCreateFX(spell.FXgrh, spell.loops);
 
@@ -1582,10 +1582,7 @@ End Enum
     	            player.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
     	            return;
     			}
-    			
-    			player.flags().Estupidez = true;
-    			player.counters().Ceguera = IntervaloInvisible;
-    			player.sendPacket(new DumbResponse());
+    			player.makeDumb();
         	}
         }
     }

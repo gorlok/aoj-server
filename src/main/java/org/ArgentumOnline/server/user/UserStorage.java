@@ -475,5 +475,13 @@ public class UserStorage {
 		}
 		return lastIP;
 	}
+
+	public static String emailFromStorage(String userName) 
+	throws FileNotFoundException, IOException {
+		IniFile ini = new IniFile(Player.getPjFile(userName));
+		
+		return ini.getString("CONTACTO", "Email");
+	}
+
 	
 }

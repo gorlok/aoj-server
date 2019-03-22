@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-22
+- nuevos comandos de GM:  /LASTEMAIL /ESTUPIDO /NOESTUPIDO
+
 ### 2019-03-21
 - nuevos comandos de GM: /NICK2IP /LASTIP
 

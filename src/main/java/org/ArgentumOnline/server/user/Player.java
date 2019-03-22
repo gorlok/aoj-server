@@ -4550,7 +4550,7 @@ public class Player extends AbstractCharacter {
 				sendPacket(new ParalizeOKResponse());
 			}
 			
-			if (flags().Estupidez) {
+			if (isDumb()) {
 				sendPacket(new DumbResponse());
 			}
 			
@@ -4636,17 +4636,39 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void efectoCegueEstu() {
-		if (this.counters.Ceguera > 0) {
-			this.counters.Ceguera--;
+		if (counters().Ceguera > 0) {
+			counters().Ceguera--;
 		} else {
-			if (flags().Ceguera) {
-				flags().Ceguera = false;
-				sendPacket(new BlindNoMoreResponse());
+			if (isBlind()) {
+				makeNoBlind();
 			} else {
-				flags().Estupidez = false;
-				sendPacket(new DumbNoMoreResponse());
+				makeNoDumb();
 			}
 		}
+	}
+
+	private void makeNoBlind() {
+		flags().Ceguera = false;
+		sendPacket(new BlindNoMoreResponse());
+	}
+
+	public void makeNoDumb() {
+		flags().Estupidez = false;
+		sendPacket(new DumbNoMoreResponse());
+	}
+	
+	public boolean isBlind() {
+		return flags().Ceguera;
+	}
+	
+	public boolean isDumb() {
+		return flags().Estupidez;
+	}
+	
+	public void makeDumb() {
+		flags().Estupidez = true;
+		counters().Ceguera = IntervaloInvisible;
+		sendPacket(new DumbResponse());
 	}
 
 	public void efectoFrio() {
@@ -4862,7 +4884,7 @@ public class Player extends AbstractCharacter {
 			if (flags().Paralizado || flags().Inmovilizado) {
 				efectoParalisisUser();
 			}
-			if (flags().Ceguera || flags().Estupidez) {
+			if (isBlind() || isDumb()) {
 				efectoCegueEstu();
 			}
 			if (isAlive()) {

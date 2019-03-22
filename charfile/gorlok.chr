@@ -1,5 +1,5 @@
 ;Archivo: charfile/gorlok.chr
-;Ultima modificacion: 21/03/2019 22:55:44
+;Ultima modificacion: 22/03/2019 18:11:57
 
 [ATRIBUTOS]
 AT1=13
@@ -247,8 +247,8 @@ MAXHIT=2
 MAXHP=17
 MAXMAN=104
 MAXSTA=40
-MINAGU=80
-MINHAM=80
+MINAGU=30
+MINHAM=40
 MINHIT=1
 MINHP=17
 MINMAN=104

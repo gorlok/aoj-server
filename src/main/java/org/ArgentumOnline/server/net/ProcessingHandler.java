@@ -50,6 +50,8 @@ import org.ArgentumOnline.server.protocol.LastIPRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
+import org.ArgentumOnline.server.protocol.MakeDumbNoMoreRequest;
+import org.ArgentumOnline.server.protocol.MakeDumbRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.NickToIPRequest;
@@ -58,6 +60,7 @@ import org.ArgentumOnline.server.protocol.RequestCharBankRequest;
 import org.ArgentumOnline.server.protocol.RequestCharGoldRequest;
 import org.ArgentumOnline.server.protocol.RequestCharInfoRequest;
 import org.ArgentumOnline.server.protocol.RequestCharInventoryRequest;
+import org.ArgentumOnline.server.protocol.RequestCharMailRequest;
 import org.ArgentumOnline.server.protocol.RequestCharSkillsRequest;
 import org.ArgentumOnline.server.protocol.RequestCharStatsRequest;
 import org.ArgentumOnline.server.protocol.ReviveCharRequest;
@@ -603,7 +606,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().lastIp(player, ((LastIPRequest)packet).userName);
 					break;
 					
+				case RequestCharMail:
+					server.manager().requestCharEmail(player, ((RequestCharMailRequest)packet).userName);
+					break;
 					
+				case MakeDumb:
+					server.manager().makeDumb(player, ((MakeDumbRequest)packet).userName);
+					break;
+
+				case MakeDumbNoMore:
+					server.manager().makeNoDumb(player, ((MakeDumbNoMoreRequest)packet).userName);
+					break;
+
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}

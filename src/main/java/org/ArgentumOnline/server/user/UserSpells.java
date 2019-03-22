@@ -33,7 +33,6 @@ import org.ArgentumOnline.server.npc.NpcType;
 import org.ArgentumOnline.server.protocol.BlindResponse;
 import org.ArgentumOnline.server.protocol.ChangeSpellSlotResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
-import org.ArgentumOnline.server.protocol.DumbNoMoreResponse;
 import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.SetInvisibleResponse;
@@ -462,7 +461,7 @@ public class UserSpells implements Constants {
 		}
 		
 		if (spell.RemoverEstupidez) {
-			if (targetUser.flags().Estupidez) {
+			if (targetUser.isDumb()) {
 			    // Para poder usar con un pk en el ring
 			    if (player.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
 			    	if (targetUser.isCriminal() && !player.isCriminal()) {
@@ -478,8 +477,7 @@ public class UserSpells implements Constants {
 			    		}
 			    	}
 			    }
-				targetUser.flags().Estupidez = false;
-				targetUser.sendPacket(new DumbNoMoreResponse());
+				targetUser.makeNoDumb();
 				sendInfoSpell();
 				result = true;
 			}
