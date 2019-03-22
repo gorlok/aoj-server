@@ -98,6 +98,7 @@ public class IniFile {
 			str = str.trim();
 			if (str.length() > 0) {
 				switch (str.charAt(0)) {
+				case '\'':
 				case ';':
 				case '*':
 				case '#':

@@ -26,7 +26,10 @@ import static org.ArgentumOnline.server.Constants.OBJ_INDEX_CUERPO_MUERTO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.IntStream;
 
 import org.ArgentumOnline.server.Ciudad;
 import org.ArgentumOnline.server.Clazz;
@@ -418,6 +421,8 @@ public class UserStorage {
 			if (!user.isAlive()) {
 				user.infoChar().head = OBJ_INDEX_CABEZA_MUERTO;
 			}
+			
+			updateLastIp(ini);
 
 			// Guardar todo
 			ini.store(Player.getPjFile(user.userName));
@@ -426,4 +431,49 @@ public class UserStorage {
 		}
 	}
 
+	private void updateLastIp(IniFile ini) {
+		try {
+			List<String> lastIP = new ArrayList<>();
+			IntStream.range(1, 6).forEach(i -> {
+				String ip = ini.getString("INIT", "LastIP" + i);
+				if (!ip.isEmpty()) {
+					lastIP.add(ip);
+				}
+			});
+			
+			if (lastIP.isEmpty() || lastIP.get(0).isEmpty() || !lastIP.get(0).equals(user.getIP())) {
+				lastIP.add(0, user.getIP());
+				if (lastIP.size() > 5) {
+					lastIP.remove(lastIP.size()-1);
+				}
+			}
+			
+			IntStream.range(1, 6).forEach(i -> {
+				if (i <= lastIP.size()) {
+					ini.setValue("INIT", "LastIP" + i, lastIP.get(i-1));
+				} else {
+					ini.setValue("INIT", "LastIP" + i, "");
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public List<String> loadLastIPs() {
+		List<String> lastIP = new ArrayList<>();
+		IniFile ini;
+		try {
+			ini = new IniFile(Player.getPjFile(user.getNick()));
+			IntStream.range(1, 6).forEach(i -> {
+				String ip = ini.getString("INIT", "LastIP" + i);
+				if (!ip.isEmpty()) {
+					lastIP.add(ip);
+				}
+			});
+		} catch (IOException ignored) {
+		}
+		return lastIP;
+	}
+	
 }

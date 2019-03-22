@@ -3,6 +3,9 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-21
+- nuevos comandos de GM: /NICK2IP /LASTIP
+
 ### 2019-03-20
 - se agregan comandos de GM: /BAL, /INV, /BOV, /STAT, /SKILLS
 

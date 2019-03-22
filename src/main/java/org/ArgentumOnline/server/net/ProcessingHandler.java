@@ -46,11 +46,13 @@ import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.GoNearbyRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
+import org.ArgentumOnline.server.protocol.LastIPRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
 import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
+import org.ArgentumOnline.server.protocol.NickToIPRequest;
 import org.ArgentumOnline.server.protocol.OnlineMapRequest;
 import org.ArgentumOnline.server.protocol.RequestCharBankRequest;
 import org.ArgentumOnline.server.protocol.RequestCharGoldRequest;
@@ -591,6 +593,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case RequestCharSkills:
 					server.manager().requestCharSkills(player, ((RequestCharSkillsRequest)packet).userName);
+					break;
+					
+				case NickToIP:
+					server.manager().nick2IP(player, ((NickToIPRequest)packet).userName);
+					break;
+					
+				case LastIP:
+					server.manager().lastIp(player, ((LastIPRequest)packet).userName);
 					break;
 					
 					

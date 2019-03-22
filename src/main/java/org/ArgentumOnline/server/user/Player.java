@@ -210,9 +210,9 @@ public class Player extends AbstractCharacter {
 	// TODO
     public short partyIndex = 0;  // index a la party q es miembro
     public short partySolicitud = 0; // index a la party q solicito
-
+    
 	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
-
+	
 	GameServer server;
 	
 	public Player(GameServer aoserver) {
@@ -4439,8 +4439,11 @@ public class Player extends AbstractCharacter {
 	}
 
 	public boolean userExists() {
-		// TODO revisar para qué y cuándo se usa esto... está raro como chequeo de consistencia -gorlok
-		return Util.existeArchivo(getPjFile(this.userName));
+		return userExists(this.userName);
+	}
+	
+	public static boolean userExists(String userName) {
+		return Util.existeArchivo(getPjFile(userName));
 	}
 
 	public void modifyAttributesByRace() {

@@ -581,7 +581,7 @@ public class ManagerServer {
 		}
 	}
 
-	public void sendSystemMsg(Player admin, String msg) {
+	public void sendSystemMsg(final Player admin, String msg) {
 		// Mensaje del sistema
 		// Comando /SMSG
 		if (!admin.flags().isGM()) {
@@ -593,14 +593,34 @@ public class ManagerServer {
 		server.sendToAll(new ShowMessageBoxResponse(msg));
 	}
 
-	public void doNick2IP(Player admin, String userName) {
+	public void nick2IP(final Player admin, final String userName) {
 		// Comando /NICK2IP
-		Player usuario = this.server.playerByUserName(userName);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
 		}
-		admin.sendMessage("El ip de " + userName + " es " + usuario.getIP(), FontType.FONTTYPE_INFO);
+		final Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			if (!Player.userExists(userName)) {
+				admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+			} else {
+				admin.sendMessage("El personaje está desconectado.", FontType.FONTTYPE_INFO);
+			}
+			return;
+		}
+		Log.logGM(admin.getNick(), "consultó /NICK2IP " + userName);
+		admin.sendMessage("La IP de " + userName + " es " + user.getIP(), FontType.FONTTYPE_INFO);
+
+		List<String> userNames = server.players().stream()
+			.filter(p ->  p.isLogged() 
+					&& p.hasNick() 
+					&& !userName.equalsIgnoreCase(p.getNick())
+					&& p.getIP().equals(user.getIP()))
+			.map( p -> p.getNick())
+			.collect(Collectors.toList());
+		if (!userNames.isEmpty()) {
+			admin.sendMessage("Otros personajes con la misma IP son: " 
+					+ String.join(", ", userNames), FontType.FONTTYPE_INFO);
+		}
 	}
 
 	public void createTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
@@ -1585,6 +1605,40 @@ public class ManagerServer {
 			Log.logGM(admin.getNick(), "Transportó con un /TELEP a " + usuario.getNick() +
 					" hacia el mapa=" + m + " x=" + x + " y=" + y);
 		}
+	}
+
+	public void lastIp(Player admin, String userName) {
+		// Command /LASTIP
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod() && !admin.isCounselor()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			if (!Player.userExists(userName)) {
+				admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+				return;
+			}
+			user = this.server.playerByUserName(userName);
+			if (user == null) {
+				admin.sendMessage("El usuario está desconectado.", FontType.FONTTYPE_WARNING);
+				user = new Player(server);
+				try {
+					user.userStorage.loadUserFromStorageOffline(userName);
+				} catch (IOException ignored) {
+					return;
+				}
+			} 
+		}
+		
+		if (user.flags().privileges > admin.flags().privileges) {
+			admin.sendMessage("No puedes consultar las últimas IPs de usuarios de mayor jerarquía.", 
+					FontType.FONTTYPE_INFO);
+			return;
+		}
+		Log.logGM(admin.getNick(), "/LASTIP " + userName);
+		var ipList = user.userStorage.loadLastIPs();
+		admin.sendMessage("Últimas IP de " + userName + " son: " + String.join(", ", ipList), 
+				FontType.FONTTYPE_INFO);
 	}
 
 }

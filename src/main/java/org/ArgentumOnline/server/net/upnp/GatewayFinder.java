@@ -58,19 +58,20 @@ abstract class GatewayFinder {
         public void run() {
             try {
                 byte[] req = this.req.getBytes();
-                DatagramSocket s = new DatagramSocket(new InetSocketAddress(ip, 0));
-                s.send(new DatagramPacket(req, req.length, new InetSocketAddress("239.255.255.250", 1900)));
-                s.setSoTimeout(3000);
-                for (;;) {
-                    try {
-                        DatagramPacket recv = new DatagramPacket(new byte[1536], 1536);
-                        s.receive(recv);
-                        Gateway gw = new Gateway(recv.getData(), ip);
-                        gatewayFound(gw);
-                    } catch (SocketTimeoutException t) {
-                        break;
-                    } catch (Throwable t) {
-                    }
+                try (DatagramSocket s = new DatagramSocket(new InetSocketAddress(ip, 0))) {
+	                s.send(new DatagramPacket(req, req.length, new InetSocketAddress("239.255.255.250", 1900)));
+	                s.setSoTimeout(3000);
+	                for (;;) {
+	                    try {
+	                        DatagramPacket recv = new DatagramPacket(new byte[1536], 1536);
+	                        s.receive(recv);
+	                        Gateway gw = new Gateway(recv.getData(), ip);
+	                        gatewayFound(gw);
+	                    } catch (SocketTimeoutException t) {
+	                        break;
+	                    } catch (Throwable t) {
+	                    }
+	                }
                 }
             } catch (Throwable t) {
             }
