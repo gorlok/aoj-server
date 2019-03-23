@@ -58,6 +58,8 @@ import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.NickToIPRequest;
 import org.ArgentumOnline.server.protocol.OnlineMapRequest;
+import org.ArgentumOnline.server.protocol.PunishmentsRequest;
+import org.ArgentumOnline.server.protocol.RemovePunishmentRequest;
 import org.ArgentumOnline.server.protocol.RequestCharBankRequest;
 import org.ArgentumOnline.server.protocol.RequestCharGoldRequest;
 import org.ArgentumOnline.server.protocol.RequestCharInfoRequest;
@@ -83,6 +85,7 @@ import org.ArgentumOnline.server.protocol.TrainRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
+import org.ArgentumOnline.server.protocol.WarnUserRequest;
 import org.ArgentumOnline.server.protocol.WarpCharRequest;
 import org.ArgentumOnline.server.protocol.WhereRequest;
 import org.ArgentumOnline.server.protocol.WhisperRequest;
@@ -633,6 +636,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().silenceUser(player, ((SilenceRequest)packet).userName);
 					break;
 
+				case Punishments:
+					server.manager().punishments(player, ((PunishmentsRequest)packet).name);
+					break;
+					
+				case WarnUser:
+					handleWarnUser(player, (WarnUserRequest)packet);
+					break;
+					
+				case RemovePunishment:
+					handleRemovePunishment(player, (RemovePunishmentRequest)packet);
+					break;
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}
@@ -641,6 +656,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			}
 		}
 		
+	}
+
+	private void handleRemovePunishment(Player player, RemovePunishmentRequest packet) {
+		GameServer.instance().manager().removePunishment(player, packet.userName, packet.punishment, packet.newText); 
+	}
+
+	private void handleWarnUser(Player player, WarnUserRequest packet) {
+		GameServer.instance().manager().warnUser(player, packet.userName, packet.reason);
 	}
 
 	private void handleTeleportCreate(TeleportCreateRequest packet, Player admin) {

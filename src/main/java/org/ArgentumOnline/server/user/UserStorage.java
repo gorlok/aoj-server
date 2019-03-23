@@ -483,5 +483,50 @@ public class UserStorage {
 		return ini.getString("CONTACTO", "Email");
 	}
 
+	public static List<String> punishments(String userName) {
+		List<String> punishments = new ArrayList<>();
+		IniFile ini;
+		try {
+			ini = new IniFile(Player.getPjFile(userName));
+			int count = ini.getInt("PENAS", "Cant");
+			IntStream.range(1, count + 1).forEach(i -> {
+				punishments.add(ini.getString("PENAS", "P" + i));
+			});
+		} catch (IOException ignored) {
+		}
+		return punishments;
+	}
+
+	public static void addPunishment(String userName, String text) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			int count = ini.getInt("PENAS", "Cant");
+			count++;
+			
+			ini.setValue("PENAS", "Cant", count);
+			ini.setValue("PENAS", "P" + count, text);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+
+	public static void updatePunishment(String userName, byte index, String newText) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			int count = ini.getInt("PENAS", "Cant");
+			if (index < 1 || index > count) {
+				return;
+			}
+			ini.setValue("PENAS", "P" + index, newText);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
 	
 }

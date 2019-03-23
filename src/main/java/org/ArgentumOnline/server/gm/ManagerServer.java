@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -1750,6 +1751,106 @@ public class ManagerServer {
 		} else {
 			admin.sendMessage("El usuario no está vivo.", FontType.FONTTYPE_INFO);
 		}
+	}
+
+	public void punishments(Player admin, String userName) {
+		// Command /PENAS
+		if (!admin.isGM()) {
+			return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Player user = new Player(server);
+		try {
+			user.userStorage.loadUserFromStorageOffline(userName);
+		} catch (IOException ignore) {
+			return;
+		}
+		if (user.isGM()) {
+			admin.sendMessage("No puedes ver las penas de los administradores.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Log.logGM(admin.getNick(), "/PENAS " + userName);
+
+		var punishments = UserStorage.punishments(userName);
+		
+		if (punishments.isEmpty()) {
+			admin.sendMessage("Sin prontuario.", FontType.FONTTYPE_INFO);
+		} else {
+			int i = 1;
+			for (String punishment : punishments) {
+				admin.sendMessage( (i++) + " - " + punishment, FontType.FONTTYPE_INFO);
+			}
+		}
+	}
+
+	public void warnUser(Player admin, String userName, String reason) {
+		// Command /ADVERTENCIA
+		if (!admin.isGM()) {
+			return;
+		}
+		if (userName == null || userName.isBlank() || reason == null || reason.isBlank()) {
+			admin.sendMessage("Utilice /advertencia nick@motivo", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Player user = new Player(server);
+		try {
+			user.userStorage.loadUserFromStorageOffline(userName);
+		} catch (IOException ignore) {
+			return;
+		}
+		if (user.isGM()) {
+			admin.sendMessage("No puedes advertir a administradores.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Log.logGM(admin.getNick(), "/ADVERTENCIA " + userName);
+
+        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		UserStorage.addPunishment(userName, admin.getNick() + ">> /ADVERTENCIA " + reason + " " + sdf.format(new java.util.Date()));
+	    admin.sendMessage("Has advertido a " + userName, FontType.FONTTYPE_INFO);
+	}
+
+	public void removePunishment(Player admin, String userName, byte index, String newText) {
+		// Command /BORRARPENA
+		if (!admin.isGM()) {
+			return;
+		}
+		if (userName == null || userName.isBlank() || newText == null || newText.isBlank()) {
+			admin.sendMessage("Utilice /BORRARPENA Nick@NumeroDePena@NuevoTextoPena", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No hay ningún personaje con ese nombre.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Player user = new Player(server);
+		try {
+			user.userStorage.loadUserFromStorageOffline(userName);
+		} catch (IOException ignore) {
+			return;
+		}
+		if (user.isGM()) {
+			admin.sendMessage("No puedes advertir a administradores.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		Log.logGM(admin.getNick(), "/BORRARPENA " + userName);
+
+        var punishments = UserStorage.punishments(userName);
+        if (index < 1 || index > punishments.size()) {
+        	admin.sendMessage("Número de pena inválido. Hay " + punishments.size() + " penas.", FontType.FONTTYPE_INFO);
+        	admin.sendMessage("Utilice /BORRARPENA Nick@NumeroDePena@NuevoTextoPena", FontType.FONTTYPE_INFO);
+        	return;
+        }
+        
+        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		UserStorage.updatePunishment(userName, index, admin.getNick() + ">> /ADVERTENCIA " + newText + " " + sdf.format(new java.util.Date()));
+	    admin.sendMessage("Has modificado una pena de " + userName, FontType.FONTTYPE_INFO);
 	}
 
 }

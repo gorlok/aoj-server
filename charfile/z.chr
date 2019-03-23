@@ -1,5 +1,5 @@
 ;Archivo: charfile/z.chr
-;Ultima modificacion: 22/03/2019 18:09:57
+;Ultima modificacion: 22/03/2019 23:33:04
 
 [ATRIBUTOS]
 AT1=11
@@ -196,6 +196,13 @@ NROMASCOTAS=0
 [MUERTES]
 NPCSMUERTES=0
 USERMUERTES=0
+
+[PENAS]
+CANT=4
+P1=gorlok>> /ADVERTENCIA se rasca 22/03/2019 23:33:04
+P2=gorlok>> /ADVERTENCIA asfasfasfd 22/03/2019 23:14:52
+P3=gorlok>> /ADVERTENCIA nueva pena 22/03/2019 23:32:30
+P4=gorlok>> /ADVERTENCIA zzzzzzzzzzzz 22/03/2019 23:18:20
 
 [QUEST]
 ENQUEST=0
