@@ -38,9 +38,11 @@ import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
 import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
 import org.ArgentumOnline.server.protocol.CreateItemRequest;
 import org.ArgentumOnline.server.protocol.CreaturesInMapRequest;
+import org.ArgentumOnline.server.protocol.DenounceRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
+import org.ArgentumOnline.server.protocol.ExecuteRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
@@ -69,6 +71,7 @@ import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.ServerMessageRequest;
 import org.ArgentumOnline.server.protocol.SetCharDescriptionRequest;
 import org.ArgentumOnline.server.protocol.SetMOTDRequest;
+import org.ArgentumOnline.server.protocol.SilenceRequest;
 import org.ArgentumOnline.server.protocol.SpawnCreatureRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
 import org.ArgentumOnline.server.protocol.SummonCharRequest;
@@ -367,7 +370,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case ChangePassword:
 			player.changePassword(((ChangePasswordRequest)packet).newPassword);
-			break;			
+			break;
+			
+		case Denounce:
+			player.denounce(((DenounceRequest)packet).text);
+			break;
 			
 		default:
 			if (player.flags().isGM()) {
@@ -616,6 +623,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 
 				case MakeDumbNoMore:
 					server.manager().makeNoDumb(player, ((MakeDumbNoMoreRequest)packet).userName);
+					break;
+					
+				case Execute:
+					server.manager().executeUser(player, ((ExecuteRequest)packet).userName);
+					break;
+					
+				case Silence:
+					server.manager().silenceUser(player, ((SilenceRequest)packet).userName);
 					break;
 
 				default:

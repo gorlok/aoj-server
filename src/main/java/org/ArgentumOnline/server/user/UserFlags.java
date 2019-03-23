@@ -59,7 +59,7 @@ public class UserFlags {
     
     public boolean NoActualizado; // FIXME
     
-    public byte Silenciado; // FIXME
+    public boolean Silenciado;
     
     public boolean TomoPocion = false;
     public short TipoPocion = 0;

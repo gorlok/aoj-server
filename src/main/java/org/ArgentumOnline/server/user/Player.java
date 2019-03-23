@@ -5563,5 +5563,30 @@ public class Player extends AbstractCharacter {
 		}
 		this.chatColor = Color.rgb(red, green, blue);
 	}
+
+	public boolean isSilenced() {
+		return flags().Silenciado;
+	}
+
+	public void turnSilence() {
+		flags().Silenciado = true;
+	}
+
+	public void undoSilence() {
+		flags().Silenciado = false;
+	}
+
+	public void denounce(String text) {
+		// Command /DENUNCIAR
+		if (isSilenced()) {
+			sendMessage("Estás SILENCIADO y no puedes hacer Denuncias. " +
+					"Puedes solicitar asistencia con /GM y serás atendido cuando alguien esté disponible.", 
+					FontType.FONTTYPE_INFO);
+		} else {
+			server.sendToAdmins(new ConsoleMsgResponse(getNick() + " DENUNCIA: " + text, 
+					FontType.FONTTYPE_GUILDMSG.id()));
+			sendMessage("Denuncia enviada, espere..", FontType.FONTTYPE_INFO);
+		}
+	}
 	
 }

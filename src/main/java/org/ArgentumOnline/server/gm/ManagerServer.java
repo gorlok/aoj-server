@@ -1692,4 +1692,64 @@ public class ManagerServer {
 		}
 	}
 
+	public void executeUser(Player admin, String userName) {
+		// Command /EJECUTAR
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (user.isGM()) {
+			admin.sendMessage("Estás loco?? como vas a piñatear un gm!!!! :@", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (user.isAlive()) {
+			Log.logGM(admin.getNick(), "/EJECUTAR " + userName);
+			user.userDie();
+			server.sendToAll(new ConsoleMsgResponse(
+					admin.getNick() + " ha ejecutado a " + user.getNick(),
+					FontType.FONTTYPE_EJECUCION.id()));
+		} else {
+			admin.sendMessage("El usuario no está vivo.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void silenceUser(Player admin, String userName) {
+		// Command /SILENCIAR
+		if (!admin.isGM()) {
+			return;
+		}
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (user.isGM()) {
+			admin.sendMessage("No puedes silenciar a un GM.", FontType.FONTTYPE_WARNING);
+			return;
+		}
+		if (user.isAlive()) {
+			if (user.isSilenced()) {
+				user.undoSilence();
+				admin.sendMessage("Usuario deja de estar silenciado.", FontType.FONTTYPE_INFO);
+				Log.logGM(admin.getNick(), " ha dejado de silenciar a " + userName);
+				user.sendMessage("Dejas de estar silenciado, pero no abuses del /DENUNCIAR.", FontType.FONTTYPE_SERVER);
+			} else {
+				user.turnSilence();
+				admin.sendMessage("Usuario silenciado.", FontType.FONTTYPE_INFO);
+				user.sendPacket(new ShowMessageBoxResponse(
+						"ESTIMADO USUARIO, ud ha sido silenciado por los administradores. " +
+								"Sus denuncias serán ignoradas por el servidor de aquí en más. " +
+						"Utilice /GM para contactar un administrador."));
+				user.sendMessage("Has sido silenciado, pero puedes usar /GM para contactar a un administrador.", FontType.FONTTYPE_SERVER);
+				Log.logGM(admin.getNick(), " ha silenciado a " + userName);
+			}
+		} else {
+			admin.sendMessage("El usuario no está vivo.", FontType.FONTTYPE_INFO);
+		}
+	}
+
 }

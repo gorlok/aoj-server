@@ -4,6 +4,7 @@ Todos los cambios notables del proyecto serán documentados en este archivo.
 ## [SIN PUBLICAR]
 
 ### 2019-03-22
+- nuevos comandos: /DENUNCIAR y  /SILENCIAR (GM)
 - nuevos comandos de GM:  /LASTEMAIL /ESTUPIDO /NOESTUPIDO
 
 ### 2019-03-21
