@@ -22,7 +22,6 @@ import static org.ArgentumOnline.server.util.Color.COLOR_CYAN;
 import static org.ArgentumOnline.server.util.FontType.FONTTYPE_FIGHT;
 
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import org.ArgentumOnline.server.AbstractCharacter;
@@ -140,6 +139,9 @@ public class Player extends AbstractCharacter {
 	private static final int EXPERIENCE_BY_LEVEL_UP = 50;
 
 	private static final String TAG_USER_INVISIBLE = "[INVISIBLE]";
+
+	public static MapPos WP_PRISION = MapPos.mxy(66, 75, 47);
+    public static MapPos WP_LIBERTAD = MapPos.mxy(66, 75, 65);
 	
 	private Channel channel = null;
 
@@ -180,8 +182,11 @@ public class Player extends AbstractCharacter {
 
 	// FIXME GM
 	String ip = "";
-	String bannedBy = "";
-	String bannedReason = "";
+	
+    public boolean banned = false;
+    public boolean AdministrativeBan = false;
+	public String bannedBy = "";
+	public String bannedReason = "";
 	
 	public boolean showName = true; // Permite que los GMs oculten su nick con el comando /SHOWNAME
 	public String  descRM = ""; // TODO
@@ -1962,6 +1967,9 @@ public class Player extends AbstractCharacter {
 					sendMessage("Ahí no hay ningún yunque.", FontType.FONTTYPE_INFO);
 				}
 				break;
+				
+			default:
+				break;
 			}
 		}
 
@@ -2002,6 +2010,9 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			doOcultarse();
+			break;
+			
+		default:
 			break;
 		}
 	}
@@ -2301,6 +2312,8 @@ public class Player extends AbstractCharacter {
 					if (flags().TargetObj == FOGATA_APAG) {
 						mapa.accionParaRamita(x, y, this);
 					}
+					break;
+				default:
 					break;
 				}
 			} else {
@@ -2831,8 +2844,6 @@ public class Player extends AbstractCharacter {
 		map.sendToArea(pos().x, pos().y, new RemoveCharDialogResponse(getId()));
 		sendPacket(new RemoveAllDialogsResponse());
 		
-		MapPos oldPos = pos().copy();
-		
 		// quitamos al char del mapa
 		map.exitMap(this); // FIXME revisar
 		
@@ -2940,17 +2951,23 @@ public class Player extends AbstractCharacter {
 
 	public void sendToJail(int minutos, String gm_name) {
 		this.counters.Pena = minutos;
-		if (warpMe(GameServer.WP_PRISION.map, GameServer.WP_PRISION.x, GameServer.WP_PRISION.y, true)) {
+		if (warpMe(WP_PRISION.map, WP_PRISION.x, WP_PRISION.y, true)) {
 			if (gm_name == null) {
-				sendMessage("Has sido encarcelado, deberas permanecer en la carcel " + minutos + " minutos.",
+				sendMessage("Has sido encarcelado. Permanecerás en la carcel " + minutos + " minutos.",
 						FontType.FONTTYPE_INFO);
 			} else {
-				sendMessage(gm_name + " te ha encarcelado, deberas permanecer en la carcel " + minutos + " minutos.",
+				sendMessage(gm_name + " te ha encarcelado. Permanecerás en la carcel " + minutos + " minutos.",
 						FontType.FONTTYPE_INFO);
 			}
 		}
 	}
 
+	public void releaseFromJail() {
+		counters().Pena = 0;
+		warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
+		sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
+	}
+	
 	public void efectoLluvia() {
 		if (flags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
@@ -4458,7 +4475,13 @@ public class Player extends AbstractCharacter {
 		log.warn("ERROR: " + msg);
 		sendPacket(new ErrorMsgResponse(msg));
 	}
-
+	
+	public void banned(String adminName, String reason) {
+		this.banned = true;
+		this.bannedBy = adminName;
+		this.bannedReason = reason;
+	}
+	
 	public void connectUser(String userName, String password) {
 		this.userName = userName;
 		try {
@@ -4467,7 +4490,7 @@ public class Player extends AbstractCharacter {
 				sendError("El personaje no existe. Compruebe el nombre de usuario.");
 				return;
 			}
-
+			
 			// Reseteamos los FLAGS
 			flags().Escondido = false;
 			flags().TargetNpc = 0;
@@ -4488,6 +4511,11 @@ public class Player extends AbstractCharacter {
 			}
 			this.userStorage.loadUserFromStorage();
 
+			if (this.banned) {
+				sendError("Su personaje ha sido expulsado permanentemente.");
+				return;				
+			}
+			
 			if (this.server.manager().isGod(this.userName)) {
 				flags().setGod();
 				chatColor = Color.rgb(250, 250, 150);
@@ -5292,46 +5320,6 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	private void sendUserBovedaTxt(Player usuario) {
-		sendMessage("El usuario " + usuario.getNick(), FontType.FONTTYPE_INFOBOLD);
-		sendMessage("Tiene " + usuario.bankInv.getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
-		InventoryObject obj;
-		ObjectInfo iobj;
-		for (int i = 1; i <= usuario.bankInv.size(); i++) {
-			if ((obj = usuario.bankInv.getObjeto(i)) != null) {
-				iobj = findObj(obj.objid);
-				sendMessage(" Objeto " + i + ": " + iobj.Nombre + " Cantidad:" + obj.cant, FontType.FONTTYPE_INFO);
-			}
-		}
-	}
-
-	private void sendUserBovedaTxtFromChar(String pj) {
-		if (Util.existeArchivo(getPjFile(pj))) {
-			sendMessage("Pj: " + pj, FontType.FONTTYPE_INFOBOLD);
-			try {
-				IniFile ini = new IniFile(getPjFile(pj));
-				int cantObjs = ini.getInt("BancoInventory", "CantidadItems");
-				sendMessage("Tiene " + cantObjs + " objetos.", FontType.FONTTYPE_INFO);
-				// Lista de objetos en el banco.
-				ObjectInfo iobj;
-				for (int i = 0; i < MAX_BANCOINVENTORY_SLOTS; i++) {
-					String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
-					StringTokenizer st = new StringTokenizer(tmp, "-");
-					short objid = Short.parseShort(st.nextToken());
-					short cant = Short.parseShort(st.nextToken());
-					if (objid > 0) {
-						iobj = findObj(objid);
-						sendMessage(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.FONTTYPE_INFO);
-					}
-				}
-			} catch (java.io.IOException e) {
-				log.fatal("Error sendUserBovedaTxtFromChar", e);
-			}
-		} else {
-			sendMessage("Usuario inexistente: " + pj, FontType.FONTTYPE_INFO);
-		}
-	}
-
 	public void moveSpell(byte slot, byte dir) {
 		if (dir != 1 && dir != -1) {
 			return;
@@ -5341,69 +5329,6 @@ public class Player extends AbstractCharacter {
 		}
 
 		this.spells.moveSpell(slot, dir);
-	}
-
-	private void sendUserMiniStatsTxt(Player usuario) {
-		if (usuario == null) {
-			return;
-		}
-		sendMessage("Pj: " + usuario.getNick() + " Clase: " + usuario.clazz().toString(), FontType.FONTTYPE_INFOBOLD);
-		sendMessage(
-				"CiudadanosMatados: " + usuario.userFaction().CiudadanosMatados +
-				" CriminalesMatados: "+ usuario.userFaction().CriminalesMatados +
-				" UsuariosMatados: " + usuario.stats().usuariosMatados,
-				FontType.FONTTYPE_INFO);
-		sendMessage("NPCsMuertos: " + usuario.stats().NPCsMuertos + " Pena: " + usuario.counters.Pena,
-				FontType.FONTTYPE_INFO);
-	}
-
-	private void sendUserMiniStatsTxtFromChar(String pj) {
-		if (Util.existeArchivo(getPjFile(pj))) {
-			try {
-				IniFile ini = new IniFile(getPjFile(pj));
-				sendMessage("Pj: " + pj + " Clase: " + ini.getString("INIT", "Clase"), FontType.FONTTYPE_INFOBOLD);
-				sendMessage("CiudadanosMatados: " + ini.getLong("FACCIONES", "CiudMatados") + " CriminalesMatados: "
-						+ ini.getLong("FACCIONES", "CrimMatados") + " UsuariosMatados: "
-						+ ini.getInt("MUERTES", "UserMuertes"), FontType.FONTTYPE_INFO);
-				sendMessage("NPCsMuertos: " + ini.getInt("MUERTES", "NpcsMuertes") + " Pena: "
-						+ ini.getLong("COUNTERS", "PENA"), FontType.FONTTYPE_INFO);
-				boolean ban = ini.getShort("FLAGS", "Ban") == 1;
-				sendMessage("Ban: " + (ban ? "si" : "no"), FontType.FONTTYPE_INFO);
-				if (ban) {
-					sendMessage("Ban por: " + ini.getString("BAN", "BannedBy") + " Motivo: "
-							+ ini.getString("BAN", "Reason"), FONTTYPE_FIGHT);
-				}
-			} catch (java.io.IOException e) {
-				log.fatal("ERROR sendUserMiniStatsTxtFromChar", e);
-			}
-		} else {
-			sendMessage("El pj no existe: " + pj, FontType.FONTTYPE_INFO);
-		}
-	}
-
-	private void sendUserInvTxtFromChar(String pj) {
-		if (Util.existeArchivo(getPjFile(pj))) {
-			try {
-				IniFile ini = new IniFile(getPjFile(pj));
-				sendMessage("Pj: " + pj + " Clase: " + ini.getString("INIT", "Clase"), FontType.FONTTYPE_INFOBOLD);
-				sendMessage("Tiene " + ini.getShort("Inventory", "CantidadItems") + " objetos.", FontType.FONTTYPE_INFO);
-				ObjectInfo iobj;
-				for (int i = 0; i < MAX_INVENTORY_SLOTS; i++) {
-					String tmp = ini.getString("Inventory", "Obj" + (i + 1));
-					StringTokenizer st = new StringTokenizer(tmp, "-");
-					short objid = Short.parseShort(st.nextToken());
-					short cant = Short.parseShort(st.nextToken());
-					if (objid > 0) {
-						iobj = findObj(objid);
-						sendMessage(" Objeto " + i + " " + iobj.Nombre + " Cantidad:" + cant, FontType.FONTTYPE_INFO);
-					}
-				}
-			} catch (java.io.IOException e) {
-				log.fatal("ERROR sendUserInvTxtFromChar", e);
-			}
-		} else {
-			sendMessage("El pj no existe: " + pj, FontType.FONTTYPE_INFO);
-		}
 	}
 
     enum DuelStatus {

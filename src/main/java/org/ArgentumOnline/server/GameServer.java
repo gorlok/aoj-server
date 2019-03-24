@@ -91,9 +91,6 @@ public class GameServer implements Constants {
 
     private long startTime = 0;
 
-    public static MapPos WP_PRISION = MapPos.mxy(66, 75, 47);
-    public static MapPos WP_LIBERTAD = MapPos.mxy(66, 75, 65);
-
     private boolean showDebug = false;
 
     private GuildManager guildManager;
@@ -114,7 +111,6 @@ public class GameServer implements Constants {
     	
     	// start network game server
     	this.ns = new NetworkServer(Constants.SERVER_PORT);
-    	
     	
     	// initialize game server
     	this.guildManager = new GuildManager(this);
@@ -464,6 +460,7 @@ public class GameServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
+        this.manager.loadBannedIPList();
         this.manager.loadAdminsSpawnableCreatures();
         this.manager.loadInvalidNamesList();
         this.manager.loadAdmins();
@@ -477,11 +474,17 @@ public class GameServer implements Constants {
         return npc;
     }
 
-    public Player createPlayer(Channel channel) {
+    public void createPlayer(Channel channel) {
         Player player = new Player(this);
         player.setChannel(channel);
+        
+        if (manager().getBannedIPs().contains(player.getIP())) {
+        	player.sendError("Su IP se encuentra bloqueada en este servidor.");
+        	player.quitGame();
+        	return;
+        }
+        
         this.players.put(player.getId(), player);
-        return player;
     }
 
     public Optional<Player> findPlayer(Channel channel) {
@@ -751,14 +754,12 @@ public class GameServer implements Constants {
     }
 
     public void purgePenalties() {
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.flags().UserLogged) {
-                if (cli.counters().Pena > 0) {
-                    cli.counters().Pena--;
-                    if (cli.counters().Pena < 1) {
-                        cli.counters().Pena = 0;
-                        cli.warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
-                        cli.sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
+    	for (Player player: players()) {
+            if (player != null && player.getId() > 0 && player.flags().UserLogged) {
+                if (player.counters().Pena > 0) {
+                    player.counters().Pena--;
+                    if (player.counters().Pena < 1) {
+                        player.releaseFromJail();
                     }
                 }
             }
@@ -896,22 +897,6 @@ public class GameServer implements Constants {
                 cli.sendMessage(msg, FontType.FONTTYPE_GM);
             }
         }
-    }
-
-    public void logBan(String bannedUser, String gm, String motivo) {
-        /////////// FIXME
-        /////////// FIXME
-        /////////// FIXME
-        // Sub LogBan(ByVal BannedIndex As Integer, ByVal UserIndex As Integer, ByVal motivo As String)
-        System.out.println(" BAN: " + bannedUser + " by " + gm + " reason: " + motivo);
-    }
-
-    public void unBan(String usuario) {
-        /////////// FIXME
-        /////////// FIXME
-        /////////// FIXME
-        // Public Function UnBan(ByVal Name As String) As Boolean
-        System.out.println(" UNBAN: " + usuario);
     }
 
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---

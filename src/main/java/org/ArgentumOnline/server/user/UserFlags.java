@@ -67,9 +67,6 @@ public class UserFlags {
     public boolean Seguro = true;
     public boolean SeguroResu = true; // FIXME    
     
-    public boolean Ban = false;
-    public boolean AdministrativeBan = false;
-    
     public boolean StatsChanged = false;
     
     public boolean AdminInvisible = false;

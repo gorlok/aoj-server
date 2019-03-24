@@ -41,6 +41,7 @@ import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -106,6 +107,10 @@ public class UserStorage {
 	throws java.io.IOException {
 		user.userFaction().loadUserFaction(ini);
 
+		user.banned = ini.getShort("BAN", "Banned") == 1;
+		user.bannedBy = ini.getString("BAN", "BannedBy");
+		user.bannedReason = ini.getString("BAN", "Reason");
+		
 		user.flags().Muerto = ini.getShort("FLAGS", "Muerto") == 1;
 		user.flags().Escondido = ini.getShort("FLAGS", "Escondido") == 1;
 		user.flags().Hambre = ini.getShort("FLAGS", "Hambre") == 1;
@@ -113,7 +118,6 @@ public class UserStorage {
 		user.flags().Desnudo = ini.getShort("FLAGS", "Desnudo") == 1;
 		user.flags().Envenenado = ini.getShort("FLAGS", "Envenenado") == 1;
 		user.flags().Paralizado = ini.getShort("FLAGS", "Paralizado") == 1;
-		user.flags().Ban = ini.getShort("FLAGS", "Ban") == 1;
 		user.flags().Desnudo = (ini.getShort("Inventory", "ArmourEqpSlot") == 0);
 		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
 		if (user.flags().Paralizado) {
@@ -152,9 +156,6 @@ public class UserStorage {
 			user.infoChar().helmet = NingunCasco;
 		}
 		
-		user.bannedBy = ini.getString("BAN", "BannedBy");
-		user.bannedReason = ini.getString("BAN", "Reason");
-
 		user.description = ini.getString("INIT", "Desc");
 		{
 			StringTokenizer st = new StringTokenizer(ini.getString("INIT", "Position"), "-");
@@ -264,7 +265,6 @@ public class UserStorage {
 			ini.setValue("FLAGS", "Hambre", user.flags().Hambre);
 			ini.setValue("FLAGS", "Sed", user.flags().Sed);
 			ini.setValue("FLAGS", "Desnudo", user.flags().Desnudo);
-			ini.setValue("FLAGS", "Ban", user.flags().Ban);
 			ini.setValue("FLAGS", "Navegando", user.flags().Navegando);
 			ini.setValue("FLAGS", "Envenenado", user.flags().Envenenado);
 			ini.setValue("FLAGS", "Paralizado", user.flags().Paralizado);
@@ -290,6 +290,7 @@ public class UserStorage {
 			ini.setValue("QUEST", "RealizoQuest", user.quest().m_realizoQuest);
 			ini.setValue("QUEST", "Recompensa", user.quest().m_recompensa);
 
+			ini.setValue("BAN", "Banned", user.banned);
 			ini.setValue("BAN", "BannedBy", user.bannedBy);
 			ini.setValue("BAN", "Reason", user.bannedReason);
 
@@ -529,4 +530,43 @@ public class UserStorage {
 		}
 	}
 	
+    public static boolean isUserBanned(String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			return ini.getShort("FLAGS", "Ban") == 1;
+		} catch (IOException ignored) {
+		}
+    	return false;
+    }
+    
+    public static void banUser(String userName, String admin, String reason) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("BAN", "Banned", 1);
+			ini.setValue("BAN", "BannedBy", admin);
+			ini.setValue("BAN", "Reason", reason);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+
+    public static void unBanUser(String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("BAN", "Banned", 0);
+			ini.setValue("BAN", "BannedBy", "");
+			ini.setValue("BAN", "Reason", "");
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+
 }

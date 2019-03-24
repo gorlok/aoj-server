@@ -201,8 +201,8 @@ public enum ClientPacketID {
     CriminalMessage         ,//  /CRIMSG
     TalkAsNPC               ,//  /TALKAS
     DestroyAllItemsInArea   ,//  /MASSDEST
-    AcceptRoyalCouncilMember ,//  /ACEPTCONSE
-    AcceptChaosCouncilMember ,//  /ACEPTCONSECAOS
+    AcceptRoyalCouncilMember,//  /ACEPTCONSE
+    AcceptChaosCouncilMember,//  /ACEPTCONSECAOS
     ItemsInTheFloor         ,//  /PISO
     MakeDumb                ,//  /ESTUPIDO
     MakeDumbNoMore          ,//  /NOESTUPIDO
@@ -270,8 +270,7 @@ public enum ClientPacketID {
     ChatColor               ,//  /CHATCOLOR
     Ignored                 ,//  /IGNORADO
     CheckSlot               ,//  /SLOT
-    SetIniVar               ,//   /SETINIVAR LLAVE CLAVE VALOR
-    BanIPUser               ;//  /BANIPUSER
+    SetIniVar               ;//  /SETINIVAR LLAVE CLAVE VALOR
 	
 	// cache values() because performance
 	private final static ClientPacketID[] values = ClientPacketID.values();

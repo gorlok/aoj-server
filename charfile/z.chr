@@ -1,5 +1,5 @@
 ;Archivo: charfile/z.chr
-;Ultima modificacion: 22/03/2019 23:33:04
+;Ultima modificacion: 23/03/2019 23:55:12
 
 [ATRIBUTOS]
 AT1=11
@@ -157,7 +157,7 @@ LASTIP3=
 LASTIP4=
 LASTIP5=
 PASSWORDHASH=$2a$08$c.be8BpC9xhMcC3i0gasgeWmWpLvzSWIB1SWIQMsJuZdi8J.iPyo.
-POSITION=34-25-63
+POSITION=34-26-63
 RAZA=5
 
 [INVENTORY]
@@ -198,11 +198,8 @@ NPCSMUERTES=0
 USERMUERTES=0
 
 [PENAS]
-CANT=4
-P1=gorlok>> /ADVERTENCIA se rasca 22/03/2019 23:33:04
-P2=gorlok>> /ADVERTENCIA asfasfasfd 22/03/2019 23:14:52
-P3=gorlok>> /ADVERTENCIA nueva pena 22/03/2019 23:32:30
-P4=gorlok>> /ADVERTENCIA zzzzzzzzzzzz 22/03/2019 23:18:20
+CANT=1
+P1=gorlok>> /UNBAN 23/03/2019 23:55:12
 
 [QUEST]
 ENQUEST=0

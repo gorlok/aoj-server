@@ -26,26 +26,41 @@ public class BanIPRequest extends ClientPacket {
 	public ClientPacketID id() {
 		return ClientPacketID.BanIP;
 	}
+	public boolean byIP;
 	public byte ip1;
 	public byte ip2;
 	public byte ip3;
 	public byte ip4;
+	public String userName;
 	public String reason;
-	public BanIPRequest(byte ip1,byte ip2,byte ip3,byte ip4,String reason){
+	public BanIPRequest(byte ip1,byte ip2,byte ip3,byte ip4, String reason){
+		this.byIP = true;
 		this.ip1 = ip1;
 		this.ip2 = ip2;
 		this.ip3 = ip3;
 		this.ip4 = ip4;
 		this.reason = reason;
 	}
+	public BanIPRequest(String userName, String reason){
+		this.byIP = false;
+		this.userName = userName;
+		this.reason = reason;
+	}
 	public static BanIPRequest decode(ByteBuf in) {    
-		try {                                   
-			byte ip1 = readByte(in);
-			byte ip2 = readByte(in);
-			byte ip3 = readByte(in);
-			byte ip4 = readByte(in);
-			String reason = readStr(in);
-			return new BanIPRequest(ip1,ip2,ip3,ip4,reason);                  
+		try {
+			boolean byIP = readByte(in) == 1;
+			if (byIP) {
+				byte ip1 = readByte(in);
+				byte ip2 = readByte(in);
+				byte ip3 = readByte(in);
+				byte ip4 = readByte(in);
+				String reason = readStr(in);
+				return new BanIPRequest(ip1, ip2, ip3, ip4, reason);
+			} else {
+				String userName = readStr(in);
+				String reason = readStr(in);
+				return new BanIPRequest(userName,reason);                  
+			}
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        
 		}                                       

@@ -21,6 +21,8 @@ import java.util.Optional;
 
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.map.Heading;
+import org.ArgentumOnline.server.protocol.BanCharRequest;
+import org.ArgentumOnline.server.protocol.BanIPRequest;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
 import org.ArgentumOnline.server.protocol.BankDepositRequest;
 import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
@@ -43,11 +45,13 @@ import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
 import org.ArgentumOnline.server.protocol.ExecuteRequest;
+import org.ArgentumOnline.server.protocol.ForgiveRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.GoNearbyRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
+import org.ArgentumOnline.server.protocol.JailRequest;
 import org.ArgentumOnline.server.protocol.LastIPRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
@@ -82,6 +86,9 @@ import org.ArgentumOnline.server.protocol.TalkAsNPCRequest;
 import org.ArgentumOnline.server.protocol.TalkRequest;
 import org.ArgentumOnline.server.protocol.TeleportCreateRequest;
 import org.ArgentumOnline.server.protocol.TrainRequest;
+import org.ArgentumOnline.server.protocol.TurnCriminalRequest;
+import org.ArgentumOnline.server.protocol.UnbanCharRequest;
+import org.ArgentumOnline.server.protocol.UnbanIPRequest;
 import org.ArgentumOnline.server.protocol.UseItemRequest;
 import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
 import org.ArgentumOnline.server.protocol.WalkRequest;
@@ -648,6 +655,42 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					handleRemovePunishment(player, (RemovePunishmentRequest)packet);
 					break;
 					
+				case Jail:
+					handleJail(player, (JailRequest)packet);
+					break;
+					
+				case Forgive:
+					server.manager().forgiveUser(player, ((ForgiveRequest)packet).userName);
+					break;
+					
+				case TurnCriminal:
+					server.manager().turnCriminal(player, ((TurnCriminalRequest)packet).userName);
+					break;
+					
+				case BanChar:
+					handleBanChar(player, (BanCharRequest)packet);
+					break;
+					
+				case UnbanChar:
+					server.manager().unbanUser(player, ((UnbanCharRequest)packet).userName);
+					break;
+					
+				case BanIP:
+					handleBanIp(player, (BanIPRequest)packet);
+					break;
+				
+				case UnbanIP:
+					handleUnbanIp(player, (UnbanIPRequest)packet);
+					break;
+					
+				case BannedIPList:
+					server.manager().bannedIPList(player);
+					break;
+					
+				case BannedIPReload:
+					server.manager().bannedIPReload(player);
+					break;			
+					
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
 				}
@@ -656,6 +699,28 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			}
 		}
 		
+	}
+
+	private void handleUnbanIp(Player admin, UnbanIPRequest packet) {
+		String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
+		GameServer.instance().manager().unbanIP(admin, bannedIP);
+	}
+
+	private void handleBanIp(Player admin, BanIPRequest packet) {
+		if (packet.byIP) {
+			String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
+			GameServer.instance().manager().banIP(admin, bannedIP, packet.reason);
+		} else {
+			GameServer.instance().manager().banIPUser(admin, packet.userName, packet.reason);
+		}
+	}
+
+	private void handleBanChar(Player admin, BanCharRequest packet) {
+		GameServer.instance().manager().banUser(admin, packet.userName, packet.reason);
+	}
+
+	private void handleJail(Player admin, JailRequest packet) {
+		GameServer.instance().manager().sendUserToJail(admin, packet.userName, packet.reason, packet.jailTime);
 	}
 
 	private void handleRemovePunishment(Player player, RemovePunishmentRequest packet) {

@@ -1,7 +1,10 @@
 # Changelog (in Spanish)
-Todos los cambios notables del proyecto serán documentados en este archivo.
+Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
+
+### 2019-03-23
+- agregados /CARCEL, /PERDON, /CONDEN, /BAN, /UNBAN, /BANIP, /UNBANIP, /BANIPLIST, /BANIPRELOAD
 
 ### 2019-03-22
 - nuevos comandos de usuario: /DENUNCIAR

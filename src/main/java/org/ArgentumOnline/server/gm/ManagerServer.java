@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
@@ -210,48 +213,99 @@ public class ManagerServer {
     public List<String> getBannedIPs() {
         return this.bannedIPs;
     }
-
-	public void banIP(Player admin, String s) {
-		// Ban x IP
+    
+	public void banIPUser(Player admin, String userName, String reason) {
 		// Comando /BANIP
-		var usuario = this.server.playerByUserName(s);
-		var ip = "";
-		if (usuario == null) {
-			Log.logGM(admin.getNick(), "hizo /BanIP " + s);
-			ip = s;
-		} else {
-			Log.logGM(admin.getNick(), "hizo /BanIP " + s + " - " + usuario.getIP());
-			ip = usuario.getIP();
-		}
-		var bannedIPs = getBannedIPs();
-		if (bannedIPs.contains(ip)) {
-			admin.sendMessage("La IP " + ip + " ya se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
+		if (!admin.isGod() && !admin.isAdmin()) {
 			return;
 		}
-		bannedIPs.add(ip);
-		sendMessageToAdmins(admin, admin.getNick() + " Baneo la IP " + ip, FontType.FONTTYPE_FIGHT);
-		if (usuario != null) {
-			this.server.logBan(usuario.getNick(), admin.getNick(), "Ban por IP desde Nick");
-			sendMessageToAdmins(admin, admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-			sendMessageToAdmins(admin, admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-			// Ponemos el flag de ban a 1
-			usuario.flags().Ban = true;
-			Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
-			Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
-			usuario.quitGame();
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		String bannedIP = user.getIP();
+		banUser(admin, userName, reason);
+		banIP(admin, bannedIP, reason);
+	}
+
+	public void banIP(Player admin, String bannedIP, String reason) {
+		// Comando /BANIP
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		var bannedIPs = getBannedIPs();
+		if (bannedIPs.contains(bannedIP)) {
+			admin.sendMessage("La IP " + bannedIP + " ya se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		bannedIPs.add(bannedIP);
+		saveBannedIPList();
+		sendMessageToAdmins(admin, admin.getNick() + " Baneo la IP " + bannedIP, FontType.FONTTYPE_SERVER);
+		
+        // Find every player with that ip and ban him!
+		server.players().stream().forEach(p -> {
+			if (p.getIP() == bannedIP) {
+				banUser(admin, p.getNick(), "Banned IP " + bannedIP + " por: " + reason);
+			}
+		});
+	}
+
+	public void unbanIP(Player admin, String bannedIP) {
+		// Comando /UNBANIP
+		Log.logGM(admin.getNick(), "/UNBANIP " + bannedIP);
+		var bannedIPs = getBannedIPs();
+		if (bannedIPs.contains(bannedIP)) {
+			bannedIPs.remove(bannedIP);
+			saveBannedIPList();
+			admin.sendMessage("La IP " + bannedIP + " se ha quitado de la lista de bans.", FontType.FONTTYPE_INFO);
+			sendMessageToAdmins(admin, admin.getNick() + " ha quitado la IP " + bannedIP + " de la lista de bans.", 
+					FontType.FONTTYPE_SERVER);
+		} else {
+			admin.sendMessage("La IP " + bannedIP + " NO se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
+		}
+	}
+	
+	public void bannedIPList(Player admin) {
+		// Command /BANIPLIST
+		if (!admin.isGM()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), "/BANIPLIST");
+	    
+		if (getBannedIPs().isEmpty()) {
+			admin.sendMessage("No hay banned IPs.", FontType.FONTTYPE_INFO);			
+		} else {
+			admin.sendMessage("Banned IPs: " + String.join(", ", getBannedIPs()), FontType.FONTTYPE_INFO);
 		}
 	}
 
-	public void doUnbanIP(Player admin, String s) {
-		// Desbanea una IP
-		// Comando /UNBANIP
-		Log.logGM(admin.getNick(), "/UNBANIP " + s);
-		var bannedIPs = getBannedIPs();
-		if (bannedIPs.contains(s)) {
-			bannedIPs.remove(s);
-			admin.sendMessage("La IP " + s + " se ha quitado de la lista de bans.", FontType.FONTTYPE_INFO);
-		} else {
-			admin.sendMessage("La IP " + s + " NO se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
+	public void bannedIPReload(Player admin) {
+		// Command /BANIPRELOAD
+		if (!admin.isGM()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), "/BANIPRELOAD");
+
+		loadBannedIPList();
+	}
+	
+	public void loadBannedIPList() {
+		final String fileName = Constants.DATDIR + File.separator + "BanIps.dat";
+		this.bannedIPs.clear();
+		try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+			stream.forEach( line -> this.bannedIPs.add(line) );
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	public void saveBannedIPList() {
+		final String fileName = Constants.DATDIR + File.separator + "BanIps.dat";
+		try {
+			Files.write(Paths.get(fileName), String.join("\n", this.bannedIPs).getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -1011,9 +1065,9 @@ public class ManagerServer {
 		if (!admin.flags().isGM()) {
 			return;
 		}
-    	for (Player cli: server.players()) {
-            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
-                cli.sendMessage(msg, fuente);
+    	for (Player user: server.players()) {
+            if (user != null && user.getId() > 0 && user.flags().isGM() && user.isLogged()) {
+                user.sendMessage(msg, fuente);
             }
         }
     }
@@ -1022,99 +1076,109 @@ public class ManagerServer {
 		if (!admin.flags().isGM()) {
 			return;
 		}
-    	for (Player cli: server.players()) {
-            if (cli != null && cli.getId() > 0 && cli.isLogged() 
-            		&& (cli.flags().isGM() || cli.isRoyalArmy())) {
-                cli.sendMessage("ARMADA REAL> " + msg, FontType.FONTTYPE_TALK);
+    	for (Player user: server.players()) {
+            if (user != null && user.getId() > 0 && user.isLogged() 
+            		&& (user.flags().isGM() || user.isRoyalArmy())) {
+                user.sendMessage("ARMADA REAL> " + msg, FontType.FONTTYPE_TALK);
             }
         }
     }
 
-    public void sendMessageToDarkLegion(Player admin, String msg) {
+    public void sendMessageToDarkLegion(Player admin, String message) {
 		if (!admin.flags().isGM()) {
 			return;
 		}
-    	for (Player cli: server.players()) {
-            if (cli != null && cli.getId() > 0 && cli.isLogged() 
-            		&& (cli.flags().isGM() || cli.isDarkLegion())) {
-                cli.sendMessage("LEGION OSCURA> " + msg, FontType.FONTTYPE_TALK);
+    	for (Player user: server.players()) {
+            if (user != null && user.getId() > 0 && user.isLogged() 
+            		&& (user.flags().isGM() || user.isDarkLegion())) {
+                user.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK);
             }
         }
     }
 
-    public void sendMessageToCitizens(Player admin, String msg) {
+    public void sendMessageToCitizens(Player admin, String message) {
 		if (!admin.flags().isGM()) {
 			return;
 		}
-    	for (Player cli: server.players()) {
-            if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                cli.sendMessage("CIUDADANOS> " + msg, FontType.FONTTYPE_TALK);
+    	for (Player user: server.players()) {
+            if (user != null && user.getId() > 0 && user.isLogged()) {
+                user.sendMessage("CIUDADANOS> " + message, FontType.FONTTYPE_TALK);
             }
         }
     }
 
-	public void summonChar(Player admin, String s) {
+	public void summonChar(Player admin, String userName) {
 		// Comando /SUM usuario
 		if (!admin.flags().isGM()) {
 			return;
 		}
-		if (s.length() == 0) {
+		if (userName.length() == 0) {
 			return;
 		}
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
 			admin.sendMessage("El usuario esta offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Log.logGM(admin.getNick(), "Hizo /SUM " + s);
-		if (usuario.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
-			admin.sendMessage(usuario.getNick() + " ha sido trasportado.", FontType.FONTTYPE_INFO);
-			usuario.sendMessage("Has sido trasportado.", FontType.FONTTYPE_INFO);
-			Log.logGM(admin.getNick(), "/SUM " + usuario.getNick() +
+		Log.logGM(admin.getNick(), "Hizo /SUM " + userName);
+		if (user.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, true)) {
+			admin.sendMessage(user.getNick() + " ha sido trasportado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Has sido trasportado.", FontType.FONTTYPE_INFO);
+			Log.logGM(admin.getNick(), "/SUM " + user.getNick() +
 					" Map:" + admin.pos().map + " X:" + admin.pos().x + " Y:" + admin.pos().y);
 		}
 	}
 
-	public void doBan(Player admin, String nombre, String motivo) {
+	public void banUser(Player admin, String userName, String reason) {
 		// Comando /BAN
-		if (!admin.flags().isGM()) {
+		if (!admin.isGod() && !admin.isAdmin()) {
 			return;
 		}
-		Player usuario = this.server.playerByUserName(nombre);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
+			if (Player.userExists(userName)) {
+				user = new Player(server);
+				try {
+					user.userStorage.loadUserFromStorageOffline(userName);
+				} catch (IOException ignore) {
+					return;
+				}
+			} else {
+				admin.sendMessage("El usuario no existe.", FontType.FONTTYPE_INFO);
+				return;							
+			}
+		}
+		if (user.flags().privileges > admin.flags().privileges) {
+			admin.sendMessage("No puedes /BAN a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().privileges > admin.flags().privileges) {
-			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
-			return;
+		sendMessageToAdmins(admin, admin.getNick() + " /BAN a " + user.getNick() + " por: " + reason, FontType.FONTTYPE_SERVER);
+        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		UserStorage.addPunishment(userName, admin.getNick() + ">> /BAN por: " + reason + ". " + sdf.format(new java.util.Date()));
+		user.sendPacket(new ShowMessageBoxResponse("Has sido expulsado permanentemente del servidor."));
+		user.banned(admin.getNick(), reason);
+		if (user.isLogged()) {
+			user.quitGame();
 		}
-		Log.logGM(admin.getNick(), "/BAN " + nombre + " por: " + motivo);
-		this.server.logBan(usuario.getNick(), admin.getNick(), motivo);
-		sendMessageToAdmins(admin, admin.getNick() + " echo a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-		sendMessageToAdmins(admin, admin.getNick() + " Banned a " + usuario.getNick() + ".", FontType.FONTTYPE_FIGHT);
-		// Ponemos el flag de ban a 1
-		usuario.flags().Ban = true;
-		if (usuario.flags().isGM()) {
-			admin.flags().Ban = true;
-			admin.quitGame();
-			sendMessageToAdmins(admin, admin.getNick() + " banned from this server por bannear un Administrador.",
-					FontType.FONTTYPE_FIGHT);
-		}
-		Log.logGM(admin.getNick(), "Echo a " + usuario.getNick());
-		Log.logGM(admin.getNick(), "BAN a " + usuario.getNick());
-		usuario.quitGame();
+		UserStorage.banUser(user.getNick(), admin.getNick(), reason);
+		Log.logGM(admin.getNick(), "/BAN " + userName + " por: " + reason);
 	}
 
-	public void doUnban(Player admin, String s) {
+	public void unbanUser(Player admin, String userName) {
 		// Comando /UNBAN
-		if (!admin.flags().isGM()) {
+		if (!admin.isGod() && !admin.isAdmin()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "/UNBAN " + s);
-		this.server.unBan(s);
-		Log.logGM(admin.getNick(), "Hizo /UNBAN a " + s);
-		admin.sendMessage(s + " unbanned.", FontType.FONTTYPE_INFO);
+		if (!UserStorage.isUserBanned(userName)) {
+			admin.sendMessage("No se puede perdonar, porque el usuario no está expulsado.", FontType.FONTTYPE_INFO);
+			return;			
+		}
+        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		UserStorage.addPunishment(userName, admin.getNick() + ">> /UNBAN " + sdf.format(new java.util.Date()));
+		UserStorage.unBanUser(userName);
+		Log.logGM(admin.getNick(), "/UNBAN a " + userName);
+		admin.sendMessage(userName + " unbanned.", FontType.FONTTYPE_SERVER);
+		sendMessageToAdmins(admin, admin.getNick() + " /UNBAN " + userName + ".", FontType.FONTTYPE_SERVER);
 	}
 
 	public void kickUser(Player admin, String userName) {
@@ -1124,119 +1188,125 @@ public class ManagerServer {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + userName);
-		Player usuario = this.server.playerByUserName(userName);
-		if (usuario == null) {
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().privileges > admin.flags().privileges) {
+		if (user.flags().privileges > admin.flags().privileges) {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		
 		server.sendToAll(new ConsoleMsgResponse(
-				admin.getNick() + " echo a " + usuario.getNick() + ".",
+				admin.getNick() + " echo a " + user.getNick() + ".",
 				FontType.FONTTYPE_INFO.id()));
-		Log.logGM(admin.getNick(), "Echó a " + usuario.getNick());
-		usuario.quitGame();
+		Log.logGM(admin.getNick(), "Echó a " + user.getNick());
+		user.quitGame();
 	}
 
-	public void sendUserToJail(Player admin, String userName, byte minutes) {
+	public void sendUserToJail(Player admin, String userName, String reason, byte minutes) {
 		// Comando /CARCEL minutos usuario
 		if (!admin.flags().isGM()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "quizo /CARCEL " + userName);
-		Player usuario = this.server.playerByUserName(userName);
-		if (usuario == null) {
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.flags().privileges > admin.flags().privileges) {
+		if (user.flags().privileges > admin.flags().privileges) {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.counters().Pena > 0) {
+		if (user.counters().Pena > 0) {
 			admin.sendMessage("El usuario ya esta en la carcel. Le quedan " + admin.counters().Pena + " minutos.",
 					FontType.FONTTYPE_WARNING);
 			return;
 		}
-		if (minutes > 30) {
-			admin.sendMessage("No puedes encarcelar por mas de 30 minutos!", FontType.FONTTYPE_INFO);
+		Log.logGM(admin.getNick(), " /CARCEL " + userName);
+		if (minutes > 60) {
+			admin.sendMessage("No puedes encarcelar por mas de 60 minutos!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		usuario.sendToJail(minutes, admin.getNick());
+        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		UserStorage.addPunishment(userName, admin.getNick() + ">> /CARCEL " + reason + " " + sdf.format(new java.util.Date()));
+		user.sendToJail(minutes, admin.getNick());
 	}
 
-	public void pardonUser(Player admin, String userName) {
+	public void forgiveUser(Player admin, String userName) {
 		// Comando /PERDON usuario
 		// Perdonar a un usuario. Volverlo cuidadano.
 		if (!admin.flags().isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /PERDON " + userName);
-		Player usuario = this.server.playerByUserName(userName);
-		if (usuario == null) {
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
 			admin.sendMessage("Usuario offline. No tiene perdón.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.isNewbie()) {
-			if (usuario.reputation().esIntachable()) {
-				admin.sendMessage("No hay que perdonarle a " + usuario.getNick(), FontType.FONTTYPE_INFO);
+		if (user.isNewbie()) {
+			if (user.reputation().esIntachable()) {
+				admin.sendMessage("No hay nada que perdonarle a " + user.getNick(), FontType.FONTTYPE_INFO);
 				return;
 			}
-			usuario.volverCiudadano();
-			admin.sendMessage(usuario.getNick() + " ha sido perdonado.", FontType.FONTTYPE_INFO);
-			usuario.sendMessage("Los dioses te han perdonado por esta vez.", FontType.FONTTYPE_INFO);
+			user.volverCiudadano();
+			admin.sendMessage(user.getNick() + " ha sido perdonado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Los dioses te han perdonado por esta vez.", FontType.FONTTYPE_INFO);
 		} else {
-			Log.logGM(admin.getNick(), "Intento perdonar un personaje de nivel avanzado.");
+			Log.logGM(admin.getNick(), "Intentó perdonar un personaje de nivel avanzado.");
 			admin.sendMessage("Solo se permite perdonar newbies.", FontType.FONTTYPE_INFO);
 		}
 	}
 
-	public void condemnUser(Player admin, String s) {
+	public void turnCriminal(Player admin, String userName) {
 		// Comando /CONDEN usuario
 		// Condenar a un usuario. Volverlo criminal.
 		if (!admin.flags().isGM()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "quizo /CONDEN " + s);
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
+		Log.logGM(admin.getNick(), "quizo /CONDEN " + userName);
+		Player user = this.server.playerByUserName(userName);
+		if (user == null) {
 			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (usuario.reputation().esCriminal()) {
-			admin.sendMessage(usuario.getNick() + " ya es un criminal condenado.", FontType.FONTTYPE_INFO);
+		if (user.isGM()) {
+			admin.sendMessage("No puedes condenar administradores.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		usuario.volverCriminal();
-		admin.sendMessage(usuario.getNick() + " ha sido condenado.", FontType.FONTTYPE_INFO);
-		usuario.sendMessage("Los dioses te han condenado por tus acciones.", FontType.FONTTYPE_INFO);
+		if (user.reputation().esCriminal()) {
+			admin.sendMessage(user.getNick() + " ya es un criminal condenado.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		user.volverCriminal();
+		admin.sendMessage(user.getNick() + " ha sido condenado.", FontType.FONTTYPE_INFO);
+		user.sendMessage("Los dioses te han condenado por tus acciones.", FontType.FONTTYPE_INFO);
 	}
 
-	public void reviveUser(Player admin, String s) {
+	public void reviveUser(Player admin, String userName) {
 		// Comando /REVIVIR
 		if (!admin.flags().isGM()) {
 			return;
 		}
-		Log.logGM(admin.getNick(), "quizo /REVIVIR " + s);
-		Player usuario;
-		if (!s.equalsIgnoreCase("YO") && s.length() > 0) {
-			usuario = this.server.playerByUserName(s);
-			if (usuario == null) {
+		Log.logGM(admin.getNick(), "quizo /REVIVIR " + userName);
+		Player user;
+		if (!userName.equalsIgnoreCase("YO") && userName.length() > 0) {
+			user = this.server.playerByUserName(userName);
+			if (user == null) {
 				admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
 				return;
 			}
 		} else {
-			usuario = admin;
+			user = admin;
 		}
-		if (usuario.isAlive()) {
-			admin.sendMessage(usuario.getNick() + " no esta muerto!", FontType.FONTTYPE_INFO);
+		if (user.isAlive()) {
+			admin.sendMessage(user.getNick() + " no esta muerto!", FontType.FONTTYPE_INFO);
 		} else {
-			usuario.revive();
-			usuario.sendMessage(admin.getNick() + " te ha resucitado.", FontType.FONTTYPE_INFO);
-			Log.logGM(admin.getNick(), "Resucitó a " + usuario.getNick());
+			user.revive();
+			user.sendMessage(admin.getNick() + " te ha resucitado.", FontType.FONTTYPE_INFO);
+			Log.logGM(admin.getNick(), "Resucitó a " + user.getNick());
 		}
 	}
 

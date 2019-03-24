@@ -635,9 +635,6 @@ class RequestDecoder extends ReplayingDecoder<ClientPacket> {
 		case BanIP:
 			packet = BanIPRequest.decode(in);
 			break;
-		case BanIPUser:
-			packet = BanIPUserRequest.decode(in);
-			break;
 		case UnbanIP:
 			packet = UnbanIPRequest.decode(in);
 			break;
