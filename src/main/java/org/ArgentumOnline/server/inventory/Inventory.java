@@ -110,5 +110,25 @@ public class Inventory implements Iterable<InventoryObject> {
 	public Iterator<InventoryObject> iterator() {
 		return Arrays.asList(this.objs).iterator();
 	}
+
+	public void move(byte slot, byte direction) {
+		if (direction == 1) {
+			// Move upward
+			if (slot == 1) {
+				return;
+			}
+			var temp = objs[slot-1];
+			objs[slot-1] = objs[slot-2];
+			objs[slot-2] = temp;
+		} else {
+			// Move downward
+			if (slot == size()) {
+				return;
+			}
+			var temp = objs[slot-1];
+			objs[slot-1] = objs[slot];
+			objs[slot] = temp;
+		}
+	}
     
 }

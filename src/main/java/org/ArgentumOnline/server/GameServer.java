@@ -374,7 +374,7 @@ public class GameServer implements Constants {
                 Util.sleep(wait);
             }
         } finally {
-            doBackup();
+            backupWorld();
             guardarUsuarios();
             log.info("Server apagado por doBackUp");
         }
@@ -414,7 +414,7 @@ public class GameServer implements Constants {
     	log.trace("loading spells");
         IniFile ini = new IniFile();
         try {
-            ini.load(DATDIR + java.io.File.separator + "Hechizos.dat");
+            ini.load(DAT_DIR + java.io.File.separator + "Hechizos.dat");
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -434,7 +434,7 @@ public class GameServer implements Constants {
     	log.trace("loading quests");
         IniFile ini = new IniFile();
         try {
-            ini.load(DATDIR + java.io.File.separator + "Quests.dat");
+            ini.load(DAT_DIR + java.io.File.separator + "Quests.dat");
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {
@@ -604,7 +604,7 @@ public class GameServer implements Constants {
     private void loadCities() {
     	log.trace("loading cities");
         try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "Ciudades.dat");
+            IniFile ini = new IniFile(DAT_DIR + File.separator + "Ciudades.dat");
             this.cities = new MapPos[Ciudad.values().length];
             loadCity(ini, Ciudad.NIX, "NIX");
             loadCity(ini, Ciudad.ULLATHORPE, "Ullathorpe");
@@ -803,7 +803,7 @@ public class GameServer implements Constants {
         }
         this.minutesWorldSave++;
         if (this.minutesWorldSave >= IntervaloMinutosWs) {
-            doBackup();
+            backupWorld();
             this.minutesWorldSave = 0;
         }
         if (this.minutesLastClean >= 15) {
@@ -823,7 +823,7 @@ public class GameServer implements Constants {
     private void loadBlacksmithingWeapons() {
     	log.trace("loading blacksmithing weapons");
         try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "ArmasHerrero.dat");
+            IniFile ini = new IniFile(DAT_DIR + File.separator + "ArmasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmas");
             this.armasHerrero = new short[cant];
             log.debug("ArmasHerreria cantidad=" + cant);
@@ -841,7 +841,7 @@ public class GameServer implements Constants {
     private void loadBlacksmithingArmors() {
     	log.trace("loading backsmithing armors");
         try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "ArmadurasHerrero.dat");
+            IniFile ini = new IniFile(DAT_DIR + File.separator + "ArmadurasHerrero.dat");
             short cant = ini.getShort("INIT", "NumArmaduras");
             log.debug("ArmadurasHerrero cantidad=" + cant);
             this.armadurasHerrero = new short[cant];
@@ -859,7 +859,7 @@ public class GameServer implements Constants {
     private void loadCarpentryObjects() {
     	log.trace("loading carpentry objects");
         try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "ObjCarpintero.dat");
+            IniFile ini = new IniFile(DAT_DIR + File.separator + "ObjCarpintero.dat");
             short cant = ini.getShort("INIT", "NumObjs");
             log.debug("ObjCarpintero cantidad=" + cant);
             this.objCarpintero = new short[cant];
@@ -877,7 +877,7 @@ public class GameServer implements Constants {
     public String[] readHelp() {
         String[] lineas = null;
         try {
-            IniFile ini = new IniFile(DATDIR + File.separator + "Help.dat");
+            IniFile ini = new IniFile(DAT_DIR + File.separator + "Help.dat");
             short cant = ini.getShort("INIT", "NumLines");
             lineas = new String[cant];
             for (int i = 0; i < cant; i++) {
@@ -900,7 +900,7 @@ public class GameServer implements Constants {
     }
 
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
-    public void doBackup() {
+    public void backupWorld() {
     	// FIXME
         this.doingBackup = true;
         //enviarATodos(MSG_BKW);
@@ -923,6 +923,9 @@ public class GameServer implements Constants {
 
     public void cleanWorld(Player admin) {
     	// Comando /LIMPIAR
+		if (!admin.isGM()) {
+			return;
+		}
     	int cant = cleanWorld();
         if (admin != null) {
 			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " objetos.", FontType.FONTTYPE_SERVER);

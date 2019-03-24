@@ -27,6 +27,7 @@ import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
 import org.ArgentumOnline.server.protocol.BankDepositRequest;
 import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
 import org.ArgentumOnline.server.protocol.BankExtractItemRequest;
+import org.ArgentumOnline.server.protocol.BugReportRequest;
 import org.ArgentumOnline.server.protocol.CastSpellRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
 import org.ArgentumOnline.server.protocol.ChangePasswordRequest;
@@ -45,13 +46,19 @@ import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
 import org.ArgentumOnline.server.protocol.EquipItemRequest;
 import org.ArgentumOnline.server.protocol.ExecuteRequest;
+import org.ArgentumOnline.server.protocol.ForceMIDIAllRequest;
+import org.ArgentumOnline.server.protocol.ForceMIDIToMapRequest;
+import org.ArgentumOnline.server.protocol.ForceWAVEAllRequest;
+import org.ArgentumOnline.server.protocol.ForceWAVEToMapRequest;
 import org.ArgentumOnline.server.protocol.ForgiveRequest;
 import org.ArgentumOnline.server.protocol.ForumPostRequest;
 import org.ArgentumOnline.server.protocol.GMMessageRequest;
 import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.GoNearbyRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
+import org.ArgentumOnline.server.protocol.IPToNickRequest;
 import org.ArgentumOnline.server.protocol.JailRequest;
+import org.ArgentumOnline.server.protocol.KickRequest;
 import org.ArgentumOnline.server.protocol.LastIPRequest;
 import org.ArgentumOnline.server.protocol.LeftClickRequest;
 import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
@@ -59,6 +66,7 @@ import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
 import org.ArgentumOnline.server.protocol.MakeDumbNoMoreRequest;
 import org.ArgentumOnline.server.protocol.MakeDumbRequest;
 import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
+import org.ArgentumOnline.server.protocol.MoveBankRequest;
 import org.ArgentumOnline.server.protocol.MoveSpellRequest;
 import org.ArgentumOnline.server.protocol.NickToIPRequest;
 import org.ArgentumOnline.server.protocol.OnlineMapRequest;
@@ -142,6 +150,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		}
 		
 		switch (clientPacket.id()) {
+		case Ping:
+			player.ping();
+			break;
+			
 		case LoginExistingChar:
 			handleLoginExistingChar((LoginExistingCharRequest)packet, player);
 			break;
@@ -294,6 +306,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.bankExtractGold(((BankExtractGoldRequest)packet).amount);
 			break;
 			
+		case MoveBank:
+			player.moveBank(((MoveBankRequest)packet).slot, ((MoveBankRequest)packet).dir);
+			break;
+			
 		case SafeToggle:
 			player.safeToggle();
 			break;
@@ -358,6 +374,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.spells().sendSpellInfo(((SpellInfoRequest)packet).spellSlot);
 			break;
 			
+		case Information:
+			player.showInformation();
+			break;
+			
 		case GMRequest:
 			server.manager().askForHelpToGM(player);
 			break;
@@ -386,9 +406,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.denounce(((DenounceRequest)packet).text);
 			break;
 			
-		default:
-			if (player.flags().isGM()) {
-				switch (clientPacket.id()) {
+		case Help:
+			player.showHelp();
+			break;
+			
+		case BugReport:
+			server.manager().bugReport(player, ((BugReportRequest)packet).bugReport);
+			break;
+
+			// GM COMMANDS
+//		default:
+//			if (player.flags().isGM()) {
+//				switch (clientPacket.id()) {
 				case OnlineGM:
 					server.manager().showGmOnline(player);
 					break;
@@ -406,7 +435,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					break;
 					
 				case RainToggle:
-					server.manager().toggleRain();
+					server.manager().toggleRain(player);
 					break;
 					
 				case SystemMessage:
@@ -431,6 +460,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case GoToChar:
 					server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
+					break;
+					
+				case WarpMeToTarget:
+					server.manager().warpMeToTarget(player);
 					break;
 					
 				case ServerTime:
@@ -458,7 +491,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					break;
 					
 				case DoBackUp:
-					server.manager().doBackup(player);
+					server.manager().backupWorld(player);
 					break;
 					
 				case ChangeMOTD:
@@ -619,6 +652,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().nick2IP(player, ((NickToIPRequest)packet).userName);
 					break;
 					
+				case IPToNick:
+					handleIpToNick(player, (IPToNickRequest)packet);
+					break;
+					
 				case LastIP:
 					server.manager().lastIp(player, ((LastIPRequest)packet).userName);
 					break;
@@ -689,16 +726,152 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					
 				case BannedIPReload:
 					server.manager().bannedIPReload(player);
-					break;			
+					break;		
 					
+				case Kick:
+					server.manager().kickUser(player, ((KickRequest)packet).userName);
+					break;
+					
+				case KickAllChars:
+					server.manager().kickAllUsersNoGm(player);
+					break;
+					
+				case ForceMIDIAll:
+					server.manager().playMidiAll(player, ((ForceMIDIAllRequest)packet).midiId);
+					break;
+					
+				case ForceMIDIToMap:
+					server.manager().playMidiToMap(player, ((ForceMIDIToMapRequest)packet).map, ((ForceMIDIToMapRequest)packet).midiId);
+					break;
+					
+				case ForceWAVEAll:
+					server.manager().playWaveAll(player, ((ForceWAVEAllRequest)packet).waveId);
+					break;
+					
+				case ForceWAVEToMap:
+					handleForceWaveToMap(player, (ForceWAVEToMapRequest)packet);
+					break;
+					
+				case ShowServerForm:
+					// n/a
+					break;
+					
+		case AcceptChaosCouncilMember:
+		case AcceptRoyalCouncilMember:
+		case AlterMail:
+		case AlterName:
+		case AlterPassword:
+		case AskTrigger:
+		case CentinelReport:
+		case ChangeDescription:
+		case ChangeMapInfoBackup:
+		case ChangeMapInfoLand:
+		case ChangeMapInfoNoInvi:
+		case ChangeMapInfoNoMagic:
+		case ChangeMapInfoNoResu:
+		case ChangeMapInfoPK:
+		case ChangeMapInfoRestricted:
+		case ChangeMapInfoZone:
+		case ChaosArmour:
+		case ChaosLegionKick:
+		case CheckSlot:
+		case ClanCodexUpdate:
+		case CouncilKick:
+		case CouncilMessage:
+		case CreateNPC:
+		case CreateNPCWithRespawn:
+		case CreateNewGuild:
+		case CriminalMessage:
+		case DumpIPTables:
+		case EditChar:
+		case Enlist:
+		case GuildAcceptAlliance:
+		case GuildAcceptNewMember:
+		case GuildAcceptPeace:
+		case GuildAllianceDetails:
+		case GuildAlliancePropList:
+		case GuildBan:
+		case GuildDeclareWar:
+		case GuildFundate:
+		case GuildKickMember:
+		case GuildLeave:
+		case GuildMemberInfo:
+		case GuildMemberList:
+		case GuildMessage:
+		case GuildNewWebsite:
+		case GuildOfferAlliance:
+		case GuildOfferPeace:
+		case GuildOnline:
+		case GuildOnlineMembers:
+		case GuildOpenElections:
+		case GuildPeaceDetails:
+		case GuildPeacePropList:
+		case GuildRejectAlliance:
+		case GuildRejectNewMember:
+		case GuildRejectPeace:
+		case GuildRequestDetails:
+		case GuildRequestJoinerInfo:
+		case GuildRequestMembership:
+		case GuildUpdateNews:
+		case GuildVote:
+		case ImperialArmour:
+		case Inquiry:
+		case InquiryVote:
+		case KillNPC:
+		case LeaveFaction:
+		case NPCFollow:
+		case Night:
+		case PartyAcceptMember:
+		case PartyCreate:
+		case PartyJoin:
+		case PartyKick:
+		case PartyLeave:
+		case PartyMessage:
+		case PartyOnline:
+		case PartySetLeader:
+		case ReloadNPCs:
+		case ReloadObjects:
+		case ReloadServerIni:
+		case ReloadSpells:
+		case RemoveCharFromGuild:
+		case RequestGuildLeaderInfo:
+		case RequestMOTD:
+		case RequestStats:
+		case ResetAutoUpdate:
+		case ResetFactions:
+		case ResetNPCInventory:
+		case Restart:
+		case Reward:
+		case RoleMasterRequest:
+		case RoyalArmyKick:
+		case SaveChars:
+		case SaveMap:
+		case ServerOpenToUsersToggle:
+		case SetIniVar:
+		case SetTrigger:
+		case ShowGuildMessages:
+		case TileBlockedToggle:
+		case ToggleCentinelActivated:
+		case UseSpellMacro:
+		
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+					break;
 				}
-			} else {
-				System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
-			}
-		}
+//			} else {
+//				System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+//			}
+//		}
 		
+	}
+
+	private void handleIpToNick(Player admin, IPToNickRequest packet) {
+		String ip = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
+		GameServer.instance().manager().ipToNick(admin, ip);
+	}
+
+	private void handleForceWaveToMap(Player player, ForceWAVEToMapRequest packet) {
+		GameServer.instance().manager().playWavToMap(player, packet.waveId, packet.map, packet.x, packet.y);		
 	}
 
 	private void handleUnbanIp(Player admin, UnbanIPRequest packet) {

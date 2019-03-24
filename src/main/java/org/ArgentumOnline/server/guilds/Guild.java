@@ -219,7 +219,7 @@ public class Guild {
     
     private void loadGuildMembers() 
     throws java.io.IOException {
-        IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Members.mem");
+        IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Members.mem");
         short cant = ini.getShort("INIT", "NroMembers");
         for (int i = 1; i <= cant; i++) {
         	this.members.add(ini.getString("Members", "Member"+i, ""));
@@ -228,7 +228,7 @@ public class Guild {
 
     private void loadSolicitudes()
     throws java.io.IOException {
-        IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Solicitudes.sol");
+        IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Solicitudes.sol");
         short cant = ini.getShort("INIT", "Nro");
         String nombre, desc;
         for (int i = 1; i <= cant; i++) {
@@ -240,7 +240,7 @@ public class Guild {
 
     private void loadPeacePropositions() 
     throws java.io.IOException {
-        IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Propositions.pro");
+        IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Propositions.pro");
         short cant = ini.getShort("INIT", "Nro");
         String nombre, desc;
         for (int i = 1; i <= cant; i++) {
@@ -252,7 +252,7 @@ public class Guild {
 
     private void loadAlliedGuilds()
     throws java.io.IOException {
-        IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Allied.all");
+        IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Allied.all");
         short cant = ini.getShort("INIT", "NroAllies");
         for (int i = 1; i <= cant; i++) {
         	this.alliedGuilds.add(ini.getString("Allies", "Allie"+i, ""));
@@ -261,7 +261,7 @@ public class Guild {
 
     private void loadEnemyGuilds()
     throws java.io.IOException {
-        IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Enemys.ene");
+        IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Enemys.ene");
         short cant = ini.getShort("INIT", "NroEnemys");
         for (int i = 1; i <= cant; i++) {
         	this.alliedGuilds.add(ini.getString("Enemys", "Enemy"+i, ""));
@@ -311,7 +311,7 @@ public class Guild {
         for (String guild: this.alliedGuilds) {
         	ini.setValue("Allies", "Allie" + i++, guild);
         }
-        ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Allied.all");
+        ini.store(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Allied.all");
     }
 
     private void saveEnemyGuilds()
@@ -322,7 +322,7 @@ public class Guild {
         for (String guild: this.enemyGuilds) {
         	ini.setValue("Enemys", "Enemy" + i++, guild);
         }
-        ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Enemys.ene");
+        ini.store(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Enemys.ene");
     }
 
     private void saveGuildMembers() 
@@ -333,7 +333,7 @@ public class Guild {
         for (String member: this.members) {
         	ini.setValue("Members", "Member" + i++, member);
         }
-        ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Members.mem");
+        ini.store(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Members.mem");
     }
 
     private void saveSolicitudes()
@@ -345,7 +345,7 @@ public class Guild {
         	ini.setValue("Sol"+i, "Name", solicitud.getUserName());
         	ini.setValue("Sol"+i, "Desc", solicitud.getDesc());
         }
-        ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Solicitudes.sol");
+        ini.store(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Solicitudes.sol");
     }
 
     private void savePeacePropositions()
@@ -357,7 +357,7 @@ public class Guild {
         	ini.setValue("Pro"+i, "Name", solicitud.getUserName());
         	ini.setValue("Pro"+i, "Desc", solicitud.getDesc());
         }
-        ini.store(Constants.GUILDDIR + java.io.File.separator + this.guildName + "-Propositions.pro");
+        ini.store(Constants.GUILD_DIR + java.io.File.separator + this.guildName + "-Propositions.pro");
     }
 
     public boolean isEnemy(String guildName) {

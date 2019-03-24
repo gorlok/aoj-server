@@ -58,7 +58,7 @@ public class ForumManager {
 	}
 	
 	private Forum loadForumFromFile(String forumId) {
-		String fileName = Constants.FORUMDIR + File.separator + forumId + FORUM_EXT;
+		String fileName = Constants.FORUM_DIR + File.separator + forumId + FORUM_EXT;
 
 		if (!Files.exists(Paths.get(fileName))) {
 			try {
@@ -80,7 +80,7 @@ public class ForumManager {
 	}
 
 	private void writeForumToFile(Forum forum) {
-		String fileName = Constants.FORUMDIR + File.separator + forum.getForumId() + FORUM_EXT;
+		String fileName = Constants.FORUM_DIR + File.separator + forum.getForumId() + FORUM_EXT;
 
 		if (!Files.exists(Paths.get(fileName))) {
 			try {

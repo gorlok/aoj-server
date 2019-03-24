@@ -37,7 +37,7 @@ public class ManagerApi {
 
 		get("/raining", (request, response) -> game.isRaining());
 		post("/raining", (request, response) -> {
-			admin().toggleRain(); // FIXME 
+			//admin().toggleRain(); // FIXME 
 			return game.isRaining();	
 		});
 		
@@ -49,7 +49,7 @@ public class ManagerApi {
 		});
 		
 		post("/shutdown", (request, response) -> {
-			GameServer.instance().doBackup();
+			GameServer.instance().backupWorld();
 			GameServer.instance().shutdown();
 			return "bye!";
 		});

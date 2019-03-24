@@ -96,9 +96,10 @@ public interface Constants {
     
     final static int LimiteNewbie = 12;
     
-    final static String DATDIR = "dat";
-    final static String GUILDDIR = "guilds";
-    final static String FORUMDIR = "forum";
+    final static String DAT_DIR = "dat";
+    final static String LOG_DIR = "log";
+    final static String GUILD_DIR = "guilds";
+    final static String FORUM_DIR = "forum";
     
     final static short MAX_TEXTO_HABLAR = 500;
     

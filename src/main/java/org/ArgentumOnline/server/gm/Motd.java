@@ -45,7 +45,7 @@ public class Motd {
         try {
             String msg;
             this.m_motd.clear();
-            IniFile ini = new IniFile(Constants.DATDIR + java.io.File.separator + "Motd.ini");
+            IniFile ini = new IniFile(Constants.DAT_DIR + java.io.File.separator + "Motd.ini");
             short cant = ini.getShort("INIT", "NumLines");
             for (int i = 1; i <= cant; i++) {
                 msg = ini.getString("MOTD", "Line"+i, "");
@@ -66,7 +66,7 @@ public class Motd {
             for (Object element : this.m_motd) {
                 ini.setValue("MOTD", "Line"+(++i), (String)element);
             }
-            ini.store(Constants.DATDIR + java.io.File.separator + "Motd.ini");
+            ini.store(Constants.DAT_DIR + java.io.File.separator + "Motd.ini");
         } catch (Exception e) {
             log.fatal("ERROR EN guardarMOTD()", e);
         }
@@ -84,7 +84,7 @@ public class Motd {
 	public void startUpdateMOTD(Player player) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
-		if (!player.flags().isGod()) {
+		if (!player.isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
@@ -103,6 +103,9 @@ public class Motd {
 	public void updateMOTD(Player player, String s) {
 		// Finalizar el cambio de MOTD
 		// Comando ZMOTD
+		if (!player.isGod()) {
+			return;
+		}
 		String CRLF = "" + (char) 13 + (char) 10;
 		Log.logGM(player.getNick(), "ZMOTD " + s);
 		List<String> motd = new ArrayList<String>();

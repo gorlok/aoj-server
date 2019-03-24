@@ -601,7 +601,7 @@ public class GuildManager {
     public void loadGuildsDB() {
         try {
         	this.guilds.clear();
-            IniFile ini = new IniFile(Constants.GUILDDIR + java.io.File.separator + "GuildsInfo.ini");
+            IniFile ini = new IniFile(Constants.GUILD_DIR + java.io.File.separator + "GuildsInfo.ini");
             short cant = ini.getShort("INIT", "NroGuilds");
             Guild guild;
             for (int i = 1; i <= cant; i++) {
@@ -707,7 +707,7 @@ public class GuildManager {
             for (Guild guild: getGuilds()) {
                 guild.saveGuild(ini, i++);
             }
-            ini.store(Constants.GUILDDIR + java.io.File.separator + "GuildsInfo.ini");
+            ini.store(Constants.GUILD_DIR + java.io.File.separator + "GuildsInfo.ini");
         } catch (Exception e) {
             log.fatal("ERROR EN guardarMOTD()", e);
         }

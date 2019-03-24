@@ -3,6 +3,10 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-24
+- agregados /PING /FORCEMIDI /FORCEWAV /FORCEMIDIMAP /FORCEWAVMAP /TELEPLOC /NICK2IP /_BUG
+- agregado Mover Inventario del Banco. 
+
 ### 2019-03-23
 - agregados /CARCEL, /PERDON, /CONDEN, /BAN, /UNBAN, /BANIP, /UNBANIP, /BANIPLIST, /BANIPRELOAD
 

@@ -91,6 +91,7 @@ import org.ArgentumOnline.server.protocol.ObjectCreateResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayMidiResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;
+import org.ArgentumOnline.server.protocol.PongResponse;
 import org.ArgentumOnline.server.protocol.PosUpdateResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.protocol.RemoveAllDialogsResponse;
@@ -655,7 +656,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doAyuda() {
+	public void showHelp() {
 		// Comando /AYUDA
 		String[] ayuda = this.server.readHelp();
 		for (String element : ayuda) {
@@ -828,7 +829,7 @@ public class Player extends AbstractCharacter {
 			// Actualizamos el inventario del banco
 			updateBankUserInv();
 			// Actualizamos la ventana del banco
-			updateVentanaBanco(slot, 1);
+			sendBankOk();
 		}
 	}
 
@@ -875,7 +876,7 @@ public class Player extends AbstractCharacter {
 			// Actualizamos el banco
 			updateBankUserInv();
 			// ventana update
-			updateVentanaBanco(slot, 0);
+			sendBankOk();
 		}
 
 	}
@@ -920,7 +921,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	private void updateVentanaBanco(short slot, int npc_inv) {
+	private void sendBankOk() {
 		sendPacket(new BankOKResponse());
 	}
 
@@ -2026,7 +2027,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void doInformacion() {
+	public void showInformation() {
 		// Comando /INFORMACION
 		// Se asegura que el target es un npc
 		Npc npc = getNearNpcSelected(DISTANCE_INFORMATION);
@@ -5331,6 +5332,19 @@ public class Player extends AbstractCharacter {
 		this.spells.moveSpell(slot, dir);
 	}
 
+	public void moveBank(byte slot, byte dir) {
+		if (dir != 1 && dir != -1) {
+			return;
+		}
+		if (slot < 1 || slot > bankInv.size()) {
+			return;
+		}
+
+		this.bankInv.move(slot, dir);
+		updateBankUserInv();
+		sendBankOk();
+	}
+	
     enum DuelStatus {
 	    DUEL_ALLOWED 	/* TRIGGER6_PERMITE  1 */,
 	    DUEL_FORBIDDEN 	/* TRIGGER6_PROHIBE  2 */,
@@ -5463,14 +5477,16 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void ignoreToggleGM() {
-        if (isGM()) {
-        	flags().AdminPerseguible = !flags().AdminPerseguible;
-        	if (flags().AdminPerseguible) {
-        		sendMessage("Los NPCs hostiles te perseguirán.", FontType.FONTTYPE_INFO);
-        	} else {
-        		sendMessage("Los NPCs hostiles te ignorarán.", FontType.FONTTYPE_INFO);
-        	}
+        if (!isGM()) {
+        	return;
         }
+        
+    	flags().AdminPerseguible = !flags().AdminPerseguible;
+    	if (flags().AdminPerseguible) {
+    		sendMessage("Los NPCs hostiles te perseguirán.", FontType.FONTTYPE_INFO);
+    	} else {
+    		sendMessage("Los NPCs hostiles te ignorarán.", FontType.FONTTYPE_INFO);
+    	}
 	}
 
 	public void showNameToggleGM() {
@@ -5512,6 +5528,10 @@ public class Player extends AbstractCharacter {
 					FontType.FONTTYPE_GUILDMSG.id()));
 			sendMessage("Denuncia enviada, espere..", FontType.FONTTYPE_INFO);
 		}
+	}
+
+	public void ping() {
+		sendPacket(new PongResponse());
 	}
 	
 }

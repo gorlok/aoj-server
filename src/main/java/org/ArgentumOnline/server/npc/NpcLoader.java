@@ -77,7 +77,7 @@ public class NpcLoader {
 		if (iniNPC == null) {
 		    iniNPC = new IniFile();
 		    try {
-		        iniNPC.load(Constants.DATDIR + java.io.File.separator + "NPCs.dat");
+		        iniNPC.load(Constants.DAT_DIR + java.io.File.separator + "NPCs.dat");
 		    } catch (java.io.FileNotFoundException e) {
 		        e.printStackTrace();
 		    } catch (java.io.IOException e) {
@@ -106,7 +106,7 @@ public class NpcLoader {
             iniHostiles = new IniFile();
             try {
                 //iniHostiles.load(Constants.DATDIR + java.io.File.separator + "NPCs-HOSTILES.dat");
-                iniHostiles.load(Constants.DATDIR + java.io.File.separator + "NPCs.dat");
+                iniHostiles.load(Constants.DAT_DIR + java.io.File.separator + "NPCs.dat");
             } catch (java.io.FileNotFoundException e) {
                 e.printStackTrace();
             } catch (java.io.IOException e) {

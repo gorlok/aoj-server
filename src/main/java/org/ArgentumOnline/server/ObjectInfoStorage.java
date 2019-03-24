@@ -38,7 +38,7 @@ public class ObjectInfoStorage {
     	log.trace("loading objects");
         IniFile ini = new IniFile();
         try {
-            ini.load(Constants.DATDIR + java.io.File.separator + "Obj.dat");
+            ini.load(Constants.DAT_DIR + java.io.File.separator + "Obj.dat");
         } catch (java.io.FileNotFoundException e) {
             e.printStackTrace();
         } catch (java.io.IOException e) {

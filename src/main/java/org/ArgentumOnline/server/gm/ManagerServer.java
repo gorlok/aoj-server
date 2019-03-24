@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,8 @@ import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
+import org.ArgentumOnline.server.protocol.PlayMidiResponse;
+import org.ArgentumOnline.server.protocol.PlayWaveResponse;
 import org.ArgentumOnline.server.protocol.ShowGMPanelFormResponse;
 import org.ArgentumOnline.server.protocol.ShowMessageBoxResponse;
 import org.ArgentumOnline.server.protocol.ShowSOSFormResponse;
@@ -110,7 +113,7 @@ public class ManagerServer {
     public void loadAdminsSpawnableCreatures() {
     	log.trace("loading list of spawnable creatures");
         try {
-            IniFile ini = new IniFile(Constants.DATDIR + File.separator + "Invokar.dat");
+            IniFile ini = new IniFile(Constants.DAT_DIR + File.separator + "Invokar.dat");
             short cant = ini.getShort("INIT", "NumNPCs");
             this.spawnList = new short[cant];
             this.spawnListNames = new String[cant];
@@ -131,7 +134,7 @@ public class ManagerServer {
         try {
             BufferedReader f = new BufferedReader(
                 new InputStreamReader(
-                    new FileInputStream(Constants.DATDIR + File.separator + "NombresInvalidos.txt")));
+                    new FileInputStream(Constants.DAT_DIR + File.separator + "NombresInvalidos.txt")));
             try {
                 String str = f.readLine();
                 if (str == null) {
@@ -162,7 +165,7 @@ public class ManagerServer {
             this.counsellor.clear();
 
             // Cargar dioses:
-            IniFile ini = new IniFile(Constants.DATDIR + java.io.File.separator + "Server.ini");
+            IniFile ini = new IniFile(Constants.DAT_DIR + java.io.File.separator + "Server.ini");
             short cant = ini.getShort("DIOSES", "Cant");
             for (int i = 1; i <= cant; i++) {
                 String nombre = ini.getString("DIOSES", "Dios"+i, "").toUpperCase();
@@ -202,9 +205,11 @@ public class ManagerServer {
     }
 
 	public void clearAllHelpRequestToGm(Player admin) {
-		// TODO
 		// Comando /BORRAR SOS
 		// Comando para borrar todos pedidos /GM pendientes
+		if (!admin.isGM()) {
+			return;
+		}
     	this.helpRequests().clear();
 		admin.sendMessage("Todos los /GM pendientes han sido eliminados.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getNick(), "/BORRAR SOS");
@@ -253,6 +258,9 @@ public class ManagerServer {
 
 	public void unbanIP(Player admin, String bannedIP) {
 		// Comando /UNBANIP
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "/UNBANIP " + bannedIP);
 		var bannedIPs = getBannedIPs();
 		if (bannedIPs.contains(bannedIP)) {
@@ -291,7 +299,7 @@ public class ManagerServer {
 	}
 	
 	public void loadBannedIPList() {
-		final String fileName = Constants.DATDIR + File.separator + "BanIps.dat";
+		final String fileName = Constants.DAT_DIR + File.separator + "BanIps.dat";
 		this.bannedIPs.clear();
 		try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
 			stream.forEach( line -> this.bannedIPs.add(line) );
@@ -301,7 +309,7 @@ public class ManagerServer {
 	}
 	
 	public void saveBannedIPList() {
-		final String fileName = Constants.DATDIR + File.separator + "BanIps.dat";
+		final String fileName = Constants.DAT_DIR + File.separator + "BanIps.dat";
 		try {
 			Files.write(Paths.get(fileName), String.join("\n", this.bannedIPs).getBytes());
 		} catch (IOException e) {
@@ -311,8 +319,10 @@ public class ManagerServer {
 
 	public void saveGmComment(Player admin, String comment) {
 		// Comando /REM comentario
+		if (!admin.isGM()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "Hace el comentario: " + comment);
-		// TODO save to disk
 		admin.sendMessage("Comentario salvado...", FontType.FONTTYPE_INFO);
 	}
 
@@ -335,18 +345,24 @@ public class ManagerServer {
 
 	public void sendHelpRequests(Player admin) {
 		// Comando /SHOW SOS
+		if (!admin.isGM()) {
+			return;
+		}
 		String sosList = String.join("" + Constants.NULL_CHAR, helpRequests);
 		admin.sendPacket(new ShowSOSFormResponse(sosList));
 	}
 
 	public void removeHelpRequest(Player admin, String userName) {
 		// Comando SOSDONE
+		if (!admin.isGM()) {
+			return;
+		}
 		helpRequests().remove(userName);
 	}
 
 	public void goToChar(Player admin, String userName) {
 		// Comando /IRA
-		if ( !admin.flags().isGM() ) {
+		if ( !admin.isGM() ) {
 			return;
 		}
 		if (userName.length() == 0) {
@@ -392,16 +408,19 @@ public class ManagerServer {
 	public void sendSpawnCreatureList(Player admin) {
 		// Crear criatura
 		// Comando /CC
-		
 		if (!admin.isGM() || admin.isCounselor()) {
 			return;
 		}
+		
 		admin.sendPacket(new SpawnListResponse(String.join("\0", getSpawnListNames())));
 	}
 
 	public void spawnCreature(Player admin, short index) {
 		// Spawn una criatura !!!!!
 		// SPA
+		if (!admin.isGM() || admin.isCounselor()) {
+			return;
+		}
 		short[] spawnList = getSpawnList();
 		if (index > 0 && index <= spawnList.length) {
 			Npc npc = Npc.spawnNpc(spawnList[index - 1], admin.pos(), true, false);
@@ -578,36 +597,51 @@ public class ManagerServer {
 
 	public void showGmPanelForm(Player admin) {
 		// Comando /PANELGM
+		if (!admin.isGM()) {
+			return;
+		}
 		admin.sendPacket(new ShowGMPanelFormResponse());
 	}
 
 	public void sendUserNameList(Player admin) {
 		// Comando LISTUSU
+		if (!admin.isGM()) {
+			return;
+		}
 		String userNamesList = String.join("" + Constants.NULL_CHAR, this.server.getUsuariosConectados());
 		admin.sendPacket(new UserNameListResponse(userNamesList));
 	}
 
 	public void doPASSDAY(Player admin) {
 		// Comando /PASSDAY
+		if (!admin.isGM()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "/PASSDAY");
 		this.server.getGuildMngr().dayElapsed();
 	}
 
-	public void doBackup(Player admin) {
+	public void backupWorld(Player admin) {
 		// Comando /DOBACKUP
 		// Hacer un backup del mundo.
-		this.server.doBackup();
+		if (!admin.isGM()) {
+			return;
+		}
+		this.server.backupWorld();
 	}
 
 	public void doGrabar(Player admin) {
 		// Comando /GRABAR
 		// Guardar todos los usuarios conectados.
+		if (!admin.isGM()) {
+			return;
+		}
 		this.server.guardarUsuarios();
 	}
 
 	public void shutdownServer(Player admin) {
 		// Comando /APAGAR
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		
@@ -621,15 +655,18 @@ public class ManagerServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-    	this.server.doBackup();
+    	this.server.backupWorld();
 
 		log.info("SERVIDOR APAGADO POR " + admin.getNick());
 		Log.logGM(admin.getNick(), "APAGO EL SERVIDOR");
 		this.server.shutdown();
 	}
 
-	public void toggleRain() {
+	public void toggleRain(Player admin) {
 		// Comando /LLUVIA
+		if (!admin.isGM()) {
+			return;
+		}
 		if (this.server.isRaining()) {
 			this.server.rainStop();
 		} else {
@@ -640,7 +677,7 @@ public class ManagerServer {
 	public void sendSystemMsg(final Player admin, String msg) {
 		// Mensaje del sistema
 		// Comando /SMSG
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		msg = msg.trim();
@@ -682,7 +719,7 @@ public class ManagerServer {
 	public void createTeleport(Player admin, short dest_mapa, byte dest_x, byte dest_y) {
 		// Comando /CT mapa_dest x_dest y_dest
 		// Crear Teleport
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Map mapa = this.server.getMap(admin.pos().map);
@@ -714,7 +751,7 @@ public class ManagerServer {
 	public void destroyTeleport(Player admin) {
 		// Comando /DT
 		// Destruir un teleport, toma el ultimo clic
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		if (admin.flags().TargetObjMap == 0 || admin.flags().TargetObjX == 0 || admin.flags().TargetObjY == 0) {
@@ -797,7 +834,7 @@ public class ManagerServer {
 
 	public void showUptime(Player admin) {
 		// Comando /UPTIME
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		admin.sendMessage("Uptime: " + this.server.calculateUptime(), FontType.FONTTYPE_INFO);
@@ -1006,33 +1043,12 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/MASSDEST ");
 	}
 
-	public void doEcharTodosPjs(Player admin) {
-		// Comando /ECHARTODOSPJS
-		// Comando para echar a todos los pjs conectados no privilegiados.
-		this.server.echarPjsNoPrivilegiados();
-		admin.sendMessage("Los PJs no privilegiados fueron echados.", FontType.FONTTYPE_INFO);
-		Log.logGM(admin.getNick(), "/ECHARTODOSPJS");
-	}
-
-	public void doShowInt(Player admin) {
-		// Comando /SHOW INT
-		// Comando para abrir la ventana de config de intervalos en el server.
-		admin.sendMessage("Comando deshabilitado o sin efecto en AOJ.", FontType.FONTTYPE_INFO);
-	}
-
-	public void doIP2Nick(Player admin, String s) {
-		// Comando /IP2NICK
-		List<String> usuarios = this.server.getUsuariosConIP(s);
-		if (usuarios.isEmpty()) {
-			admin.sendMessage("No hay usuarios con dicha ip", FontType.FONTTYPE_INFO);
-		} else {
-			admin.sendMessage("Nicks: " + String.join(",", usuarios), FontType.FONTTYPE_INFO);
-		}
-	}
-
 	public void doResetInv(Player admin) {
 		// Resetea el inventario
 		// Comando /RESETINV
+		if (!admin.isGM()) {
+			return;
+		}
 		if (admin.flags().TargetNpc == 0) {
 			return;
 		}
@@ -1049,7 +1065,7 @@ public class ManagerServer {
 	 */
 	public void sendServerMessage(Player admin, String message) {
 		// Comando /RMSG
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "Mensaje Broadcast: " + message);
@@ -1062,7 +1078,7 @@ public class ManagerServer {
 	}
 	
     public void sendMessageToAdmins(Player admin, String msg, FontType fuente) {
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
     	for (Player user: server.players()) {
@@ -1073,7 +1089,7 @@ public class ManagerServer {
     }
 
     public void sendMessageToRoyalArmy(Player admin, String msg) {
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
     	for (Player user: server.players()) {
@@ -1085,7 +1101,7 @@ public class ManagerServer {
     }
 
     public void sendMessageToDarkLegion(Player admin, String message) {
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
     	for (Player user: server.players()) {
@@ -1097,7 +1113,7 @@ public class ManagerServer {
     }
 
     public void sendMessageToCitizens(Player admin, String message) {
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
     	for (Player user: server.players()) {
@@ -1109,7 +1125,7 @@ public class ManagerServer {
 
 	public void summonChar(Player admin, String userName) {
 		// Comando /SUM usuario
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		if (userName.length() == 0) {
@@ -1155,7 +1171,7 @@ public class ManagerServer {
 		sendMessageToAdmins(admin, admin.getNick() + " /BAN a " + user.getNick() + " por: " + reason, FontType.FONTTYPE_SERVER);
         var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		UserStorage.addPunishment(userName, admin.getNick() + ">> /BAN por: " + reason + ". " + sdf.format(new java.util.Date()));
-		user.sendPacket(new ShowMessageBoxResponse("Has sido expulsado permanentemente del servidor."));
+		user.sendError("Has sido expulsado permanentemente del servidor.");
 		user.banned(admin.getNick(), reason);
 		if (user.isLogged()) {
 			user.quitGame();
@@ -1184,7 +1200,7 @@ public class ManagerServer {
 	public void kickUser(Player admin, String userName) {
 		// Echar usuario
 		// Comando /ECHAR
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /ECHAR a " + userName);
@@ -1194,20 +1210,37 @@ public class ManagerServer {
 			return;
 		}
 		if (user.flags().privileges > admin.flags().privileges) {
-			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
+			admin.sendMessage("No puedes echar usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		
 		server.sendToAll(new ConsoleMsgResponse(
 				admin.getNick() + " echo a " + user.getNick() + ".",
 				FontType.FONTTYPE_INFO.id()));
 		Log.logGM(admin.getNick(), "Echó a " + user.getNick());
+		user.sendError("Has sido echado del servidor.");
 		user.quitGame();
+	}
+
+	public void kickAllUsersNoGm(Player admin) {
+		// Comando /ECHARTODOSPJS
+		if (!admin.isGM()) {
+			return;
+		}
+		server.players().stream().forEach(p -> {
+			if (!p.isGM()) {
+				p.sendError("Todos han sido echados del servidor.");
+				p.quitGame();				
+			}
+		});
+		server.sendToAll(new ConsoleMsgResponse(
+				admin.getNick() + " echo a todos los jugadores.",
+				FontType.FONTTYPE_INFO.id()));
+		Log.logGM(admin.getNick(), "Echó a todos con /ECHARTODOSPJS");
 	}
 
 	public void sendUserToJail(Player admin, String userName, String reason, byte minutes) {
 		// Comando /CARCEL minutos usuario
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Player user = this.server.playerByUserName(userName);
@@ -1237,7 +1270,7 @@ public class ManagerServer {
 	public void forgiveUser(Player admin, String userName) {
 		// Comando /PERDON usuario
 		// Perdonar a un usuario. Volverlo cuidadano.
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /PERDON " + userName);
@@ -1263,7 +1296,7 @@ public class ManagerServer {
 	public void turnCriminal(Player admin, String userName) {
 		// Comando /CONDEN usuario
 		// Condenar a un usuario. Volverlo criminal.
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /CONDEN " + userName);
@@ -1287,7 +1320,7 @@ public class ManagerServer {
 
 	public void reviveUser(Player admin, String userName) {
 		// Comando /REVIVIR
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		Log.logGM(admin.getNick(), "quizo /REVIVIR " + userName);
@@ -1312,7 +1345,7 @@ public class ManagerServer {
 
 	public void showGmOnline(Player admin) {
 		// Comando /ONLINEGM
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		var gmsOnline = this.server.getGMsOnline();
@@ -1577,7 +1610,7 @@ public class ManagerServer {
 
 	public void doMensajeALosGM(Player admin, String chat) {
 		// Mensaje para los GMs
-		if (!admin.flags().isGM()) {
+		if (!admin.isGM()) {
 			return;
 		}
 		if (chat.length() > 0) {
@@ -1588,6 +1621,9 @@ public class ManagerServer {
 
 	public void sendServerTime(Player admin) {
 		// Comando /HORA
+		if (!admin.isGM()) {
+			return;
+		}
 		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy");
 		java.util.Date ahora = new java.util.Date();
 		String fecha = df.format(ahora);
@@ -1599,6 +1635,9 @@ public class ManagerServer {
 	public void whereIsUser(Player admin, String userName) {
 		// Comando /DONDE
 		// ¿Donde esta fulano?
+		if (!admin.isGM()) {
+			return;
+		}
 		userName = userName.trim();
 		Player usuario;
 		if (userName.length() == 0) {
@@ -1618,6 +1657,9 @@ public class ManagerServer {
 	
 	public void sendCreaturesInMap(Player admin, short mapNumber) {
 		// Command /NENE
+		if (!admin.isGM()) {
+			return;
+		}
 		if (mapNumber < 1) {
 			admin.sendMessage("Has ingresado un número de mapa inválido.", FontType.FONTTYPE_INFO);
 			return;
@@ -1631,8 +1673,11 @@ public class ManagerServer {
 		}
 	}
 
-	public void doTeleploc(Player admin) {
+	public void warpMeToTarget(Player admin) {
 		// Comando /TELEPLOC
+		if (!admin.isGM()) {
+			return;
+		}
 		if (admin.warpMe(admin.flags().TargetMap, admin.flags().TargetX, admin.flags().TargetY, true)) {
 			
 			Log.logGM(admin.getNick(), 
@@ -1644,6 +1689,10 @@ public class ManagerServer {
 	public void warpUserTo(Player admin, String nombre, short m, byte x, byte y) {
 		// Comando /TELEP
 		// Teleportar
+		if (!admin.isGM() || admin.isCounselor()) {
+			return;
+		}
+		
 		if (m < 1) {
 			admin.sendMessage("Parámetros incorrectos: /TELEP usuario mapa x y", FontType.FONTTYPE_INFO);
 			return;
@@ -1656,10 +1705,6 @@ public class ManagerServer {
 			return;
 		}
 
-		if (!admin.flags().isGM() || admin.flags().isCounselor()) {
-			return;
-		}
-		
 		Player usuario = admin;
 		if (!nombre.equalsIgnoreCase("YO")) {
 			usuario = this.server.playerByUserName(nombre);
@@ -1921,6 +1966,108 @@ public class ManagerServer {
         var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		UserStorage.updatePunishment(userName, index, admin.getNick() + ">> /ADVERTENCIA " + newText + " " + sdf.format(new java.util.Date()));
 	    admin.sendMessage("Has modificado una pena de " + userName, FontType.FONTTYPE_INFO);
+	}
+
+	public void playMidiAll(Player admin, byte midiId) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		server.sendToAll(new ConsoleMsgResponse(admin.getNick() + " broadcast música: " + midiId, FontType.FONTTYPE_SERVER.id()));
+		server.sendToAll(new PlayMidiResponse(midiId, (byte)-1));
+	}
+
+	public void playMidiToMap(Player admin, short mapNumber, byte midiId) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		
+		Map map = server.getMap(mapNumber);
+		if (map == null) {
+			map = server.getMap(admin.pos().map);
+		}
+		
+		if (midiId == 0) {
+			midiId = (byte)map.getMusic();
+		}
+
+		map.sendToAll(new PlayMidiResponse(midiId, (byte)-1));
+	}
+
+	public void playWaveAll(Player admin, byte waveId) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		server.sendToAll(new PlayWaveResponse(waveId, (byte)0, (byte)0));
+	}
+
+	public void playWavToMap(Player admin, byte waveId, short mapNumber, byte x, byte y) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		
+		Map map = server.getMap(mapNumber);
+		if (map == null || !Pos.isValid(x, y)) {
+			map = server.getMap(admin.pos().map);
+			x = admin.pos().x;
+			y = admin.pos().y;
+		}
+
+		server.sendToAll(new PlayWaveResponse(waveId, x, y));
+	}
+
+	public void ipToNick(Player admin, String ip) {
+		// Comando /NICK2IP
+		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), "/IP2NICK " + ip);
+
+		List<String> userNames = server.players().stream()
+			.filter(p ->  p.isLogged() 
+					&& p.hasNick() 
+					&& p.flags().privileges < admin.flags().privileges
+					&& p.getIP().equals(ip))
+			.map( p -> p.getNick())
+			.collect(Collectors.toList());
+		
+		if (!userNames.isEmpty()) {
+			admin.sendMessage("Los personajes conectados desde la IP " + ip + "son: " 
+					+ String.join(", ", userNames), FontType.FONTTYPE_INFO);
+		} else {
+			admin.sendMessage("No se encontraron personajes conectados desde la IP " + ip, 
+					FontType.FONTTYPE_INFO);
+			
+		}
+	}
+
+	public void bugReport(Player player, String bugReport) {
+		final String fileName = Constants.LOG_DIR + File.separator + "BUGs.log";
+
+		var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		StringBuilder sb = new StringBuilder();
+		sb.append("Usuario:")
+			.append(player.getNick())
+			.append(" Fecha:")
+			.append(sdf.format(new java.util.Date()))
+			.append("\n")
+			.append("BUG:")
+			.append(bugReport)
+			.append("\n########################################################################\n");
+		try {
+			try {
+				Files.write(
+						Paths.get(fileName),
+						sb.toString().getBytes(),
+						StandardOpenOption.APPEND);
+			} catch (java.nio.file.NoSuchFileException e) {
+				Files.write(
+						Paths.get(fileName),
+						sb.toString().getBytes(),
+						StandardOpenOption.CREATE_NEW);
+			}
+		} catch (IOException ignored) {
+			ignored.printStackTrace();
+		}
 	}
 
 }

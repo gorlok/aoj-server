@@ -59,7 +59,7 @@ public class GamblerStats {
 		log.trace("loading gambler stats");
 
 		try {
-			IniFile ini = new IniFile(Constants.DATDIR + File.separator + APUESTAS_DAT);
+			IniFile ini = new IniFile(Constants.DAT_DIR + File.separator + APUESTAS_DAT);
 
 			ganancias = ini.getLong("Main", "Ganancias");
 			perdidas = ini.getLong("Main", "Perdidas");
@@ -76,16 +76,16 @@ public class GamblerStats {
 		log.trace("saving gambler stats");
 
 		try {
-			if (!Files.exists(Paths.get(Constants.DATDIR + File.separator + APUESTAS_DAT))) {
-				Files.createFile(Paths.get(Constants.DATDIR + File.separator + APUESTAS_DAT));
+			if (!Files.exists(Paths.get(Constants.DAT_DIR + File.separator + APUESTAS_DAT))) {
+				Files.createFile(Paths.get(Constants.DAT_DIR + File.separator + APUESTAS_DAT));
 			}
-			IniFile ini = new IniFile(Constants.DATDIR + File.separator + APUESTAS_DAT);
+			IniFile ini = new IniFile(Constants.DAT_DIR + File.separator + APUESTAS_DAT);
 
 			ini.setValue("Main", "Ganancias", ganancias);
 			ini.setValue("Main", "Perdidas", perdidas);
 			ini.setValue("Main", "Jugadas", jugadas);
 			
-			ini.store(Constants.DATDIR + File.separator + APUESTAS_DAT);
+			ini.store(Constants.DAT_DIR + File.separator + APUESTAS_DAT);
 		} catch (FileNotFoundException e) {
 			log.fatal(e);
 		} catch (IOException e) {
