@@ -191,6 +191,10 @@ public class ManagerServer {
             }
 
             UserFaction.loadFactionArmors(ini);
+            
+            // FIXME add saving this... and move this
+            server.setServerRestrictedToGMs(ini.getInt("INIT", "ServerSoloGMs") == 1);
+            server.setCreateUserEnabled(ini.getInt("INIT", "PuedeCrearPersonajes") == 1);
 
 			log.warn("Admins loaded");
         } catch (java.io.FileNotFoundException e) {
@@ -630,13 +634,13 @@ public class ManagerServer {
 		this.server.backupWorld();
 	}
 
-	public void doGrabar(Player admin) {
+	public void saveChars(Player admin) {
 		// Comando /GRABAR
 		// Guardar todos los usuarios conectados.
 		if (!admin.isGM()) {
 			return;
 		}
-		this.server.guardarUsuarios();
+		this.server.saveUsers();
 	}
 
 	public void shutdownServer(Player admin) {
@@ -916,9 +920,12 @@ public class ManagerServer {
 		}
 	}
 	
-	public void doGuardaMapa(Player admin) {
+	public void saveMap(Player admin) {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
+		if (!admin.isGM()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "/GUARDAMAPA " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa != null) {
@@ -1375,6 +1382,12 @@ public class ManagerServer {
 			}
 		} 
 
+		sendUserStats(admin, user);
+
+		Log.logGM(admin.getNick(), "/INFO " + userName);
+	}
+
+	public void sendUserStats(Player admin, Player user) {
 		admin.sendMessage("Estadisticas de: " + user.getNick(), FontType.FONTTYPE_WARNING);
 		admin.sendMessage("Nivel: " + user.stats().ELV + "  EXP: " + user.stats().Exp + "/" + user.stats().ELU, FontType.FONTTYPE_INFO);
 		admin.sendMessage("Salud: " + user.stats().MinHP + "/" + user.stats().MaxHP + 
@@ -1436,8 +1449,6 @@ public class ManagerServer {
 			}
 		}
 		*/
-
-		Log.logGM(admin.getNick(), "/INFO " + userName);
 	}
 
 	// FIXME
@@ -2067,6 +2078,21 @@ public class ManagerServer {
 			}
 		} catch (IOException ignored) {
 			ignored.printStackTrace();
+		}
+	}
+
+	public void serverOpenToUsersToggle(Player admin) {
+		// Command /HABILITAR
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+        
+		server.serverRestrictedToGMsToggle();
+		
+		if (server.isServerRestrictedToGMs()) {
+			admin.sendMessage("Servidor restringido a administradores.", FontType.FONTTYPE_INFO);
+		} else {
+			admin.sendMessage("Servidor habilitado para todos.", FontType.FONTTYPE_INFO);
 		}
 	}
 

@@ -568,62 +568,6 @@ public class Player extends AbstractCharacter {
 		return this.ip;
 	}
 
-	public void doInfoUsuario(String s) {
-		// INFO DE USER
-		// Comando /INFO usuario
-		Player usuario = this.server.playerByUserName(s);
-		if (usuario == null) {
-			sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		Log.logGM(this.userName, "/INFO " + s);
-		sendUserStatsTxt(usuario);
-	}
-
-	private void sendUserStatsTxt(Player usuario) {
-		// Comando /EST
-		sendMessage("Estadisticas de: " + usuario.userName, FontType.FONTTYPE_INFOBOLD);
-		sendMessage("Nivel: " + usuario.stats().ELV + "  EXP: " + usuario.stats().Exp + "/" + usuario.stats().ELU,
-				FontType.FONTTYPE_INFO);
-		sendMessage("Salud: " + usuario.stats().MinHP + "/" + usuario.stats().MaxHP + "  Mana: "
-				+ usuario.stats().mana + "/" + usuario.stats().maxMana + "  Energia: " + usuario.stats().stamina
-				+ "/" + usuario.stats().maxStamina, FontType.FONTTYPE_INFO);
-		if (usuario.userInv.tieneArmaEquipada()) {
-			sendMessage("Menor Golpe/Mayor Golpe: " + usuario.stats().MinHIT + "/" + usuario.stats().MaxHIT + " ("
-					+ this.userInv.getArma().MinHIT + "/" + this.userInv.getArma().MaxHIT + ")", FontType.FONTTYPE_INFO);
-		} else {
-			sendMessage("Menor Golpe/Mayor Golpe: " + usuario.stats().MinHIT + "/" + usuario.stats().MaxHIT,
-					FontType.FONTTYPE_INFO);
-		}
-		if (usuario.userInv.tieneArmaduraEquipada()) {
-			sendMessage("(CUERPO) Min Def/Max Def: " + usuario.userInv.getArmadura().MinDef + "/"
-					+ usuario.userInv.getArmadura().MaxDef, FontType.FONTTYPE_INFO);
-		} else {
-			sendMessage("(CUERPO) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
-		}
-		if (usuario.userInv.tieneCascoEquipado()) {
-			sendMessage("(CABEZA) Min Def/Max Def: " + this.userInv.getCasco().MinDef + "/" + this.userInv.getCasco().MaxDef,
-					FontType.FONTTYPE_INFO);
-		} else {
-			sendMessage("(CABEZA) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
-		}
-		if (getGuildInfo().esMiembroClan()) {
-			sendMessage("Clan: " + usuario.guildUser.m_guildName, FontType.FONTTYPE_INFO);
-			if (usuario.guildUser.m_esGuildLeader) {
-				if (usuario.guildUser.m_clanFundado.equals(usuario.guildUser.m_guildName)) {
-					sendMessage("Status: Fundador/Lider", FontType.FONTTYPE_INFO);
-				} else {
-					sendMessage("Status: Lider", FontType.FONTTYPE_INFO);
-				}
-			} else {
-				sendMessage("Status: " + usuario.guildUser.m_guildPoints, FontType.FONTTYPE_INFO);
-			}
-			sendMessage("User GuildPoints: " + usuario.guildUser.m_guildPoints, FontType.FONTTYPE_INFO);
-		}
-		sendMessage("Oro: " + usuario.stats().getGold() + "  Posicion: " + usuario.pos().x + "," + usuario.pos().y
-				+ " en mapa " + usuario.pos().map, FontType.FONTTYPE_INFO);
-	}
-
 	public void petStand() {
 		// Comando /QUIETO
 		// Comando a mascotas
@@ -4542,6 +4486,13 @@ public class Player extends AbstractCharacter {
 				flags().AdminPerseguible = true;
 				chatColor = Color.COLOR_BLANCO;
 			}
+			
+			if (server.isServerRestrictedToGMs()) {
+				if (!isGM()) {
+					sendError("Servidor restringido a administradores. Por favor reintente en unos momentos.");
+			        return;
+				}
+			}
 
 			// FIXME maximo de usuarios alcanzado?
 
@@ -4614,7 +4565,7 @@ public class Player extends AbstractCharacter {
 			sendUpdateUserStats();
 			sendUpdateHungerAndThirst();
 			
-			server.getMotd().sendMOTD(this);
+			server.getMotd().showMOTD(this);
 			
 
 			warpPets();
@@ -5532,6 +5483,12 @@ public class Player extends AbstractCharacter {
 
 	public void ping() {
 		sendPacket(new PongResponse());
+	}
+
+	public void useSpellMacro(Player player) {
+		server.sendToAdmins(new ConsoleMsgResponse(player.getNick() + 
+				" fue expulsado por Anti-macro de hechizos", FontType.FONTTYPE_VENENO.id()));
+        player.sendError("Has sido expulsado por usar macro de hechizos. Recomendamos leer el reglamento sobre el tema macros");
 	}
 	
 }

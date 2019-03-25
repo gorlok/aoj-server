@@ -117,7 +117,7 @@ public class Motd {
 		player.sendMessage("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
-	public void sendMOTD(Player player) {
+	public void showMOTD(Player player) {
 		// Comando /MOTD
 		// Envia los mensajes del dia.
 		List<String> motd = getMOTD();

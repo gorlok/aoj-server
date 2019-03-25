@@ -413,6 +413,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case BugReport:
 			server.manager().bugReport(player, ((BugReportRequest)packet).bugReport);
 			break;
+			
+		case RequestMOTD:
+			server.getMotd().showMOTD(player);
+			break;
+			
+		case UseSpellMacro:
+			player.useSpellMacro(player);
+			break;
+			
+		case RequestStats:
+			server.manager().sendUserStats(player, player);
+			break;
 
 			// GM COMMANDS
 //		default:
@@ -755,6 +767,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 				case ShowServerForm:
 					// n/a
 					break;
+
+				case SaveChars:
+					server.manager().saveChars(player);
+					break;
+					
+				case SaveMap:
+					server.manager().saveMap(player);
+					break;
+					
+				case ServerOpenToUsersToggle:
+					server.manager().serverOpenToUsersToggle(player);
+					break;
 					
 		case AcceptChaosCouncilMember:
 		case AcceptRoyalCouncilMember:
@@ -835,8 +859,6 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ReloadSpells:
 		case RemoveCharFromGuild:
 		case RequestGuildLeaderInfo:
-		case RequestMOTD:
-		case RequestStats:
 		case ResetAutoUpdate:
 		case ResetFactions:
 		case ResetNPCInventory:
@@ -844,15 +866,12 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case Reward:
 		case RoleMasterRequest:
 		case RoyalArmyKick:
-		case SaveChars:
-		case SaveMap:
-		case ServerOpenToUsersToggle:
 		case SetIniVar:
 		case SetTrigger:
 		case ShowGuildMessages:
 		case TileBlockedToggle:
 		case ToggleCentinelActivated:
-		case UseSpellMacro:
+		
 		
 				default:
 					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());

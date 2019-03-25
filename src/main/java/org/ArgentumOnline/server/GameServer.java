@@ -82,8 +82,10 @@ public class GameServer implements Constants {
 
     boolean running = false;
     boolean doingBackup = false;
+    boolean serverRestrictedToGMs = false;
+    boolean createUserEnabled = true;
 
-    private short lastId = 0;
+	private short lastId = 0;
 
     boolean raining = false;
 
@@ -285,6 +287,26 @@ public class GameServer implements Constants {
 		return loadBackup;
 	}
 
+    public boolean isServerRestrictedToGMs() {
+		return serverRestrictedToGMs;
+	}
+    
+    public void setServerRestrictedToGMs(boolean serverRestrictedToGMs) {
+		this.serverRestrictedToGMs = serverRestrictedToGMs;
+	}
+    
+	public void serverRestrictedToGMsToggle() {
+		this.serverRestrictedToGMs = !this.serverRestrictedToGMs;
+	}
+	
+	public boolean isCreateUserEnabled() {
+		return createUserEnabled;
+	}
+	
+	public void setCreateUserEnabled(boolean createUserEnabled) {
+		this.createUserEnabled = createUserEnabled;
+	}
+
     /** Main loop of the game. */
     private void runGameLoop() {
         loadAll(loadBackup);
@@ -375,7 +397,7 @@ public class GameServer implements Constants {
             }
         } finally {
             backupWorld();
-            guardarUsuarios();
+            saveUsers();
             log.info("Server apagado por doBackUp");
         }
     }
@@ -588,7 +610,7 @@ public class GameServer implements Constants {
         }
     }
 
-    public void guardarUsuarios() {
+    public void saveUsers() {
         this.doingBackup = true;
         try {
             for (Player cli: players()) {

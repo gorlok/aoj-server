@@ -1,5 +1,5 @@
 ;Archivo: charfile/z.chr
-;Ultima modificacion: 24/03/2019 17:33:13
+;Ultima modificacion: 24/03/2019 21:53:18
 
 [ATRIBUTOS]
 AT1=11
@@ -148,7 +148,7 @@ DESC=
 ESCUDO=2
 GENERO=2
 HEAD=471
-HEADING=4
+HEADING=3
 HOGAR=5
 LASTIP=192.168.0.186
 LASTIP1=192.168.0.186
