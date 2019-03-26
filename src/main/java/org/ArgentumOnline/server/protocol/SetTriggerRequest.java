@@ -21,16 +21,19 @@ import org.ArgentumOnline.server.net.*;
 import io.netty.buffer.ByteBuf;
 
 public class SetTriggerRequest extends ClientPacket {
-	// SetTrigger
+	// SetTrigger,b:trigger
 	@Override
 	public ClientPacketID id() {
 		return ClientPacketID.SetTrigger;
 	}
-	public SetTriggerRequest(){
+	public byte trigger;
+	public SetTriggerRequest(byte trigger){
+		this.trigger = trigger;
 	}
 	public static SetTriggerRequest decode(ByteBuf in) {    
 		try {                                   
-			return new SetTriggerRequest();                  
+			byte trigger = readByte(in);
+			return new SetTriggerRequest(trigger);                  
 		} catch (IndexOutOfBoundsException e) { 
 			return null;                        
 		}                                       

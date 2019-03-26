@@ -40,7 +40,7 @@ import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.net.ServerPacket;
-import org.ArgentumOnline.server.npc.Centinela;
+import org.ArgentumOnline.server.npc.WorkWatcher;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
 import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
@@ -984,9 +984,9 @@ public class Map implements Constants {
             if (npc.description.length() > 0) {
             	// tiene algo para decir
             	player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
-            } else if (npc.getId() == Centinela.centinelaNPCIndex) {
+            } else if (npc.getId() == WorkWatcher.centinelaNPCIndex) {
                 // enviamos nuevamente el mensaje del Centinela, según quien pregunta
-                Centinela.centinelaSendClave(player);
+                WorkWatcher.centinelaSendClave(player);
             } else {
             	String npcName;
             	if (npc.getPetUserOwner() != null) {

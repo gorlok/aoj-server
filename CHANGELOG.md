@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-25
+- agregados /RELOADNPCS /RELOADSINI /RELOADHECHIZOS /RELOADOBJ /ROL /AEMAIL /ANAME /APASS /BLOQ /TRIGGER
+
 ### 2019-03-24
 - agregado /MOTD /IPToNick /GRABAR /GUARDAMAPA /HABILITAR
 - agregados /PING /FORCEMIDI /FORCEWAV /FORCEMIDIMAP /FORCEWAVMAP /TELEPLOC /NICK2IP /_BUG

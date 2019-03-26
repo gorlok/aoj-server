@@ -26,6 +26,10 @@ import static org.ArgentumOnline.server.Constants.OBJ_INDEX_CUERPO_MUERTO;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -41,7 +45,6 @@ import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.CharacterInfoResponse;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.util.IniFile;
-import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -569,4 +572,45 @@ public class UserStorage {
 		}
     }
 
+    public static void updateEmail(String userName, String newEmail) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("CONTACTO", "Email", newEmail);    
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void updatePassword(String userName, String newPasswordHash) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "PasswordHash", newPasswordHash);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static String getGuildName(String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			return ini.getString("Guild", "GuildName");
+		} catch (IOException ignored) {
+		}
+    	return null;
+    }
+
+	public static void changeName(String userName, String newName) throws IOException {
+		Path original = Paths.get(Player.getPjFile(userName));
+	    Path copied = Paths.get(Player.getPjFile(newName));
+	    Files.copy(original, copied, StandardCopyOption.COPY_ATTRIBUTES);		
+	}
+    
 }

@@ -27,13 +27,13 @@ import org.apache.logging.log4j.Logger;
 public class ObjectInfoStorage {
 	private static Logger log = LogManager.getLogger();
 	
-    private List<ObjectInfo> m_objetos  = new ArrayList<ObjectInfo>(0);
+    private List<ObjectInfo> objects  = new ArrayList<ObjectInfo>(0);
     
     public ObjectInfo getInfoObjeto(int objid) {
-        return this.m_objetos.get(objid - 1);
+        return this.objects.get(objid - 1);
     }
 
-    /** Load objects / Cargar los m_objetos */
+    /** Load objects */
     public void loadObjectsFromStorage() {
     	log.trace("loading objects");
         IniFile ini = new IniFile();
@@ -46,11 +46,11 @@ public class ObjectInfoStorage {
         }
         int cant = ini.getInt("INIT", "NumOBJs");
         
-        this.m_objetos = new ArrayList<ObjectInfo>(cant);
+        this.objects = new ArrayList<ObjectInfo>(cant);
         for (short i = 1; i <= cant; i++) {
             ObjectInfo obj = new ObjectInfo();
             obj.load(ini, i);
-            this.m_objetos.add(obj);
+            this.objects.add(obj);
         }
     }
 

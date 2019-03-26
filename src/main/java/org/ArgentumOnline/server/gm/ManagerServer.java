@@ -38,6 +38,7 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.Tile.Trigger;
+import org.ArgentumOnline.server.npc.WorkWatcher;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.PlayMidiResponse;
@@ -550,10 +551,10 @@ public class ManagerServer {
 			return;
 		}
 		
-    	// FIXME agregar un (*) al nick del usuario que esté siendo monitoreado por el Centinela
+    	// Agrega un (*) al nick del usuario que esté siendo monitoreado por el Centinela
 		var users = server.players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
-			    	.map(Player::getNick)
+			    	.map(p -> p.getNick() + (WorkWatcher.watchingUser(p.getNick()) ? "(*)" : ""))
 			    	.collect(Collectors.toList());
 		
 		admin.sendMessage("Usuarios trabajando: " + String.join(", ", users), FontType.FONTTYPE_INFO);
@@ -991,9 +992,12 @@ public class ManagerServer {
 		}
 	}
 	
-	public void doBloqPos(Player admin) {
+	public void tileBlockedToggle(Player admin) {
 		// Bloquear la posición actual.
 		// Comando /BLOQ
+		if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+			return;
+		}
 		Log.logGM(admin.getNick(), "/BLOQ " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
 		if (mapa != null) {
@@ -1020,22 +1024,38 @@ public class ManagerServer {
 		}
 	}
 
-	public void doTrigger(Player admin, byte t) {
-		// FIXME
-		// Consulta o cambia el trigger de la posición actual.
-		// Comando /TRIGGER
-		Log.logGM(admin.getNick(), "/TRIGGER " + t + " " + admin.pos());
+	public void askTrigger(Player admin) {
+		// Comando /TRIGGER (sin argumentos)
+    	if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod() || admin.isRoleMaster()) {
+    		return;
+    	}
+		Log.logGM(admin.getNick(), "/TRIGGER " + admin.pos());
 		Map mapa = this.server.getMap(admin.pos().map);
 		
-		if (t <0 || t >= Trigger.values().length) {
-			admin.sendMessage("no es un trigger valido", FontType.FONTTYPE_INFO);
-			return;
-		}
-		mapa.setTrigger(admin.pos().x, admin.pos().y, Trigger.values()[t]);
-		
-		admin.sendMessage("Trigger " + mapa.getTrigger(admin.pos().x, admin.pos().y).ordinal() + " en " + admin.pos(), FontType.FONTTYPE_INFO);
+		Trigger t = mapa.getTrigger(admin.pos().x, admin.pos().y);
+		admin.sendMessage("Trigger " + t.toString() + "(" + t.ordinal() + ")" + " en " + admin.pos(), 
+				FontType.FONTTYPE_INFO);
 	}
 
+	public void setTrigger(Player admin, byte trigger) {
+		// Comando /TRIGGER (con nuevo trigger)
+    	if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod() || admin.isRoleMaster()) {
+    		return;
+    	}
+		Log.logGM(admin.getNick(), "/TRIGGER " + trigger + " " + admin.pos());
+		Map mapa = this.server.getMap(admin.pos().map);
+		
+		if (trigger <0 || trigger >= Trigger.values().length) {
+			admin.sendMessage("no es un trigger válido", FontType.FONTTYPE_INFO);
+			return;
+		}
+		mapa.setTrigger(admin.pos().x, admin.pos().y, Trigger.values()[trigger]);
+		
+		Trigger t = mapa.getTrigger(admin.pos().x, admin.pos().y);
+		admin.sendMessage("Trigger " + t.toString() + "(" + t.ordinal() + ")" + " en " + admin.pos(), 
+				FontType.FONTTYPE_INFO);
+	}
+	
 	public void destroyAllItemsInArea(Player admin) {
 		// Quita todos los objetos del area
 		// Comando /MASSDEST
@@ -2093,6 +2113,94 @@ public class ManagerServer {
 			admin.sendMessage("Servidor restringido a administradores.", FontType.FONTTYPE_INFO);
 		} else {
 			admin.sendMessage("Servidor habilitado para todos.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void reloadServerIni(Player admin) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		loadAdmins();
+    	admin.sendMessage("Se han recargado el server.ini", FontType.FONTTYPE_INFO);
+    	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado el server.ini");
+	}
+
+	public void alterEmail(Player admin, String userName, String newEmail) {
+		// command /AEMAIL
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+
+		if (userName == null || userName.isBlank() || newEmail == null || newEmail.isBlank()) { 
+			admin.sendMessage("Usar /AEMAIL <pj>-<nuevomail>", FontType.FONTTYPE_INFO);
+            return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No existe el charfile de " + userName, FontType.FONTTYPE_INFO);
+			return;
+		}
+		Player user = server.playerByUserName(userName);
+		if (user != null) {
+			user.setEmail(newEmail);
+		}
+		UserStorage.updateEmail(userName, newEmail);
+        admin.sendMessage("Email de " + userName + " cambiado a " + newEmail, FontType.FONTTYPE_INFO);
+        
+    	Log.logGM(admin.getNick(), admin.getNick() + " le ha cambiado el mail a " + userName);
+	}
+
+	public void alterName(Player admin, String userName, String newName) {
+		// command /ANAME
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+
+		if (userName == null || userName.isBlank() || newName == null || newName.isBlank()) { 
+			admin.sendMessage("Usar: /ANAME nombreActual@nombreNuevo", FontType.FONTTYPE_INFO);
+            return;
+		}
+		Player user = server.playerByUserName(userName);
+		if (user != null) {
+			admin.sendMessage("El usuario está conectado, debe salir primero.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (!Player.userExists(userName)) {
+			admin.sendMessage("No existe el charfile de " + userName, FontType.FONTTYPE_INFO);
+			return;
+		}
+		String guildName = UserStorage.getGuildName(userName);
+		if (guildName != null) {
+			admin.sendMessage("El pj " + userName + " pertenece a un clan, debe salir del mismo con /salirclan para ser transferido.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		if (Player.userExists(newName)) {
+			admin.sendMessage("El nombre solicitado ya existe", FontType.FONTTYPE_INFO);
+			return;
+		}
+
+		try {
+			UserStorage.changeName(userName, newName);
+		} catch (IOException e) {
+			admin.sendMessage("Hubo un error en la transferencia. Copia cancelada.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		admin.sendMessage("Transferencia exitosa", FontType.FONTTYPE_INFO);
+		
+		var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		String reason = admin.getNick() + ">> /BAN por cambio de nombre de " + userName + " a " + newName + ". " + sdf.format(new java.util.Date());
+        
+        UserStorage.banUser(userName, admin.getNick(), reason);
+		UserStorage.addPunishment(userName, reason);
+        
+		admin.sendMessage("Nombre de " + userName + " cambiado a " + newName, FontType.FONTTYPE_INFO);
+    	Log.logGM(admin.getNick(), admin.getNick() + " le ha cambiado el nombre de " + userName + " a " + newName);
+	}
+
+	public void roleMasterRequest(Player player, String request) {
+		// command /ROL
+		if (request != null && !request.isBlank()) {
+            player.sendMessage("Su solicitud ha sido enviada", FontType.FONTTYPE_INFO);
+            server.sendMessageToRoleMasters(player.getNick() + " PREGUNTA ROL: " + request);
 		}
 	}
 

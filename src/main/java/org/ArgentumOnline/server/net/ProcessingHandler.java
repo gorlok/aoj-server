@@ -21,6 +21,9 @@ import java.util.Optional;
 
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.map.Heading;
+import org.ArgentumOnline.server.protocol.AlterMailRequest;
+import org.ArgentumOnline.server.protocol.AlterNameRequest;
+import org.ArgentumOnline.server.protocol.AlterPasswordRequest;
 import org.ArgentumOnline.server.protocol.BanCharRequest;
 import org.ArgentumOnline.server.protocol.BanIPRequest;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
@@ -80,11 +83,13 @@ import org.ArgentumOnline.server.protocol.RequestCharMailRequest;
 import org.ArgentumOnline.server.protocol.RequestCharSkillsRequest;
 import org.ArgentumOnline.server.protocol.RequestCharStatsRequest;
 import org.ArgentumOnline.server.protocol.ReviveCharRequest;
+import org.ArgentumOnline.server.protocol.RoleMasterRequestRequest;
 import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
 import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
 import org.ArgentumOnline.server.protocol.ServerMessageRequest;
 import org.ArgentumOnline.server.protocol.SetCharDescriptionRequest;
 import org.ArgentumOnline.server.protocol.SetMOTDRequest;
+import org.ArgentumOnline.server.protocol.SetTriggerRequest;
 import org.ArgentumOnline.server.protocol.SilenceRequest;
 import org.ArgentumOnline.server.protocol.SpawnCreatureRequest;
 import org.ArgentumOnline.server.protocol.SpellInfoRequest;
@@ -426,6 +431,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			server.manager().sendUserStats(player, player);
 			break;
 
+		case RoleMasterRequest:
+			server.manager().roleMasterRequest(player, ((RoleMasterRequestRequest)packet).request);
+			break;
+			
 			// GM COMMANDS
 //		default:
 //			if (player.flags().isGM()) {
@@ -780,12 +789,57 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 					server.manager().serverOpenToUsersToggle(player);
 					break;
 					
+				case ReloadNPCs:
+					// N/A:
+					break;
+					
+				case ReloadObjects:
+					server.reloadObjects(player);
+					break;
+					
+				case ReloadSpells:
+					server.reloadSpells(player);
+					break;
+					
+				case ReloadServerIni:
+					server.manager().reloadServerIni(player);
+					break;
+					
+				case Restart:
+					// N/A
+					break;
+					
+				case AlterMail:
+					server.manager().alterEmail(player, ((AlterMailRequest)packet).userName, ((AlterMailRequest)packet).newEmail);
+					break;
+					
+				case AlterName:
+					server.manager().alterName(player, ((AlterNameRequest)packet).userName, ((AlterNameRequest)packet).newName);
+					break;
+					
+				case AlterPassword:
+					// /APASS
+					if (player.isGM()) {
+						player.sendMessage("Por seguridad, no se puede cambiar passwords de este modo.", FontType.FONTTYPE_INFO);
+						// TODO implementar otro mecanismo para cambio de passwords x email
+					}
+					break;
+					
+				case TileBlockedToggle:
+					server.manager().tileBlockedToggle(player);
+					break;
+
+				case SetTrigger:
+					server.manager().setTrigger(player, ((SetTriggerRequest)packet).trigger);
+					break;
+					
+				case AskTrigger:
+					server.manager().askTrigger(player);
+					break;
+					
+					
 		case AcceptChaosCouncilMember:
 		case AcceptRoyalCouncilMember:
-		case AlterMail:
-		case AlterName:
-		case AlterPassword:
-		case AskTrigger:
 		case CentinelReport:
 		case ChangeDescription:
 		case ChangeMapInfoBackup:
@@ -853,23 +907,15 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case PartyMessage:
 		case PartyOnline:
 		case PartySetLeader:
-		case ReloadNPCs:
-		case ReloadObjects:
-		case ReloadServerIni:
-		case ReloadSpells:
 		case RemoveCharFromGuild:
 		case RequestGuildLeaderInfo:
 		case ResetAutoUpdate:
 		case ResetFactions:
 		case ResetNPCInventory:
-		case Restart:
 		case Reward:
-		case RoleMasterRequest:
 		case RoyalArmyKick:
 		case SetIniVar:
-		case SetTrigger:
 		case ShowGuildMessages:
-		case TileBlockedToggle:
 		case ToggleCentinelActivated:
 		
 		

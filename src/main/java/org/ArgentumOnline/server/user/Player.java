@@ -2722,7 +2722,6 @@ public class Player extends AbstractCharacter {
 		}
 		Map map = server.getMap(pos().map);
 		AreasAO.instance().loadUser(map, this);
-		//sendPacket(characterCreate());
 		sendPositionUpdate();
 
 		if (withFX) {
@@ -2733,12 +2732,6 @@ public class Player extends AbstractCharacter {
 		}
 
 		sendCharIndexInServer();
-		// FIXME esto va???
-//		if (sendingData) {
-//			targetMap.sendPlayers(this);
-//			targetMap.sendObjects(this);
-//			targetMap.sendBlockedPositions(this);
-//		}
 
 		if (originalPos.map != mapNumber) {
 			warpPets();
@@ -4308,6 +4301,10 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		return false;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public void connectNewUser(String userName, String password, byte race, byte gender, byte clazz, String email, byte homeland) {

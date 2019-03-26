@@ -3,12 +3,16 @@ package org.ArgentumOnline.server.npc;
 import org.ArgentumOnline.server.user.Player;
 
 // TODO
-public class Centinela {
+public class WorkWatcher {
 	
 	public static int centinelaNPCIndex = 0;
 
 	public static void centinelaSendClave(Player player) {
 		// TODO Auto-generated method stub
+	}
+	
+	public static boolean watchingUser(String userName) {
+		return false;
 	}
 	
 /*

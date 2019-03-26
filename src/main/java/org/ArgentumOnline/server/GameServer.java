@@ -49,6 +49,7 @@ import org.ArgentumOnline.server.user.Spell;
 import org.ArgentumOnline.server.util.Feedback;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
+import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -420,7 +421,7 @@ public class GameServer implements Constants {
     			"KB free " + (int) (Runtime.getRuntime().freeMemory() / 1024) +
 				"KB";
     }
-
+    
     private void loadMaps(boolean loadBackup) {
     	log.trace("loading maps");
         this.maps = new ArrayList<>(CANT_MAPAS);
@@ -537,7 +538,7 @@ public class GameServer implements Constants {
 		}
 		return null;
     }
-
+    
     public Player playerByUserName(String nombre) {
     	if ("".equals(nombre)) {
 			return null;
@@ -914,13 +915,17 @@ public class GameServer implements Constants {
     }
 
     public void sendMessageToGMs(String msg) {
-        for (Player cli: players()) {
-            if (cli.isLogged() && cli.flags().isGM()) {
-                cli.sendMessage(msg, FontType.FONTTYPE_GM);
-            }
-        }
+    	players().stream()
+			.filter(p -> p.isLogged() && p.isGM())
+			.forEach(p -> p.sendMessage(msg, FontType.FONTTYPE_GM));
     }
 
+    public void sendMessageToRoleMasters(String msg) {
+    	players().stream()
+    		.filter(p -> p.isLogged() && p.isRoleMaster())
+    		.forEach(p -> p.sendMessage(msg, FontType.FONTTYPE_GUILDMSG));
+    }
+    
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
     public void backupWorld() {
     	// FIXME
@@ -950,7 +955,8 @@ public class GameServer implements Constants {
 		}
     	int cant = cleanWorld();
         if (admin != null) {
-			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " objetos.", FontType.FONTTYPE_SERVER);
+			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " objetos.", 
+					FontType.FONTTYPE_SERVER);
 		}
     }
 
@@ -1067,5 +1073,23 @@ public class GameServer implements Constants {
 		}
         GameServer.instance().runGameLoop();
     }
+
+    public void reloadObjects(Player admin) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+    	this.objectInfoStorage.loadObjectsFromStorage();
+    	admin.sendMessage("Se han recargado los objetos", FontType.FONTTYPE_INFO);
+    	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado los objetos.");
+    }
+
+	public void reloadSpells(Player admin) {
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		loadSpells();
+    	admin.sendMessage("Se han recargado los hechizos", FontType.FONTTYPE_INFO);
+    	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado los hechizos.");
+	}
 
 }
