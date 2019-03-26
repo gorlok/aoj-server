@@ -59,7 +59,6 @@ import org.ArgentumOnline.server.protocol.CharacterCreateResponse;
 import org.ArgentumOnline.server.protocol.CharacterRemoveResponse;
 import org.ArgentumOnline.server.protocol.ChatOverHeadResponse;
 import org.ArgentumOnline.server.protocol.CreateFXResponse;
-import org.ArgentumOnline.server.protocol.DumbResponse;
 import org.ArgentumOnline.server.protocol.NPCSwingResponse;
 import org.ArgentumOnline.server.protocol.ParalizeOKResponse;
 import org.ArgentumOnline.server.protocol.PlayWaveResponse;

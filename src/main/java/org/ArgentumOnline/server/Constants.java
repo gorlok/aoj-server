@@ -38,6 +38,8 @@ public interface Constants {
 	final static int DISTANCE_INFORMATION = 4;
 	final static int DISTANCE_PRIEST = 10; // SACERDOTE
 	final static int DISTANCE_FACTION = 10; // FACCIONARIO
+	
+	final static int MAPA_PRETORIANO = -1;
     
     /*
     Public DeNoche As Boolean

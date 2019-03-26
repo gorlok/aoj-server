@@ -23,7 +23,6 @@ import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.map.Heading;
 import org.ArgentumOnline.server.protocol.AlterMailRequest;
 import org.ArgentumOnline.server.protocol.AlterNameRequest;
-import org.ArgentumOnline.server.protocol.AlterPasswordRequest;
 import org.ArgentumOnline.server.protocol.BanCharRequest;
 import org.ArgentumOnline.server.protocol.BanIPRequest;
 import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
@@ -40,10 +39,14 @@ import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
 import org.ArgentumOnline.server.protocol.CommentRequest;
 import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
 import org.ArgentumOnline.server.protocol.CommerceSellRequest;
+import org.ArgentumOnline.server.protocol.CouncilMessageRequest;
 import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
 import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
 import org.ArgentumOnline.server.protocol.CreateItemRequest;
+import org.ArgentumOnline.server.protocol.CreateNPCRequest;
+import org.ArgentumOnline.server.protocol.CreateNPCWithRespawnRequest;
 import org.ArgentumOnline.server.protocol.CreaturesInMapRequest;
+import org.ArgentumOnline.server.protocol.CriminalMessageRequest;
 import org.ArgentumOnline.server.protocol.DenounceRequest;
 import org.ArgentumOnline.server.protocol.DoubleClickRequest;
 import org.ArgentumOnline.server.protocol.DropRequest;
@@ -149,7 +152,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			clientPacket.id() != ClientPacketID.ThrowDices) {
 				
 	        // Is the user actually logged?
-	        if ( ! player.isLogged() ) {
+	        if ( !player.isLogged() ) {
 	        	player.quitGame();
 	        }
 		}
@@ -435,407 +438,433 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			server.manager().roleMasterRequest(player, ((RoleMasterRequestRequest)packet).request);
 			break;
 			
-			// GM COMMANDS
-//		default:
-//			if (player.flags().isGM()) {
-//				switch (clientPacket.id()) {
-				case OnlineGM:
-					server.manager().showGmOnline(player);
-					break;
-					
-				case TurnOffServer:
-					server.manager().shutdownServer(player);
-					break;
-					
-				case GMPanel:
-					server.manager().showGmPanelForm(player);
-					break;
-					
-				case Invisible:
-					server.manager().turnInvisible(player);
-					break;
-					
-				case RainToggle:
-					server.manager().toggleRain(player);
-					break;
-					
-				case SystemMessage:
-					server.manager().sendSystemMsg(player, ((SystemMessageRequest)packet).message);
-					break;
-					
-				case Uptime:
-					server.manager().showUptime(player);
-					break;
-					
-				case WarpChar:
-					handleWarpChar((WarpCharRequest)packet, player);
-					break;
-					
-				case Where:
-					server.manager().whereIsUser(player, ((WhereRequest)packet).userName);
-					break;
-					
-				case SummonChar:
-					server.manager().summonChar(player, ((SummonCharRequest)packet).userName);
-					break;
-					
-				case GoToChar:
-					server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
-					break;
-					
-				case WarpMeToTarget:
-					server.manager().warpMeToTarget(player);
-					break;
-					
-				case ServerTime:
-					server.manager().sendServerTime(player);
-					break;
+		case CouncilMessage:
+			server.manager().sendCouncilMessage(player, ((CouncilMessageRequest)packet).chat);
+			break;
+
+		// *****************************************************************************************	
+		// *****************************************************************************************	
+		// 										GM COMMANDS
+		// *****************************************************************************************	
+		// *****************************************************************************************	
+		
+		case OnlineGM:
+			server.manager().showGmOnline(player);
+			break;
 			
-				case SOSShowList:
-					server.manager().sendHelpRequests(player);
-					break;
-				
-				case SOSRemove:
-					server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
-					break;
-					
-				case CleanSOS:
-					server.manager().clearAllHelpRequestToGm(player);
-					break;
-					
-				case RequestUserList:
-					server.manager().sendUserNameList(player);
-					break;
-					
-				case ReviveChar:
-					server.manager().reviveUser(player, ((ReviveCharRequest)packet).userName);
-					break;
-					
-				case DoBackUp:
-					server.manager().backupWorld(player);
-					break;
-					
-				case ChangeMOTD:
-					server.getMotd().startUpdateMOTD(player);
-					break;
-					
-				case SetMOTD:
-					server.getMotd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
-					break;
-					
-				case TalkAsNPC:
-					player.talkAsNpc(((TalkAsNPCRequest)packet).message);
-					break;
-					
-				case GMMessage:
-					server.manager().sendMessageToAdmins(player,
-							player.getNick() + "> " + ((GMMessageRequest)packet).message, 
-							FontType.FONTTYPE_GMMSG);
-					break;
-					
-				case ServerMessage:
-					server.manager().sendServerMessage(player, ((ServerMessageRequest)packet).message);
-					break;
-					
-				case RoyalArmyMessage:
-					server.manager().sendMessageToRoyalArmy(player, ((RoyalArmyMessageRequest)packet).message);
-					break;
-					
-				case ChaosLegionMessage:
-					server.manager().sendMessageToDarkLegion(player, ((ChaosLegionMessageRequest)packet).message);
-					break;
-					
-				case CitizenMessage:
-					server.manager().sendMessageToCitizens(player, ((CitizenMessageRequest)packet).message);
-					break;
-					
-				case CreaturesInMap:
-					server.manager().sendCreaturesInMap(player, ((CreaturesInMapRequest)packet).map);
-					break;
-					
-				case OnlineMap:
-					server.manager().sendUsersOnlineMap(player, ((OnlineMapRequest)packet).map);
-					break;
-					
-				case OnlineRoyalArmy:
-					server.manager().sendOnlineRoyalArmy(player);
-					break;
-					
-				case OnlineChaosLegion:
-					server.manager().sendOnlineChaosLegion(player);
-					break;
-					
-				case Working:
-					server.manager().sendUsersWorking(player);
-					break;
-					
-				case Hiding:
-					server.manager().sendUsersHiding(player);
-					break;
-					
-				case NavigateToggle:
-					player.navigateToggleGM();
-					break;
-					
-				case Ignored:
-					player.ignoreToggleGM();
-					break;
-					
-				case ShowName:
-					player.showNameToggleGM();
-					break;
-					
-				case ChatColor:
-					handleChatColor((ChatColorRequest)packet, player);
-					break;
-					
-				case SetCharDescription:
-					player.changeCharDescription(((SetCharDescriptionRequest)packet).desc);
-					break;
-					
-				case Comment:
-					server.manager().saveGmComment(player, ((CommentRequest)packet).comment);
-					break;
-					
-				case CleanWorld:
-					server.cleanWorld(player);
-					break;
-					
-				case SpawnListRequest:
-					server.manager().sendSpawnCreatureList(player);
-					break;
-					
-				case SpawnCreature:
-					server.manager().spawnCreature(player, ((SpawnCreatureRequest)packet).npc);
-					break;
-					
-				case KillNPCNoRespawn:
-					server.manager().killNPCNoRespawn(player);
-					break;
-					
-				case KillAllNearbyNPCs:
-					server.manager().killAllNearbyNPCs(player);
-					break;
-					
-				case TeleportCreate:
-					handleTeleportCreate((TeleportCreateRequest)packet, player);
-					break;
-					
-				case TeleportDestroy:
-					server.manager().destroyTeleport(player);
-					break;
-					
-				case CreateItem:
-					server.manager().createItem(player, ((CreateItemRequest)packet).objectIndex);
-					break;
-					
-				case DestroyItems:
-					server.manager().destroyItem(player);
-					break;
-					
-				case ItemsInTheFloor:
-					server.manager().sendItemsInTheFloor(player);
-					break;
-					
-				case DestroyAllItemsInArea:
-					server.manager().destroyAllItemsInArea(player);
-					break;
-					
-				case GoNearby:
-					server.manager().goToChar(player, ((GoNearbyRequest)packet).userName);
-					break;
-					
-				case RequestCharInfo:
-					server.manager().requestCharInfo(player, ((RequestCharInfoRequest)packet).userName);
-					break;
-					
-				case RequestCharInventory:
-					server.manager().requestCharInv(player, ((RequestCharInventoryRequest)packet).userName);
-					break;
-					
-				case RequestCharStats:
-					server.manager().requestCharStats(player, ((RequestCharStatsRequest)packet).userName);
-					break;
-					
-				case RequestCharGold:
-					server.manager().requestCharGold(player, ((RequestCharGoldRequest)packet).userName);
-					break;
-					
-				case RequestCharBank:
-					server.manager().requestCharBank(player, ((RequestCharBankRequest)packet).userName);
-					break;
-					
-				case RequestCharSkills:
-					server.manager().requestCharSkills(player, ((RequestCharSkillsRequest)packet).userName);
-					break;
-					
-				case NickToIP:
-					server.manager().nick2IP(player, ((NickToIPRequest)packet).userName);
-					break;
-					
-				case IPToNick:
-					handleIpToNick(player, (IPToNickRequest)packet);
-					break;
-					
-				case LastIP:
-					server.manager().lastIp(player, ((LastIPRequest)packet).userName);
-					break;
-					
-				case RequestCharMail:
-					server.manager().requestCharEmail(player, ((RequestCharMailRequest)packet).userName);
-					break;
-					
-				case MakeDumb:
-					server.manager().makeDumb(player, ((MakeDumbRequest)packet).userName);
-					break;
+		case TurnOffServer:
+			server.manager().shutdownServer(player);
+			break;
+			
+		case GMPanel:
+			server.manager().showGmPanelForm(player);
+			break;
+			
+		case Invisible:
+			server.manager().turnInvisible(player);
+			break;
+			
+		case RainToggle:
+			server.manager().toggleRain(player);
+			break;
+			
+		case SystemMessage:
+			server.manager().sendSystemMsg(player, ((SystemMessageRequest)packet).message);
+			break;
+			
+		case Uptime:
+			server.manager().showUptime(player);
+			break;
+			
+		case WarpChar:
+			handleWarpChar((WarpCharRequest)packet, player);
+			break;
+			
+		case Where:
+			server.manager().whereIsUser(player, ((WhereRequest)packet).userName);
+			break;
+			
+		case SummonChar:
+			server.manager().summonChar(player, ((SummonCharRequest)packet).userName);
+			break;
+			
+		case GoToChar:
+			server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
+			break;
+			
+		case WarpMeToTarget:
+			server.manager().warpMeToTarget(player);
+			break;
+			
+		case ServerTime:
+			server.manager().sendServerTime(player);
+			break;
+	
+		case SOSShowList:
+			server.manager().sendHelpRequests(player);
+			break;
+		
+		case SOSRemove:
+			server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
+			break;
+			
+		case CleanSOS:
+			server.manager().clearAllHelpRequestToGm(player);
+			break;
+			
+		case RequestUserList:
+			server.manager().sendUserNameList(player);
+			break;
+			
+		case ReviveChar:
+			server.manager().reviveUser(player, ((ReviveCharRequest)packet).userName);
+			break;
+			
+		case DoBackUp:
+			server.manager().backupWorld(player);
+			break;
+			
+		case ChangeMOTD:
+			server.getMotd().startUpdateMOTD(player);
+			break;
+			
+		case SetMOTD:
+			server.getMotd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
+			break;
+			
+		case TalkAsNPC:
+			player.talkAsNpc(((TalkAsNPCRequest)packet).message);
+			break;
+			
+		case GMMessage:
+			server.manager().sendMessageToAdmins(player,
+					player.getNick() + "> " + ((GMMessageRequest)packet).message, 
+					FontType.FONTTYPE_GMMSG);
+			break;
+			
+		case ServerMessage:
+			server.manager().sendServerMessage(player, ((ServerMessageRequest)packet).message);
+			break;
+			
+		case RoyalArmyMessage:
+			server.manager().sendMessageToRoyalArmy(player, ((RoyalArmyMessageRequest)packet).message);
+			break;
+			
+		case ChaosLegionMessage:
+			server.manager().sendMessageToDarkLegion(player, ((ChaosLegionMessageRequest)packet).message);
+			break;
+			
+		case CitizenMessage:
+			server.manager().sendMessageToCitizens(player, ((CitizenMessageRequest)packet).message);
+			break;
+			
+		case CriminalMessage:
+			server.manager().sendMessageToCriminals(player, ((CriminalMessageRequest)packet).message);
+			break;
+			
+		case CreaturesInMap:
+			server.manager().sendCreaturesInMap(player, ((CreaturesInMapRequest)packet).map);
+			break;
+			
+		case OnlineMap:
+			server.manager().sendUsersOnlineMap(player, ((OnlineMapRequest)packet).map);
+			break;
+			
+		case OnlineRoyalArmy:
+			server.manager().sendOnlineRoyalArmy(player);
+			break;
+			
+		case OnlineChaosLegion:
+			server.manager().sendOnlineChaosLegion(player);
+			break;
+			
+		case Working:
+			server.manager().sendUsersWorking(player);
+			break;
+			
+		case Hiding:
+			server.manager().sendUsersHiding(player);
+			break;
+			
+		case NavigateToggle:
+			player.navigateToggleGM();
+			break;
+			
+		case Ignored:
+			player.ignoreToggleGM();
+			break;
+			
+		case ShowName:
+			player.showNameToggleGM();
+			break;
+			
+		case ChatColor:
+			handleChatColor((ChatColorRequest)packet, player);
+			break;
+			
+		case SetCharDescription:
+			player.changeCharDescription(((SetCharDescriptionRequest)packet).desc);
+			break;
+			
+		case Comment:
+			server.manager().saveGmComment(player, ((CommentRequest)packet).comment);
+			break;
+			
+		case CleanWorld:
+			server.cleanWorld(player);
+			break;
+			
+		case SpawnListRequest:
+			server.manager().sendSpawnCreatureList(player);
+			break;
+			
+		case SpawnCreature:
+			server.manager().spawnCreature(player, ((SpawnCreatureRequest)packet).npc);
+			break;
+			
+		case NPCFollow:
+			server.manager().npcFollow(player);
+			break;
 
-				case MakeDumbNoMore:
-					server.manager().makeNoDumb(player, ((MakeDumbNoMoreRequest)packet).userName);
-					break;
-					
-				case Execute:
-					server.manager().executeUser(player, ((ExecuteRequest)packet).userName);
-					break;
-					
-				case Silence:
-					server.manager().silenceUser(player, ((SilenceRequest)packet).userName);
-					break;
+		case KillNPC:
+			server.manager().killNpc(player);
+			break;
+			
+		case KillNPCNoRespawn:
+			server.manager().killNpcNoRespawn(player);
+			break;
+			
+		case KillAllNearbyNPCs:
+			server.manager().killAllNearbyNpcs(player);
+			break;
+			
+		case TeleportCreate:
+			handleTeleportCreate((TeleportCreateRequest)packet, player);
+			break;
+			
+		case TeleportDestroy:
+			server.manager().destroyTeleport(player);
+			break;
+			
+		case CreateItem:
+			server.manager().createItem(player, ((CreateItemRequest)packet).objectIndex);
+			break;
+			
+		case DestroyItems:
+			server.manager().destroyItem(player);
+			break;
+			
+		case ItemsInTheFloor:
+			server.manager().sendItemsInTheFloor(player);
+			break;
+			
+		case DestroyAllItemsInArea:
+			server.manager().destroyAllItemsInArea(player);
+			break;
+			
+		case GoNearby:
+			server.manager().goToChar(player, ((GoNearbyRequest)packet).userName);
+			break;
+			
+		case RequestCharInfo:
+			server.manager().requestCharInfo(player, ((RequestCharInfoRequest)packet).userName);
+			break;
+			
+		case RequestCharInventory:
+			server.manager().requestCharInv(player, ((RequestCharInventoryRequest)packet).userName);
+			break;
+			
+		case RequestCharStats:
+			server.manager().requestCharStats(player, ((RequestCharStatsRequest)packet).userName);
+			break;
+			
+		case RequestCharGold:
+			server.manager().requestCharGold(player, ((RequestCharGoldRequest)packet).userName);
+			break;
+			
+		case RequestCharBank:
+			server.manager().requestCharBank(player, ((RequestCharBankRequest)packet).userName);
+			break;
+			
+		case RequestCharSkills:
+			server.manager().requestCharSkills(player, ((RequestCharSkillsRequest)packet).userName);
+			break;
+			
+		case NickToIP:
+			server.manager().nick2IP(player, ((NickToIPRequest)packet).userName);
+			break;
+			
+		case IPToNick:
+			handleIpToNick(player, (IPToNickRequest)packet);
+			break;
+			
+		case LastIP:
+			server.manager().lastIp(player, ((LastIPRequest)packet).userName);
+			break;
+			
+		case RequestCharMail:
+			server.manager().requestCharEmail(player, ((RequestCharMailRequest)packet).userName);
+			break;
+			
+		case MakeDumb:
+			server.manager().makeDumb(player, ((MakeDumbRequest)packet).userName);
+			break;
 
-				case Punishments:
-					server.manager().punishments(player, ((PunishmentsRequest)packet).name);
-					break;
-					
-				case WarnUser:
-					handleWarnUser(player, (WarnUserRequest)packet);
-					break;
-					
-				case RemovePunishment:
-					handleRemovePunishment(player, (RemovePunishmentRequest)packet);
-					break;
-					
-				case Jail:
-					handleJail(player, (JailRequest)packet);
-					break;
-					
-				case Forgive:
-					server.manager().forgiveUser(player, ((ForgiveRequest)packet).userName);
-					break;
-					
-				case TurnCriminal:
-					server.manager().turnCriminal(player, ((TurnCriminalRequest)packet).userName);
-					break;
-					
-				case BanChar:
-					handleBanChar(player, (BanCharRequest)packet);
-					break;
-					
-				case UnbanChar:
-					server.manager().unbanUser(player, ((UnbanCharRequest)packet).userName);
-					break;
-					
-				case BanIP:
-					handleBanIp(player, (BanIPRequest)packet);
-					break;
-				
-				case UnbanIP:
-					handleUnbanIp(player, (UnbanIPRequest)packet);
-					break;
-					
-				case BannedIPList:
-					server.manager().bannedIPList(player);
-					break;
-					
-				case BannedIPReload:
-					server.manager().bannedIPReload(player);
-					break;		
-					
-				case Kick:
-					server.manager().kickUser(player, ((KickRequest)packet).userName);
-					break;
-					
-				case KickAllChars:
-					server.manager().kickAllUsersNoGm(player);
-					break;
-					
-				case ForceMIDIAll:
-					server.manager().playMidiAll(player, ((ForceMIDIAllRequest)packet).midiId);
-					break;
-					
-				case ForceMIDIToMap:
-					server.manager().playMidiToMap(player, ((ForceMIDIToMapRequest)packet).map, ((ForceMIDIToMapRequest)packet).midiId);
-					break;
-					
-				case ForceWAVEAll:
-					server.manager().playWaveAll(player, ((ForceWAVEAllRequest)packet).waveId);
-					break;
-					
-				case ForceWAVEToMap:
-					handleForceWaveToMap(player, (ForceWAVEToMapRequest)packet);
-					break;
-					
-				case ShowServerForm:
-					// n/a
-					break;
+		case MakeDumbNoMore:
+			server.manager().makeNoDumb(player, ((MakeDumbNoMoreRequest)packet).userName);
+			break;
+			
+		case Execute:
+			server.manager().executeUser(player, ((ExecuteRequest)packet).userName);
+			break;
+			
+		case Silence:
+			server.manager().silenceUser(player, ((SilenceRequest)packet).userName);
+			break;
 
-				case SaveChars:
-					server.manager().saveChars(player);
-					break;
-					
-				case SaveMap:
-					server.manager().saveMap(player);
-					break;
-					
-				case ServerOpenToUsersToggle:
-					server.manager().serverOpenToUsersToggle(player);
-					break;
-					
-				case ReloadNPCs:
-					// N/A:
-					break;
-					
-				case ReloadObjects:
-					server.reloadObjects(player);
-					break;
-					
-				case ReloadSpells:
-					server.reloadSpells(player);
-					break;
-					
-				case ReloadServerIni:
-					server.manager().reloadServerIni(player);
-					break;
-					
-				case Restart:
-					// N/A
-					break;
-					
-				case AlterMail:
-					server.manager().alterEmail(player, ((AlterMailRequest)packet).userName, ((AlterMailRequest)packet).newEmail);
-					break;
-					
-				case AlterName:
-					server.manager().alterName(player, ((AlterNameRequest)packet).userName, ((AlterNameRequest)packet).newName);
-					break;
-					
-				case AlterPassword:
-					// /APASS
-					if (player.isGM()) {
-						player.sendMessage("Por seguridad, no se puede cambiar passwords de este modo.", FontType.FONTTYPE_INFO);
-						// TODO implementar otro mecanismo para cambio de passwords x email
-					}
-					break;
-					
-				case TileBlockedToggle:
-					server.manager().tileBlockedToggle(player);
-					break;
+		case Punishments:
+			server.manager().punishments(player, ((PunishmentsRequest)packet).name);
+			break;
+			
+		case WarnUser:
+			handleWarnUser(player, (WarnUserRequest)packet);
+			break;
+			
+		case RemovePunishment:
+			handleRemovePunishment(player, (RemovePunishmentRequest)packet);
+			break;
+			
+		case Jail:
+			handleJail(player, (JailRequest)packet);
+			break;
+			
+		case Forgive:
+			server.manager().forgiveUser(player, ((ForgiveRequest)packet).userName);
+			break;
+			
+		case TurnCriminal:
+			server.manager().turnCriminal(player, ((TurnCriminalRequest)packet).userName);
+			break;
+			
+		case BanChar:
+			handleBanChar(player, (BanCharRequest)packet);
+			break;
+			
+		case UnbanChar:
+			server.manager().unbanUser(player, ((UnbanCharRequest)packet).userName);
+			break;
+			
+		case BanIP:
+			handleBanIp(player, (BanIPRequest)packet);
+			break;
+		
+		case UnbanIP:
+			handleUnbanIp(player, (UnbanIPRequest)packet);
+			break;
+			
+		case BannedIPList:
+			server.manager().bannedIPList(player);
+			break;
+			
+		case BannedIPReload:
+			server.manager().bannedIPReload(player);
+			break;		
+			
+		case Kick:
+			server.manager().kickUser(player, ((KickRequest)packet).userName);
+			break;
+			
+		case KickAllChars:
+			server.manager().kickAllUsersNoGm(player);
+			break;
+			
+		case ForceMIDIAll:
+			server.manager().playMidiAll(player, ((ForceMIDIAllRequest)packet).midiId);
+			break;
+			
+		case ForceMIDIToMap:
+			server.manager().playMidiToMap(player, ((ForceMIDIToMapRequest)packet).map, ((ForceMIDIToMapRequest)packet).midiId);
+			break;
+			
+		case ForceWAVEAll:
+			server.manager().playWaveAll(player, ((ForceWAVEAllRequest)packet).waveId);
+			break;
+			
+		case ForceWAVEToMap:
+			handleForceWaveToMap(player, (ForceWAVEToMapRequest)packet);
+			break;
+			
+		case ShowServerForm:
+			// n/a
+			break;
 
-				case SetTrigger:
-					server.manager().setTrigger(player, ((SetTriggerRequest)packet).trigger);
-					break;
-					
-				case AskTrigger:
-					server.manager().askTrigger(player);
-					break;
+		case SaveChars:
+			server.manager().saveChars(player);
+			break;
+			
+		case SaveMap:
+			server.manager().saveMap(player);
+			break;
+			
+		case ServerOpenToUsersToggle:
+			server.manager().serverOpenToUsersToggle(player);
+			break;
+			
+		case ReloadNPCs:
+			// N/A:
+			break;
+			
+		case ReloadObjects:
+			server.reloadObjects(player);
+			break;
+			
+		case ReloadSpells:
+			server.reloadSpells(player);
+			break;
+			
+		case ReloadServerIni:
+			server.manager().reloadServerIni(player);
+			break;
+			
+		case Restart:
+			// N/A
+			break;
+			
+		case AlterMail:
+			server.manager().alterEmail(player, ((AlterMailRequest)packet).userName, ((AlterMailRequest)packet).newEmail);
+			break;
+			
+		case AlterName:
+			server.manager().alterName(player, ((AlterNameRequest)packet).userName, ((AlterNameRequest)packet).newName);
+			break;
+			
+		case AlterPassword:
+			// /APASS
+			if (player.isGM()) {
+				player.sendMessage("Por seguridad, no se puede cambiar passwords de este modo.", FontType.FONTTYPE_INFO);
+				// TODO implementar otro mecanismo para cambio de passwords x email
+			}
+			break;
+			
+		case TileBlockedToggle:
+			server.manager().tileBlockedToggle(player);
+			break;
+
+		case SetTrigger:
+			server.manager().setTrigger(player, ((SetTriggerRequest)packet).trigger);
+			break;
+			
+		case AskTrigger:
+			server.manager().askTrigger(player);
+			break;
+			
+		case CreateNPC:
+			server.manager().createNpc(player, ((CreateNPCRequest)packet).npcIndex);
+			break;
+			
+		case CreateNPCWithRespawn:
+			server.manager().createNpcWithRespawn(player, ((CreateNPCWithRespawnRequest)packet).npcIndex);
+			break;
 					
 					
 		case AcceptChaosCouncilMember:
@@ -855,11 +884,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case CheckSlot:
 		case ClanCodexUpdate:
 		case CouncilKick:
-		case CouncilMessage:
-		case CreateNPC:
-		case CreateNPCWithRespawn:
 		case CreateNewGuild:
-		case CriminalMessage:
 		case DumpIPTables:
 		case EditChar:
 		case Enlist:
@@ -895,9 +920,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ImperialArmour:
 		case Inquiry:
 		case InquiryVote:
-		case KillNPC:
 		case LeaveFaction:
-		case NPCFollow:
 		case Night:
 		case PartyAcceptMember:
 		case PartyCreate:
@@ -918,15 +941,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ShowGuildMessages:
 		case ToggleCentinelActivated:
 		
-		
-				default:
-					System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
-					break;
-				}
-//			} else {
-//				System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
-//			}
-//		}
+		default:
+			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());
+			break;
+		}
 		
 	}
 

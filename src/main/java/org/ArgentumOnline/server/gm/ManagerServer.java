@@ -777,8 +777,52 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "Destruyó un teleport, con /DT mapa=" + map.getMapNumber() + " x=" + x + " y=" + y);
 		map.destroyTeleport(x, y);
 	}
+	
+	public void npcFollow(Player admin) {
+		// Command /SEGUIR
+		if (!admin.isGM() || admin.isCounselor()) {
+			return;
+		}
 
-	public void killNPCNoRespawn(Player admin) {
+		Npc npc = this.server.npcById(admin.flags().TargetNpc);
+		if (npc == null) {
+			admin.sendMessage("Haz clic sobre un Npc y luego escribe /SEGUIR", FontType.FONTTYPE_INFO);
+			return;
+		}
+		
+		npc.followUser(admin.getNick());
+		npc.desparalizar();
+		npc.desinmovilizar();
+	}
+
+	public void killNpc(Player admin) {
+		// Quitar Npc
+		// Comando //RMATA 
+		if (!admin.isGM()) {
+			return;
+		}
+		
+        // Los consejeros no pueden RMATAr nada en el mapa pretoriano
+		if (admin.isCounselor()) {
+			if (admin.pos().map == Constants.MAPA_PRETORIANO) {
+				admin.sendMessage("Los consejeros no pueden usar este comando en el mapa pretoriano.", FontType.FONTTYPE_INFO);
+				return;
+			}
+		}
+		
+		Npc npc = this.server.npcById(admin.flags().TargetNpc);
+		if (npc == null) {
+			admin.sendMessage("Haz clic sobre un Npc y luego escribe /RMATA. PERO MUCHO CUIDADO!", FontType.FONTTYPE_INFO);
+			return;
+		}
+		admin.sendMessage("RMATAs (con posible respawn) a: " + npc.getName(), FontType.FONTTYPE_INFO);
+		npc.quitarNPC();
+		admin.flags().TargetNpc = 0;
+		Log.logGM(admin.getNick(), "/RMATA " + npc);
+	}
+
+	
+	public void killNpcNoRespawn(Player admin) {
 		// Quitar Npc
 		// Comando /MATA indiceNpc
 		if (!admin.isGM() || admin.isDemiGod() || admin.isCounselor()) {
@@ -794,9 +838,12 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/MATA " + npc);
 	}
 
-	public void doCrearCriatura(Player admin, short indiceNpc) {
+	public void createNpc(Player admin, short indiceNpc) {
 		// Crear criatura, toma directamente el indice
 		// Comando /ACC indiceNpc
+		if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+			return;
+		}
 		if (this.server.npcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, false);
 		} else {
@@ -804,9 +851,12 @@ public class ManagerServer {
 		}
 	}
 
-	public void doCrearCriaturaRespawn(Player admin, short indiceNpc) {
+	public void createNpcWithRespawn(Player admin, short indiceNpc) {
 		// Crear criatura con respawn, toma directamente el indice
 		// Comando /RACC indiceNpc
+		if (!admin.isGM() || admin.isCounselor() || admin.isDemiGod()) {
+			return;
+		}
 		if (this.server.npcById(indiceNpc) != null) {
 			Npc.spawnNpc(indiceNpc, admin.pos(), true, true);
 		} else {
@@ -1011,7 +1061,7 @@ public class ManagerServer {
 		}
 	}
 
-	public void killAllNearbyNPCs(Player admin) {
+	public void killAllNearbyNpcs(Player admin) {
 		// Quita todos los NPCs del area.
 		// Comando /MASSKILL
 		if (!admin.isGM() || admin.isDemiGod() || admin.isCounselor()) {
@@ -1104,50 +1154,65 @@ public class ManagerServer {
 		}
 	}
 	
-    public void sendMessageToAdmins(Player admin, String msg, FontType fuente) {
+    public void sendMessageToAdmins(Player admin, String message, FontType fuente) {
 		if (!admin.isGM()) {
 			return;
 		}
-    	for (Player user: server.players()) {
-            if (user != null && user.getId() > 0 && user.flags().isGM() && user.isLogged()) {
-                user.sendMessage(msg, fuente);
-            }
-        }
+		server.players().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isGM())
+			.forEach(u -> u.sendMessage(message, fuente));
     }
 
-    public void sendMessageToRoyalArmy(Player admin, String msg) {
+    public void sendMessageToRoyalArmy(Player admin, String message) {
 		if (!admin.isGM()) {
 			return;
 		}
-    	for (Player user: server.players()) {
-            if (user != null && user.getId() > 0 && user.isLogged() 
-            		&& (user.flags().isGM() || user.isRoyalArmy())) {
-                user.sendMessage("ARMADA REAL> " + msg, FontType.FONTTYPE_TALK);
-            }
-        }
+		server.players().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
+					&& (u.flags().isGM() || u.isRoyalArmy()))
+			.forEach(u -> u.sendMessage("ARMADA REAL> " + message, FontType.FONTTYPE_TALK));
     }
 
     public void sendMessageToDarkLegion(Player admin, String message) {
 		if (!admin.isGM()) {
 			return;
 		}
-    	for (Player user: server.players()) {
-            if (user != null && user.getId() > 0 && user.isLogged() 
-            		&& (user.flags().isGM() || user.isDarkLegion())) {
-                user.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK);
-            }
-        }
+		server.players().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
+					&& (u.flags().isGM() || u.isDarkLegion()))
+			.forEach(u -> u.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK));
     }
 
     public void sendMessageToCitizens(Player admin, String message) {
 		if (!admin.isGM()) {
 			return;
 		}
-    	for (Player user: server.players()) {
-            if (user != null && user.getId() > 0 && user.isLogged()) {
-                user.sendMessage("CIUDADANOS> " + message, FontType.FONTTYPE_TALK);
-            }
-        }
+		server.players().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && !u.isCriminal())
+			.forEach(u -> u.sendMessage("CIUDADANOS> " + message, FontType.FONTTYPE_TALK));
+    }
+
+    public void sendMessageToCriminals(Player admin, String message) {
+		if (!admin.isGM()) {
+			return;
+		}
+		server.players().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isCriminal())
+			.forEach(u -> u.sendMessage("CRIMINALES> " + message, FontType.FONTTYPE_TALK));
+    }
+    
+    public void sendCouncilMessage(Player player, String message) {
+    	if (player.isRoyalCouncil()) {
+    		server.players().stream()
+	    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isRoyalCouncil())
+	    		.forEach(u -> u.sendMessage("(Consejero) " + player.getNick() + " > " + message,
+	    				FontType.FONTTYPE_CONSEJO));
+    	} else if (player.isChaosCouncil()) {
+    		server.players().stream()
+    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isChaosCouncil())
+    		.forEach(u -> u.sendMessage("(Consejero) " + player.getNick() + " > " + message,
+    				FontType.FONTTYPE_CONSEJOCAOS));
+    	}
     }
 
 	public void summonChar(Player admin, String userName) {

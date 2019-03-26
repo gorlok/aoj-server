@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-26
+- agregado /CRIMSG /ACC /RACC /BMSG /SEGUIR
+
 ### 2019-03-25
 - agregados /RELOADNPCS /RELOADSINI /RELOADHECHIZOS /RELOADOBJ /ROL /AEMAIL /ANAME /APASS /BLOQ /TRIGGER
 
