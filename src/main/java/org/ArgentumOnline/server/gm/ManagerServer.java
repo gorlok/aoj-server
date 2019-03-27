@@ -48,10 +48,10 @@ import org.ArgentumOnline.server.protocol.ShowMessageBoxResponse;
 import org.ArgentumOnline.server.protocol.ShowSOSFormResponse;
 import org.ArgentumOnline.server.protocol.SpawnListResponse;
 import org.ArgentumOnline.server.protocol.UserNameListResponse;
+import org.ArgentumOnline.server.user.FactionArmors;
 import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
 import org.ArgentumOnline.server.user.UserFaction;
-import org.ArgentumOnline.server.user.UserFaction.FactionArmors;
 import org.ArgentumOnline.server.user.UserStorage;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.IniFile;
@@ -191,7 +191,7 @@ public class ManagerServer {
 				}
             }
 
-            UserFaction.loadFactionArmors(ini);
+            FactionArmors.loadFactionArmors(ini);
             
             // FIXME add saving this... and move this
             server.setServerRestrictedToGMs(ini.getInt("INIT", "ServerSoloGMs") == 1);
@@ -440,19 +440,19 @@ public class ManagerServer {
 		}
 		switch (index) {
 		case 1:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armour);
 			break;
 		case 2:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armour);
 			break;
 		case 3:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armour);
 			break;
 		case 4:
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armour);
 			break;
 		case 5:
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armour);
 			break;
 		}
 	}
@@ -464,19 +464,19 @@ public class ManagerServer {
 		}
 		switch (index) {
 		case 1:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armour);
 			break;
 		case 2:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armour);
 			break;
 		case 3:
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armour);
 			break;
 		case 4:
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armour);
 			break;
 		case 5:
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armour);
+			FactionArmors.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armour);
 			break;
 		}
 	}
@@ -888,9 +888,9 @@ public class ManagerServer {
 			usuario.infoChar().head = (short) valor;
 			usuario.sendCharacterChange();
 		} else if (accion.equalsIgnoreCase("CRI")) {
-			usuario.userFaction().CriminalesMatados = valor;
+			usuario.userFaction().criminalsKilled = valor;
 		} else if (accion.equalsIgnoreCase("CIU")) {
-			usuario.userFaction().CiudadanosMatados = valor;
+			usuario.userFaction().citizensKilled = valor;
 		} else if (accion.equalsIgnoreCase("LEVEL")) {
 			usuario.stats().ELV = valor;
 		} else {
@@ -1515,8 +1515,8 @@ public class ManagerServer {
 		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);
 		
         admin.sendMessage("Pj: " + user.getNick(), FontType.FONTTYPE_INFO);
-        admin.sendMessage("CiudadanosMatados: " + user.userFaction().CiudadanosMatados 
-        		+ " CriminalesMatados: " + user.userFaction().CriminalesMatados 
+        admin.sendMessage("CiudadanosMatados: " + user.userFaction().citizensKilled 
+        		+ " CriminalesMatados: " + user.userFaction().criminalsKilled 
         		+ " UsuariosMatados: " + user.stats().usuariosMatados, FontType.FONTTYPE_INFO);
         
         admin.sendMessage("NPCsMuertos: " + user.stats().NPCsMuertos, FontType.FONTTYPE_INFO);
@@ -2185,4 +2185,125 @@ public class ManagerServer {
 		}
 	}
 
+	public void acceptRoyalCouncilMember(Player admin, String userName) {
+		// Command /ACEPTCONSE
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			admin.sendMessage("Usuario offline", FontType.FONTTYPE_INFO);
+		} else {
+			targetUser.flags().removeChaosCouncil();
+			targetUser.flags().addRoyalCouncil();
+			
+			server.sendToAll(new ConsoleMsgResponse(userName + " fue aceptado en el honorable Consejo Real de Banderbill.", FontType.FONTTYPE_CONSEJO.id()));
+			targetUser.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, false);
+		}
+	}
+
+	public void acceptChaosCouncilMember(Player admin, String userName) {
+		// command /ACEPTCONSECAOS
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			admin.sendMessage("Usuario offline", FontType.FONTTYPE_INFO);
+		} else {
+			targetUser.flags().removeRoyalCouncil();
+			targetUser.flags().addChaosCouncil();
+			
+			server.sendToAll(new ConsoleMsgResponse(userName + " fue aceptado en el Concilio de las Sombras.", FontType.FONTTYPE_CONSEJO.id()));
+			targetUser.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, false);
+		}
+	}
+
+	public void councilKick(Player admin, String userName) {
+		// Command /ACEPTCONSECAOS
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			if (Player.userExists(userName)) {
+				UserStorage.councilKick(userName);
+				admin.sendMessage("Usuario offline. Echado de los consejos.", FontType.FONTTYPE_INFO);
+			} else {
+				admin.sendMessage("No se encuentra el charfile de " + userName, FontType.FONTTYPE_INFO);
+			}
+		} else {
+			if (targetUser.isRoyalCouncil()) {
+				targetUser.flags().removeRoyalCouncil();
+				targetUser.sendMessage("Has sido echado del Consejo de Banderbill", FontType.FONTTYPE_TALK);
+				targetUser.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, false);
+				server.sendToAll(new ConsoleMsgResponse(userName + " fue expulsado del honorable Consejo Real de Banderbill.", FontType.FONTTYPE_CONSEJO.id()));
+			}
+			if (targetUser.isChaosCouncil()) {
+				targetUser.flags().removeChaosCouncil();
+				targetUser.sendMessage("Has sido echado del Concilio de las Sombras", FontType.FONTTYPE_TALK);
+				targetUser.warpMe(admin.pos().map, admin.pos().x, admin.pos().y, false);
+				server.sendToAll(new ConsoleMsgResponse(userName + " fue expulsado del Concilio de las Sombras.", FontType.FONTTYPE_CONSEJO.id()));
+			}
+		}
+	}
+
+	public void royalArmyKickForEver(Player admin, String userName) {
+		// Command /NOREAL
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " echo de la Armada Real a " + userName);
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			if (Player.userExists(userName)) {
+				UserFaction.royalArmyKick(admin, userName);
+				admin.sendMessage(userName + " fue expulsado de la Armada Real y prohibido su reingreso.", FontType.FONTTYPE_INFO);
+			} else {
+				admin.sendMessage("No se encuentra el charfile de " + userName, FontType.FONTTYPE_INFO);
+			}
+		} else {
+			targetUser.userFaction().royalArmyKickForEver(admin.getNick());
+			admin.sendMessage(userName + " fue expulsado de las Armada Real y prohibido su reingreso.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void chaosLegionKickForEver(Player admin, String userName) {
+		// Command /NOCAOS
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " echo de la Legión Oscura a " + userName);
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			if (Player.userExists(userName)) {
+				UserFaction.chaosLegionKick(admin, userName);
+				admin.sendMessage(userName + " fue expulsado de la Legión Oscura y prohibido su reingreso.", FontType.FONTTYPE_INFO);
+			} else {
+				admin.sendMessage("No se encuentra el charfile de " + userName, FontType.FONTTYPE_INFO);
+			}
+		} else {
+			targetUser.userFaction().darkLegionKickForEver(admin.getNick());
+			admin.sendMessage(userName + " fue expulsado de las Legión Oscura y prohibido su reingreso.", FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void resetFactions(Player admin, String userName) {
+		// Command /RAJAR
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " /RAJAR " + userName);
+		Player targetUser = server.playerByUserName(userName);
+		if (targetUser == null) {
+			if (Player.userExists(userName)) {
+				UserFaction.resetFactions(userName);
+			} else {
+				admin.sendMessage("El usuario " + userName + " no existe.", FontType.FONTTYPE_INFO);
+			}
+		} else {
+			targetUser.userFaction().reset();
+		}
+	}
+	
 }

@@ -505,9 +505,9 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!npc.isFaction()) {
-			userFaction().enlistarArmadaReal(npc);
+			userFaction().royalArmyEnlist(npc);
 		} else {
-			userFaction().enlistarCaos(npc);
+			userFaction().darkLegionEnlist(npc);
 		}
 	}
 	
@@ -530,20 +530,20 @@ public class Player extends AbstractCharacter {
 				talk(COLOR_BLANCO, "No perteneces a las tropas reales!!!", npc.getId());
 				return;
 			}
-			userFaction().recompensaArmadaReal(npc);
+			userFaction().royalArmyReward(npc);
 		} else {
 			if (!userFaction().FuerzasCaos) {
 				talk(COLOR_BLANCO, "No perteneces a las fuerzas del caos!!!", npc.getId());
 				return;
 			}
-			userFaction().recompensaCaos(npc);
+			userFaction().darkLegionReward(npc);
 		}
 	}
 
 	public void sendMiniStats() { // hazte fama y échate a dormir...
 		sendPacket(new MiniStatsResponse(
-				(int) this.faction.CiudadanosMatados,
-				(int) this.faction.CriminalesMatados,
+				(int) this.faction.citizensKilled,
+				(int) this.faction.criminalsKilled,
 				stats().usuariosMatados,
 				(short) stats().NPCsMuertos,
 				this.clazz.id(),
@@ -645,14 +645,14 @@ public class Player extends AbstractCharacter {
 		if (checkNpcNear(npc, DISTANCE_FACTION)) {
 			if (isRoyalArmy()) {
 				if (!npc.isFaction()) {
-					this.faction.expulsarFaccionReal();
+					this.faction.royalArmyKick();
 					talk(COLOR_BLANCO, "Serás bienvenido a las fuerzas imperiales si deseas regresar.", npc.getId());
 				} else {
 					talk(COLOR_BLANCO, "¡Sal de aquí bufón!", npc.getId());
 				}
 			} else if (isDarkLegion()) {
 				if (npc.isFaction()) {
-					this.faction.expulsarFaccionCaos();
+					this.faction.darkLegionKick();
 					talk(COLOR_BLANCO, "Ya volverás arrastrándote.", npc.getId());
 				} else {
 					talk(COLOR_BLANCO, "¡Sal de aquí maldito criminal!", npc.getId());
@@ -1595,7 +1595,7 @@ public class Player extends AbstractCharacter {
 			turnCriminal();
 		}
 		if (this.faction.ArmadaReal) {
-			this.faction.expulsarFaccionReal();
+			this.faction.royalArmyKick();
 		}
 		this.reputation.incLandron(vlLadron);
 		riseSkill(Skill.SKILL_Robar);
@@ -3306,7 +3306,7 @@ public class Player extends AbstractCharacter {
 			if (!isCriminal()) {
 				this.reputation.condenar();
 				if (this.faction.ArmadaReal) {
-					this.faction.expulsarFaccionReal();
+					this.faction.royalArmyKick();
 				}
 				refreshCharStatus();
 			}
@@ -3463,7 +3463,7 @@ public class Player extends AbstractCharacter {
             	stats().ELU *= 1.175;
             }
 			
-			clazz().subirEstads(this);
+			clazz().incStats(this);
 			sendSkills();
 			
 			if (!isNewbie() && wasNewbie) {
@@ -4117,39 +4117,18 @@ public class Player extends AbstractCharacter {
 		stats().incUsuariosMatados();
 		log.info("ASESINATO: " + this.userName + " asesino a " + victima.userName);
 	}
-/*
-
- */
 	
-	public void contarMuerte(Player usuarioMuerto) {
-		if (usuarioMuerto.isNewbie()) {
+	public void contarMuerte(Player killedUser) {
+		// ContarMuerte
+		if (killedUser.isNewbie()) {
 			return;
 		}
-		if (duelStatus(usuarioMuerto) == DuelStatus.DUEL_ALLOWED) {
+		if (duelStatus(killedUser) == DuelStatus.DUEL_ALLOWED) {
 			return;
 		}
 
-		// TODO move this to UserFaction
-		if (usuarioMuerto.isCriminal()) {
-			if (!flags().LastCrimMatado.equalsIgnoreCase(usuarioMuerto.userName)) {
-				flags().LastCrimMatado = usuarioMuerto.userName;
-				this.faction.CriminalesMatados++;
-			}
-			if (this.faction.CriminalesMatados > MAXUSERMATADOS) {
-				this.faction.CriminalesMatados = 0;
-				this.faction.RecompensasReal = 0;
-			}
-
-		} else {
-			if (!flags().LastCiudMatado.equalsIgnoreCase(usuarioMuerto.userName)) {
-				flags().LastCiudMatado = usuarioMuerto.userName;
-				this.faction.CiudadanosMatados++;
-			}
-			if (this.faction.CiudadanosMatados > MAXUSERMATADOS) {
-				this.faction.CiudadanosMatados = 0;
-				this.faction.RecompensasCaos = 0;
-			}
-		}
+		userFaction().countKill(killedUser);
+		stats().incUsuariosMatados();
 	}
 
 	public void usuarioAtacadoPorUsuario(Player victima) {
@@ -4167,7 +4146,7 @@ public class Player extends AbstractCharacter {
 					turnCriminal();
 				}
 			}
-			// TODO Revisar: ¿puede un cuidadano atacar a otro ciudadano, cuandoestán en clanes enemigos?
+			// TODO Revisar: ¿puede un cuidadano atacar a otro ciudadano, cuando están en clanes enemigos?
 		}
 
 		if (victima.isCriminal()) {
@@ -4934,9 +4913,9 @@ public class Player extends AbstractCharacter {
 
 	private String getTituloFaccion() {
 		if (this.faction.ArmadaReal) {
-			return " <Ejercito real> <" + this.faction.tituloReal() + ">";
+			return " <Ejercito real> <" + this.faction.royalArmyTitle() + ">";
 		} else if (this.faction.FuerzasCaos) {
-			return " <Legión Oscura> <" + this.faction.tituloCaos() + ">";
+			return " <Legión Oscura> <" + this.faction.darkLegionTitle() + ">";
 		}
 		return "";
 	}

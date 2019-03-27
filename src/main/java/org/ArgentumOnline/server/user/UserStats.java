@@ -138,7 +138,9 @@ public class UserStats extends AbstractCharStats {
 	}
 	
 	public void incUsuariosMatados() {
-		this.usuariosMatados++;
+		if (this.usuariosMatados < MAX_USER_KILLED) {
+			this.usuariosMatados++;
+		}
 	}
 
 	public void incNPCsMuertos() {

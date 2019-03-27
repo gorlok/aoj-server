@@ -189,7 +189,7 @@ public class Reputation {
         	player.sendPacket(new NobilityLostResponse());
         	
         	if (player.isCriminal() && player.isRoyalArmy()) {
-        		player.userFaction().expulsarFaccionReal();
+        		player.userFaction().royalArmyKick();
         	}
         }
         

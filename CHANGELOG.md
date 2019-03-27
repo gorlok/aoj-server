@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-27
+- agregado /ACEPTCONSE /ACEPTCONSECAOS /ACEPTCONSECAOS
+
 ### 2019-03-26
 - agregado /CRIMSG /ACC /RACC /BMSG /SEGUIR /RESETINV /RECOMPENSA /ENLISTAR /RETIRAR (faction) /AI1-/AI5 /AC1-/AC5
 

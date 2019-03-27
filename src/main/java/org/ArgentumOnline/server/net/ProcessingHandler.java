@@ -21,103 +21,7 @@ import java.util.Optional;
 
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.map.Heading;
-import org.ArgentumOnline.server.protocol.AlterMailRequest;
-import org.ArgentumOnline.server.protocol.AlterNameRequest;
-import org.ArgentumOnline.server.protocol.BanCharRequest;
-import org.ArgentumOnline.server.protocol.BanIPRequest;
-import org.ArgentumOnline.server.protocol.BankDepositGoldRequest;
-import org.ArgentumOnline.server.protocol.BankDepositRequest;
-import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
-import org.ArgentumOnline.server.protocol.BankExtractItemRequest;
-import org.ArgentumOnline.server.protocol.BugReportRequest;
-import org.ArgentumOnline.server.protocol.CastSpellRequest;
-import org.ArgentumOnline.server.protocol.ChangeDescriptionRequest;
-import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
-import org.ArgentumOnline.server.protocol.ChangePasswordRequest;
-import org.ArgentumOnline.server.protocol.ChaosArmourRequest;
-import org.ArgentumOnline.server.protocol.ChaosLegionMessageRequest;
-import org.ArgentumOnline.server.protocol.ChatColorRequest;
-import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
-import org.ArgentumOnline.server.protocol.CommentRequest;
-import org.ArgentumOnline.server.protocol.CommerceBuyRequest;
-import org.ArgentumOnline.server.protocol.CommerceSellRequest;
-import org.ArgentumOnline.server.protocol.CouncilMessageRequest;
-import org.ArgentumOnline.server.protocol.CraftBlacksmithRequest;
-import org.ArgentumOnline.server.protocol.CraftCarpenterRequest;
-import org.ArgentumOnline.server.protocol.CreateItemRequest;
-import org.ArgentumOnline.server.protocol.CreateNPCRequest;
-import org.ArgentumOnline.server.protocol.CreateNPCWithRespawnRequest;
-import org.ArgentumOnline.server.protocol.CreaturesInMapRequest;
-import org.ArgentumOnline.server.protocol.CriminalMessageRequest;
-import org.ArgentumOnline.server.protocol.DenounceRequest;
-import org.ArgentumOnline.server.protocol.DoubleClickRequest;
-import org.ArgentumOnline.server.protocol.DropRequest;
-import org.ArgentumOnline.server.protocol.EquipItemRequest;
-import org.ArgentumOnline.server.protocol.ExecuteRequest;
-import org.ArgentumOnline.server.protocol.ForceMIDIAllRequest;
-import org.ArgentumOnline.server.protocol.ForceMIDIToMapRequest;
-import org.ArgentumOnline.server.protocol.ForceWAVEAllRequest;
-import org.ArgentumOnline.server.protocol.ForceWAVEToMapRequest;
-import org.ArgentumOnline.server.protocol.ForgiveRequest;
-import org.ArgentumOnline.server.protocol.ForumPostRequest;
-import org.ArgentumOnline.server.protocol.GMMessageRequest;
-import org.ArgentumOnline.server.protocol.GambleRequest;
-import org.ArgentumOnline.server.protocol.GoNearbyRequest;
-import org.ArgentumOnline.server.protocol.GoToCharRequest;
-import org.ArgentumOnline.server.protocol.IPToNickRequest;
-import org.ArgentumOnline.server.protocol.ImperialArmourRequest;
-import org.ArgentumOnline.server.protocol.JailRequest;
-import org.ArgentumOnline.server.protocol.KickRequest;
-import org.ArgentumOnline.server.protocol.LastIPRequest;
-import org.ArgentumOnline.server.protocol.LeftClickRequest;
-import org.ArgentumOnline.server.protocol.LoginExistingCharRequest;
-import org.ArgentumOnline.server.protocol.LoginNewCharRequest;
-import org.ArgentumOnline.server.protocol.MakeDumbNoMoreRequest;
-import org.ArgentumOnline.server.protocol.MakeDumbRequest;
-import org.ArgentumOnline.server.protocol.ModifySkillsRequest;
-import org.ArgentumOnline.server.protocol.MoveBankRequest;
-import org.ArgentumOnline.server.protocol.MoveSpellRequest;
-import org.ArgentumOnline.server.protocol.NickToIPRequest;
-import org.ArgentumOnline.server.protocol.OnlineMapRequest;
-import org.ArgentumOnline.server.protocol.PunishmentsRequest;
-import org.ArgentumOnline.server.protocol.RemovePunishmentRequest;
-import org.ArgentumOnline.server.protocol.RequestCharBankRequest;
-import org.ArgentumOnline.server.protocol.RequestCharGoldRequest;
-import org.ArgentumOnline.server.protocol.RequestCharInfoRequest;
-import org.ArgentumOnline.server.protocol.RequestCharInventoryRequest;
-import org.ArgentumOnline.server.protocol.RequestCharMailRequest;
-import org.ArgentumOnline.server.protocol.RequestCharSkillsRequest;
-import org.ArgentumOnline.server.protocol.RequestCharStatsRequest;
-import org.ArgentumOnline.server.protocol.ReviveCharRequest;
-import org.ArgentumOnline.server.protocol.RoleMasterRequestRequest;
-import org.ArgentumOnline.server.protocol.RoyalArmyMessageRequest;
-import org.ArgentumOnline.server.protocol.SOSRemoveRequest;
-import org.ArgentumOnline.server.protocol.ServerMessageRequest;
-import org.ArgentumOnline.server.protocol.SetCharDescriptionRequest;
-import org.ArgentumOnline.server.protocol.SetMOTDRequest;
-import org.ArgentumOnline.server.protocol.SetTriggerRequest;
-import org.ArgentumOnline.server.protocol.SilenceRequest;
-import org.ArgentumOnline.server.protocol.SpawnCreatureRequest;
-import org.ArgentumOnline.server.protocol.SpellInfoRequest;
-import org.ArgentumOnline.server.protocol.SummonCharRequest;
-import org.ArgentumOnline.server.protocol.SystemMessageRequest;
-import org.ArgentumOnline.server.protocol.TalkAsNPCRequest;
-import org.ArgentumOnline.server.protocol.TalkRequest;
-import org.ArgentumOnline.server.protocol.TeleportCreateRequest;
-import org.ArgentumOnline.server.protocol.TrainRequest;
-import org.ArgentumOnline.server.protocol.TurnCriminalRequest;
-import org.ArgentumOnline.server.protocol.UnbanCharRequest;
-import org.ArgentumOnline.server.protocol.UnbanIPRequest;
-import org.ArgentumOnline.server.protocol.UseItemRequest;
-import org.ArgentumOnline.server.protocol.UserCommerceOfferRequest;
-import org.ArgentumOnline.server.protocol.WalkRequest;
-import org.ArgentumOnline.server.protocol.WarnUserRequest;
-import org.ArgentumOnline.server.protocol.WarpCharRequest;
-import org.ArgentumOnline.server.protocol.WhereRequest;
-import org.ArgentumOnline.server.protocol.WhisperRequest;
-import org.ArgentumOnline.server.protocol.WorkLeftClickRequest;
-import org.ArgentumOnline.server.protocol.WorkRequest;
-import org.ArgentumOnline.server.protocol.YellRequest;
+import org.ArgentumOnline.server.protocol.*;
 import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.util.FontType;
 import org.apache.logging.log4j.LogManager;
@@ -898,12 +802,46 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			handleChaosArmour(player, (ChaosArmourRequest)packet);
 			break;
 			
-			
-			
+		case AcceptRoyalCouncilMember:
+			server.manager().acceptRoyalCouncilMember(player, ((AcceptRoyalCouncilMemberRequest)packet).userName);
+			break;
 					
 		case AcceptChaosCouncilMember:
-		case AcceptRoyalCouncilMember:
+			server.manager().acceptChaosCouncilMember(player, ((AcceptChaosCouncilMemberRequest)packet).userName);
+			break;
+			
+		case CouncilKick:
+			server.manager().councilKick(player, ((CouncilKickRequest)packet).userName);
+			break;
+			
+		case RoyalArmyKick:
+			server.manager().royalArmyKickForEver(player, ((RoyalArmyKickRequest)packet).userName);
+			break;
+			
+		case ChaosLegionKick:
+			server.manager().chaosLegionKickForEver(player, ((ChaosLegionKickRequest)packet).userName);
+			break;
+			
+		case ResetFactions:
+			server.manager().resetFactions(player, ((ResetFactionsRequest)packet).userName);
+			break;
+
+		case ResetAutoUpdate:
+			// N/A
+			break;
+			
 		case CentinelReport:
+		case ToggleCentinelActivated:
+			
+		case PartyAcceptMember:
+		case PartyCreate:
+		case PartyJoin:
+		case PartyKick:
+		case PartyLeave:
+		case PartyMessage:
+		case PartyOnline:
+		case PartySetLeader:
+
 		case ChangeMapInfoBackup:
 		case ChangeMapInfoLand:
 		case ChangeMapInfoNoInvi:
@@ -912,13 +850,18 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ChangeMapInfoPK:
 		case ChangeMapInfoRestricted:
 		case ChangeMapInfoZone:
-		case ChaosLegionKick:
+			
 		case CheckSlot:
-		case ClanCodexUpdate:
-		case CouncilKick:
-		case CreateNewGuild:
 		case DumpIPTables:
 		case EditChar:
+		case Night:
+		case SetIniVar:
+
+		case Inquiry:
+		case InquiryVote:
+			
+		case ClanCodexUpdate:
+		case CreateNewGuild:
 		case GuildAcceptAlliance:
 		case GuildAcceptNewMember:
 		case GuildAcceptPeace:
@@ -948,25 +891,9 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case GuildRequestMembership:
 		case GuildUpdateNews:
 		case GuildVote:
-		case Inquiry:
-		case InquiryVote:
-		case Night:
-		case PartyAcceptMember:
-		case PartyCreate:
-		case PartyJoin:
-		case PartyKick:
-		case PartyLeave:
-		case PartyMessage:
-		case PartyOnline:
-		case PartySetLeader:
 		case RemoveCharFromGuild:
 		case RequestGuildLeaderInfo:
-		case ResetAutoUpdate:
-		case ResetFactions:
-		case RoyalArmyKick:
-		case SetIniVar:
 		case ShowGuildMessages:
-		case ToggleCentinelActivated:
 		
 		default:
 			System.out.println("WARNING!!!! UNHANDLED PACKET: " + packet.getClass().getCanonicalName());

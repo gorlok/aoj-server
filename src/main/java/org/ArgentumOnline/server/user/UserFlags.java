@@ -127,9 +127,6 @@ public class UserFlags {
     
     public short ValCoDe = 0;
     
-    public String LastCrimMatado = "";
-    public String LastCiudMatado = "";
-    
     public short OldBody = 0;
     public short OldHead = 0;
     
@@ -172,6 +169,30 @@ public class UserFlags {
 
 	public boolean isRoyalCouncil() {
 		return (privileges & PlayerType.RoyalCouncil.value()) > 0; 
+	}
+	
+	public void removeChaosCouncil() {
+		if (isChaosCouncil()) {
+			privileges =- PlayerType.ChaosCouncil.value();
+		}
+	}
+	
+	public void removeRoyalCouncil() {
+		if (isRoyalCouncil()) {
+			privileges =- PlayerType.RoyalCouncil.value(); 
+		}
+	}
+	
+	public void addChaosCouncil() {
+		if (!isChaosCouncil()) {
+			privileges =+ PlayerType.ChaosCouncil.value();
+		}
+	}
+	
+	public void addRoyalCouncil() {
+		if (!isRoyalCouncil()) {
+			privileges =+ PlayerType.RoyalCouncil.value(); 
+		}
 	}
 	
 	public void setGod() {

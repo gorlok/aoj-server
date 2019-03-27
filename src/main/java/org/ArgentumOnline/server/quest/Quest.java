@@ -243,8 +243,8 @@ public class Quest implements Constants {
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
 				if (!player.userFaction().ArmadaReal && !player.userFaction().FuerzasCaos) {
-					if (player.userFaction().CiudadanosMatados
-							+ player.userFaction().CriminalesMatados >= quest.Usuarios) {
+					if (player.userFaction().citizensKilled
+							+ player.userFaction().criminalsKilled >= quest.Usuarios) {
 						if (quest.DaExp) {
 							player.stats().addExp(quest.Exp);
 							player.checkUserLevel();
@@ -278,7 +278,7 @@ public class Quest implements Constants {
 						player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
 				} else if (player.userFaction().ArmadaReal) {
-					if (player.userFaction().CriminalesMatados >= quest.Criminales) {
+					if (player.userFaction().criminalsKilled >= quest.Criminales) {
 						if (quest.DaExp) {
 							player.stats().addExp(quest.Exp);
 							player.checkUserLevel();
@@ -312,7 +312,7 @@ public class Quest implements Constants {
 						player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
 				} else if (player.userFaction().FuerzasCaos) {
-					if (player.userFaction().CiudadanosMatados >= quest.Ciudadanos) {
+					if (player.userFaction().citizensKilled >= quest.Ciudadanos) {
 						if (quest.DaExp) {
 							player.stats().addExp(quest.Exp);
 							player.checkUserLevel();

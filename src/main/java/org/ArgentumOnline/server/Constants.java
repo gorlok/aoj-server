@@ -146,7 +146,7 @@ public interface Constants {
     
     final static int MIN_APUÑALAR = 10;
    
-    final static int MAXUSERMATADOS = 9000000;
+    final static int MAX_USER_KILLED = 9000000;
 
     // FXs
     final static int FXWARP = 1;

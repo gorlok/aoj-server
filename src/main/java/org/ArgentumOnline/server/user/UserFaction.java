@@ -19,6 +19,8 @@ package org.ArgentumOnline.server.user;
 
 import static org.ArgentumOnline.server.util.Color.COLOR_BLANCO;
 
+import java.io.IOException;
+
 import org.ArgentumOnline.server.Constants;
 import org.ArgentumOnline.server.GameServer;
 import org.ArgentumOnline.server.ObjectInfo;
@@ -34,70 +36,89 @@ import org.ArgentumOnline.server.util.Log;
  */
 public class UserFaction implements Constants {
 	
-    ///////////////// Constantes públicas de la clase:
-    public static final int EXP_AL_UNIRSE = 100000;
-    public static final int EXP_X_100 = 5000;
+    public static final String NO_INGRESO_A_NINGUNA_FACCION = "No ingresó a ninguna Facción";
     
-    ///////////////// Miembros de la CLASE ("globales"):
-    public static enum FactionArmors {
-        // FACCION IMPERIAL:
-    	ARMADURA_IMPERIAL_1("Armadura Imperial 1"),
-    	ARMADURA_IMPERIAL_2("Armadura Imperial 2"),
-    	ARMADURA_IMPERIAL_3("Armadura Imperial 3"), // ENANO / GNOMO
-    	TUNICA_MAGO_IMPERIAL("Túnica Mago Imperial"),
-    	TUNICA_MAGO_IMPERIAL_ENANOS("Túnica Mago Imperial Enanos"),
-    	
-        // FACCION CAOS:
-    	ARMADURA_CAOS_1("Armadura Caos 1"),
-    	ARMADURA_CAOS_2("Armadura Caos 2"),
-    	ARMADURA_CAOS_3("Armadura Caos 3"), // ENANO / GNOMO
-    	TUNICA_MAGO_CAOS("Túnica Mago Caos"),
-    	TUNICA_MAGO_CAOS_ENANOS("Túnica Mago Caos Enanos");
-    	
-    	private String name;
-    	FactionArmors(String name) {
-    		this.name = name;
-    	}
-    	
-    	public String getName() {
-			return name;
-		}
-    }
-    static short[] factionArmors = new short[FactionArmors.values().length];
-
-    ///////////////// Miembros de instancia:
-    Player player;
-    GameServer server;
+    public static final int EXP_AL_UNIRSE = 100000;
+    
+    public static final int EXP_X_100 = 5000;
     
     public boolean ArmadaReal  = false;
     public boolean FuerzasCaos = false;
-    public long CriminalesMatados = 0;
-    public long CiudadanosMatados = 0;
+    
+    public long criminalsKilled = 0;
+    public long citizensKilled = 0;
+    
     public short RecompensasReal   = 0;
     public short RecompensasCaos   = 0;
+    
     public boolean RecibioExpInicialReal = false;
     public boolean RecibioExpInicialCaos = false;
+    
     public boolean RecibioArmaduraReal   = false;
     public boolean RecibioArmaduraCaos   = false;
+    
+    public String lastCriminalKilled = "";
+    public String lastCitizenKilled = "";
     
     // FIXME THIS IS NEW
     public int Reenlistadas = 0;
     public int NivelIngreso = 0;
-    public String FechaIngreso = "No ingresó a ninguna Facción";
+    public String FechaIngreso = NO_INGRESO_A_NINGUNA_FACCION;
     public int MatadosIngreso = 0;
     public int NextRecompensa = 0;
     
+    
+    private Player player;
+    private GameServer server;
     
     public UserFaction(GameServer server, Player player) {
     	this.server = server;
         this.player = player;
     }
     
+    public void reset() {
+    	// ResetFacciones
+    	// Resetea todos los valores generales y las stats
+        ArmadaReal = false;
+        citizensKilled = 0;
+        criminalsKilled = 0;
+        FuerzasCaos = false;
+        FechaIngreso = NO_INGRESO_A_NINGUNA_FACCION;
+        RecibioArmaduraCaos = false;
+        RecibioArmaduraReal = false;
+        RecibioExpInicialCaos = false;
+        RecibioExpInicialReal = false;
+        RecompensasCaos = 0;
+        RecompensasReal = 0;
+        Reenlistadas = 0;
+        NivelIngreso = 0;
+        MatadosIngreso = 0;
+        NextRecompensa = 0;
+    }
+
+    public void countKill(Player killedUser) {
+    	if (killedUser.isCriminal()) {
+    		if (!lastCriminalKilled.equalsIgnoreCase(killedUser.userName)) {
+    			lastCriminalKilled = killedUser.userName;
+    			if (criminalsKilled < MAX_USER_KILLED) {
+    				criminalsKilled++;
+    			}
+    		}
+    	} else {
+    		if (!lastCitizenKilled.equalsIgnoreCase(killedUser.userName)) {
+    			lastCitizenKilled = killedUser.userName;
+    			if (citizensKilled < MAX_USER_KILLED) {
+    				citizensKilled++;
+    			}
+    		}
+    	}
+    }
+    
 	public void loadUserFaction(IniFile ini) {
 		this.ArmadaReal = ini.getShort("FACCIONES", "EjercitoReal") == 1;
 		this.FuerzasCaos = ini.getShort("FACCIONES", "EjercitoCaos") == 1;
-		this.CiudadanosMatados = ini.getLong("FACCIONES", "CiudMatados");
-		this.CriminalesMatados = ini.getLong("FACCIONES", "CrimMatados");
+		this.citizensKilled = ini.getLong("FACCIONES", "CiudMatados");
+		this.criminalsKilled = ini.getLong("FACCIONES", "CrimMatados");
 		this.RecibioArmaduraCaos = ini.getShort("FACCIONES", "rArCaos") == 1;
 		this.RecibioArmaduraReal = ini.getShort("FACCIONES", "rArReal") == 1;
 		this.RecibioExpInicialCaos = ini.getShort("FACCIONES", "rExCaos") == 1;
@@ -114,8 +135,8 @@ public class UserFaction implements Constants {
 	public void saveUserFaction(IniFile ini) {
 		ini.setValue("FACCIONES", "EjercitoReal", this.ArmadaReal);
 		ini.setValue("FACCIONES", "EjercitoCaos", this.FuerzasCaos);
-		ini.setValue("FACCIONES", "CiudMatados", this.CiudadanosMatados);
-		ini.setValue("FACCIONES", "CrimMatados", this.CriminalesMatados);
+		ini.setValue("FACCIONES", "CiudMatados", this.citizensKilled);
+		ini.setValue("FACCIONES", "CrimMatados", this.criminalsKilled);
 		ini.setValue("FACCIONES", "rArCaos", this.RecibioArmaduraCaos);
 		ini.setValue("FACCIONES", "rArReal", this.RecibioArmaduraReal);
 		ini.setValue("FACCIONES", "rExCaos", this.RecibioExpInicialCaos);
@@ -129,43 +150,59 @@ public class UserFaction implements Constants {
 	    ini.setValue("FACCIONES", "NextRecompensa", this.NextRecompensa);
 	}
 	
-	
-	public static void loadFactionArmors(IniFile ini) {
-		factionArmors[FactionArmors.ARMADURA_IMPERIAL_1.ordinal()] = ini.getShort("INIT", "ArmaduraImperial1");
-		factionArmors[FactionArmors.ARMADURA_IMPERIAL_2.ordinal()] = ini.getShort("INIT", "ArmaduraImperial2");
-		factionArmors[FactionArmors.ARMADURA_IMPERIAL_3.ordinal()] = ini.getShort("INIT", "ArmaduraImperial3");
-		factionArmors[FactionArmors.TUNICA_MAGO_IMPERIAL.ordinal()] = ini.getShort("INIT", "TunicaMagoImperial");
-		factionArmors[FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS.ordinal()] = ini.getShort("INIT", "TunicaMagoImperialEnanos");
-		factionArmors[FactionArmors.ARMADURA_CAOS_1.ordinal()] = ini.getShort("INIT", "ArmaduraCaos1");
-		factionArmors[FactionArmors.ARMADURA_CAOS_2.ordinal()] = ini.getShort("INIT", "ArmaduraCaos2");
-		factionArmors[FactionArmors.ARMADURA_CAOS_3.ordinal()] = ini.getShort("INIT", "ArmaduraCaos3");
-		factionArmors[FactionArmors.TUNICA_MAGO_CAOS.ordinal()] = ini.getShort("INIT", "TunicaMagoCaos");
-		factionArmors[FactionArmors.TUNICA_MAGO_CAOS_ENANOS.ordinal()] = ini.getShort("INIT", "TunicaMagoCaosEnanos");
-	}
-	
-	public static short getFactionArmor(FactionArmors factiorArmor) {
-		return factionArmors[factiorArmor.ordinal()];
-	}
+    public static void royalArmyKick(Player admin, String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("FACCIONES", "EjercitoReal", 0);
+			ini.setValue("FACCIONES", "Reenlistadas", 200);
+			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getNick());
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
     
-	public static void sendFactionArmor(Player admin, FactionArmors factiorArmor) {
-		String msg = new StringBuilder()
-				.append(factiorArmor.getName())
-				.append(" es ")
-				.append(factionArmors[factiorArmor.ordinal()])
-				.toString();
-		admin.sendMessage(msg, FontType.FONTTYPE_INFO);
-	}
-	
-	public static void updateFactionArmor(Player admin, FactionArmors factiorArmor, short armorObjIdx) {
-		factionArmors[factiorArmor.ordinal()] = armorObjIdx;
-		
-		String msg = new StringBuilder()
-				.append(factiorArmor.getName())
-				.append(" ha sido actualizada")
-				.toString();
-		admin.sendMessage(msg, FontType.FONTTYPE_INFO);
-	}
-	
+    public static void chaosLegionKick(Player admin, String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("FACCIONES", "EjercitoCaos", 0);
+			ini.setValue("FACCIONES", "Reenlistadas", 200);
+			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getNick());
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+
+    public static void resetFactions(String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("FACCIONES", "EjercitoReal", 0);
+			ini.setValue("FACCIONES", "CiudMatados", 0);
+			ini.setValue("FACCIONES", "CrimMatados", 0);
+			ini.setValue("FACCIONES", "EjercitoCaos", 0);
+			ini.setValue("FACCIONES", "FechaIngreso", UserFaction.NO_INGRESO_A_NINGUNA_FACCION);
+			ini.setValue("FACCIONES", "rArCaos", 0);
+			ini.setValue("FACCIONES", "rArReal", 0);
+			ini.setValue("FACCIONES", "rExCaos", 0);
+			ini.setValue("FACCIONES", "rExReal", 0);
+			ini.setValue("FACCIONES", "recCaos", 0);
+			ini.setValue("FACCIONES", "recReal", 0);
+			ini.setValue("FACCIONES", "Reenlistadas", 0);
+			ini.setValue("FACCIONES", "NivelIngreso", 0);
+			ini.setValue("FACCIONES", "MatadosIngreso", 0);
+			ini.setValue("FACCIONES", "NextRecompensa", 0);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
     
     public boolean faccionPuedeUsarItem(short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
@@ -184,7 +221,7 @@ public class UserFaction implements Constants {
         }
     }
     
-    public void enlistarArmadaReal(Npc npc) {
+    public void royalArmyEnlist(Npc npc) {
         if (this.ArmadaReal) {
             this.player.talk(COLOR_BLANCO, "¡Ya perteneces a las tropas reales! Ve a combatir criminales!!!", npc.getId());
             return;
@@ -197,23 +234,23 @@ public class UserFaction implements Constants {
             this.player.talk(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
             return;
         }
-        if (this.CriminalesMatados < 10) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.CriminalesMatados, npc.getId());
+        if (this.criminalsKilled < 10) {
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.criminalsKilled, npc.getId());
             return;
         }
         if (this.player.stats().ELV < 18) {
             this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
             return;
         }
-        if (this.CiudadanosMatados > 0) {
+        if (this.citizensKilled > 0) {
             this.player.talk(COLOR_BLANCO, "Has asesinado gente inocente, no aceptamos asesinos en las tropas reales!", npc.getId());
             return;
         }
         this.ArmadaReal = true;
-        this.RecompensasReal = (short) (this.CriminalesMatados / 100);
+        this.RecompensasReal = (short) (this.criminalsKilled / 100);
         this.player.talk(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
-            short armadura = this.player.clazz().getArmaduraImperial(this.player);
+            short armadura = this.player.clazz().getRoyalArmyArmor(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
                 mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
@@ -229,7 +266,7 @@ public class UserFaction implements Constants {
         Log.logEjercitoReal(this.player.getNick());
     }
 
-    public void enlistarCaos(Npc npc) {
+    public void darkLegionEnlist(Npc npc) {
         if (!this.player.isCriminal()) {
             this.player.talk(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
             return;
@@ -248,8 +285,8 @@ public class UserFaction implements Constants {
             this.player.talk(COLOR_BLANCO, "No permitiré que ningún insecto real ingrese ¡Traidor del Rey!", npc.getId());
             return;
         }
-        if (this.CiudadanosMatados < 150) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.CiudadanosMatados + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
+        if (this.citizensKilled < 150) {
+            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.citizensKilled + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
             return;
         }
         if (this.player.stats().ELV < 25) {
@@ -257,10 +294,10 @@ public class UserFaction implements Constants {
             return;
         }
         this.FuerzasCaos = true;
-        this.RecompensasCaos = (short) (this.CiudadanosMatados / 100);
+        this.RecompensasCaos = (short) (this.citizensKilled / 100);
         this.player.talk(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
-            short armadura = this.player.clazz().getArmaduraCaos(this.player);
+            short armadura = this.player.clazz().getDarkLegionArmor(this.player);
             if (this.player.userInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.player.pos().map);
                 mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
@@ -276,8 +313,8 @@ public class UserFaction implements Constants {
         Log.logEjercitoCaos(this.player.getNick());
     }
 
-    public void recompensaArmadaReal(Npc npc) {
-        if (this.CriminalesMatados / 100 == this.RecompensasReal) {
+    public void royalArmyReward(Npc npc) {
+        if (this.criminalsKilled / 100 == this.RecompensasReal) {
             this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
         } else {
             this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
@@ -288,8 +325,8 @@ public class UserFaction implements Constants {
         }
     }
 
-    public void recompensaCaos(Npc npc) {
-        if (this.CiudadanosMatados / 100 == this.RecompensasCaos) {
+    public void darkLegionReward(Npc npc) {
+        if (this.citizensKilled / 100 == this.RecompensasCaos) {
             this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
         } else {
             this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
@@ -300,17 +337,29 @@ public class UserFaction implements Constants {
         }
     }
 
-    public void expulsarFaccionReal() {
+    public void royalArmyKick() {
         this.ArmadaReal = false;
         this.player.sendMessage("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
     }
 
-    public void expulsarFaccionCaos() {
+    public void darkLegionKick() {
         this.FuerzasCaos = false;
         this.player.sendMessage("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
     }
+    
+    public void royalArmyKickForEver(String byWho) { 
+		ArmadaReal = false;
+		Reenlistadas = 200;
+		player.sendMessage(byWho + " te ha expulsado de forma definitiva de la Armada Real.", FontType.FONTTYPE_FIGHT);
+    }
+    
+    public void darkLegionKickForEver(String byWho) { 
+    	FuerzasCaos = false;
+		Reenlistadas = 200;
+		player.sendMessage(byWho + " te ha expulsado de forma definitiva de la Legión Oscura.", FontType.FONTTYPE_FIGHT);
+    }
 
-    private final static String[] titulosReales = {
+    private final static String[] ROYAL_ARMY_TITLES = {
         "Aprendiz real",        // 0
         "Soldado real",         // 1
         "Teniente real",        // 2
@@ -323,13 +372,13 @@ public class UserFaction implements Constants {
         "Protector de Newbies"  // 9
     };
     
-    public String tituloReal() {
-        return this.RecompensasReal < titulosReales.length ? 
-            titulosReales[this.RecompensasReal] : 
-            titulosReales[titulosReales.length - 1];
+    public String royalArmyTitle() {
+        return this.RecompensasReal < ROYAL_ARMY_TITLES.length ? 
+            ROYAL_ARMY_TITLES[this.RecompensasReal] : 
+            ROYAL_ARMY_TITLES[ROYAL_ARMY_TITLES.length - 1];
     }
 
-    private final static String[] titulosCaos = {
+    private final static String[] DARK_LEGION_TITLES = {
         "Adorador del demonio",     // 0
         "Esclavo de las sombras",   // 1
         "Guerrero del caos",        // 2
@@ -342,10 +391,10 @@ public class UserFaction implements Constants {
         "Asesino del caos"          // 9
     };
 
-    public String tituloCaos() {
-        return this.RecompensasCaos < titulosCaos.length ? 
-            titulosCaos[this.RecompensasCaos] : 
-            titulosCaos[titulosCaos.length - 1];
+    public String darkLegionTitle() {
+        return this.RecompensasCaos < DARK_LEGION_TITLES.length ? 
+            DARK_LEGION_TITLES[this.RecompensasCaos] : 
+            DARK_LEGION_TITLES[DARK_LEGION_TITLES.length - 1];
     }
     
 }

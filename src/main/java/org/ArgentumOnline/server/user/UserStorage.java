@@ -612,5 +612,18 @@ public class UserStorage {
 	    Path copied = Paths.get(Player.getPjFile(newName));
 	    Files.copy(original, copied, StandardCopyOption.COPY_ATTRIBUTES);		
 	}
+
+    public static void councilKick(String userName) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("CONSEJO", "PERTENECE", 0);
+			ini.setValue("CONSEJO", "PERTENECECAOS", 0);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
     
 }
