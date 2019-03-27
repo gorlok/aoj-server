@@ -690,7 +690,7 @@ End Enum
             if (this.stats.alineacion == 0) {
             	// TODO: ¿No debería compararse con NpcType==2? Hay otros guardias aparte del npcNumber=6
                 if (this.npcNumber == GUARDIAS) {
-                    player.volverCriminal();
+                    player.turnCriminal();
                 }
                 if (!player.flags().isGod()) {
                     player.reputation().incAsesino(vlAsesino);
@@ -851,7 +851,7 @@ End Enum
     public void npcEnvenenarUser(Player player) {
         int n = Util.Azar(1, 100);
         if (n < 30) {
-            player.envenenar();
+            player.poison();
         }
     }
 
@@ -1622,7 +1622,7 @@ End Enum
         	player.sendPacket(new NPCSwingResponse());
         }
         // -----Tal vez suba los skills------
-        player.subirSkill(Skill.SKILL_Tacticas);
+        player.riseSkill(Skill.SKILL_Tacticas);
         player.sendUpdateUserStats();
         // Controla el nivel del usuario
         player.checkUserLevel();

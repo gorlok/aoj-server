@@ -178,7 +178,7 @@ public class NpcMerchant extends Npc {
     			int monto = (int) (unidad * amount);
     			player.stats().addGold( -monto );
     			// tal vez suba el skill comerciar ;-)
-    			player.subirSkill(Skill.SKILL_Comerciar);
+    			player.riseSkill(Skill.SKILL_Comerciar);
     			if (info.objType == ObjType.Llaves) {
     				Log.logVentaCasa(player.getNick() + " compro " + info.Nombre);
     			}
@@ -248,7 +248,7 @@ public class NpcMerchant extends Npc {
                     double monto = ((info.Valor / 3) * cant);
                     player.stats().addGold((int) monto);
                     // tal vez suba el skill comerciar ;-)
-                    player.subirSkill(Skill.SKILL_Comerciar);
+                    player.riseSkill(Skill.SKILL_Comerciar);
                 } else {
                     player.sendMessage("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
                 }

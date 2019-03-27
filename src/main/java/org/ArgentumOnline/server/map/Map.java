@@ -1056,7 +1056,7 @@ public class Map implements Constants {
         } else {
             player.sendMessage("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
-		player.subirSkill(Skill.SKILL_Supervivencia);
+		player.riseSkill(Skill.SKILL_Supervivencia);
     }
 
 	private Tile tile(int x, int y) {

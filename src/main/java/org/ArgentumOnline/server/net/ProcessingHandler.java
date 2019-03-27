@@ -31,8 +31,10 @@ import org.ArgentumOnline.server.protocol.BankExtractGoldRequest;
 import org.ArgentumOnline.server.protocol.BankExtractItemRequest;
 import org.ArgentumOnline.server.protocol.BugReportRequest;
 import org.ArgentumOnline.server.protocol.CastSpellRequest;
+import org.ArgentumOnline.server.protocol.ChangeDescriptionRequest;
 import org.ArgentumOnline.server.protocol.ChangeHeadingRequest;
 import org.ArgentumOnline.server.protocol.ChangePasswordRequest;
+import org.ArgentumOnline.server.protocol.ChaosArmourRequest;
 import org.ArgentumOnline.server.protocol.ChaosLegionMessageRequest;
 import org.ArgentumOnline.server.protocol.ChatColorRequest;
 import org.ArgentumOnline.server.protocol.CitizenMessageRequest;
@@ -63,6 +65,7 @@ import org.ArgentumOnline.server.protocol.GambleRequest;
 import org.ArgentumOnline.server.protocol.GoNearbyRequest;
 import org.ArgentumOnline.server.protocol.GoToCharRequest;
 import org.ArgentumOnline.server.protocol.IPToNickRequest;
+import org.ArgentumOnline.server.protocol.ImperialArmourRequest;
 import org.ArgentumOnline.server.protocol.JailRequest;
 import org.ArgentumOnline.server.protocol.KickRequest;
 import org.ArgentumOnline.server.protocol.LastIPRequest;
@@ -327,7 +330,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case TrainList:
-			player.doEntrenar();
+			player.trainList();
 			break;
 			
 		case Train:
@@ -335,19 +338,19 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case Heal:
-			player.doCurar();
+			player.heal();
 			break;
 			
 		case Resuscitate:
-			player.doResucitar();
+			player.resuscitate();
 			break;
 			
 		case RequestAccountState:
-			player.doBalance();
+			player.requestAccountState();
 			break;
 			
 		case Gamble:
-			player.doApostar(((GambleRequest)packet).amount);
+			player.gamble(((GambleRequest)packet).amount);
 			break;
 			
 		case ForumPost:
@@ -367,15 +370,15 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case Rest:
-			player.doDescansar();
+			player.rest();
 			break;
 			
 		case CraftCarpenter:
-			player.doConstruyeCarpinteria(((CraftCarpenterRequest)packet).item);
+			player.craftCarpenter(((CraftCarpenterRequest)packet).item);
 			break;
 			
 		case CraftBlacksmith:
-			player.doConstruyeHerreria(((CraftBlacksmithRequest)packet).item);
+			player.craftBlacksmith(((CraftBlacksmithRequest)packet).item);
 			break;
 			
 		case SpellInfo:
@@ -423,7 +426,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case RequestMOTD:
-			server.getMotd().showMOTD(player);
+			server.motd().showMOTD(player);
 			break;
 			
 		case UseSpellMacro:
@@ -441,6 +444,23 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case CouncilMessage:
 			server.manager().sendCouncilMessage(player, ((CouncilMessageRequest)packet).chat);
 			break;
+			
+		case Reward:
+			player.reward();
+			break;
+			
+		case Enlist:
+			player.enlist();
+			break;
+			
+		case LeaveFaction:
+			player.leaveFaction();
+			break;
+			
+		case ChangeDescription:
+			player.changeDescription(((ChangeDescriptionRequest)packet).description);
+			break;
+			
 
 		// *****************************************************************************************	
 		// *****************************************************************************************	
@@ -525,11 +545,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case ChangeMOTD:
-			server.getMotd().startUpdateMOTD(player);
+			server.motd().startUpdateMOTD(player);
 			break;
 			
 		case SetMOTD:
-			server.getMotd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
+			server.motd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
 			break;
 			
 		case TalkAsNPC:
@@ -866,11 +886,24 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			server.manager().createNpcWithRespawn(player, ((CreateNPCWithRespawnRequest)packet).npcIndex);
 			break;
 					
+		case ResetNPCInventory:
+			server.manager().resetNPCInventory(player);
+			break;
+			
+		case ImperialArmour:
+			handleImperialArmour(player, (ImperialArmourRequest)packet);
+			break;
+			
+		case ChaosArmour:
+			handleChaosArmour(player, (ChaosArmourRequest)packet);
+			break;
+			
+			
+			
 					
 		case AcceptChaosCouncilMember:
 		case AcceptRoyalCouncilMember:
 		case CentinelReport:
-		case ChangeDescription:
 		case ChangeMapInfoBackup:
 		case ChangeMapInfoLand:
 		case ChangeMapInfoNoInvi:
@@ -879,7 +912,6 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ChangeMapInfoPK:
 		case ChangeMapInfoRestricted:
 		case ChangeMapInfoZone:
-		case ChaosArmour:
 		case ChaosLegionKick:
 		case CheckSlot:
 		case ClanCodexUpdate:
@@ -887,7 +919,6 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case CreateNewGuild:
 		case DumpIPTables:
 		case EditChar:
-		case Enlist:
 		case GuildAcceptAlliance:
 		case GuildAcceptNewMember:
 		case GuildAcceptPeace:
@@ -917,10 +948,8 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case GuildRequestMembership:
 		case GuildUpdateNews:
 		case GuildVote:
-		case ImperialArmour:
 		case Inquiry:
 		case InquiryVote:
-		case LeaveFaction:
 		case Night:
 		case PartyAcceptMember:
 		case PartyCreate:
@@ -934,8 +963,6 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case RequestGuildLeaderInfo:
 		case ResetAutoUpdate:
 		case ResetFactions:
-		case ResetNPCInventory:
-		case Reward:
 		case RoyalArmyKick:
 		case SetIniVar:
 		case ShowGuildMessages:
@@ -946,6 +973,14 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 		}
 		
+	}
+
+	private void handleImperialArmour(Player admin, ImperialArmourRequest packet) {
+		GameServer.instance().manager().royalArmyArmour(admin, packet.index, packet.objIndex);
+	}
+	
+	private void handleChaosArmour(Player admin, ChaosArmourRequest packet) {
+		GameServer.instance().manager().darkLegionArmour(admin, packet.index, packet.objIndex);
 	}
 
 	private void handleIpToNick(Player admin, IPToNickRequest packet) {

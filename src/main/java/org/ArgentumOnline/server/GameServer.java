@@ -146,7 +146,7 @@ public class GameServer implements Constants {
 		return this.manager;
 	}
 
-    public Motd getMotd() {
+    public Motd motd() {
     	return this.motd;
     }
 
@@ -678,7 +678,7 @@ public class GameServer implements Constants {
     	for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
                 if (cli.isHidden()) {
-					cli.doPermanecerOculto();
+					cli.updateHiding();
 				}
             }
         }
@@ -690,7 +690,7 @@ public class GameServer implements Constants {
 		}
         for (Player cli: players()) {
             if (cli != null && cli.getId() > 0) {
-                cli.efectoLluvia();
+                cli.rainEffect();
             }
         }
     }

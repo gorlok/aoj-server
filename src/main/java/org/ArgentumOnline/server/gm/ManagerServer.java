@@ -432,94 +432,52 @@ public class ManagerServer {
 			Log.logGM(admin.getNick(), "Sumoneo al Npc " + npc.toString());
 		}
 	}
-
-	public void doArmaduraImperial1(Player admin, short armadura) {
-		// Comando /AI1
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armadura);
+	
+	public void royalArmyArmour(Player admin, byte index, short armour) {
+		// Commands /AI1 to /AI5
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		switch (index) {
+		case 1:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_1, armour);
+			break;
+		case 2:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armour);
+			break;
+		case 3:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armour);
+			break;
+		case 4:
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armour);
+			break;
+		case 5:
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armour);
+			break;
 		}
 	}
-
-	public void doArmaduraImperial2(Player admin, short armadura) {
-		// Comando /AI2
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_2, armadura);
+	
+	public void darkLegionArmour(Player admin, byte index, short armour) {
+		// Commands /AC1 to /AC5
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
 		}
-	}
-
-	public void doArmaduraImperial3(Player admin, short armadura) {
-		// Comando /AI3
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_IMPERIAL_3, armadura);
-		}
-	}
-
-	public void doArmaduraImperial4(Player admin, short armadura) {
-		// Comando /AI4
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL, armadura);
-		}
-	}
-
-	public void doArmaduraImperial5(Player admin, short armadura) {
-		// Comando /AI5
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS, armadura);
-		}
-	}
-
-	public void doArmaduraCaos1(Player admin, short armadura) {
-		// Comando /AC1
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armadura);
-		}
-	}
-
-	public void doArmaduraCaos2(Player admin, short armadura) {
-		// Comando /AC2
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armadura);
-		}
-	}
-
-	public void doArmaduraCaos3(Player admin, short armadura) {
-		// Comando /AC3
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armadura);
-		}
-	}
-
-	public void doArmaduraCaos4(Player admin, short armadura) {
-		// Comando /AC4
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armadura);
-		}
-	}
-
-	public void doArmaduraCaos5(Player admin, short armadura) {
-		// Comando /AC5
-		if (armadura < 0) {
-			UserFaction.sendFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
-		} else {
-			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armadura);
+		switch (index) {
+		case 1:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_1, armour);
+			break;
+		case 2:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_2, armour);
+			break;
+		case 3:
+			UserFaction.updateFactionArmor(admin, FactionArmors.ARMADURA_CAOS_3, armour);
+			break;
+		case 4:
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS, armour);
+			break;
+		case 5:
+			UserFaction.updateFactionArmor(admin, FactionArmors.TUNICA_MAGO_CAOS_ENANOS, armour);
+			break;
 		}
 	}
 
@@ -615,15 +573,6 @@ public class ManagerServer {
 		}
 		String userNamesList = String.join("" + Constants.NULL_CHAR, this.server.getUsuariosConectados());
 		admin.sendPacket(new UserNameListResponse(userNamesList));
-	}
-
-	public void doPASSDAY(Player admin) {
-		// Comando /PASSDAY
-		if (!admin.isGM()) {
-			return;
-		}
-		Log.logGM(admin.getNick(), "/PASSDAY");
-		this.server.getGuildMngr().dayElapsed();
 	}
 
 	public void backupWorld(Player admin) {
@@ -865,28 +814,6 @@ public class ManagerServer {
 	}
 
 
-	public void doMascotas(Player admin, String s) {
-		// Comando /MASCOTAS
-		// Informa cantidad, nombre y ubicación de las mascotas.
-		Player usuario;
-		if (!"".equals(s)) {
-			usuario = this.server.playerByUserName(s);
-		} else {
-			usuario = admin;
-		}
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		var pets = usuario.getUserPets().getPets();
-
-		admin.sendMessage(usuario.getNick() + " tiene " + pets.size() + " mascotas.", FontType.FONTTYPE_SERVER);
-		pets.forEach(pet -> {
-			admin.sendMessage(" mascota " + pet.getName() + " esta en " + pet.pos() + " tiempo=" + pet.counters().TiempoExistencia,
-					FontType.FONTTYPE_SERVER);
-		});
-	}
-
 	public void showUptime(Player admin) {
 		// Comando /UPTIME
 		if (!admin.isGM()) {
@@ -1120,7 +1047,7 @@ public class ManagerServer {
 		Log.logGM(admin.getNick(), "/MASSDEST ");
 	}
 
-	public void doResetInv(Player admin) {
+	public void resetNPCInventory(Player admin) {
 		// Resetea el inventario
 		// Comando /RESETINV
 		if (!admin.isGM()) {
@@ -1405,7 +1332,7 @@ public class ManagerServer {
 			admin.sendMessage(user.getNick() + " ya es un criminal condenado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		user.volverCriminal();
+		user.turnCriminal();
 		admin.sendMessage(user.getNick() + " ha sido condenado.", FontType.FONTTYPE_INFO);
 		user.sendMessage("Los dioses te han condenado por tus acciones.", FontType.FONTTYPE_INFO);
 	}
@@ -1702,17 +1629,6 @@ public class ManagerServer {
 			admin.sendMessage(" " + skill + ": " + user.skills().get(skill), FontType.FONTTYPE_INFO);
 		}
 		admin.sendMessage(" Libres: " + user.skills().getSkillPoints(), FontType.FONTTYPE_INFO);
-	}
-
-	public void doMensajeALosGM(Player admin, String chat) {
-		// Mensaje para los GMs
-		if (!admin.isGM()) {
-			return;
-		}
-		if (chat.length() > 0) {
-			Log.logGM(admin.getNick(), "Mensaje para GMs: " + chat);
-			this.server.sendMessageToGMs(admin.getNick() + "> " + chat);
-		}
 	}
 
 	public void sendServerTime(Player admin) {

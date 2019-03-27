@@ -280,7 +280,7 @@ public class UserSpells implements Constants {
 				    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 				    	return false;
 		    		} else {
-		                player.volverCriminal();
+		                player.turnCriminal();
 		    		}
 		    	}
 		    }
@@ -447,7 +447,7 @@ public class UserSpells implements Constants {
 					    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 					    	return false;
 			    		} else {
-			                player.volverCriminal();
+			                player.turnCriminal();
 			    		}
 			    	}
 			    }
@@ -540,7 +540,7 @@ public class UserSpells implements Constants {
 					    	this.player.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 					    	return false;
 			    		} else {
-			    			player.volverCriminal();
+			    			player.turnCriminal();
 			    		}
 			    	}
 			    }
@@ -1272,7 +1272,7 @@ public class UserSpells implements Constants {
 		
 		for (int i = 0; i < hechizo.Cant; i++) {
 			// Considero que hubo exito si se pudo invocar alguna criatura.
-			exito = exito || (this.player.crearMascotaInvocacion(hechizo.NumNpc, targetPos) != null);
+			exito = exito || (this.player.crateSummonedPet(hechizo.NumNpc, targetPos) != null);
 		}
 		sendInfoSpell();
 		return exito;
@@ -1295,7 +1295,7 @@ public class UserSpells implements Constants {
 		}
 		
 		if (exito) {
-			this.player.subirSkill(Skill.SKILL_Magia);
+			this.player.riseSkill(Skill.SKILL_Magia);
 			
 			if (player.clazz() == Clazz.Druid && player.userInv().tieneAnilloEquipado() 
 					&& player.userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
@@ -1353,7 +1353,7 @@ public class UserSpells implements Constants {
 		}
 		
 		if (exito) {
-			this.player.subirSkill(Skill.SKILL_Magia);
+			this.player.riseSkill(Skill.SKILL_Magia);
 			
 		    // Agregado para que los druidas, al tener equipada la flauta magica, el coste de mana de mimetismo es de 50% menos.
 		    if (player.clazz() == Clazz.Druid 
@@ -1384,7 +1384,7 @@ public class UserSpells implements Constants {
 			break;
 		}
 		if (exito) {
-			this.player.subirSkill(Skill.SKILL_Magia);
+			this.player.riseSkill(Skill.SKILL_Magia);
 			this.player.flags().TargetNpc = 0;
 			
 		    // Bonificación para druidas.
@@ -1405,7 +1405,7 @@ public class UserSpells implements Constants {
 	public void sendInfoSpell() {
 		Map map = this.server.getMap(this.player.pos().map);
 		Spell spell = this.server.getSpell(this.player.flags().Hechizo);
-		this.player.decirPalabrasMagicas(spell.PalabrasMagicas);
+		this.player.sayMagicWords(spell.PalabrasMagicas);
 		this.player.sendWave(spell.WAV);
 		if (this.player.flags().TargetUser > 0) {
 			map.sendCreateFX(this.player.pos().x, this.player.pos().y, this.player.flags().TargetUser,
