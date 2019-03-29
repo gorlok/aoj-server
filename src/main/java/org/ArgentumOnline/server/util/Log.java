@@ -57,4 +57,10 @@ public class Log {
     public static void logEjercitoCaos(String msg) {
         System.out.println(getTimestamp() + " LOG EJERCITO CAOS: " + msg);
     }
+    
+    /** TODO */
+    public static void logCentinela(String msg) {
+        System.out.println(getTimestamp() + " LOG CENTINELA: " + msg);
+    }
+    
 }

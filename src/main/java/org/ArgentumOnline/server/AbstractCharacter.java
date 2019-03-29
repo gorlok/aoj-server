@@ -36,6 +36,10 @@ public abstract class AbstractCharacter implements Constants {
     
 	CharArea charArea = new CharArea();
 
+	public boolean hasId() {
+		return this.id > 0;
+	}
+	
 	public short getId() {
 		return this.id;
 	}

@@ -3,6 +3,10 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-28
+- implementado el Centinela
+- refactory en GameServer
+
 ### 2019-03-27
 - agregado /ACEPTCONSE /ACEPTCONSECAOS /ACEPTCONSECAOS
 

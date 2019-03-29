@@ -344,7 +344,7 @@ End Enum
         return this.flags().get(FLAG_LANZA_SPELLS);
     }
 
-    public boolean getBackup() {
+    public boolean isBackup() {
         return this.flags().get(FLAG_BACKUP);
     }
 
@@ -386,8 +386,16 @@ End Enum
     public boolean canAttack() {
         return this.flags().get(FLAG_PUEDE_ATACAR);
     }
+    
+    public void startAttacking() {
+    	this.setCanAttack(true);
+    }
+    
+    public void stopAttacking() {
+    	this.setCanAttack(false);
+    }
 
-    public void setCanAttack(boolean estado) {
+    private void setCanAttack(boolean estado) {
         this.flags().set(FLAG_PUEDE_ATACAR, estado);
     }
 
@@ -913,19 +921,25 @@ End Enum
             int azar = Util.Azar(0, this.expressionsCount - 1);
             Map mapa = this.server.getMap(pos().map);
             if (mapa != null) {
-                hablarAlArea(Color.COLOR_BLANCO, this.expressions[azar]);
+                talkToArea(this.expressions[azar], Color.COLOR_BLANCO);
             }
         }
         return this;
     }
 
-    public void hablarAlArea(int color, String texto) {
+    public void talkToArea(String chat, int color) {
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
         	mapa.sendToArea(pos().x, pos().y,
-        			new ChatOverHeadResponse(texto, this.getId(),
+        			new ChatOverHeadResponse(chat, this.getId(),
         					Color.r(color), Color.g(color), Color.b(color)));
         }
+    }
+
+    public void talkToUser(Player user, String chat, int color) {
+    	user.sendPacket(
+    			new ChatOverHeadResponse(chat, this.getId(),
+        					Color.r(color), Color.g(color), Color.b(color)));
     }
 
     public void defenderse() {
@@ -1357,7 +1371,7 @@ End Enum
     	if (!canAttack()) {
     		return;
     	}
-    	setCanAttack(false);
+    	stopAttacking();
     	
     	Spell spell = server.getSpell(spellId);
     	if (spell.SubeHP == 2) {

@@ -221,7 +221,7 @@ public class UserStorage {
 	
 	public static CharacterInfoResponse createCharacterInfoResponse(String userName) {
 		// ¿Existe el personaje?
-		if (!Util.existeArchivo(Player.getPjFile(userName))) {
+		if (!Util.fileExists(Player.getPjFile(userName))) {
 			return null;
 		}
 		try {

@@ -41,6 +41,7 @@ import org.ArgentumOnline.server.net.ServerPacket;
 import org.ArgentumOnline.server.net.upnp.NetworkUPnP;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.npc.NpcLoader;
+import org.ArgentumOnline.server.npc.WorkWatcher;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.RainToggleResponse;
 import org.ArgentumOnline.server.quest.Quest;
@@ -103,10 +104,34 @@ public class GameServer implements Constants {
     private ManagerServer manager;
     private ObjectInfoStorage objectInfoStorage;
     private GamblerStats gamblerStats;
+    private WorkWatcher workWatcher;
+    private NetworkServer ns;
 
     private Feedback feedback = new Feedback();// FIXME
 
-    private NetworkServer ns;
+    int fps = 0;
+    long worstTime = 0;
+
+    private long lastPasarSegundoTimer;
+    private long lastNpcAI;
+    private long lastFX;
+    private long lastGameTimer;
+    private long lastNpcAtacaTimer;
+    private long lastTimerOculto;
+    private long lastLluviaTimer;
+    private long lastEventTimer;
+    private long lastPiqueteTimer;
+    private long lastPurgarPenas;
+    private long lastCheckIdleUser;
+    private long lastPassMinuteTimer;
+    
+    private static GameServer instance = null;
+    public synchronized static GameServer instance() {
+    	if (instance == null) {
+    		instance = new GameServer();
+    	}
+    	return instance;
+    }
 
     private GameServer() {
     	// start API management server
@@ -123,16 +148,31 @@ public class GameServer implements Constants {
     	this.manager = new ManagerServer(this);
     	this.objectInfoStorage = new ObjectInfoStorage();
     	this.gamblerStats = new GamblerStats();
-    }    	
-
-    private static GameServer instance = null;
-
-    public synchronized static GameServer instance() {
-        if (instance == null) {
-			instance = new GameServer();
-		}
-        return instance;
+    	this.workWatcher = new WorkWatcher(this);
     }
+    
+    private void init() {
+        this.startTime = System.currentTimeMillis();
+        
+        this.lastPasarSegundoTimer = this.startTime;
+        this.lastNpcAI = this.startTime;
+        this.lastFX = this.startTime;
+        this.lastGameTimer = this.startTime;
+        this.lastNpcAtacaTimer = this.startTime;
+        this.lastTimerOculto = this.startTime;
+        this.lastLluviaTimer = this.startTime;
+        this.lastEventTimer = this.startTime;
+        this.lastPiqueteTimer = this.startTime;
+        this.lastPurgarPenas = this.startTime;
+        this.lastCheckIdleUser = this.startTime;
+        this.lastPassMinuteTimer = this.startTime;
+        
+        this.running = true;
+    }
+    
+    public WorkWatcher getWorkWatcher() {
+		return workWatcher;
+	}
     
     public GamblerStats getGamblerStats() {
 		return this.gamblerStats;
@@ -172,7 +212,7 @@ public class GameServer implements Constants {
     }
 
     public long runningTimeInSecs() {
-        return (Util.millis() - this.startTime) / 1000;
+        return (System.currentTimeMillis() - this.startTime) / 1000;
     }
 
 	public String calculateUptime() {
@@ -312,107 +352,55 @@ public class GameServer implements Constants {
     private void runGameLoop() {
         loadAll(loadBackup);
 
-        //networkServer = NetworkServer.startServer(this);
+        init();
         try {
         	if (this.useUPnP) {
         		NetworkUPnP.openUPnP();
         	}
-
-            this.startTime = Util.millis();
-            long lastNpcAI = this.startTime;
-            long lastFX = this.startTime;
-            long lastGameTimer = this.startTime;
-            long lastNpcAtacaTimer = this.startTime;
-            long lastTimerOculto = this.startTime;
-            long lastLluviaTimer = this.startTime;
-            long lastEventTimer = this.startTime;
-            long lastPiqueteTimer = this.startTime;
-            long lastPurgarPenas = this.startTime;
-            long lastAutoSaveTimer = this.startTime;
-            long lastPasarSegundoTimer = this.startTime;
-            this.running = true;
-
-            int fps = 0;
-            long worstTime = 0;
-        	// Main loop.
             while (this.running) {
                 fps++;
-                long now = Util.millis();
-                if ((now - lastNpcAI) > 400) {
-                    doAI();
-                    lastNpcAI = now;
-                }
-                if ((now - lastFX) > 200) {
-                    FX_Timer();
-                    lastFX = now;
-                }
-                if ((now - lastGameTimer) > 40) { // 40 ??
-                    gameTimer();
-                    lastGameTimer = now;
-                }
-                if ((now - lastNpcAtacaTimer) > 2000) { // 4000 ??
-                    npcAtacaTimer();
-                    lastNpcAtacaTimer = now;
-                }
-                if ((now - lastTimerOculto) > 500) { // 3000 ??
-                    timerOculto();
-                    lastTimerOculto = now;
-                }
-                if ((now - lastLluviaTimer) > 1500) { // 60000 ??
-                    rainEffectTimer();
-                    lastLluviaTimer = now;
-                }
-                if ((now - lastEventTimer) > 60000) {
-                    rainEvent();
-                    lastEventTimer = now;
-                }
-                if ((now - lastPiqueteTimer) > 6000) {
-                    piqueteTimer();
-                    lastPiqueteTimer = now;
-                }
-                if ((now - lastPurgarPenas) > 60000) {
-                    purgePenalties();
-                    checkIdleUser();
-                    lastPurgarPenas = now;
-                }
-                if ((now - lastAutoSaveTimer) > 60000) {
-                    autoSaveTimer();
-                    lastAutoSaveTimer = now;
-                }
-                if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
-//                	System.out.format("fps: %2d   max-time: %3dms    online: %3d    gm: %3d\n", 
-//                			fps, worstTime, getUsuariosConectados().size(), getGMsOnline().size());
-                	fps = 0;
-                	worstTime = 0;
-                    pasarSegundo();
-                    lastPasarSegundoTimer = now;
-                }
+                long now = System.currentTimeMillis();
+                
+                npcAiTimer(now);
+                soundFxTimer(now);
+                gameTimer(now);
+                npcAtacaTimer(now);
+                hiddingTimer(now);
+                rainingEffectTimer(now);
+                rainEventTimer(now);
+                piqueteTimer(now);
+                purgePenaltiesTimer(now);
+                checkIdleUserTimer(now);
+                passMinuteTimer(now);
+                passSecondTimer(now);
+                
                 removeDropedPlayers();
 
-                long ellapsed = Util.millis() - now;
-                if (ellapsed > worstTime) worstTime = ellapsed;
+                long ellapsed = System.currentTimeMillis() - now;
+                if (ellapsed > worstTime) {
+                	worstTime = ellapsed;
+                }
                 long wait = (1000 - ellapsed);
                 if (wait < 0) wait = 1;
                 if (wait > 40) wait = 40;
+                // capped at 60 fps
                 Util.sleep(wait);
             }
         } finally {
             backupWorld();
             saveUsers();
-            log.info("Server apagado por doBackUp");
+            log.info("Server apagado");
         }
     }
 
-    public synchronized void dropPlayer(Player player) {
-    	player.closeConnection();
-    	this.playersToDrop.add(player);
+    public synchronized void dropPlayer(Player user) {
+    	user.closeConnection();
+    	this.playersToDrop.add(user);
     }
 
     private synchronized void removeDropedPlayers() {
     	// Se hace aqui para evitar problemas de concurrencia
-    	for (Player player: this.playersToDrop) {
-            this.players.remove(player.getId());
-    	}
+    	this.playersToDrop.stream().forEach(u -> this.players.remove(u.getId()));
     	this.playersToDrop.clear();
     }
 
@@ -539,89 +527,86 @@ public class GameServer implements Constants {
 		return null;
     }
     
-    public Player playerByUserName(String nombre) {
-    	if ("".equals(nombre)) {
+    public Player playerByUserName(String userName) {
+    	if ("".equals(userName)) {
 			return null;
 		}
-    	for (Player player: players()) {
-            if (player.getNick().equalsIgnoreCase(nombre)) {
-                return player;
-            }
-        }
-        return null;
+    	
+    	return players().stream()
+    		.filter(u -> userName.equalsIgnoreCase(u.getNick()))
+    		.findFirst()
+    		.orElseGet(null);
     }
 
-    public boolean isPlayerAlreadyConnected(Player player) {
-    	for (Player other: players()) {
-            if (player != other
-            		&& player.getNick().equalsIgnoreCase(other.getNick())) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isPlayerAlreadyConnected(Player user) {
+    	return playerByUserName(user.getNick()) == user;
     }
 
-    private void doAI() {
+    private void npcAiTimer(long now) {
         // TIMER_AI_Timer()
-        if (!this.doingBackup) {
-            var npcs = new ArrayList<>(npcs());
-            npcs.stream()
-            	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
-            	.forEach(npc -> {
-	                if (npc.isParalized()) {
-	                    npc.efectoParalisisNpc();
-	                } else {
-	                    // Usamos AI si hay algun user en el mapa
-	                    if (npc.pos().isValid()) {
-	                        Map mapa = getMap(npc.pos().map);
-	                        if (mapa != null && mapa.getPlayersCount() > 0) {
-	                            if (!npc.isStatic()) {
+        if ((now - lastNpcAI) > 400) {
+            lastNpcAI = now;
+    	
+	        if (!this.doingBackup) {
+	            npcs().stream()
+	            	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
+	            	.forEach(npc -> {
+		                if (npc.isParalized()) {
+		                    npc.efectoParalisisNpc();
+		                } else {
+		                    // Usamos AI si hay algun user en el mapa
+		                    if (npc.pos().isValid()) {
+		                        Map map = getMap(npc.pos().map);
+		                        if (map != null && map.getPlayersCount() > 0) {
 	                                npc.doAI();
-	                            }
-	                        }
-	                    }
-	                }
-            	});
-	        this.deadNpcs.stream().map(npcId -> this.npcs.remove(npcId));
-	        this.deadNpcs.clear();
+		                        }
+		                    }
+		                }
+	            	});
+		        this.deadNpcs.stream().map(npcId -> this.npcs.remove(npcId));
+		        this.deadNpcs.clear();
+	        }
         }
     }
 
-    private void pasarSegundo() {
-        var paraSalir = new LinkedList<Player>();
-        for (Player cli: players()) {
-            if (cli.counters().Saliendo) {
-                cli.counters().SalirCounter--;
-                if (cli.counters().SalirCounter <= 0) {
-                    paraSalir.add(cli);
-                } else {
-                	switch (cli.counters().SalirCounter) {
-                		case 10:
-                			cli.sendMessage("En " + cli.counters().SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
-                			break;
-                		case 3:
-                			cli.sendMessage("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
-                			break;
-                	}
-                }
-            }
-        }
-        for (Player cli: paraSalir) {
-            cli.quitGame();
+    private void passSecondTimer(long now) {
+        if ((now - lastPasarSegundoTimer) > 1000) { // 1 vez x segundo
+//        	System.out.format("fps: %2d   max-time: %3dms    online: %3d    gm: %3d\n", 
+//        			fps, worstTime, getUsuariosConectados().size(), getGMsOnline().size());
+        	fps = 0;
+        	worstTime = 0;
+            lastPasarSegundoTimer = now;
+	        List<Player> readyToQuit = new LinkedList<>();
+	        
+	        players().stream().forEach(u -> {
+	            if (u.counters().Saliendo) {
+	                u.counters().SalirCounter--;
+	                if (u.counters().SalirCounter <= 0) {
+	                    readyToQuit.add(u);
+	                } else {
+	                	switch (u.counters().SalirCounter) {
+	                		case 10:
+	                			u.sendMessage("En " + u.counters().SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
+	                			break;
+	                		case 3:
+	                			u.sendMessage("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);
+	                			break;
+	                	}
+	                }
+	            }
+	        });
+	        readyToQuit.stream().forEach(Player::quitGame);
+	        
+	        getWorkWatcher().passSecond();
         }
     }
 
     public void saveUsers() {
         this.doingBackup = true;
-        try {
-            for (Player cli: players()) {
-                if (cli.isLogged()) {
-                    cli.saveUser();
-                }
-            }
-        } finally {
-            this.doingBackup = false;
-        }
+    	players().stream()
+    		.filter(Player::isLogged)
+    		.forEach(Player::saveUser);
+        this.doingBackup = false;
     }
 
     private void loadCities() {
@@ -650,65 +635,76 @@ public class GameServer implements Constants {
         return this.cities[ciudad.id()];
     }
 
-    private void FX_Timer() {
-    	for (Map mapa: this.maps) {
-            if ((Util.Azar(1, 150) < 12) && (mapa.getPlayersCount() > 0)) {
-                mapa.doFX();
-            }
+    private void soundFxTimer(long now) {
+        if ((now - lastFX) > 200) {
+            lastFX = now;
+            maps.stream()
+            	.filter(Map::isHasPlayers)
+            	.forEach(m -> {
+            		if (Util.Azar(1, 150) < 12) {
+            			m.soundFx();
+            		}
+            	});
         }
     }
 
-    private void gameTimer() {
+    private void gameTimer(long now) {
     	// This is like GameTimer_Timer
-        // <<<<<< Procesa eventos de los usuarios >>>>>>
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0) {
-                cli.procesarEventos();
-            }
+    	// <<<<<< Procesa eventos de los usuarios >>>>>>
+        if ((now - lastGameTimer) > 40) {
+            lastGameTimer = now;
+            
+            players().stream()
+            	.filter(Player::hasId)
+            	.forEach(Player::procesarEventos);
         }
     }
 
-    private void npcAtacaTimer() {
-    	for (Npc npc: npcs()) {
-            npc.setCanAttack(true);
+    private void npcAtacaTimer(long now) {
+        if ((now - lastNpcAtacaTimer) > 2000) {
+            lastNpcAtacaTimer = now;
+    	
+            npcs().stream().forEach(Npc::startAttacking);
         }
     }
 
-    private void timerOculto() {
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0) {
-                if (cli.isHidden()) {
-					cli.updateHiding();
-				}
-            }
+    private void hiddingTimer(long now) {
+        if ((now - lastTimerOculto) > 3_000) {
+            lastTimerOculto = now;
+            
+            players().stream()
+            	.filter(Player::hasId)
+            	.filter(Player::isHidden)
+            	.forEach(Player::updateHiding);
         }
     }
 
-    private void rainEffectTimer() {
-        if (!this.raining) {
-			return;
-		}
-        for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0) {
-                cli.rainEffect();
-            }
+    private void rainingEffectTimer(long now) {
+    	if (!this.raining) {
+    		return;
+    	}
+        if ((now - lastLluviaTimer) > 1500) {
+            lastLluviaTimer = now;
+
+            players().stream()
+            	.filter(Player::hasId)
+            	.forEach(Player::rainingEffect);
         }
     }
 
     public void sendToAll(ServerPacket packet) {
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                cli.sendPacket(packet);
-            }
-        }
+    	players().stream()
+	    	.filter(Player::hasId)
+	    	.filter(Player::isLogged)
+	    	.forEach(u -> u.sendPacket(packet));
     }
 
     public void sendToAdmins(ServerPacket packet) {
-    	for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.flags().isGM() && cli.isLogged()) {
-                cli.sendPacket(packet);
-            }
-        }
+    	players().stream()
+	    	.filter(Player::hasId)
+	    	.filter(Player::isLogged)
+	    	.filter(Player::isGM)
+	    	.forEach(u -> u.sendPacket(packet));
     }
 
     long minutosLloviendo = 0;
@@ -726,78 +722,63 @@ public class GameServer implements Constants {
         sendToAll(new RainToggleResponse());
     }
 
-    private void rainEvent() {
-        if (!this.raining) {
-            this.minutosSinLluvia++;
-            if (this.minutosSinLluvia >= 15 && this.minutosSinLluvia < 1440) {
-                if (Util.Azar(1, 100) <= 10) {
-                    rainStart();
-                }
-            } else if (this.minutosSinLluvia >= 1440) {
-                rainStart();
-            }
-        } else {
-            this.minutosLloviendo++;
-            if (this.minutosLloviendo >= 5) {
-                rainStop();
-            } else {
-                if (Util.Azar(1, 100) <= 7) {
-                    rainStop();
-                }
-            }
+    private void rainEventTimer(long now) {
+        if ((now - lastEventTimer) > 60_000) {
+            lastEventTimer = now;
+    	
+	        if (!this.raining) {
+	            this.minutosSinLluvia++;
+	            if (this.minutosSinLluvia >= 15 && this.minutosSinLluvia < 1440) {
+	                if (Util.Azar(1, 100) <= 10) {
+	                    rainStart();
+	                }
+	            } else if (this.minutosSinLluvia >= 1440) {
+	                rainStart();
+	            }
+	        } else {
+	            this.minutosLloviendo++;
+	            if (this.minutosLloviendo >= 5) {
+	                rainStop();
+	            } else {
+	                if (Util.Azar(1, 100) <= 7) {
+	                    rainStop();
+	                }
+	            }
+	        }
         }
     }
 
-    int segundos = 0;
-    public void piqueteTimer() {
-        this.segundos += 6;
-        for (Player cli: players()) {
-            if (cli != null && cli.getId() > 0 && cli.isLogged()) {
-                Map mapa = getMap(cli.pos().map);
-                if (mapa.isAntiPiquete(cli.pos().x, cli.pos().y)) {
-                    cli.counters().PiqueteC++;
-                    cli.sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", FontType.FONTTYPE_INFO);
-                    if (cli.counters().PiqueteC > 23) {
-                        cli.counters().PiqueteC = 0;
-                        cli.sendToJail(3, null);
-                    }
-                } else {
-                    if (cli.counters().PiqueteC > 0) {
-						cli.counters().PiqueteC = 0;
-					}
-                }
-                if (this.segundos >= 18) {
-                    cli.counters().Pasos = 0;
-                }
-            }
-        }
-        if (this.segundos >= 18) {
-			this.segundos = 0;
-		}
-    }
+    public void piqueteTimer(long now) {
+    	// check every second
+        if ((now - lastPiqueteTimer) > 1_000) {
+            lastPiqueteTimer = now;
 
-    public void purgePenalties() {
-    	for (Player player: players()) {
-            if (player != null && player.getId() > 0 && player.flags().UserLogged) {
-                if (player.counters().Pena > 0) {
-                    player.counters().Pena--;
-                    if (player.counters().Pena < 1) {
-                        player.releaseFromJail();
-                    }
-                }
-            }
+            players().stream()
+		    	.filter(Player::hasId)
+		    	.filter(Player::isLogged)
+		    	.forEach(Player::checkPiquete);
         }
     }
 
-    private void checkIdleUser() {
-    	for (Player player: players()) {
-            if (player != null && player.getId() > 0 && player.isLogged()) {
-                player.counters().IdleCount++;
-                if (player.counters().IdleCount >= IdleLimit) {
-                    player.sendError("Demasiado tiempo inactivo. Has sido desconectado.");
-                    player.quitGame();
-                }
-            }
+    public void purgePenaltiesTimer(long now) {
+        if ((now - lastPurgarPenas) > 60_000) {
+            lastPurgarPenas = now;
+            
+            players().stream()
+		    	.filter(Player::hasId)
+		    	.filter(Player::isLogged)
+		    	.forEach(Player::checkPenalties);
+        }
+    }
+
+    private void checkIdleUserTimer(long now) {
+        if ((now - lastCheckIdleUser) > 60_000) {
+            lastCheckIdleUser = now;
+    	
+            players().stream()
+		    	.filter(Player::hasId)
+		    	.filter(Player::isLogged)
+		    	.forEach(Player::checkIdle);
         }
     }
 
@@ -807,40 +788,39 @@ public class GameServer implements Constants {
     long hoursRunning = 0;
     DailyStats dayStats = new DailyStats();
 
-    private void autoSaveTimer() {
-        // fired every minute
+    private void passMinuteTimer(long now) {
+    	// fired every minute
+        if ((now - lastPassMinuteTimer) > 60_000) {
+            lastPassMinuteTimer = now;
     	
-    	SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
-//    	System.out.println("[autoSaveTimer] " + df.format(new Date()));
-    	
-        this.minutesRunning++;
-        if (this.minutesRunning == 60) {
-            this.hoursRunning++;
-            if (this.hoursRunning == 24) {
-                saveDayStats();
-                this.dayStats.reset();
-                getGuildMngr().dayElapsed();
-                this.hoursRunning = 0;
-            }
-            this.minutesRunning = 0;
+	    	
+	        this.minutesRunning++;
+	        if (this.minutesRunning == 60) {
+	            this.hoursRunning++;
+	            if (this.hoursRunning == 24) {
+	                saveDayStats();
+	                this.dayStats.reset();
+	                getGuildMngr().dayElapsed();
+	                this.hoursRunning = 0;
+	            }
+	            this.minutesRunning = 0;
+	        }
+	        this.minutesWorldSave++;
+	        if (this.minutesWorldSave >= IntervaloMinutosWs) {
+	            backupWorld();
+	            this.minutesWorldSave = 0;
+	        }
+	        if (this.minutesLastClean >= 15) {
+	            this.minutesLastClean = 0;
+	            reSpawnOrigPosNpcs(); // respawn de los guardias en las pos originales
+	            cleanWorld();
+	        } else {
+	            this.minutesLastClean++;
+	        }
+	        getWorkWatcher().passMinute();
+	        
+	        log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
         }
-        this.minutesWorldSave++;
-        if (this.minutesWorldSave >= IntervaloMinutosWs) {
-            backupWorld();
-            this.minutesWorldSave = 0;
-        }
-        if (this.minutesLastClean >= 15) {
-            this.minutesLastClean = 0;
-            reSpawnOrigPosNpcs(); // respawn de los guardias en las pos originales
-            cleanWorld();
-        } else {
-            this.minutesLastClean++;
-        }
-        purgePenalties();
-        checkIdleUser();
-        // <<<<<-------- Log the number of users online ------>>>
-        log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
-        // <<<<<-------- Log the number of users online ------>>>
     }
 
     private void loadBlacksmithingWeapons() {
@@ -928,6 +908,7 @@ public class GameServer implements Constants {
     
     //--- fixme ------ fixme ------ fixme ------ fixme ------ fixme ------ fixme ---
     public void backupWorld() {
+    	// doBackup
     	// FIXME
         this.doingBackup = true;
         //enviarATodos(MSG_BKW);
@@ -935,6 +916,8 @@ public class GameServer implements Constants {
         saveGuildsDB();
         cleanWorld();
         worldSave();
+        //modGuilds.v_RutinaElecciones
+        getWorkWatcher().reset(); // Reseteamos al Centinela        
       //  enviarATodos(MSG_TALK, "Servidor> WorldSave terminado." + FontType.SERVER);
       //  enviarATodos(MSG_BKW);
         /*********** FIXME
@@ -953,22 +936,21 @@ public class GameServer implements Constants {
 		if (!admin.isGM()) {
 			return;
 		}
-    	int cant = cleanWorld();
+    	int removedObjects = cleanWorld();
         if (admin != null) {
-			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + cant + " objetos.", 
+			admin.sendMessage("Servidor> Limpieza del mundo completa. Se eliminaron " + removedObjects + " objetos.", 
 					FontType.FONTTYPE_SERVER);
 		}
     }
 
     private int cleanWorld() {
-    	int cant = 0;
-    	for (MapPos pos: this.trashCollector) {
-            Map mapa = getMap(pos.map);
-            mapa.quitarObjeto(pos.x, pos.y);
-            cant++;
-        }
-        this.trashCollector.clear();
-        return cant;
+    	this.trashCollector.stream()
+    		.forEach(pos -> {
+    			getMap(pos.map).removeObject(pos.x, pos.y);
+    		});
+    	int removedObjects = this.trashCollector.size();
+    	this.trashCollector.clear();
+        return removedObjects;
     }
 
     private synchronized void worldSave() {
@@ -976,60 +958,57 @@ public class GameServer implements Constants {
         // Hacer un respawn de los guardias en las pos originales.
         reSpawnOrigPosNpcs();
         // Ver cuántos mapas necesitan backup.
-        int cant = 0;
-        for (Map mapa: this.maps) {
-            if (mapa.backup) {
-				cant++;
-			}
-        }
+        
+        List<Map> mapsToBackup = this.maps.stream()
+        	.filter(Map::isBackup)
+        	.collect(Collectors.toList());
+        
         // Guardar los mapas
-        this.feedback.init("Guardando m_mapas modificados", cant);
-        int i = 0;
-        for (Map mapa: this.maps) {
-            if (mapa.backup) {
-                mapa.saveMapBackup();
-                this.feedback.step("Mapa " + (++i));
-            }
-        }
+        this.feedback.init("Guardando mapas modificados", mapsToBackup.size());
+        
+        mapsToBackup.stream()
+        	.forEach(map -> {
+        		map.saveMapBackup();
+        		this.feedback.step("Mapa " + map.getMapNumber());
+        	});
         this.feedback.finish();
+        
         // Guardar los NPCs
         try {
             IniFile ini = new IniFile();
-            for (Npc npc: npcs()) {
-                if (npc.getBackup()) {
-                    npc.backupNpc(ini);
-                }
-            }
+            npcs().stream()
+            	.filter(Npc::isBackup)
+            	.forEach(npc -> npc.backupNpc(ini));
+
             // Guardar todo
             ini.store("worldBackup" + File.separator + "backNPCs.dat");
         } catch (Exception e) {
             log.fatal("worldSave(): ERROR EN BACKUP NPCS", e);
         }
-        sendToAll(new ConsoleMsgResponse("Servidor> WorldSave ha concluído", FontType.FONTTYPE_SERVER.id()));
+        sendToAll(new ConsoleMsgResponse("Servidor> WorldSave ha concluído", 
+        		FontType.FONTTYPE_SERVER.id()));
     }
 
     private void reSpawnOrigPosNpcs() {
         List<Npc> spawnNPCs = new ArrayList<>();
-        for (Npc npc: npcs()) {
-            if (npc.isNpcActive()) {
-                if (npc.getNumber() == GUARDIAS && npc.getOrig().isValid()) {
-                    npc.quitarNPC(); // FIXME, lo elimina del server??? revisar.
-                    spawnNPCs.add(npc);
-                } else if (npc.counters().TiempoExistencia > 0) {
-                    npc.muereNpc(null);
-                }
-            }
-        }
-        for (Npc npc: spawnNPCs) {
-            npc.reSpawnNpc();
-        }
+        npcs().stream()
+        	.filter(Npc::isNpcActive)
+        	.forEach(npc -> {
+        		if (npc.getNumber() == GUARDIAS && npc.getOrig().isValid()) {
+        			npc.quitarNPC(); // FIXME, lo elimina del server??? revisar.
+        			spawnNPCs.add(npc);
+        		} else if (npc.counters().TiempoExistencia > 0) {
+        			npc.muereNpc(null);
+        		}
+        	});
+        spawnNPCs.stream().forEach(Npc::reSpawnNpc);
     }
 
     private void saveDayStats() {
+    	SimpleDateFormat df_xml = new SimpleDateFormat("yyyyMMdd");
         SimpleDateFormat df_dia = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat df_xml = new SimpleDateFormat("yyyyMMdd");
         SimpleDateFormat df_hora = new SimpleDateFormat("HH:mm:ss");
-        java.util.Date fecha = new java.util.Date();
+        var fecha = new java.util.Date();
         String dia = df_dia.format(fecha);
         String hora = df_hora.format(fecha);
         String filename = "logs" + File.separator + "stats-" + df_xml.format(fecha) + ".xml";

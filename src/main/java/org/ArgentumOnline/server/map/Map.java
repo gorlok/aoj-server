@@ -40,7 +40,6 @@ import org.ArgentumOnline.server.areas.AreasAO;
 import org.ArgentumOnline.server.inventory.InventoryObject;
 import org.ArgentumOnline.server.map.Tile.Trigger;
 import org.ArgentumOnline.server.net.ServerPacket;
-import org.ArgentumOnline.server.npc.WorkWatcher;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.BlockPositionResponse;
 import org.ArgentumOnline.server.protocol.CharacterMoveResponse;
@@ -126,6 +125,10 @@ public class Map implements Constants {
             }
         }
     }
+    
+    public boolean isBackup() {
+		return backup;
+	}
     
     private AreasAO area() {
     	return AreasAO.instance();
@@ -213,6 +216,10 @@ public class Map implements Constants {
     /** intemperie */
     public boolean isOutdoor(byte  x, byte y) {
        	return (this.zone != Zone.DUNGEON) && tile(x, y).isOutdoor();
+    }
+    
+    public boolean isHasPlayers() {
+    	return !this.players.isEmpty();
     }
     
     public int getPlayersCount() {
@@ -457,7 +464,7 @@ public class Map implements Constants {
 	                if ((byflags & FLAG_OBJECT) > 0) {
 						short obj_ind = Util.leShort(reader.readShort());
 						short obj_cant = Util.leShort(reader.readShort());
-						agregarObjeto(obj_ind, obj_cant, (byte)(x+1), (byte)(y+1)); // FIXME ignora el resultado ? y si no pudo agregarlo?
+						addObject(obj_ind, obj_cant, (byte)(x+1), (byte)(y+1)); // FIXME ignora el resultado ? y si no pudo agregarlo?
 						sendDoorUpdate(getObject((byte)(x+1), (byte)(y+1)));
 	                }
 	            }
@@ -627,7 +634,7 @@ public class Map implements Constants {
     			FontType.FONTTYPE_WARNING);
     }
     
-    public boolean agregarObjeto(short objid, int cant, byte x, byte y) {
+    public boolean addObject(short objid, int cant, byte x, byte y) {
     	if (hasObject(x, y)) {
             log.warn("Intento de agregar objeto sobre otro: objid=" + objid + " cant" + cant + " mapa" + this.mapNumber + " x=" + x + " y=" + y);
     		return false;
@@ -641,7 +648,7 @@ public class Map implements Constants {
         return true;
     }
     
-    public void quitarObjeto(byte  x, byte y) {
+    public void removeObject(byte  x, byte y) {
     	this.objects.remove(tile(x, y));
         tile(x, y).removeObject();
         sendToArea(x, y, new ObjectDeleteResponse(x,y));
@@ -664,18 +671,18 @@ public class Map implements Constants {
             // Es un objeto tipo puerta.
             if (obj.objInfo().estaCerrada()) {
                 // Abrir puerta.
-                quitarObjeto(obj.x, obj.y);
+                removeObject(obj.x, obj.y);
                 ObjectInfo info = findObj(obj.objInfo().IndexAbierta);
-                agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
+                addObject(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             } else {
                 // Cerrar puerta
-                quitarObjeto(obj.x, obj.y);
+                removeObject(obj.x, obj.y);
                 ObjectInfo info = findObj(obj.objInfo().IndexCerrada);
-                agregarObjeto(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
+                addObject(info.ObjIndex, obj.obj_cant, obj.x, obj.y);
             }
             obj = getObject(obj.x, obj.y);
             sendDoorUpdate(obj);
-            sendToArea(obj.x, obj.y, new PlayWaveResponse(SOUND_PUERTA, obj.x, obj.y));
+            sendPlayWave(SOUND_PUERTA, obj.x, obj.y);
         }
     }
     
@@ -691,6 +698,10 @@ public class Map implements Constants {
             }
             sendToArea(obj.x,obj.y, new ObjectCreateResponse(obj.x, obj.y, (short)obj.objInfo().GrhIndex));
         }
+    }
+    
+    public void sendPlayWave(byte waveId, byte x, byte y) {
+    	sendToArea(x, y, new PlayWaveResponse(waveId, x, y));
     }
     
     public void sendCreateFX(byte  x, byte y, int id, int fx, int val) {
@@ -855,14 +866,14 @@ public class Map implements Constants {
         if (dest_mapa > 0 && dest_x > 0 && dest_y > 0) {
 			tile(x, y).teleport(MapPos.mxy(dest_mapa, dest_x, dest_y));
 		}
-        agregarObjeto(OBJ_TELEPORT, 1, x, y);
+        addObject(OBJ_TELEPORT, 1, x, y);
     }
     
     public void destroyTeleport(byte  x, byte y) {
         if (!isTeleport(x, y)) {
 			return;
 		}
-        quitarObjeto(x, y);
+        removeObject(x, y);
         tile(x, y).teleport(null);
     }    
     
@@ -984,9 +995,9 @@ public class Map implements Constants {
             if (npc.description.length() > 0) {
             	// tiene algo para decir
             	player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
-            } else if (npc.getId() == WorkWatcher.centinelaNPCIndex) {
-                // enviamos nuevamente el mensaje del Centinela, según quien pregunta
-                WorkWatcher.centinelaSendClave(player);
+            } else if (npc.getId() == server.getWorkWatcher().getNpc().getId()) {
+                // enviamos nuevamente el mensaje del Centinela, según quien pregunta.
+            	server.getWorkWatcher().sendCode(player);
             } else {
             	String npcName;
             	if (npc.getPetUserOwner() != null) {
@@ -1050,8 +1061,8 @@ public class Map implements Constants {
 			suerte = 1;
 		}
         if (Util.Azar(1, suerte) == 1) {
-        	quitarObjeto(x, y);
-            agregarObjeto(FOGATA, 1, x, y);
+        	removeObject(x, y);
+            addObject(FOGATA, 1, x, y);
             player.sendMessage("Has prendido la fogata.", FontType.FONTTYPE_INFO);
         } else {
             player.sendMessage("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
@@ -1110,7 +1121,7 @@ public class Map implements Constants {
         if (newPos != null) {
 	        log.debug("tirarItemAlPiso: x=" + newPos.x + " y=" + newPos.y);
 	        if (newPos != null) {
-	            if (agregarObjeto(obj.objid, obj.cant, newPos.x, newPos.y)) {
+	            if (addObject(obj.objid, obj.cant, newPos.x, newPos.y)) {
 	                return newPos;
 	            }
 	        }
@@ -1540,7 +1551,7 @@ public class Map implements Constants {
         	for (int x = x1; x <= x2; x++) {
                 if (hasObject((byte) x, (byte) y) 
                 		&& getObject((byte) x, (byte) y).objInfo().itemNoEsDeMapa()) {
-                    quitarObjeto((byte) x, (byte) y);
+                    removeObject((byte) x, (byte) y);
                     count++;
                 }
             }
@@ -1563,7 +1574,7 @@ public class Map implements Constants {
     	player.sendPacket(npc.characterCreate());
     }
     
-    public void doFX() {
+    public void soundFx() {
         if (getPlayersCount() > 0 && Util.Azar(1, 150) < 12) {
         	byte sound = -1;
             switch (this.terrain) {

@@ -24,14 +24,6 @@ public class Util {
 
 	private Util() {}
 
-    public static long millis() {
-    	// 1 s  = 1.000 ms
-    	// 1 ms = 1.000 us
-    	// 1 us = 1.000 ns
-    	// 1 ms = 1.000.000 ns
-        return System.nanoTime() / 1000000;
-    }
-	
 	public static boolean asciiValidos(String str) {
 		byte[] bytes = str.toLowerCase().getBytes();
 		for (byte b : bytes) {
@@ -103,8 +95,8 @@ public class Util {
 		return a > b ? a : b;
 	}
 
-	public static boolean existeArchivo(String nombre) {
-		java.io.File f = new java.io.File(nombre);
+	public static boolean fileExists(String fileName) {
+		java.io.File f = new java.io.File(fileName);
 		return f.canRead();
 	}
 	

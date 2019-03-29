@@ -38,7 +38,6 @@ import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
 import org.ArgentumOnline.server.map.Tile.Trigger;
-import org.ArgentumOnline.server.npc.WorkWatcher;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.PlayMidiResponse;
@@ -512,10 +511,14 @@ public class ManagerServer {
     	// Agrega un (*) al nick del usuario que esté siendo monitoreado por el Centinela
 		var users = server.players().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && c.isWorking())
-			    	.map(p -> p.getNick() + (WorkWatcher.watchingUser(p.getNick()) ? "(*)" : ""))
+			    	.map(p -> decorateNick(p))
 			    	.collect(Collectors.toList());
 		
 		admin.sendMessage("Usuarios trabajando: " + String.join(", ", users), FontType.FONTTYPE_INFO);
+	}
+
+	private String decorateNick(Player p) {
+		return p.getNick() + (server.getWorkWatcher().watchingUser(p.getNick()) ? "(*)" : "");
 	}
 	
 	public void sendUsersHiding(Player admin) {
@@ -930,7 +933,7 @@ public class ManagerServer {
 			if (findObj(objid) == null) {
 				return;
 			}
-			map.agregarObjeto(objid, 100, admin.pos().x, admin.pos().y);
+			map.addObject(objid, 100, admin.pos().x, admin.pos().y);
 			admin.sendMessage("ATENCION: FUERON CREADOS ***100*** ITEMS! TIRE Y /DEST LOS QUE NO NECESITE!!", 
 					FontType.FONTTYPE_GUILD);
 		}
@@ -953,7 +956,7 @@ public class ManagerServer {
 				admin.sendMessage("No se pueden destruir teleports así. Utilice /DT.", FontType.FONTTYPE_INFO);
 				return;
 			}
-			map.quitarObjeto(admin.pos().x, admin.pos().y);
+			map.removeObject(admin.pos().x, admin.pos().y);
 		}
 	}
 	

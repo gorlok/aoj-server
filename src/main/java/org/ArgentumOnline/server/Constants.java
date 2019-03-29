@@ -40,6 +40,8 @@ public interface Constants {
 	final static int DISTANCE_FACTION = 10; // FACCIONARIO
 	
 	final static int MAPA_PRETORIANO = -1;
+	
+	final static int JAIL_TIME_PIQUETE_MINUTES = 5;
     
     /*
     Public DeNoche As Boolean

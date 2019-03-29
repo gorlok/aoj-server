@@ -97,6 +97,8 @@ public class UserFlags {
     public short AtacadoPorNpc = 0;
     public short AtacadoPorUser = 0;
     
+    public boolean workWatcherRepliedOK = false;
+    
 	public enum PlayerType {
 		
 	    User		(0x01),

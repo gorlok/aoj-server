@@ -23,7 +23,6 @@ import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeTrabajar;
 import static org.ArgentumOnline.server.Constants.IntervaloUserPuedeUsar;
 
 import org.ArgentumOnline.server.map.MapPos;
-import org.ArgentumOnline.server.util.Util;
 
 /**
  * @author gorlok
@@ -41,9 +40,8 @@ public class UserCounters {
     public int Ceguera = 0;
     public int Estupidez = 0;
     public int Invisibilidad = 0;
-    public long PiqueteC = 0;
+    public long piqueteSeconds = 0;
 	public long Pena = 0;
-    public int Pasos = 0;
     public boolean Saliendo = false;
     public short SalirCounter = 0; // segundos para salir.
     MapPos SendMapCounter = MapPos.empty();
@@ -67,7 +65,7 @@ public class UserCounters {
 
 	/** INTERVALO DE CASTING DE HECHIZOS */
 	public boolean intervaloPermiteLanzarSpell() {
-		long time = Util.millis();
+		long time = System.currentTimeMillis();
 		if ((time - TimerLanzarSpell) >= IntervaloUserPuedeCastear) {
 			TimerLanzarSpell = time;
 			return true;
@@ -77,7 +75,7 @@ public class UserCounters {
 
 	/** INTERVALO DE ATAQUE CUERPO A CUERPO */
 	public boolean intervaloPermiteAtacar() {
-		long time = Util.millis();
+		long time = System.currentTimeMillis();
 		if ((time - TimerPuedeAtacar) >= IntervaloUserPuedeAtacar) {
 			TimerPuedeAtacar = time;
 			return true;
@@ -87,7 +85,7 @@ public class UserCounters {
 
 	/** INTERVALO DE TRABAJO */
 	public boolean intervaloPermiteTrabajar() {
-		long time = Util.millis();
+		long time = System.currentTimeMillis();
 		if ((time - TimerPuedeTrabajar) >= IntervaloUserPuedeTrabajar) {
 			TimerPuedeTrabajar = time;
 			return true;
@@ -97,7 +95,7 @@ public class UserCounters {
 
 	/** INTERVALO DE USAR OBJETOS */
 	public boolean intervaloPermiteUsar() {
-		long time = Util.millis();
+		long time = System.currentTimeMillis();
 		if ((time - TimerUsar) >= IntervaloUserPuedeUsar) {
 			TimerUsar = time;
 			return true;

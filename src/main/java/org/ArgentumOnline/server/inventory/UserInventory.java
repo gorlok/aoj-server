@@ -287,7 +287,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (this.objs[slot-1].equipado) {
 					desequipar(slot);
 				}
-                mapa.agregarObjeto(objid, cant, x, y);
+                mapa.addObject(objid, cant, x, y);
                 quitarUserInvItem(slot, cant);
                 player().sendInventorySlot(slot);
                 ObjectInfo iobj = findObj(objid);

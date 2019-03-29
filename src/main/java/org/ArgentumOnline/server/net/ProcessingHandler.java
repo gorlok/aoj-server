@@ -365,6 +365,9 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			player.changeDescription(((ChangeDescriptionRequest)packet).description);
 			break;
 			
+		case CentinelReport:
+			server.getWorkWatcher().checkCode(player, ((CentinelReportRequest)packet).key);
+			break;
 
 		// *****************************************************************************************	
 		// *****************************************************************************************	
@@ -830,8 +833,9 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			// N/A
 			break;
 			
-		case CentinelReport:
 		case ToggleCentinelActivated:
+			
+			
 			
 		case PartyAcceptMember:
 		case PartyCreate:

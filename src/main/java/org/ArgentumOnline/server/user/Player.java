@@ -1297,8 +1297,8 @@ public class Player extends AbstractCharacter {
 			} else {
 				sendMessage("Has hecho una fogata.", FontType.FONTTYPE_INFO);
 			}
-			mapa.quitarObjeto(targetPos.x, targetPos.y);
-			mapa.agregarObjeto(objid, cant, targetPos.x, targetPos.y);
+			mapa.removeObject(targetPos.x, targetPos.y);
+			mapa.addObject(objid, cant, targetPos.x, targetPos.y);
 		} else {
 			if (flags().UltimoMensaje != 10) {
 				sendMessage("No has podido hacer la fogata.", FontType.FONTTYPE_INFO);
@@ -2025,7 +2025,7 @@ public class Player extends AbstractCharacter {
 		}
 		flags().Meditando = !flags().Meditando;
 		if (flags().Meditando) {
-			this.counters.tInicioMeditar = Util.millis();
+			this.counters.tInicioMeditar = System.currentTimeMillis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
 			sendMessage("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.FONTTYPE_INFO);
 			this.infoChar.loops = LoopAdEternum;
@@ -2207,6 +2207,7 @@ public class Player extends AbstractCharacter {
 			}
 		}
 		log.info("Salió: " + getNick());
+		server.getWorkWatcher().userLogout(this);
 	}
 
 	public void throwDices() { // and get lucky!
@@ -2567,11 +2568,11 @@ public class Player extends AbstractCharacter {
 			} else {
 				int agregados = this.userInv.agregarItem(obj.obj_ind, obj.obj_cant);
 				if (agregados < obj.obj_cant) {
-					mapa.quitarObjeto(pos().x, pos().y);
+					mapa.removeObject(pos().x, pos().y);
 					mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(obj.obj_ind, obj.obj_cant - agregados));
 				} else {
 					// Quitamos el objeto
-					mapa.quitarObjeto(pos().x, pos().y);
+					mapa.removeObject(pos().x, pos().y);
 					if (flags().isGM()) {
 						Log.logGM(this.userName, "Agarró: " + obj.obj_ind + " objeto=" + obj.objInfo().Nombre);
 					}
@@ -2898,14 +2899,14 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void sendToJail(int minutos, String gm_name) {
-		this.counters.Pena = minutos;
+	public void sendToJail(int jailTimeMinutes, String adminName) {
+		this.counters.Pena = jailTimeMinutes;
 		if (warpMe(WP_PRISION.map, WP_PRISION.x, WP_PRISION.y, true)) {
-			if (gm_name == null) {
-				sendMessage("Has sido encarcelado. Permanecerás en la carcel " + minutos + " minutos.",
+			if (adminName == null) {
+				sendMessage("Has sido encarcelado. Permanecerás en la carcel " + jailTimeMinutes + " minutos.",
 						FontType.FONTTYPE_INFO);
 			} else {
-				sendMessage(gm_name + " te ha encarcelado. Permanecerás en la carcel " + minutos + " minutos.",
+				sendMessage(adminName + " te ha encarcelado. Permanecerás en la carcel " + jailTimeMinutes + " minutos.",
 						FontType.FONTTYPE_INFO);
 			}
 		}
@@ -2917,7 +2918,7 @@ public class Player extends AbstractCharacter {
 		sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
 	}
 	
-	public void rainEffect() {
+	public void rainingEffect() {
 		if (flags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
 			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZone() != Zone.DUNGEON) {
@@ -4309,7 +4310,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (!Util.asciiValidos(this.userName)) {
-			sendError("Nombre invalido.");
+			sendError("Nombre inválido.");
 			return;
 		}
 		if (userExists()) {
@@ -4396,7 +4397,41 @@ public class Player extends AbstractCharacter {
 	}
 	
 	public static boolean userExists(String userName) {
-		return Util.existeArchivo(getPjFile(userName));
+		return Util.fileExists(getPjFile(userName));
+	}
+	
+	public void checkIdle() {
+		counters().IdleCount++;
+		if (counters().IdleCount >= IdleLimit) {
+		    sendError("Demasiado tiempo inactivo. Has sido desconectado.");
+		    quitGame();
+		}
+	}
+	
+	public void checkPenalties() {
+		if (counters().Pena > 0) {
+		    counters().Pena--;
+		    if (counters().Pena < 1) {
+		        releaseFromJail();
+		    }
+		}
+	}
+	
+	public void checkPiquete() {
+		Map mapa = server.getMap(pos().map);
+		if (mapa.isAntiPiquete(pos().x, pos().y)) {
+			counters().piqueteSeconds++;
+			sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", 
+					FontType.FONTTYPE_INFO);
+			if (counters().piqueteSeconds > 23) {
+				counters().piqueteSeconds = 0;
+				sendToJail(JAIL_TIME_PIQUETE_MINUTES, null);
+			}
+		} else {
+			if (counters().piqueteSeconds > 0) {
+				counters().piqueteSeconds = 0;
+			}
+		}
 	}
 
 	public void modifyAttributesByRace() {
@@ -4686,7 +4721,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void meditar() {
-		long tActual = Util.millis();
+		long tActual = System.currentTimeMillis();
 		if (tActual - this.counters.tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
 			return;
 		}
@@ -5319,7 +5354,7 @@ public class Player extends AbstractCharacter {
 	public static void changeGuildLeaderChr(String nick, boolean esLider) {
 		try {
 			// ¿Existe el personaje?
-			if (!Util.existeArchivo(getPjFile(nick))) {
+			if (!Util.fileExists(getPjFile(nick))) {
 				return;
 			}
 			IniFile ini = new IniFile(getPjFile(nick));
@@ -5333,7 +5368,7 @@ public class Player extends AbstractCharacter {
 	public static void changeGuildPtsChr(String nick, int addedGuildPts) {
 		try {
 			// ¿Existe el personaje?
-			if (!Util.existeArchivo(getPjFile(nick))) {
+			if (!Util.fileExists(getPjFile(nick))) {
 				return;
 			}
 			IniFile ini = new IniFile(getPjFile(nick));
