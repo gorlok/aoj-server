@@ -4304,19 +4304,20 @@ public class Player extends AbstractCharacter {
 
 	public void connectNewUser(String userName, String password, byte race, byte gender, byte clazz, String email, byte homeland) {
 		// Validar los datos recibidos :-)
-		this.userName = userName;
-		if (!this.server.manager().isValidUserName(this.userName)) {
-			sendError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
-			return;
-		}
-		if (!Util.asciiValidos(this.userName)) {
+		if (!Util.asciiValidos(userName)) {
 			sendError("Nombre inválido.");
 			return;
 		}
-		if (userExists()) {
+		if (!this.server.manager().isValidUserName(userName)) {
+			sendError("Los nombres de los personajes deben pertencer a la fantasia, el nombre indicado es invalido.");
+			return;
+		}
+		if (userExists(userName)) {
 			sendError("Ya existe el personaje.");
 			return;
 		}
+		
+		this.userName = userName;
 		this.flags().Muerto = false;
 		this.flags().Escondido = false;
 		this.reputation.asesinoRep = 0;
@@ -4397,6 +4398,8 @@ public class Player extends AbstractCharacter {
 	}
 	
 	public static boolean userExists(String userName) {
+		if (userName == null || userName.isBlank())
+			return false;
 		return Util.fileExists(getPjFile(userName));
 	}
 	
@@ -4454,13 +4457,18 @@ public class Player extends AbstractCharacter {
 	}
 	
 	public void connectUser(String userName, String password) {
-		this.userName = userName;
 		try {
 			// ¿Existe el personaje?
-			if (!userExists()) {
+			if (!userExists(userName)) {
 				sendError("El personaje no existe. Compruebe el nombre de usuario.");
 				return;
 			}
+			if (this.server.isPlayerAlreadyConnected(userName)) {
+				sendError("Perdon, pero ya esta conectado.");
+				return;
+			}
+			
+			this.userName = userName;
 			
 			// Reseteamos los FLAGS
 			flags().Escondido = false;
@@ -4468,11 +4476,6 @@ public class Player extends AbstractCharacter {
 			flags().TargetObj = 0;
 			flags().TargetUser = 0;
 			this.infoChar.fx = 0;
-
-			if (this.server.isPlayerAlreadyConnected(this)) {
-				sendError("Perdon, pero ya esta conectado.");
-				return;
-			}
 
 			// ¿El password es válido?
 			this.passwordHash = this.userStorage.passwordHashFromStorage(this.userName);

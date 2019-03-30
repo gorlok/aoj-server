@@ -20,6 +20,12 @@ Currently it's using AO's binary protocol v0.12.3
 
 Please note that sources are keep in ISO-8859-1.
 
+## Build and running
+
+To build the project, run on the root folder: `mvn clean package`
+
+Start the game server with: `java -jar target/server-0.12.3.jar`
+
 # Argentum Online Client
 
 It's planned to be build a proper client using libGDX (OpenGL).

@@ -2,9 +2,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>aoj-server</groupId>
-	<artifactId>aoserver</artifactId>
-	<version>0.10.0</version>
+	<groupId>gorlok.argentum.online</groupId>
+	<artifactId>server</artifactId>
+	<version>0.12.3</version>
 	<build>
 		<plugins>
 			<plugin>
@@ -18,15 +18,34 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<finalName>aoserver</finalName>
-					<outputDirectory>.</outputDirectory>
 					<archive>
 						<manifest>
+							<classpathPrefix>libs/</classpathPrefix>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.ArgentumOnline.server.AojServer</mainClass>
+							<mainClass>org.ArgentumOnline.server.GameServer</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/libs</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -84,6 +103,17 @@
 			<version>0.7.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.13</version>
+		</dependency>
+		
 	</dependencies>
 
 	<properties>

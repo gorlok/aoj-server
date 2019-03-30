@@ -1,5 +1,5 @@
 ;Archivo: charfile/gorlok.chr
-;Ultima modificacion: 24/03/2019 21:53:18
+;Ultima modificacion: 30/03/2019 19:11:19
 
 [ATRIBUTOS]
 AT1=13
@@ -157,7 +157,7 @@ LASTIP3=
 LASTIP4=
 LASTIP5=
 PASSWORDHASH=$2a$08$jnKx0XtptX3CroBoWnuwW.MyguESDwHVzYNoG2Eda8teL2GjyVdzO
-POSITION=34-25-74
+POSITION=34-26-74
 RAZA=5
 
 [INVENTORY]

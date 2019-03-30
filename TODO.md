@@ -28,3 +28,8 @@
 * NPC Alineacion debería ser un enum? Qué significan las constantes? !=0 parece ser Npc "malvado". En DAT hay 0 y 2, aunque en el código hay 1 y 4 también :-/
 * revisar toda la AI de NPCs
 * implementar pretorianos
+
+* add docker support
+	docker run -it --rm aoserver
+	docker run -it --rm -p 7666:7666 -p 9999:9999 aoserver
+

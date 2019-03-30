@@ -532,14 +532,17 @@ public class GameServer implements Constants {
 			return null;
 		}
     	
-    	return players().stream()
+    	Optional<Player> founded = players().stream()
     		.filter(u -> userName.equalsIgnoreCase(u.getNick()))
-    		.findFirst()
-    		.orElseGet(null);
+    		.findFirst();
+    	
+    	return founded.isPresent() ? founded.get() : null;
     }
 
-    public boolean isPlayerAlreadyConnected(Player user) {
-    	return playerByUserName(user.getNick()) == user;
+    public boolean isPlayerAlreadyConnected(String userName) {
+    	Player foundedPlayer = playerByUserName(userName);
+    	return foundedPlayer != null &&
+    			userName.equalsIgnoreCase(foundedPlayer.getNick());
     }
 
     private void npcAiTimer(long now) {

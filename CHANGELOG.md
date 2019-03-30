@@ -3,6 +3,10 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-30
+- corregido error al conectar (usuario ya conectado)
+- se corrige la generación del jar y sus dependencias
+
 ### 2019-03-29
 - agregado /CENTINELAACTIVADO
 
