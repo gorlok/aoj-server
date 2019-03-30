@@ -834,11 +834,12 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case ToggleCentinelActivated:
+			server.getWorkWatcher().workWatcherActivateToggle(player);
+			break;
 			
 			
-			
-		case PartyAcceptMember:
 		case PartyCreate:
+		case PartyAcceptMember:
 		case PartyJoin:
 		case PartyKick:
 		case PartyLeave:
@@ -856,10 +857,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case ChangeMapInfoZone:
 			
 		case CheckSlot:
-		case DumpIPTables:
 		case EditChar:
-		case Night:
 		case SetIniVar:
+		case Night:
+		case DumpIPTables:
 
 		case Inquiry:
 		case InquiryVote:

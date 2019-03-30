@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-29
+- agregado /CENTINELAACTIVADO
+
 ### 2019-03-28
 - implementado el Centinela
 - refactory en GameServer

@@ -304,4 +304,28 @@ public class WorkWatcher {
 	    }
 	}
 
+	public void workWatcherActivateToggle(Player admin) {
+		// Command /CENTINELAACTIVADO
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		
+		this.activated = !this.activated;
+		
+        this.userWatching = null;
+        this.askingCode = 0;
+        this.userRemainingMinutes = 0;
+	
+        if (this.workWatcher != null) {
+	        this.workWatcher.quitarNPC();
+	        this.workWatcher = null;
+        }
+	    
+	    if (this.activated) {
+	    	server.sendToAdmins(new ConsoleMsgResponse("El centinela ha sido activado.", FontType.FONTTYPE_SERVER.id()));
+	    } else {
+	    	server.sendToAdmins(new ConsoleMsgResponse("El centinela ha sido desactivado.", FontType.FONTTYPE_SERVER.id()));
+	    }
+	}
+
 }

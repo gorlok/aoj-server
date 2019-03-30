@@ -14,9 +14,8 @@
 * rest api for managing, web app ?
 	* use spark web server (https rest-api?)
 	* web app
+* login por https y auth token
 
-
-* centinelas
 * role masters
 * chatColor in user flags
 * En Comercio, REVISAR si se hace el chequeo de 
@@ -26,6 +25,6 @@
 * los npcs hacen respawn cerca del usuario
 * refactorizar sistemas de comercio, trabajo, hechizos, combate
 * MoveNPCChar revisar Caspers y WriteForceCharMove
-* NPC Alineacion debería ser un enum? Qué significan las constantes? !=0 parece ser Npc "malvado". En DAT hay 0 y 2, pero en códio hay 1 y 4 también :-/
+* NPC Alineacion debería ser un enum? Qué significan las constantes? !=0 parece ser Npc "malvado". En DAT hay 0 y 2, aunque en el código hay 1 y 4 también :-/
 * revisar toda la AI de NPCs
 * implementar pretorianos
