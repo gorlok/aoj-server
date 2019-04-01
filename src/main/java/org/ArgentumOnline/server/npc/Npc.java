@@ -1508,7 +1508,7 @@ End Enum
 		}
         // Si no se peude usar magia en el mapa, no le deja hacerlo.
         Map map = this.server.getMap(pos().map);
-        if (map.MagiaSinEfecto) {
+        if (map.isMagiaSinEfecto()) {
         	return;
         }        
         this.flags().set(FLAG_PUEDE_ATACAR, false);

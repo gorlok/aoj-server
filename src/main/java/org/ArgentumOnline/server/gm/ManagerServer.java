@@ -27,7 +27,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +40,10 @@ import org.ArgentumOnline.server.ObjectInfo;
 import org.ArgentumOnline.server.Pos;
 import org.ArgentumOnline.server.Skill;
 import org.ArgentumOnline.server.map.Map;
+import org.ArgentumOnline.server.map.MapConstraint;
+import org.ArgentumOnline.server.map.Terrain;
 import org.ArgentumOnline.server.map.Tile.Trigger;
+import org.ArgentumOnline.server.map.Zone;
 import org.ArgentumOnline.server.npc.Npc;
 import org.ArgentumOnline.server.protocol.ConsoleMsgResponse;
 import org.ArgentumOnline.server.protocol.PlayMidiResponse;
@@ -826,81 +832,6 @@ public class ManagerServer {
 	}
 
 
-	public void doModMapInfo(Player admin, String accion, int valor) {
-		// Comando /MODMAPINFO
-		if ("".equals(accion)) {
-			admin.sendMessage("Parámetros inválidos!", FontType.FONTTYPE_INFO);
-			return;
-		}
-		Log.logGM(admin.getNick(), "/MODMAPINFO " + accion + " " + valor);
-		Map mapa = this.server.getMap(admin.pos().map);
-		if (mapa == null) {
-			return;
-		}
-		if (accion.equalsIgnoreCase("PK")) {
-			if (valor == 0 || valor == 1) {
-				mapa.pk = (valor == 1);
-				admin.sendMessage("PK cambiado.", FontType.FONTTYPE_INFO);
-			}
-			admin.sendMessage("Mapa " + admin.pos().map + " PK: " + (mapa.pk ? "SI" : "NO"), FontType.FONTTYPE_INFO);
-		} else if (accion.equalsIgnoreCase("BACKUP")) {
-			if (valor == 0 || valor == 1) {
-				mapa.backup = (valor == 1);
-				admin.sendMessage("BACKUP cambiado.", FontType.FONTTYPE_INFO);
-			}
-			admin.sendMessage("Mapa " + admin.pos().map + " Backup: " + (mapa.backup ? "SI" : "NO"), FontType.FONTTYPE_INFO);
-		}
-	}
-
-	public void doModificarCaracter(Player admin, String nick, String accion, int valor) {
-		// MODIFICA CARACTER
-		// Comando /MOD
-		Log.logGM(admin.getNick(), "/MOD " + nick + " " + accion + " " + valor);
-		if ("".equals(nick)) {
-			admin.sendMessage("Parámetros inválidos!", FontType.FONTTYPE_INFO);
-			return;
-		}
-		Player usuario = this.server.playerByUserName(nick);
-		if (usuario == null) {
-			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		if (accion.equalsIgnoreCase("ORO")) {
-			if (valor < 95001) {
-				usuario.stats().setGold(valor);
-				usuario.sendUpdateUserStats();
-			} else {
-				admin.sendMessage(
-						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
-						FontType.FONTTYPE_INFO);
-			}
-		} else if (accion.equalsIgnoreCase("EXP")) {
-			if (valor < 1000000) {
-				usuario.stats().Exp += valor;
-				usuario.checkUserLevel();
-				usuario.sendUpdateUserStats();
-			} else {
-				admin.sendMessage(
-						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
-						FontType.FONTTYPE_INFO);
-			}
-		} else if (accion.equalsIgnoreCase("BODY")) {
-			usuario.infoChar().body = (short) valor;
-			usuario.sendCharacterChange();
-		} else if (accion.equalsIgnoreCase("HEAD")) {
-			usuario.infoChar().head = (short) valor;
-			usuario.sendCharacterChange();
-		} else if (accion.equalsIgnoreCase("CRI")) {
-			usuario.userFaction().criminalsKilled = valor;
-		} else if (accion.equalsIgnoreCase("CIU")) {
-			usuario.userFaction().citizensKilled = valor;
-		} else if (accion.equalsIgnoreCase("LEVEL")) {
-			usuario.stats().ELV = valor;
-		} else {
-			admin.sendMessage("Comando no permitido o inválido.", FontType.FONTTYPE_INFO);
-		}
-	}
-	
 	public void saveMap(Player admin) {
 		// Guardar el mapa actual.
 		// Comando /GUARDAMAPA
@@ -2307,6 +2238,625 @@ public class ManagerServer {
 		} else {
 			targetUser.userFaction().reset();
 		}
+	}
+
+	public void changeMapInfoBackup(Player admin, boolean doTheBackup) {
+		// Command /MODMAPINFO BACKUP
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		
+		Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado la información sobre el BackUp del mapa " + admin.pos().map);
+        
+		map.setBackup(doTheBackup);
+		map.saveDatFile();
+		
+        admin.sendMessage("Mapa " + map.getMapNumber() + " Backup: " + (map.isBackup() ? "1" : "0"), FontType.FONTTYPE_INFO);
+	}
+
+	public void changeMapInfoLand(Player admin, String infoLand) {
+		// Command /MODMAPINFO TERRENO
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		
+		Optional<Terrain> terrain = Terrain.fromName(infoLand);
+		if (terrain.isPresent()) {
+			Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado la información del Terreno del mapa " 
+					+ admin.pos().map + " a " + terrain.toString());
+		
+			map.setTerrain(terrain.get());
+			map.saveDatFile();
+			
+	        admin.sendMessage("Mapa " + map.getMapNumber() + " Terreno: " + terrain.get(), FontType.FONTTYPE_INFO);
+		} else {
+			admin.sendMessage("Opciones válidas para Terreno: 'BOSQUE', 'DESIERTO', 'NIEVE'", FontType.FONTTYPE_INFO);
+			admin.sendMessage("NOTA: el único valor significante es 'NIEVE', donde los personajes mueren de frío en el mapa.", 
+					FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void changeMapInfoZone(Player admin, String infoZone) {
+		// Command /MODMAPINFO ZONA
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		
+		Optional<Zone> zone = Zone.fromName(infoZone);
+		if (zone.isPresent()) {
+			Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado la información de la Zona del mapa " 
+					+ admin.pos().map + " a " + zone.toString());
+		
+			map.setZone(zone.get());
+			map.saveDatFile();
+			
+	        admin.sendMessage("Mapa " + map.getMapNumber() + " Zona: " + zone.get(), FontType.FONTTYPE_INFO);
+		} else {
+			var values = Arrays.stream(Zone.values()).map(Zone::toString).collect(Collectors.toList());
+			admin.sendMessage("Opciones válidas para Zona: " + values, FontType.FONTTYPE_INFO);
+			admin.sendMessage("NOTA: el único valor significante es 'DUNGEON', donde no hay efecto de lluvia.", 
+					FontType.FONTTYPE_INFO);
+		}
+	}
+
+	public void changeMapInfoNoInvi(Player admin, boolean noInvisible) {
+		// Command /MODMAPINFO INVISINEFECTO
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado si está prohibido usar Invisibilidad en el Mapa " 
+				+ admin.pos().map + " a " + noInvisible);
+
+		map.setInviSinEfecto(noInvisible);
+		map.saveDatFile();
+		
+        admin.sendMessage("Mapa " + map.getMapNumber() + " InvisibilidadSinEfecto: " + map.isInviSinEfecto(), 
+        		FontType.FONTTYPE_INFO);
+	}
+
+	public void changeMapInfoNoMagic(Player admin, boolean noMagic) {
+		// Command /MODMAPINFO MAGIASINEFECTO
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado si está prohibido usar Magia en el Mapa " 
+				+ admin.pos().map + " a " + noMagic);
+
+		map.setMagiaSinEfecto(noMagic);
+		map.saveDatFile();
+		
+        admin.sendMessage("Mapa " + map.getMapNumber() + " MagiaSinEfecto: " + map.isMagiaSinEfecto(), 
+        		FontType.FONTTYPE_INFO);
+	}
+
+	public void changeMapInfoNoResu(Player admin, boolean noResu) {
+		// Command /MODMAPINFO RESUSINEFECTO
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado si está prohibido usar Resucitar en el Mapa " 
+				+ admin.pos().map + " a " + noResu);
+
+		map.setResuSinEfecto(noResu);
+		map.saveDatFile();
+		
+        admin.sendMessage("Mapa " + map.getMapNumber() + " ResuSinEfecto: " + map.isResuSinEfecto(), 
+        		FontType.FONTTYPE_INFO);
+	}
+
+	public void changeMapInfoPK(Player admin, boolean noPK) {
+		// Command /MODMAPINFO PK
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado el estado de MapaSeguro del Mapa " 
+				+ admin.pos().map + " a " + noPK);
+
+		map.setSafeMap(!noPK);
+		map.saveDatFile();
+		
+        admin.sendMessage("Mapa " + map.getMapNumber() + " MapaSeguro: " + map.isSafeMap(), 
+        		FontType.FONTTYPE_INFO);
+		
+	}
+
+	public void changeMapInfoRestricted(Player admin, String status) {
+		// Command /MODMAPINFO RESTRINGIR
+		if (!admin.isGod() && !admin.isAdmin()) {
+			return;
+		}
+		Map map = server.getMap(admin.pos().map);
+		if (map == null) {
+			return;
+		}
+		
+		MapConstraint constraint = MapConstraint.fromName(status);
+		if (constraint != null) {
+			Log.logGM(admin.getNick(), admin.getNick() + " ha cambiado la Restricción del mapa " 
+					+ admin.pos().map + " a " + constraint.toString());
+		
+			map.setRestricted(constraint);
+			map.saveDatFile();
+			
+	        admin.sendMessage("Mapa " + map.getMapNumber() + " Restricción: " + constraint.toString(), 
+	        		FontType.FONTTYPE_INFO);
+		} else {
+			var values = String.join(", ", MapConstraint.getNames());
+			admin.sendMessage("Opciones válidas para Restricción: " + values, FontType.FONTTYPE_INFO);
+		}
+	}
+	
+	
+	enum EditCharOptions {
+		NONE,
+		
+	    Gold,
+	    Experience,
+	    Body,
+	    Head,
+	    CiticensKilled,
+	    CriminalsKilled,
+	    Level,
+	    Class,
+	    Skills,
+	    SkillPointsLeft,
+	    Nobleza,
+	    Asesino,
+	    Sex,
+	    Raza,
+	    AddGold;
+		
+		private static EditCharOptions[] VALUES = EditCharOptions.values();
+		
+		public static EditCharOptions value(int index) {
+			return VALUES[index];
+		}
+	}
+
+	
+	public void handleEditCharacter(Player admin, String userName, byte action, String param1, String param2) {
+		// MODIFICA CARACTER
+		// Comando /MOD
+		Log.logGM(admin.getNick(), "/MOD " + userName + " " + action + " " + param1 + " " + param2);
+		if ("".equals(userName)) {
+			admin.sendMessage("Parámetros inválidos!", FontType.FONTTYPE_INFO);
+			return;
+		}
+		userName = userName.replace("+", " ");
+		
+		Player user = "YO".equalsIgnoreCase(userName) ? admin : this.server.playerByUserName(userName);
+		if (user == null) {
+			admin.sendMessage("Usuario offline.", FontType.FONTTYPE_INFO);
+			return;
+		}
+		
+		EditCharOptions option = EditCharOptions.value(action);
+		
+		boolean valid = false;
+		if (admin.isRoleMaster()) {
+			if (admin.isCounselor()) {
+				// Los RMs consejeros sólo se pueden editar su head, body y level
+				valid = (user == admin) && 
+						EnumSet.of(EditCharOptions.Body, EditCharOptions.Head, EditCharOptions.Level).contains(option);
+			} else if (admin.isDemiGod()) {
+				// Los RMs sólo se pueden editar su level y el head y body de cualquiera
+				valid = (option == EditCharOptions.Level && user == admin) ||
+						EnumSet.of(EditCharOptions.Body, EditCharOptions.Head).contains(option);
+			} else if (admin.isGod()) {
+				// Los DRMs pueden aplicar los siguientes comandos sobre cualquiera
+				// pero si quiere modificar el level sólo lo puede hacer sobre sí mismo
+				valid = (option == EditCharOptions.Level && user == admin) ||
+						EnumSet.of(EditCharOptions.Body, EditCharOptions.Head, EditCharOptions.CiticensKilled, 
+								EditCharOptions.CriminalsKilled, EditCharOptions.Class, EditCharOptions.Skills, 
+								EditCharOptions.AddGold).contains(option);
+			}
+		} else if (admin.isGod() || admin.isAdmin()) {
+			valid = true;
+		}
+		
+		if (!valid) {
+			return;
+		}
+
+		if (!Player.userExists(userName)) {
+            admin.sendMessage("Esta intentando editar un usuario inexistente.", FontType.FONTTYPE_INFO);
+            Log.logGM(admin.getNick(), "Intento editar un usuario inexistente.");
+            return;
+		}
+		
+		// FIXME
+		switch (option) {
+		case AddGold:
+			break;
+		case Asesino:
+			break;
+		case Body:
+			break;
+		case CiticensKilled:
+			break;
+		case Class:
+			break;
+		case CriminalsKilled:
+			break;
+		case Experience:
+			break;
+		case Gold:
+			break;
+		case Head:
+			break;
+		case Level:
+			break;
+		case NONE:
+			break;
+		case Nobleza:
+			break;
+		case Raza:
+			break;
+		case Sex:
+			break;
+		case SkillPointsLeft:
+			break;
+		case Skills:
+			break;
+		default:
+			break;
+		}
+		
+		/*
+                'For making the Log
+                CommandString = "/MOD "
+                
+                Select Case opcion
+                    Case eEditOptions.eo_Gold
+                        If val(Arg1) < MAX_ORO_EDIT Then
+                            If tUser <= 0 Then ' Esta offline?
+                                Call WriteVar(UserCharPath, "STATS", "GLD", val(Arg1))
+                                Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                            Else ' Online
+                                UserList(tUser).Stats.GLD = val(Arg1)
+                                Call WriteUpdateGold(tUser)
+                            End If
+                        Else
+                            Call WriteConsoleMsg(UserIndex, "No esta permitido utilizar valores mayores. Su comando ha quedado en los logs del juego.", FontTypeNames.FONTTYPE_INFO)
+                        End If
+                    
+                        ' Log it
+                        CommandString = CommandString & "ORO "
+                
+                    Case eEditOptions.eo_Experience
+                        If val(Arg1) > 20000000 Then
+                                Arg1 = 20000000
+                        End If
+                        
+                        If tUser <= 0 Then ' Offline
+                            Var = GetVar(UserCharPath, "STATS", "EXP")
+                            Call WriteVar(UserCharPath, "STATS", "EXP", Var + val(Arg1))
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Stats.Exp = UserList(tUser).Stats.Exp + val(Arg1)
+                            Call CheckUserLevel(tUser)
+                            Call WriteUpdateExp(tUser)
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "EXP "
+                    
+                    Case eEditOptions.eo_Body
+                        If tUser <= 0 Then
+                            Call WriteVar(UserCharPath, "INIT", "Body", Arg1)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            Call ChangeUserChar(tUser, val(Arg1), UserList(tUser).Char.Head, UserList(tUser).Char.heading, UserList(tUser).Char.WeaponAnim, UserList(tUser).Char.ShieldAnim, UserList(tUser).Char.CascoAnim)
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "BODY "
+                    
+                    Case eEditOptions.eo_Head
+                        If tUser <= 0 Then
+                            Call WriteVar(UserCharPath, "INIT", "Head", Arg1)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            Call ChangeUserChar(tUser, UserList(tUser).Char.body, val(Arg1), UserList(tUser).Char.heading, UserList(tUser).Char.WeaponAnim, UserList(tUser).Char.ShieldAnim, UserList(tUser).Char.CascoAnim)
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "HEAD "
+                    
+                    Case eEditOptions.eo_CriminalsKilled
+                        Var = IIf(val(Arg1) > MAXUSERMATADOS, MAXUSERMATADOS, val(Arg1))
+                        
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "FACCIONES", "CrimMatados", Var)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Faccion.CriminalesMatados = Var
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "CRI "
+                    
+                    Case eEditOptions.eo_CiticensKilled
+                        Var = IIf(val(Arg1) > MAXUSERMATADOS, MAXUSERMATADOS, val(Arg1))
+                        
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "FACCIONES", "CiudMatados", Var)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Faccion.CiudadanosMatados = Var
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "CIU "
+                    
+                    Case eEditOptions.eo_Level
+                        If val(Arg1) > STAT_MAXELV Then
+                            Arg1 = CStr(STAT_MAXELV)
+                            Call WriteConsoleMsg(UserIndex, "No puedes tener un nivel superior a " & STAT_MAXELV & ".", FONTTYPE_INFO)
+                        End If
+                        
+                        ' Chequeamos si puede permanecer en el clan
+                        If val(Arg1) >= 25 Then
+                            
+                            Dim GI As Integer
+                            If tUser <= 0 Then
+                                GI = GetVar(UserCharPath, "GUILD", "GUILDINDEX")
+                            Else
+                                GI = UserList(tUser).GuildIndex
+                            End If
+                            
+                            If GI > 0 Then
+                                If modGuilds.GuildAlignment(GI) = "Legión oscura" Or modGuilds.GuildAlignment(GI) = "Armada Real" Then
+                                    'We get here, so guild has factionary alignment, we have to expulse the user
+                                    Call modGuilds.m_EcharMiembroDeClan(-1, UserName)
+                                    
+                                    Call SendData(SendTarget.ToGuildMembers, GI, PrepareMessageConsoleMsg(UserName & " deja el clan.", FontTypeNames.FONTTYPE_GUILD))
+                                    ' Si esta online le avisamos
+                                    If tUser > 0 Then _
+                                        Call WriteConsoleMsg(tUser, "¡Ya tienes la madurez suficiente como para decidir bajo que estandarte pelearás! Por esta razón, hasta tanto no te enlistes en la Facción bajo la cual tu clan está alineado, estarás excluído del mismo.", FontTypeNames.FONTTYPE_GUILD)
+                                End If
+                            End If
+                        End If
+                        
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "STATS", "ELV", val(Arg1))
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Stats.ELV = val(Arg1)
+                            Call WriteUpdateUserStats(tUser)
+                        End If
+                    
+                        ' Log it
+                        CommandString = CommandString & "LEVEL "
+                    
+                    Case eEditOptions.eo_Class
+                        For LoopC = 1 To NUMCLASES
+                            If UCase$(ListaClases(LoopC)) = UCase$(Arg1) Then Exit For
+                        Next LoopC
+                            
+                        If LoopC > NUMCLASES Then
+                            Call WriteConsoleMsg(UserIndex, "Clase desconocida. Intente nuevamente.", FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            If tUser <= 0 Then ' Offline
+                                Call WriteVar(UserCharPath, "INIT", "Clase", LoopC)
+                                Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                            Else ' Online
+                                UserList(tUser).clase = LoopC
+                            End If
+                        End If
+                    
+                        ' Log it
+                        CommandString = CommandString & "CLASE "
+                        
+                    Case eEditOptions.eo_Skills
+                        For LoopC = 1 To NUMSKILLS
+                            If UCase$(Replace$(SkillsNames(LoopC), " ", "+")) = UCase$(Arg1) Then Exit For
+                        Next LoopC
+                        
+                        If LoopC > NUMSKILLS Then
+                            Call WriteConsoleMsg(UserIndex, "Skill Inexistente!", FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            If tUser <= 0 Then ' Offline
+                                Call WriteVar(UserCharPath, "Skills", "SK" & LoopC, Arg2)
+                                Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                            Else ' Online
+                                UserList(tUser).Stats.UserSkills(LoopC) = val(Arg2)
+                            End If
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "SKILLS "
+                    
+                    Case eEditOptions.eo_SkillPointsLeft
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "STATS", "SkillPtsLibres", Arg1)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Stats.SkillPts = val(Arg1)
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "SKILLSLIBRES "
+                    
+                    Case eEditOptions.eo_Nobleza
+                        Var = IIf(val(Arg1) > MAXREP, MAXREP, val(Arg1))
+                        
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "REP", "Nobles", Var)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Reputacion.NobleRep = Var
+                        End If
+                    
+                        ' Log it
+                        CommandString = CommandString & "NOB "
+                        
+                    Case eEditOptions.eo_Asesino
+                        Var = IIf(val(Arg1) > MAXREP, MAXREP, val(Arg1))
+                        
+                        If tUser <= 0 Then ' Offline
+                            Call WriteVar(UserCharPath, "REP", "Asesino", Var)
+                            Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                        Else ' Online
+                            UserList(tUser).Reputacion.AsesinoRep = Var
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "ASE "
+                    
+                    Case eEditOptions.eo_Sex
+                        Dim Sex As Byte
+                        Sex = IIf(UCase(Arg1) = "MUJER", eGenero.Mujer, 0) ' Mujer?
+                        Sex = IIf(UCase(Arg1) = "HOMBRE", eGenero.Hombre, Sex) ' Hombre?
+                        
+                        If Sex <> 0 Then ' Es Hombre o mujer?
+                            If tUser <= 0 Then ' OffLine
+                                Call WriteVar(UserCharPath, "INIT", "Genero", Sex)
+                                Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                            Else ' Online
+                                UserList(tUser).genero = Sex
+                            End If
+                        Else
+                            Call WriteConsoleMsg(UserIndex, "Genero desconocido. Intente nuevamente.", FontTypeNames.FONTTYPE_INFO)
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "SEX "
+                    
+                    Case eEditOptions.eo_Raza
+                        Dim raza As Byte
+                        
+                        Arg1 = UCase$(Arg1)
+                        Select Case Arg1
+                            Case "HUMANO"
+                                raza = eRaza.Humano
+                            Case "ELFO"
+                                raza = eRaza.Elfo
+                            Case "DROW"
+                                raza = eRaza.Drow
+                            Case "ENANO"
+                                raza = eRaza.Enano
+                            Case "GNOMO"
+                                raza = eRaza.Gnomo
+                            Case Else
+                                raza = 0
+                        End Select
+                        
+                            
+                        If raza = 0 Then
+                            Call WriteConsoleMsg(UserIndex, "Raza desconocida. Intente nuevamente.", FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            If tUser <= 0 Then
+                                Call WriteVar(UserCharPath, "INIT", "Raza", raza)
+                                Call WriteConsoleMsg(UserIndex, "Charfile Alterado: " & UserName, FontTypeNames.FONTTYPE_INFO)
+                            Else
+                                UserList(tUser).raza = raza
+                            End If
+                        End If
+                            
+                        ' Log it
+                        CommandString = CommandString & "RAZA "
+                        
+                    Case eEditOptions.eo_addGold
+                    
+                        Dim bankGold As Long
+                        
+                        If Abs(Arg1) > MAX_ORO_EDIT Then
+                            Call WriteConsoleMsg(UserIndex, "No está permitido utilizar valores mayores a " & MAX_ORO_EDIT & ".", FontTypeNames.FONTTYPE_INFO)
+                        Else
+                            If tUser <= 0 Then
+                                bankGold = GetVar(CharPath & UserName & ".chr", "STATS", "BANCO")
+                                Call WriteVar(UserCharPath, "STATS", "BANCO", IIf(bankGold + val(Arg1) <= 0, 0, bankGold + val(Arg1)))
+                                Call WriteConsoleMsg(UserIndex, "Se le ha agregado " & Arg1 & " monedas de oro a " & UserName & ".", FONTTYPE_TALK)
+                            Else
+                                UserList(tUser).Stats.Banco = IIf(UserList(tUser).Stats.Banco + val(Arg1) <= 0, 0, UserList(tUser).Stats.Banco + val(Arg1))
+                                Call WriteConsoleMsg(tUser, STANDARD_BOUNTY_HUNTER_MESSAGE, FONTTYPE_TALK)
+                            End If
+                        End If
+                        
+                        ' Log it
+                        CommandString = CommandString & "AGREGAR "
+                        
+                    Case Else
+                        Call WriteConsoleMsg(UserIndex, "Comando no permitido.", FontTypeNames.FONTTYPE_INFO)
+                        CommandString = CommandString & "UNKOWN "
+                        
+                End Select
+                
+                CommandString = CommandString & Arg1 & " " & Arg2
+                Call LogGM(.name, CommandString & " " & UserName)
+                
+            End If
+        End If
+
+===============================================================================================================
+
+		if (accion.equalsIgnoreCase("ORO")) {
+			if (valor < 95001) {
+				user.stats().setGold(valor);
+				user.sendUpdateUserStats();
+			} else {
+				admin.sendMessage(
+						"No esta permitido utilizar valores mayores a 95000. Su comando ha quedado en los logs del juego.",
+						FontType.FONTTYPE_INFO);
+			}
+		} else if (accion.equalsIgnoreCase("EXP")) {
+			if (valor < 1000000) {
+				user.stats().Exp += valor;
+				user.checkUserLevel();
+				user.sendUpdateUserStats();
+			} else {
+				admin.sendMessage(
+						"No esta permitido utilizar valores mayores a 999999. Su comando ha quedado en los logs del juego.",
+						FontType.FONTTYPE_INFO);
+			}
+		} else if (accion.equalsIgnoreCase("BODY")) {
+			user.infoChar().body = (short) valor;
+			user.sendCharacterChange();
+		} else if (accion.equalsIgnoreCase("HEAD")) {
+			user.infoChar().head = (short) valor;
+			user.sendCharacterChange();
+		} else if (accion.equalsIgnoreCase("CRI")) {
+			user.userFaction().criminalsKilled = valor;
+		} else if (accion.equalsIgnoreCase("CIU")) {
+			user.userFaction().citizensKilled = valor;
+		} else if (accion.equalsIgnoreCase("LEVEL")) {
+			user.stats().ELV = valor;
+		} else {
+			admin.sendMessage("Comando no permitido o inválido.", FontType.FONTTYPE_INFO);
+		}
+		
+===============================================================================================================
+
+ */
 	}
 	
 }

@@ -264,7 +264,7 @@ public class UserSpells implements Constants {
 		    
 		    // No usar invi mapas InviSinEfecto
 		    Map tuMap = server.getMap(targetUser.pos().map);
-		    if (tuMap.InviSinEfecto) {
+		    if (tuMap.isInviSinEfecto()) {
 		    	this.player.sendMessage("¡La invisibilidad no funciona aquí!", FontType.FONTTYPE_INFO);
 		    	return false;
 		    }
@@ -494,7 +494,7 @@ public class UserSpells implements Constants {
 		    
 		        // No usar resu en mapas con ResuSinEfecto
 				Map map = this.server.getMap(targetUser.pos().map);
-		        if (map.ResuSinEfecto) {
+		        if (map.isResuSinEfecto()) {
 		        	this.player.sendMessage("¡Revivir no está permitido aqui! Retirate de la Zona si deseas utilizar el Hechizo.", FontType.FONTTYPE_INFO);
 		        	return false;
 		        }

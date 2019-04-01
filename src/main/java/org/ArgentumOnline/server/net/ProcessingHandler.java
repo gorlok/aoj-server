@@ -837,6 +837,41 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			server.getWorkWatcher().workWatcherActivateToggle(player);
 			break;
 			
+		case ChangeMapInfoBackup:
+			server.manager().changeMapInfoBackup(player, ((ChangeMapInfoBackupRequest)packet).doTheBackup == 1);
+			break;
+			
+		case ChangeMapInfoLand:
+			server.manager().changeMapInfoLand(player, ((ChangeMapInfoLandRequest)packet).infoLand);
+			break;
+			
+		case ChangeMapInfoZone:
+			server.manager().changeMapInfoZone(player, ((ChangeMapInfoZoneRequest)packet).infoZone);
+			break;
+			
+		case ChangeMapInfoNoInvi:
+			server.manager().changeMapInfoNoInvi(player, ((ChangeMapInfoNoInviRequest)packet).noInvisible == 1);
+			break;
+			 
+		case ChangeMapInfoNoMagic:
+			server.manager().changeMapInfoNoMagic(player, ((ChangeMapInfoNoMagicRequest)packet).noMagic == 1);
+			break;			
+			
+		case ChangeMapInfoNoResu:
+			server.manager().changeMapInfoNoResu(player, ((ChangeMapInfoNoResuRequest)packet).noResu == 1);
+			break;
+			
+		case ChangeMapInfoPK:
+			server.manager().changeMapInfoPK(player, ((ChangeMapInfoPKRequest)packet).isMapPk == 1);
+			break;
+			
+		case ChangeMapInfoRestricted:
+			server.manager().changeMapInfoRestricted(player, ((ChangeMapInfoRestrictedRequest)packet).status);
+			break;
+			
+		case EditChar:
+			handleEditChar(player, (EditCharRequest)packet);
+			break;
 			
 		case PartyCreate:
 		case PartyAcceptMember:
@@ -847,17 +882,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case PartyOnline:
 		case PartySetLeader:
 
-		case ChangeMapInfoBackup:
-		case ChangeMapInfoLand:
-		case ChangeMapInfoNoInvi:
-		case ChangeMapInfoNoMagic:
-		case ChangeMapInfoNoResu:
-		case ChangeMapInfoPK:
-		case ChangeMapInfoRestricted:
-		case ChangeMapInfoZone:
-			
 		case CheckSlot:
-		case EditChar:
 		case SetIniVar:
 		case Night:
 		case DumpIPTables:
@@ -905,6 +930,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 		}
 		
+	}
+
+	private void handleEditChar(Player admin, EditCharRequest packet) {
+		GameServer.instance().manager().handleEditCharacter(admin, 
+				packet.userName, packet.option, packet.param1, packet.param2);
 	}
 
 	private void handleImperialArmour(Player admin, ImperialArmourRequest packet) {

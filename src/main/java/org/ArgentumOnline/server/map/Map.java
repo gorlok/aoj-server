@@ -87,28 +87,24 @@ public class Map implements Constants {
     
     int     numUsers = 0; // FIXME se usa?
     int     mapVersion = 0; // FIXME se usa?
-    boolean NoEncriptarMP = false; // sin uso
-    
-    public boolean MagiaSinEfecto = false;
-    public boolean InviSinEfecto = false;
-    public boolean ResuSinEfecto = false;
-    
-    Terrain terrain = Terrain.FOREST;
-
-    Zone zone = Zone.COUNTRY;
-    
-    MapConstraint restricted = MapConstraint.NONE;
+    boolean noEncriptarMP = false; // sin uso
     
     /** player killing enabled */
-    public boolean pk = false;
-
-    public boolean backup = false;
+    private boolean pk = false;
+    private boolean magiaSinEfecto = false;
+    private boolean inviSinEfecto = false;
+    private boolean resuSinEfecto = false;
+    private boolean backup = false;
     
-    MapPos startPos = MapPos.empty(); // FIXME se usa?
+    private Terrain terrain = Terrain.FOREST;
+    private Zone zone = Zone.COUNTRY;
+    private MapConstraint restricted = MapConstraint.NONE;
     
-    GameServer server;
+    private MapPos startPos = MapPos.empty(); // FIXME se usa?
     
-    Tile tiles[][] = new Tile[MAPA_ANCHO][MAPA_ALTO];
+    private GameServer server;
+    
+    private Tile tiles[][] = new Tile[MAPA_ANCHO][MAPA_ALTO];
     
     private List<Tile> objects = new ArrayList<Tile>();
     private List<Player> players = new ArrayList<Player>();
@@ -126,8 +122,40 @@ public class Map implements Constants {
         }
     }
     
+    public void setRestricted(MapConstraint restricted) {
+		this.restricted = restricted;
+	}
+    
     public boolean isBackup() {
 		return backup;
+	}
+    
+    public void setBackup(boolean backup) {
+    	this.backup = backup;
+    }
+    
+    public boolean isMagiaSinEfecto() {
+		return magiaSinEfecto;
+	}
+    
+    public void setMagiaSinEfecto(boolean magiaSinEfecto) {
+		this.magiaSinEfecto = magiaSinEfecto;
+	}
+    
+    public boolean isInviSinEfecto() {
+		return inviSinEfecto;
+	}
+    
+    public void setInviSinEfecto(boolean inviSinEfecto) {
+		this.inviSinEfecto = inviSinEfecto;
+	}
+    
+    public boolean isResuSinEfecto() {
+		return resuSinEfecto;
+	}
+    
+    public void setResuSinEfecto(boolean resuSinEfecto) {
+		this.resuSinEfecto = resuSinEfecto;
 	}
     
     private AreasAO area() {
@@ -154,6 +182,10 @@ public class Map implements Constants {
         return this.zone;
     }
     
+    public void setZone(Zone zone) {
+		this.zone = zone;
+	}
+    
     public int getMusic() {
         return this.music;
     }
@@ -161,6 +193,10 @@ public class Map implements Constants {
     public Terrain getTerrain() {
         return this.terrain;
     }
+    
+    public void setTerrain(Terrain terrain) {
+		this.terrain = terrain;
+	}
     
     public MapObject getObject(byte x, byte y) {
     	if (tile(x, y).hasObject()) {
@@ -230,6 +266,10 @@ public class Map implements Constants {
         return this.pk == false;
     }
     
+    public void setSafeMap(boolean safe) {
+    	this.pk = !safe;
+    }
+    
     public boolean isSafeZone(byte x, byte y) {
     	return tile(x, y).isSafeZone();
     }
@@ -275,12 +315,12 @@ public class Map implements Constants {
         // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
         this.pk = (ini.getInt(section, "PK") == 0); 
         
-        this.MagiaSinEfecto = (ini.getInt(section, "MagiaSinEfecto") == 1);
-        this.InviSinEfecto = (ini.getInt(section, "InviSinEfecto") == 1);
-        this.ResuSinEfecto = (ini.getInt(section, "ResuSinEfecto") == 1);
-        this.NoEncriptarMP = (ini.getInt(section, "NoEncriptarMP") == 1);
+        this.magiaSinEfecto = (ini.getInt(section, "MagiaSinEfecto") == 1);
+        this.inviSinEfecto = (ini.getInt(section, "InviSinEfecto") == 1);
+        this.resuSinEfecto = (ini.getInt(section, "ResuSinEfecto") == 1);
+        this.noEncriptarMP = (ini.getInt(section, "NoEncriptarMP") == 1);
         
-        this.restricted = MapConstraint.value(ini.getString(section, "Restringir"));
+        this.restricted = MapConstraint.fromName(ini.getString(section, "Restringir"));
         this.backup = (ini.getInt(section, "BackUp") == 1);
         String tipo_terreno = ini.getString(section, "Terreno").toUpperCase();
         if (tipo_terreno.equals("BOSQUE")) {
@@ -1379,7 +1419,7 @@ public class Map implements Constants {
         saveDatFile();
     }
     
-    private void saveDatFile() {
+    public void saveDatFile() {
         // Escribir archivo .dat
     	String filename = "worldBackup" + File.separator + "Mapa" + this.mapNumber + ".dat";
         try {
@@ -1390,10 +1430,10 @@ public class Map implements Constants {
             // PK está invertido
             ini.setValue(section, "PK", !this.pk);
             
-            ini.setValue(section, "MagiaSinEfecto", MagiaSinEfecto);
-            ini.setValue(section, "InviSinEfecto", InviSinEfecto);
-            ini.setValue(section, "ResuSinEfecto", ResuSinEfecto);
-            ini.setValue(section, "NoEncriptarMP", NoEncriptarMP);
+            ini.setValue(section, "MagiaSinEfecto", magiaSinEfecto);
+            ini.setValue(section, "InviSinEfecto", inviSinEfecto);
+            ini.setValue(section, "ResuSinEfecto", resuSinEfecto);
+            ini.setValue(section, "NoEncriptarMP", noEncriptarMP);
             
             ini.setValue(section, "Restringir", this.restricted.toString());
             ini.setValue(section, "BackUp", this.backup);
@@ -1597,7 +1637,11 @@ public class Map implements Constants {
                                 }
                             }
                             break;
+					default:
+						break;
                     }
+			default:
+				break;
             }
             if (sound > -1) {
                 for (Player player : this.players) {

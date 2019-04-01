@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-03-31
+- agregado el comando /MODMAPINFO en todas sus variantes
+
 ### 2019-03-30
 - corregido error al conectar (usuario ya conectado)
 - se corrige la generación del jar y sus dependencias

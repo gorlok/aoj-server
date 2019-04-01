@@ -1,5 +1,9 @@
 package org.ArgentumOnline.server.map;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum MapConstraint {
 	
 	NONE("NO"),
@@ -21,7 +25,7 @@ public enum MapConstraint {
 	
 	private static MapConstraint[] VALUES = MapConstraint.values();
 	
-	public static MapConstraint value(String value) {
+	public static MapConstraint fromName(String value) {
 		if (value == null) {
 			return NONE;
 		}
@@ -31,6 +35,10 @@ public enum MapConstraint {
 			}
 		}
 		return NONE;
+	}
+	
+	public static List<String> getNames() {
+		return Arrays.stream(VALUES).map(v -> v.name).collect(Collectors.toList());
 	}
 	
 }
