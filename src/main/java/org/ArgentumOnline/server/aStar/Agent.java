@@ -1,1 +1,0 @@
-package org.ArgentumOnline.server.aStar;public class Agent {	//}

@@ -16,11 +16,19 @@ Currently it's using AO's binary protocol v0.12.3
 ## Requirements to build
 
 * [JDK 11](https://adoptopenjdk.net/)
-* [Maven 3.5+](https://maven.apache.org/download.cgi)
+* [Gradle](https://gradle.org/) Or [Maven 3.5+](https://maven.apache.org/download.cgi)
 
-Please note that sources are keep in ISO-8859-1.
+__Please note that sources are keep in ISO-8859-1.__
 
-## Build and running
+## Build and running (with Gradle)
+
+To build the project, run on the root folder: `gradle`
+
+You will found distribution zip on build/distributions/ao-server-0.12.3.zip
+
+Unzip it on some empty folder and start the game server with: `./bin/ao-server reset` (Linux) or `.\bin\ao-server.bat reset` (Windows)  
+
+## Build and running (with Maven)
 
 To build the project, run on the root folder: `mvn clean package`
 
