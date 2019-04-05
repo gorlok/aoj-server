@@ -155,7 +155,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void addSpell(int slot) {
-		int oid = this.player.userInv().getObjeto(slot).objid;
+		int oid = this.player.userInv().getObject(slot).objid;
 		ObjectInfo spellObj = this.server.getObjectInfoStorage().getInfoObjeto(oid);
 		short spellIndex = spellObj.HechizoIndex;
 		if (!hasSpell(spellIndex)) {

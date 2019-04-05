@@ -3,6 +3,9 @@ Todos los cambios notables(?) del proyecto serán documentados en este archivo.
 
 ## [SIN PUBLICAR]
 
+### 2019-04-01
+- agregados /MOD y /SLOT
+
 ### 2019-03-31
 - agregado el comando /MODMAPINFO en todas sus variantes
 

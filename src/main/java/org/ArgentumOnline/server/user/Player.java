@@ -303,9 +303,17 @@ public class Player extends AbstractCharacter {
 	public UserRace race() {
 		return this.race;
 	}
+	
+	public void setRace(UserRace race) {
+		this.race = race;
+	}
 
 	public UserGender gender() {
 		return this.gender;
+	}
+	
+	public void setGender(UserGender gender) {
+		this.gender = gender;
 	}
 
 	public String getNick() {
@@ -318,6 +326,10 @@ public class Player extends AbstractCharacter {
 
 	public Clazz clazz() {
 		return this.clazz;
+	}
+	
+	public void setClazz(Clazz clazz) {
+		this.clazz = clazz;
 	}
 
 	public UserQuest quest() {
@@ -756,9 +768,9 @@ public class Player extends AbstractCharacter {
 	private void userDepositaItem(short slot, int cant) {
 		// El usuario deposita un item
 		sendUpdateUserStats();
-		if (this.userInv.getObjeto(slot).cant > 0 && !this.userInv.getObjeto(slot).equipado) {
-			if (cant > 0 && cant > this.userInv.getObjeto(slot).cant) {
-				cant = this.userInv.getObjeto(slot).cant;
+		if (this.userInv.getObject(slot).cant > 0 && !this.userInv.getObject(slot).equipado) {
+			if (cant > 0 && cant > this.userInv.getObject(slot).cant) {
+				cant = this.userInv.getObject(slot).cant;
 			}
 			// Agregamos el obj que compro al inventario
 			userDejaObj(slot, cant);
@@ -775,26 +787,26 @@ public class Player extends AbstractCharacter {
 		if (cant < 1) {
 			return;
 		}
-		short objid = this.userInv.getObjeto(slot).objid;
+		short objid = this.userInv.getObject(slot).objid;
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
-		for (int i = 1; i <= this.bankInv.size(); i++) {
-			if (this.bankInv.getObjeto(i).objid == objid && this.bankInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
+		for (int i = 1; i <= this.bankInv.getSize(); i++) {
+			if (this.bankInv.getObject(i).objid == objid && this.bankInv.getObject(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
 			}
 		}
 		// Sino se fija por un slot vacio antes del slot devuelto
 		if (slot_inv == 0) {
-			slot_inv = this.bankInv.getSlotLibre();
+			slot_inv = this.bankInv.getEmptySlot();
 		}
 		if (slot_inv == 0) {
 			sendMessage("No tienes mas espacio en el banco!!", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// Mete el obj en el slot
-		this.bankInv.getObjeto(slot_inv).objid = objid;
-		this.bankInv.getObjeto(slot_inv).cant += cant;
+		this.bankInv.getObject(slot_inv).objid = objid;
+		this.bankInv.getObject(slot_inv).cant += cant;
 		this.userInv.quitarUserInvItem(slot, cant);
 	}
 
@@ -803,9 +815,9 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		sendUpdateUserStats();
-		if (this.bankInv.getObjeto(slot).cant > 0) {
-			if (cant > this.bankInv.getObjeto(slot).cant) {
-				cant = this.bankInv.getObjeto(slot).cant;
+		if (this.bankInv.getObject(slot).cant > 0) {
+			if (cant > this.bankInv.getObject(slot).cant) {
+				cant = this.bankInv.getObject(slot).cant;
 			}
 			// Agregamos el obj que compro al inventario
 			userReciveObj(slot, cant);
@@ -820,30 +832,30 @@ public class Player extends AbstractCharacter {
 	}
 
 	private void userReciveObj(short slot, int cant) {
-		if (this.bankInv.getObjeto(slot).cant <= 0) {
+		if (this.bankInv.getObject(slot).cant <= 0) {
 			return;
 		}
-		short objid = this.bankInv.getObjeto(slot).objid;
+		short objid = this.bankInv.getObject(slot).objid;
 		// ¿Ya tiene un objeto de este tipo?
 		int slot_inv = 0;
-		for (short i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i).objid == objid && this.userInv.getObjeto(i).cant + cant <= MAX_INVENTORY_OBJS) {
+		for (short i = 1; i <= this.userInv.getSize(); i++) {
+			if (this.userInv.getObject(i).objid == objid && this.userInv.getObject(i).cant + cant <= MAX_INVENTORY_OBJS) {
 				slot_inv = i;
 				break;
 			}
 		}
 		// Sino se fija por un slot vacio
 		if (slot_inv == 0) {
-			slot_inv = this.userInv.getSlotLibre();
+			slot_inv = this.userInv.getEmptySlot();
 		}
 		if (slot_inv == 0) {
 			sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
 			return;
 		}
 		// Mete el obj en el slot
-		if (this.userInv.getObjeto(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
-			this.userInv.getObjeto(slot_inv).objid = objid;
-			this.userInv.getObjeto(slot_inv).cant += cant;
+		if (this.userInv.getObject(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
+			this.userInv.getObject(slot_inv).objid = objid;
+			this.userInv.getObject(slot_inv).cant += cant;
 			quitarBancoInvItem(slot, cant);
 		} else {
 			sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
@@ -852,10 +864,10 @@ public class Player extends AbstractCharacter {
 
 	private void quitarBancoInvItem(short slot, int cant) {
 		// Quita un Obj
-		this.bankInv.getObjeto(slot).cant -= cant;
-		if (this.bankInv.getObjeto(slot).cant <= 0) {
-			this.bankInv.getObjeto(slot).objid = 0;
-			this.bankInv.getObjeto(slot).cant = 0;
+		this.bankInv.getObject(slot).cant -= cant;
+		if (this.bankInv.getObject(slot).cant <= 0) {
+			this.bankInv.getObject(slot).objid = 0;
+			this.bankInv.getObject(slot).cant = 0;
 		}
 	}
 
@@ -877,8 +889,8 @@ public class Player extends AbstractCharacter {
 	private void updateBankUserInv(short slot) {
 		// Actualiza un solo slot
 		// Actualiza el inventario
-		if (this.bankInv.getObjeto(slot).objid > 0) {
-			sendBanObj(slot, this.bankInv.getObjeto(slot));
+		if (this.bankInv.getObject(slot).objid > 0) {
+			sendBanObj(slot, this.bankInv.getObject(slot));
 		} else {
 			sendPacket(new ChangeBankSlotResponse((byte) slot, (short) 0, "", (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0, 0));
 		}
@@ -996,7 +1008,7 @@ public class Player extends AbstractCharacter {
 			talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
 			return;
 		}
-		if (npc.npcInv().isSlotValid(slotNpc)) {
+		if (npc.npcInv().isValidSlot(slotNpc)) {
 			((NpcMerchant)npc).sellItemToUser(this, slotNpc, amount);
 		}
 	}
@@ -1025,7 +1037,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 
-		if (npc.npcInv().isSlotValid(slot)) {
+		if (npc.npcInv().isValidSlot(slot)) {
 			((NpcMerchant)npc).buyItemFromUser(this, slot, amount);
 		}
 	}
@@ -1311,7 +1323,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	public void useItem(short slot) {
-		if (this.userInv.getObjeto(slot) != null && this.userInv.getObjeto(slot).objid == 0) {
+		if (this.userInv.getObject(slot) != null && this.userInv.getObject(slot).objid == 0) {
 			return;
 		}
 		this.userInv.useInvItem(slot);
@@ -1321,7 +1333,7 @@ public class Player extends AbstractCharacter {
 	 * Fabricar lingotes
 	 */
 	private void makeIngots() {
-		if (this.userInv.getObjeto(flags().TargetObjInvSlot).cant < 5) {
+		if (this.userInv.getObject(flags().TargetObjInvSlot).cant < 5) {
 			sendMessage("No tienes suficientes minerales para hacer un lingote.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -1505,8 +1517,8 @@ public class Player extends AbstractCharacter {
 			slot = 1;
 			while (slot <= MAX_INVENTORY_SLOTS) {
 				// Hay objeto en este slot?
-				if (victim.userInv.getObjeto(slot).objid > 0) {
-					if (victim.userInv.getObjeto(slot).esRobable()) {
+				if (victim.userInv.getObject(slot).objid > 0) {
+					if (victim.userInv.getObject(slot).esRobable()) {
 						if (Util.Azar(1, 10) < 4) {
 							flag = true;
 							break;
@@ -1519,8 +1531,8 @@ public class Player extends AbstractCharacter {
 			slot = 20;
 			while (slot > 0) {
 				// Hay objeto en este slot?
-				if (victim.userInv.getObjeto(slot).objid > 0) {
-					if (victim.userInv.getObjeto(slot).esRobable()) {
+				if (victim.userInv.getObject(slot).objid > 0) {
+					if (victim.userInv.getObject(slot).esRobable()) {
 						if (Util.Azar(1, 10) < 4) {
 							flag = true;
 							break;
@@ -1533,9 +1545,9 @@ public class Player extends AbstractCharacter {
 		if (flag) {
 			// Cantidad al azar
 			int cant = Util.Azar(1, 5);
-			short objid = this.userInv.getObjeto(slot).objid;
-			if (cant > this.userInv.getObjeto(slot).cant) {
-				cant = this.userInv.getObjeto(slot).cant;
+			short objid = this.userInv.getObject(slot).objid;
+			if (cant > this.userInv.getObject(slot).cant) {
+				cant = this.userInv.getObject(slot).cant;
 			}
 			victim.userInv.quitarUserInvItem(slot, cant);
 			victim.sendInventorySlot(slot);
@@ -1737,7 +1749,7 @@ public class Player extends AbstractCharacter {
 				// Consumir munición.
 				int slotMunicion = this.userInv.getMunicionSlot();
 				this.userInv.quitarUserInvItem(this.userInv.getMunicionSlot(), 1);
-				if (this.userInv.getObjeto(slotMunicion) != null && this.userInv.getObjeto(slotMunicion).cant > 0) {
+				if (this.userInv.getObject(slotMunicion) != null && this.userInv.getObject(slotMunicion).cant > 0) {
 					this.userInv.equipar(slotMunicion);
 				}
 				sendInventorySlot(slotMunicion);
@@ -2600,7 +2612,7 @@ public class Player extends AbstractCharacter {
 			sendUpdateUserStats();
 		} else {
 			if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
-				if (this.userInv.getObjeto(slot) != null && this.userInv.getObjeto(slot).objid > 0) {
+				if (this.userInv.getObject(slot) != null && this.userInv.getObject(slot).objid > 0) {
 					this.userInv.dropObj(slot, cant);
 				}
 			}
@@ -2613,7 +2625,7 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		if (slot > 0 && slot <= MAX_INVENTORY_SLOTS) {
-			if (this.userInv.getObjeto(slot) != null && this.userInv.getObjeto(slot).objid > 0) {
+			if (this.userInv.getObject(slot) != null && this.userInv.getObject(slot).objid > 0) {
 				this.userInv.equipar(slot); // EquiparInvItem
 			}
 		}
@@ -2621,13 +2633,13 @@ public class Player extends AbstractCharacter {
 
 	public void sendInventoryToUser() {
 		// updateUserInv
-		for (int i = 1; i <= this.userInv.size(); i++) {
+		for (int i = 1; i <= this.userInv.getSize(); i++) {
 			sendInventorySlot(i);
 		}
 	}
 
 	public void sendInventorySlot(int slot) {
-		InventoryObject inv = this.userInv.getObjeto(slot);
+		InventoryObject inv = this.userInv.getObject(slot);
 
 		ObjectInfo objInfo;
 		if (inv != null && inv.objid != 0) {
@@ -3238,11 +3250,11 @@ public class Player extends AbstractCharacter {
 
 	private void dropAllItems() {
 		Map m = this.server.getMap(pos().map);
-		for (int i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i) != null && this.userInv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = findObj(this.userInv.getObjeto(i).objid);
+		for (int i = 1; i <= this.userInv.getSize(); i++) {
+			if (this.userInv.getObject(i) != null && this.userInv.getObject(i).objid > 0) {
+				ObjectInfo info_obj = findObj(this.userInv.getObject(i).objid);
 				if (info_obj.itemSeCae()) {
-					InventoryObject obj_inv = new InventoryObject(this.userInv.getObjeto(i).objid, this.userInv.getObjeto(i).cant);
+					InventoryObject obj_inv = new InventoryObject(this.userInv.getObject(i).objid, this.userInv.getObject(i).cant);
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
 					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
@@ -3255,11 +3267,11 @@ public class Player extends AbstractCharacter {
 
 	public void tirarTodosLosItemsNoNewbies() {
 		Map map = this.server.getMap(pos().map);
-		for (int i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i).objid > 0) {
-				ObjectInfo info_obj = findObj(this.userInv.getObjeto(i).objid);
+		for (int i = 1; i <= this.userInv.getSize(); i++) {
+			if (this.userInv.getObject(i).objid > 0) {
+				ObjectInfo info_obj = findObj(this.userInv.getObject(i).objid);
 				if (!info_obj.esNewbie() && info_obj.itemSeCae()) {
-					InventoryObject obj_inv = new InventoryObject(this.userInv.getObjeto(i).objid, this.userInv.getObjeto(i).cant);
+					InventoryObject obj_inv = new InventoryObject(this.userInv.getObject(i).objid, this.userInv.getObject(i).cant);
 					this.userInv.quitarUserInvItem(i, obj_inv.cant);
 					sendInventorySlot(i);
 					if (info_obj.itemSeCae()) {
@@ -3393,41 +3405,6 @@ public class Player extends AbstractCharacter {
 	public void poison() {
 		flags().Envenenado = true;
 		sendMessage("¡¡La criatura te ha envenenado!!", FONTTYPE_FIGHT);
-	}
-
-	public void modificarSkills(String s) {
-		// TODO
-		// Comando "SKSE" Modificar skills
-		/*
-		StringTokenizer st = new StringTokenizer(s, ",");
-		byte skills[] = new byte[Skill.values().length];
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			skills[i] = Byte.parseByte(st.nextToken());
-		}
-		// Prevenir el hackeo de los skills
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		int total = 0;
-		for (int i = 1; i <= Skill.MAX_SKILLS; i++) {
-			if (skills[i] < 0) {
-				Log.logHack(m_nick + " IP:" + m_ip + " trató de hackear los skills (skill negativo).");
-				stats().setSkillPoints(0); // Pierde los skills points
-				// acumulados por tramposo!
-				doSALIR(); // Cerrar la conexion como castigo.
-				return;
-			}
-			total += skills[i];
-		}
-		if (total > stats().SkillPts) {
-			Log.logHack(m_nick + " IP:" + m_ip + " trató de hackear los skills (skills > SkillPts).");
-			stats().setSkillPoints(0); // Pierde los skills points
-			// acumulados
-			// por tramposo!
-			doSALIR(); // Cerrar la conexion como castigo.
-			return;
-		}
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		stats().subirSkills(skills);
-		*/
 	}
 
 	public void checkUserLevel() {
@@ -3730,9 +3707,9 @@ public class Player extends AbstractCharacter {
 			return;
 		}
 		int cant_quitar;
-		for (int i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i).objid == objIdx) {
-				cant_quitar = this.userInv.getObjeto(i).cant < cant ? this.userInv.getObjeto(i).cant : cant;
+		for (int i = 1; i <= this.userInv.getSize(); i++) {
+			if (this.userInv.getObject(i).objid == objIdx) {
+				cant_quitar = this.userInv.getObject(i).cant < cant ? this.userInv.getObject(i).cant : cant;
 				cant -= cant_quitar;
 				this.userInv.desequipar(i);
 				this.userInv.quitarUserInvItem(i, cant_quitar);
@@ -4358,8 +4335,8 @@ public class Player extends AbstractCharacter {
 
 		// ???????????????? INVENTARIO ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
 		this.userInv.clear();
-		this.userInv.setObjeto(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100, false));
-		this.userInv.setObjeto(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100, false));
+		this.userInv.setObject(1, new InventoryObject(MANZANA_ROJA_NEWBIES, 100, false));
+		this.userInv.setObject(2, new InventoryObject(BOTELLA_AGUA_NEWBIES, 100, false));
 		this.userInv.setArma(3, new InventoryObject(DAGA_NEWBIES, 1, true));
 
 		switch (race()) {
@@ -5066,9 +5043,9 @@ public class Player extends AbstractCharacter {
 
 	private boolean tieneObjetos(short objid, int cant) {
 		int total = 0;
-		for (int i = 1; i <= this.userInv.size(); i++) {
-			if (this.userInv.getObjeto(i).objid == objid) {
-				total += this.userInv.getObjeto(i).cant;
+		for (int i = 1; i <= this.userInv.getSize(); i++) {
+			if (this.userInv.getObject(i).objid == objid) {
+				total += this.userInv.getObject(i).cant;
 			}
 		}
 		return (cant <= total);
@@ -5298,7 +5275,7 @@ public class Player extends AbstractCharacter {
 		if (dir != 1 && dir != -1) {
 			return;
 		}
-		if (slot < 1 || slot > bankInv.size()) {
+		if (slot < 1 || slot > bankInv.getSize()) {
 			return;
 		}
 

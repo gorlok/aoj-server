@@ -102,8 +102,8 @@ public class UserTrade {
 			}
 		} else {
 			obj1_cant = this.cant;
-			obj1_objid = player.userInv.getObjeto(this.objectSlot).objid;
-			if (obj1_cant > player.userInv.getObjeto(this.objectSlot).cant) {
+			obj1_objid = player.userInv.getObject(this.objectSlot).objid;
+			if (obj1_cant > player.userInv.getObject(this.objectSlot).cant) {
 				player.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
@@ -119,8 +119,8 @@ public class UserTrade {
 			}
 		} else {
 			obj2_cant = this.cant;
-			obj2_objid = targetPlayer.userInv.getObjeto(this.objectSlot).objid;
-			if (obj2_cant > targetPlayer.userInv.getObjeto(this.objectSlot).cant) {
+			obj2_objid = targetPlayer.userInv.getObject(this.objectSlot).objid;
+			if (obj2_cant > targetPlayer.userInv.getObject(this.objectSlot).cant) {
 				targetPlayer.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
@@ -241,7 +241,7 @@ public class UserTrade {
 			}
 		} else {
 			// objeto del inventario
-			if (amount > player.userInv.getObjeto(slot).cant) {
+			if (amount > player.userInv.getObject(slot).cant) {
 				player.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				return;
 			}
@@ -278,7 +278,7 @@ public class UserTrade {
 		if (this.objectSlot == Constants.FLAGORO) {
 			objid = Constants.OBJ_ORO;
 		} else {
-			objid = targetPlayer.userInv.getObjeto(this.objectSlot).objid;
+			objid = targetPlayer.userInv.getObject(this.objectSlot).objid;
 		}
 		if (this.cant <= 0 || objid <= 0) {
 			return;

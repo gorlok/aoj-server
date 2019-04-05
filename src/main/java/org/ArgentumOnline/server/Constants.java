@@ -42,6 +42,10 @@ public interface Constants {
 	final static int MAPA_PRETORIANO = -1;
 	
 	final static int JAIL_TIME_PIQUETE_MINUTES = 5;
+	
+	public final static int MAX_ORO_EDIT = 5000000;
+	
+	public final static String STANDARD_BOUNTY_HUNTER_MESSAGE = "Se te ha otorgado un premio por ayudar al proyecto reportando bugs, el mismo está disponible en tu bóveda.";
     
     /*
     Public DeNoche As Boolean

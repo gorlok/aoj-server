@@ -40,12 +40,12 @@ public class Inventory implements Iterable<InventoryObject> {
         reset();
     }
 	
-	protected ObjectInfo findObj(int oid) {
+	protected ObjectInfo findObject(int oid) {
 		return this.server.getObjectInfoStorage().getInfoObjeto(oid);		
 	}
     
-    public boolean isSlotValid(int slot) {
-    	return slot >= 1 && slot <= size();
+    public boolean isValidSlot(int slot) {
+    	return slot >= 1 && slot <= getSize();
     }
     
     private void reset() {
@@ -54,7 +54,7 @@ public class Inventory implements Iterable<InventoryObject> {
 		}    	
     }
     
-    public int size() {
+    public int getSize() {
         return this.objs.length;
     }
     
@@ -63,11 +63,15 @@ public class Inventory implements Iterable<InventoryObject> {
      * @param slot debe ser entre 1 y size()
      * @return objeto del inventario, o null si no existe
      */
-    public InventoryObject getObjeto(int slot) {
-        return (isSlotValid(slot)) ? this.objs[slot-1] : null;
+    public InventoryObject getObject(int slot) {
+        return (isValidSlot(slot)) ? this.objs[slot-1] : null;
     }
     
-    public void setObjeto(int slot, InventoryObject objInv) {
+    public boolean isEmpty(int slot) {
+        return !isValidSlot(slot) || getObject(slot).objid == 0;
+    }
+    
+    public void setObject(int slot, InventoryObject objInv) {
         this.objs[slot-1] = objInv;
     }
 
@@ -75,7 +79,7 @@ public class Inventory implements Iterable<InventoryObject> {
         reset();
     }
     
-    public int getSlotLibre() {
+    public int getEmptySlot() {
         for (int i = 0; i < this.objs.length; i++) {
             if (this.objs[i] == null) {
 				return i+1;
@@ -96,7 +100,7 @@ public class Inventory implements Iterable<InventoryObject> {
         return true;
     }
     
-    public int getCantObjs() {
+    public int getObjectsCount() {
         int cant = 0;
         for (InventoryObject element : this.objs) {
             if (element != null && element.objid > 0) {
@@ -122,7 +126,7 @@ public class Inventory implements Iterable<InventoryObject> {
 			objs[slot-2] = temp;
 		} else {
 			// Move downward
-			if (slot == size()) {
+			if (slot == getSize()) {
 				return;
 			}
 			var temp = objs[slot-1];

@@ -17,6 +17,8 @@
  *******************************************************************************/
 package org.ArgentumOnline.server;
 
+import java.util.Arrays;
+
 /**
  * @author gorlok
  */
@@ -70,6 +72,12 @@ public enum Skill {
     private static final Skill[] VALUES = Skill.values();
     public static Skill value(int index) {
     	return VALUES[index-1];
+    }
+    
+    public static Skill byName(String skillName) {
+    	return Arrays.stream(VALUES)
+    			.filter( s -> skillName.equalsIgnoreCase(s.name))
+    			.findFirst().orElse(null);
     }
     
     public byte value() {

@@ -169,18 +169,18 @@ public class UserStorage {
 		}
 
 		// Lista de objetos en el banco.
-		for (int i = 0; i < user.getBankInventory().size(); i++) {
+		for (int i = 0; i < user.getBankInventory().getSize(); i++) {
 			String tmp = ini.getString("BancoInventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
-			user.getBankInventory().setObjeto(i + 1,
+			user.getBankInventory().setObject(i + 1,
 					new InventoryObject(Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken())));
 		}
 
 		// Lista de objetos del inventario del usuario.
-		for (int i = 0; i < user.userInv().size(); i++) {
+		for (int i = 0; i < user.userInv().getSize(); i++) {
 			String tmp = ini.getString("Inventory", "Obj" + (i + 1));
 			StringTokenizer st = new StringTokenizer(tmp, "-");
-			user.userInv().setObjeto(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
+			user.userInv().setObject(i + 1, new InventoryObject(Short.parseShort(st.nextToken()),
 					Short.parseShort(st.nextToken()), Short.parseShort(st.nextToken()) == 1));
 		}
 		user.userInv().setArmaSlot(ini.getShort("Inventory", "WeaponEqpSlot"));
@@ -314,8 +314,8 @@ public class UserStorage {
 
 			ini.setValue("CONTACTO", "Email", user.email);
 
-			ini.setValue("INIT", "Genero", user.gender.value());
-			ini.setValue("INIT", "Raza", user.race.value());
+			ini.setValue("INIT", "Genero", user.gender.id());
+			ini.setValue("INIT", "Raza", user.race.id());
 			ini.setValue("INIT", "Hogar", user.homeland.id());
 			ini.setValue("INIT", "Clase", user.clazz().id());
 			ini.setValue("INIT", "PasswordHash", user.passwordHash);
@@ -376,7 +376,7 @@ public class UserStorage {
 					ini.setValue("BancoInventory", "Obj" + (i++), invObj.objid + "-" + invObj.cant);
 				}
 			}
-			ini.setValue("BancoInventory", "CantidadItems", user.getBankInventory().size());
+			ini.setValue("BancoInventory", "CantidadItems", user.getBankInventory().getSize());
 
 			i = 1;
 			for (InventoryObject invObj : user.userInv()) {
@@ -387,7 +387,7 @@ public class UserStorage {
 						invObj.objid + "-" + invObj.cant + "-" + (invObj.equipado ? 1 : 0));
 				}
 			}
-			ini.setValue("Inventory", "CantidadItems", user.userInv().size());
+			ini.setValue("Inventory", "CantidadItems", user.userInv().getSize());
 			
 			ini.setValue("Inventory", "WeaponEqpSlot", user.userInv().getArmaSlot());
 			ini.setValue("Inventory", "ArmourEqpSlot", user.userInv().getArmaduraSlot());
@@ -626,4 +626,192 @@ public class UserStorage {
 		}
     }
     
+    public static void addBankGold(String userName, int goldToAdd) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			int currentGold = ini.getInt("STATS", "BANCO");
+			currentGold += goldToAdd;
+			if (currentGold < 0) {
+				currentGold = 0;
+			}
+			ini.setValue("STATS", "BANCO", currentGold);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void writeGold(String userName, int gold) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("STATS", "GLD", gold);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void addExp(String userName, int addedExp) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			int currentExp = ini.getInt("STATS", "EXP");
+			currentExp += addedExp;
+			ini.setValue("STATS", "EXP", currentExp);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+
+    public static void writeLevel(String userName, int level) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("STATS", "ELV", level);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void writeCriminalsKilled(String userName, int count) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("FACCIONES", "CrimMatados", count);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void writeCitizensKilled(String userName, int count) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("FACCIONES", "CiudMatados", count);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+        
+    public static void writeSkillValue(String userName, int skill, int value) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("Skills", "SK" + skill, value);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void writeFreeSkillsPoints(String userName, int value) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("STATS", "SkillPtsLibres", value);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    public static void writeNobleReputation(String userName, int value) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("REP", "Nobles", value);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+    
+    
+    public static void writeAssassinReputation(String userName, int value) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("REP", "Asesino", value);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+    }
+
+	public static void writeRace(String userName, UserRace race) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "Raza", race.id());
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+	
+	public static void writeClazz(String userName, Clazz clazz) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "Clase", clazz.id());
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+	
+	public static void writeGender(String userName, UserGender gender) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "Genero", gender.id());
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+	
+	public static void writeBody(String userName, short bodyIndex) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "Body", bodyIndex);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+	
+	public static void writeHead(String userName, short headIndex) {
+		final String fileName = Player.getPjFile(userName);
+		IniFile ini;
+		try {
+			ini = new IniFile(fileName);
+			ini.setValue("INIT", "Head", headIndex);
+			
+			ini.store(fileName);
+		} catch (IOException ignored) {
+		}
+	}
+	
 }

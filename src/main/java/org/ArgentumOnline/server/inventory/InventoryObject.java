@@ -61,14 +61,19 @@ public class InventoryObject {
 	}
 
 	public boolean esRobable() {
-		var storage = GameServer.instance().getObjectInfoStorage();
-		ObjectInfo info = storage.getInfoObjeto(this.objid);
+		ObjectInfo info = objInfo();
 
 		return !this.equipado &&
 				!info.esReal() &&
 				!info.esCaos() &&
 				info.objType != ObjType.Llaves &&
 				info.objType != ObjType.Barcos;
+	}
+
+	public ObjectInfo objInfo() {
+		var storage = GameServer.instance().getObjectInfoStorage();
+		ObjectInfo info = storage.getInfoObjeto(this.objid);
+		return info;
 	}
 
 }

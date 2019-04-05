@@ -40,13 +40,21 @@ public class Reputation {
     double bandidoRep    = 0.0;
     double asesinoRep    = 0.0;
     
-    public double getAsesinoRep() {
-		return asesinoRep;
-	}
-    
     public double getNobleRep() {
 		return nobleRep;
 	}
+    
+    public void setNobleRep(double nobleRep) {
+		this.nobleRep = nobleRep;
+	}
+    
+    public double getAsesinoRep() {
+    	return asesinoRep;
+    }
+    
+    public void setAsesinoRep(double asesinoRep) {
+    	this.asesinoRep = asesinoRep;
+    }
     
     public double getPromedio() {
         return ((this.burguesRep + this.nobleRep + this.plebeRep) - (this.ladronRep + this.asesinoRep + this.bandidoRep)) / 6;

@@ -734,14 +734,14 @@ End Enum
     private void tirarItems() {
         // NPC_TIRAR_ITEMS
         // TIRA TODOS LOS ITEMS DEL NPC
-        if (this.npcInv().size() > 0) {
-            for (int i = 1; i <= this.npcInv().size(); i++) {
-                if (this.npcInv().getObjeto(i) != null && this.npcInv().getObjeto(i).objid > 0) {
+        if (this.npcInv().getSize() > 0) {
+            for (int i = 1; i <= this.npcInv().getSize(); i++) {
+                if (this.npcInv().getObject(i) != null && this.npcInv().getObject(i).objid > 0) {
                     Map m = this.server.getMap(pos().map);
                     m.dropItemOnFloor(pos().x, pos().y, 
                     		new InventoryObject(
-                    				this.npcInv().getObjeto(i).objid,
-                    				this.npcInv().getObjeto(i).cant));
+                    				this.npcInv().getObject(i).objid,
+                    				this.npcInv().getObject(i).cant));
                 }
             }
         }

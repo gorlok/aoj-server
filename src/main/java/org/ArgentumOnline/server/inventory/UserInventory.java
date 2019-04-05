@@ -37,8 +37,8 @@ import org.ArgentumOnline.server.protocol.CarpenterObjectsResponse;
 import org.ArgentumOnline.server.protocol.ShowCarpenterFormResponse;
 import org.ArgentumOnline.server.protocol.WorkRequestTargetResponse;
 import org.ArgentumOnline.server.user.Player;
-import org.ArgentumOnline.server.user.UserGender;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
+import org.ArgentumOnline.server.user.UserGender;
 import org.ArgentumOnline.server.util.FontType;
 import org.ArgentumOnline.server.util.Log;
 import org.ArgentumOnline.server.util.Util;
@@ -179,69 +179,68 @@ public class UserInventory extends Inventory implements Constants {
     }
     
     public void setArma(int slot, InventoryObject obji) {
-        setObjeto(slot, obji);
+        setObject(slot, obji);
         this.armaSlot = slot;
         this.armaEquipada = obji.equipado;
     }
     
     public void setEscudo(int slot, InventoryObject obji) {
-        setObjeto(slot, obji);
+        setObject(slot, obji);
         this.escudoSlot = slot;
         this.escudoEquipado = obji.equipado;
     }
     
     public void setArmadura(int slot, InventoryObject obji) {
-        setObjeto(slot, obji);
+        setObject(slot, obji);
         this.armaduraSlot = slot;
         this.armaduraEquipada = obji.equipado;
     }
     
     public void setAnillo(int slot, InventoryObject obji) {
-        setObjeto(slot, obji);
+        setObject(slot, obji);
         this.anilloSlot = slot;
         this.anilloEquipado = obji.equipado;
     }
-    //FIX BY AGUSH ;-)
     
     public ObjectInfo getAnillo() {
-    	if (this.anilloSlot > 0) return findObj(this.objs[this.anilloSlot-1].objid);
+    	if (this.anilloSlot > 0) return findObject(this.objs[this.anilloSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getArma() {
-    	if (this.armaSlot > 0) return findObj(this.objs[this.armaSlot-1].objid);
+    	if (this.armaSlot > 0) return findObject(this.objs[this.armaSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getEscudo() {
-    	if (this.escudoSlot > 0) return findObj(this.objs[this.escudoSlot-1].objid);
+    	if (this.escudoSlot > 0) return findObject(this.objs[this.escudoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getMunicion() {
-    	if (this.municionSlot > 0) return findObj(this.objs[this.municionSlot-1].objid);
+    	if (this.municionSlot > 0) return findObject(this.objs[this.municionSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getBarco() {
-    	if (this.barcoSlot > 0) return findObj(this.objs[this.barcoSlot-1].objid);
+    	if (this.barcoSlot > 0) return findObject(this.objs[this.barcoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getCasco() {
-    	if (this.cascoSlot > 0) return findObj(this.objs[this.cascoSlot-1].objid);
+    	if (this.cascoSlot > 0) return findObject(this.objs[this.cascoSlot-1].objid);
     	return null;
     }
     
     public ObjectInfo getArmadura() {
-    	if (this.armaduraSlot > 0) return findObj(this.objs[this.armaduraSlot-1].objid);
+    	if (this.armaduraSlot > 0) return findObject(this.objs[this.armaduraSlot-1].objid);
     	return null;
     }
     
     public void quitarObjsNewbie() {
         for (int j = 0; j < this.objs.length; j++) {
             if (this.objs[j].objid > 0) {
-                ObjectInfo infoObj = findObj(this.objs[j].objid);
+                ObjectInfo infoObj = findObject(this.objs[j].objid);
                 if (infoObj.esNewbie()) {
                     quitarUserInvItem(j+1, this.objs[j].cant);
                     // Actualiza un solo slot del inventario del usuario
@@ -290,7 +289,7 @@ public class UserInventory extends Inventory implements Constants {
                 mapa.addObject(objid, cant, x, y);
                 quitarUserInvItem(slot, cant);
                 player().sendInventorySlot(slot);
-                ObjectInfo iobj = findObj(objid);
+                ObjectInfo iobj = findObject(objid);
                 if (player().flags().isGM()) {
 					Log.logGM(player().getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
@@ -309,7 +308,7 @@ public class UserInventory extends Inventory implements Constants {
 			return;
 		}
         
-        ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
+        ObjectInfo infoObj = findObject(this.objs[slot-1].objid);
         switch (infoObj.objType) {
             case Weapon:
                 this.objs[slot-1].equipado = false;
@@ -380,13 +379,13 @@ public class UserInventory extends Inventory implements Constants {
         if (this.objs[slot-1].objid == 0) {
 			return;
 		}
-        ObjectInfo infoObj = findObj(this.objs[slot-1].objid);
+        ObjectInfo infoObj = findObject(this.objs[slot-1].objid);
         short objid = this.objs[slot-1].objid;
         if (infoObj.esNewbie() && !player().isNewbie()) {
             player().sendMessage("Solo los newbies pueden usar este objeto.", FontType.FONTTYPE_INFO);
             return;
         }
-        InventoryObject obj_inv = getObjeto(slot);
+        InventoryObject obj_inv = getObject(slot);
         
         switch (infoObj.objType) {
             case Weapon:
@@ -668,7 +667,7 @@ public class UserInventory extends Inventory implements Constants {
     public boolean tieneObjetosRobables() {
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
-                ObjectInfo infoObj = findObj(element.objid);
+                ObjectInfo infoObj = findObject(element.objid);
                 if (infoObj.objType != ObjType.Llaves && infoObj.objType != ObjType.Barcos) {
                     return true;
                 }
@@ -680,7 +679,7 @@ public class UserInventory extends Inventory implements Constants {
     public void sendBlacksmithWeapons() {
     	var validWeapons = new ArrayList<BlacksmithWeapons_DATA>();
     	for (short objid : this.server.getArmasHerrero()) {
-            ObjectInfo info = findObj(objid);
+            ObjectInfo info = findObject(objid);
             if (info.SkHerreria <= player().skillHerreriaEfectivo()) {
             	validWeapons.add(new BlacksmithWeapons_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
@@ -695,7 +694,7 @@ public class UserInventory extends Inventory implements Constants {
     public void sendCarpenterObjects() {
     	var validObjects = new ArrayList<CarpenterObjects_DATA>();
     	for (short objid : this.server.getObjCarpintero()) {
-            ObjectInfo info = findObj(objid);
+            ObjectInfo info = findObject(objid);
             if (info.SkHerreria <= player().skillCarpinteriaEfectivo()) {
             	validObjects.add(new CarpenterObjects_DATA(info.Nombre, (short)info.Madera, objid));
             }
@@ -710,7 +709,7 @@ public class UserInventory extends Inventory implements Constants {
     public void sendBlacksmithArmors() {
     	var validArmaduras = new ArrayList<BlacksmithArmors_DATA>();
     	for (short objid : this.server.getArmadurasHerrero()) {
-            ObjectInfo info = findObj(objid);
+            ObjectInfo info = findObject(objid);
             if (info.SkHerreria <= player().skillHerreriaEfectivo()) {
             	validArmaduras.add(new BlacksmithArmors_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
@@ -726,7 +725,7 @@ public class UserInventory extends Inventory implements Constants {
         Map mapa = this.server.getMap(player().pos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
-                ObjectInfo obj = findObj(element.objid);
+                ObjectInfo obj = findObject(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
                     mapa.dropItemOnFloor(player().pos().x, player().pos().y, element);
                 }
@@ -747,7 +746,7 @@ public class UserInventory extends Inventory implements Constants {
         if (objInv.objid == 0) {
 			return;
 		}
-        ObjectInfo infoObjInv = findObj(objInv.objid);
+        ObjectInfo infoObjInv = findObject(objInv.objid);
         if (infoObjInv.esNewbie() && !player().isNewbie()) {
             player().sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
@@ -814,7 +813,7 @@ public class UserInventory extends Inventory implements Constants {
                 } else {
                 	// No es un arma de proyectiles
                 	if (player().flags().TargetObj != 0) {
-	                	ObjectInfo targetInfo = findObj(player().flags().TargetObj);
+	                	ObjectInfo targetInfo = findObject(player().flags().TargetObj);
 	                	// ¿El objetivo es leña?
 	                	if (targetInfo != null && targetInfo.objType == ObjType.Leña) {
 	                    	// ¿Estoy usando una daga?
@@ -921,7 +920,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (player().flags().TargetObj == 0) {
 					return;
 				}
-                ObjectInfo targetInfo = findObj(player().flags().TargetObj);
+                ObjectInfo targetInfo = findObject(player().flags().TargetObj);
                 // ¿El objeto cliqueado es una puerta?
                 if (targetInfo.objType == ObjType.Puertas) {
                     // ¿Esta cerrada?

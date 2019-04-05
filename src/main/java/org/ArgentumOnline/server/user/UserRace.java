@@ -17,6 +17,8 @@
  *******************************************************************************/
 package org.ArgentumOnline.server.user;
 
+import java.util.Arrays;
+
 /**
  * @author gorlok
  */
@@ -54,11 +56,17 @@ public enum UserRace {
 		return VALUES[value-1];
 	}
 	
+	public static UserRace byName(String value) {
+		return Arrays.stream(VALUES)
+				.filter( r -> value.equalsIgnoreCase(r.name()))
+				.findFirst().orElse(null);
+	}
+	
 	public String toString() {
 		return this.name;
 	}
 	
-	public byte value() {
+	public byte id() {
 		return (byte) (this.ordinal()+1);
 	}
 

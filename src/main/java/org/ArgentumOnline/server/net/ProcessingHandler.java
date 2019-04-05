@@ -873,6 +873,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			handleEditChar(player, (EditCharRequest)packet);
 			break;
 			
+		case CheckSlot:
+			handleCheckSlot(player, (CheckSlotRequest)packet);
+			break;
+			
 		case PartyCreate:
 		case PartyAcceptMember:
 		case PartyJoin:
@@ -882,7 +886,6 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		case PartyOnline:
 		case PartySetLeader:
 
-		case CheckSlot:
 		case SetIniVar:
 		case Night:
 		case DumpIPTables:
@@ -930,6 +933,10 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 		}
 		
+	}
+
+	private void handleCheckSlot(Player player, CheckSlotRequest packet) {
+		GameServer.instance().manager().handleCheckSlot(player, packet.userName, packet.slot);
 	}
 
 	private void handleEditChar(Player admin, EditCharRequest packet) {

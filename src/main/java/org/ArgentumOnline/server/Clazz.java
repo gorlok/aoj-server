@@ -17,6 +17,8 @@
  *******************************************************************************/
 package org.ArgentumOnline.server;
 
+import java.util.Arrays;
+
 import org.ArgentumOnline.server.user.FactionArmors;
 import org.ArgentumOnline.server.user.Player;
 import org.ArgentumOnline.server.user.UserAttributes.Attribute;
@@ -65,11 +67,17 @@ public enum Clazz {
 		return (byte) (ordinal() + 1);
 	}
 
-	public static Clazz[] values = Clazz.values();
+	public static Clazz[] VALUES = Clazz.values();
 
 	/** id starts with 1 */
-	public static Clazz value(int i) {
-		return values[i-1];
+	public static Clazz value(int index) {
+		return VALUES[index-1];
+	}
+
+	public static Clazz byName(String value) {
+		return Arrays.stream(VALUES)
+				.filter( c -> value.equalsIgnoreCase(c.name()))
+				.findFirst().orElse(null);
 	}
 
 	@Override

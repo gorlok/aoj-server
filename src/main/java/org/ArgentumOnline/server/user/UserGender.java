@@ -19,15 +19,33 @@ package org.ArgentumOnline.server.user;
 
 public enum UserGender {
 	
-    /* 1 */ GENERO_HOMBRE,
-    /* 2 */ GENERO_MUJER;
-    
+    /* 1 */ GENERO_HOMBRE("HOMBRE"),
+    /* 2 */ GENERO_MUJER("MUJER");
+	
+	private String name;
+	
+	private UserGender(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+
 	private static final UserGender[] VALUES = UserGender.values();
 	public static UserGender value(int value) {
 		return VALUES[value-1];
 	}
 	
-	public byte value() {
+	public static UserGender fromString(String value) {
+		if ("MUJER".equalsIgnoreCase(value))
+			return GENERO_MUJER;
+		if ("HOMBRE".equalsIgnoreCase(value))
+			return GENERO_HOMBRE;
+		return null;
+	}
+	
+	public byte id() {
 		return (byte) (this.ordinal()+1);
 	}
     
