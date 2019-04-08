@@ -185,7 +185,7 @@ public class Quest implements Constants {
 				break;
 			}
 		} catch (Exception e) {
-			log.fatal(user.getNick() + " Error en HacerQuest!", e);
+			log.fatal(user.getUserName() + " Error en HacerQuest!", e);
 		}
 	}
 
@@ -416,7 +416,7 @@ public class Quest implements Constants {
 			}
 			user.sendUpdateUserStats();
 		} catch (Exception e) {
-			log.fatal(user.getNick() + " Error en RecibirRecompensaQuest!", e);
+			log.fatal(user.getUserName() + " Error en RecibirRecompensaQuest!", e);
 		}
 	}
 
@@ -495,7 +495,7 @@ public class Quest implements Constants {
 					"Te has rendido por lo tanto no has conseguido la recompensa, pero puedes continuar con la siguiente quest.",
 					npc.getId());
 		} catch (Exception e) {
-			log.fatal(user.getNick() + " Error en UserSeRinde!", e);
+			log.fatal(user.getUserName() + " Error en UserSeRinde!", e);
 		}
 	}
 

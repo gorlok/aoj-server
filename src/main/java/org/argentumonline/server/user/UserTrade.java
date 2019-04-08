@@ -69,7 +69,7 @@ public class UserTrade {
 	
 		} else {
 		    //Es el primero que comercia ?
-			user.sendMessage(targetUser.getNick() + " desea comerciar. Si deseas aceptar, Escribe /COMERCIAR.", FontType.FONTTYPE_TALK);
+			user.sendMessage(targetUser.getUserName() + " desea comerciar. Si deseas aceptar, Escribe /COMERCIAR.", FontType.FONTTYPE_TALK);
 			targetUser.flags().TargetUser = user.getId();
 		}
 	}

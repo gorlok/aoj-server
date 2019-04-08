@@ -287,14 +287,14 @@ public class GameServer implements Constants {
 
     public List<String> getUsuariosConectados() {
     	return getUsers().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
-			    	.map(User::getNick)
+			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.flags().isGM())
+			    	.map(User::getUserName)
 			    	.collect(Collectors.toList());
     }
 
     public void echarPjsNoPrivilegiados() {
     	var users = getUsers().stream()
-			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
+			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.flags().isGM())
 			    	.collect(Collectors.toList());
 
     	users.forEach(c -> {
@@ -312,15 +312,15 @@ public class GameServer implements Constants {
 
     public List<String> getUsuariosConIP(String ip) {
     	return getUsers().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
-		    	.map(User::getNick)
+		    	.filter(c -> c.isLogged() && c.hasUserName() && c.getIP().equals(ip))
+		    	.map(User::getUserName)
 		    	.collect(Collectors.toList());
     }
 
     public List<String> getGMsOnline() {
     	return getUsers().stream()
-		    	.filter(c -> c.isLogged() && c.hasNick() && c.flags().isGM())
-		    	.map(User::getNick)
+		    	.filter(c -> c.isLogged() && c.hasUserName() && c.flags().isGM())
+		    	.map(User::getUserName)
 		    	.collect(Collectors.toList());
     }
 
@@ -533,7 +533,7 @@ public class GameServer implements Constants {
 		}
     	
     	Optional<User> founded = getUsers().stream()
-    		.filter(u -> userName.equalsIgnoreCase(u.getNick()))
+    		.filter(u -> userName.equalsIgnoreCase(u.getUserName()))
     		.findFirst();
     	
     	return founded.isPresent() ? founded.get() : null;
@@ -542,7 +542,7 @@ public class GameServer implements Constants {
     public boolean isUserAlreadyConnected(String userName) {
     	User foundedUser = userByName(userName);
     	return foundedUser != null &&
-    			userName.equalsIgnoreCase(foundedUser.getNick());
+    			userName.equalsIgnoreCase(foundedUser.getUserName());
     }
 
     private void npcAiTimer(long now) {
@@ -1062,7 +1062,7 @@ public class GameServer implements Constants {
 		}
     	this.objectInfoStorage.loadObjectsFromStorage();
     	admin.sendMessage("Se han recargado los objetos", FontType.FONTTYPE_INFO);
-    	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado los objetos.");
+    	Log.logGM(admin.getUserName(), admin.getUserName() + " ha recargado los objetos.");
     }
 
 	public void reloadSpells(User admin) {
@@ -1071,7 +1071,7 @@ public class GameServer implements Constants {
 		}
 		loadSpells();
     	admin.sendMessage("Se han recargado los hechizos", FontType.FONTTYPE_INFO);
-    	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado los hechizos.");
+    	Log.logGM(admin.getUserName(), admin.getUserName() + " ha recargado los hechizos.");
 	}
 
 }

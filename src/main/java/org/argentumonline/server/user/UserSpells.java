@@ -827,9 +827,9 @@ public class UserSpells implements Constants {
 			targetUser.stats.aumentarHambre(damage);
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
-						+ " puntos de hambre a " + targetUser.userName,
+						+ " puntos de hambre a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
+				targetUser.sendMessage(this.user.getUserName() + " te ha restaurado "
 						+ damage + " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has restaurado " + damage
@@ -854,9 +854,9 @@ public class UserSpells implements Constants {
 			targetUser.stats.quitarHambre(damage);
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has provocado " + damage
-						+ " puntos de hambre a " + targetUser.userName,
+						+ " puntos de hambre a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + damage
+				targetUser.sendMessage(this.user.getUserName() + " te ha provocado " + damage
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has provocado " + damage
@@ -878,9 +878,9 @@ public class UserSpells implements Constants {
 			targetUser.sendUpdateHungerAndThirst();
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
-						+ " puntos de sed a " + targetUser.userName,
+						+ " puntos de sed a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
+				targetUser.sendMessage(this.user.getUserName() + " te ha restaurado "
 						+ damage + " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has restaurado " + damage
@@ -903,9 +903,9 @@ public class UserSpells implements Constants {
 			targetUser.stats.quitarSed(damage);
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has provocado " + damage
-						+ " puntos de sed a " + targetUser.userName,
+						+ " puntos de sed a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + damage
+				targetUser.sendMessage(this.user.getUserName() + " te ha provocado " + damage
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage(
@@ -1026,9 +1026,9 @@ public class UserSpells implements Constants {
 			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
-						+ " puntos de vida a " + targetUser.userName,
+						+ " puntos de vida a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
+				targetUser.sendMessage(this.user.getUserName() + " te ha restaurado "
 						+ damage + " puntos de vida.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has restaurado " + damage
@@ -1085,8 +1085,8 @@ public class UserSpells implements Constants {
 			targetUser.stats.removeHP(damage);
 			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
 			this.user.sendMessage("Le has quitado " + damage + " puntos de vida a "
-					+ targetUser.userName, FONTTYPE_FIGHT);
-			targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
+					+ targetUser.getUserName(), FONTTYPE_FIGHT);
+			targetUser.sendMessage(this.user.getUserName() + " te ha quitado " + damage
 					+ " puntos de vida.", FONTTYPE_FIGHT);
 			// Muere
 			if (targetUser.stats.MinHP < 1) {
@@ -1106,9 +1106,9 @@ public class UserSpells implements Constants {
 			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
-						+ " puntos de mana a " + targetUser.userName,
+						+ " puntos de mana a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
+				targetUser.sendMessage(this.user.getUserName() + " te ha restaurado "
 						+ damage + " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has restaurado " + damage
@@ -1129,9 +1129,9 @@ public class UserSpells implements Constants {
 			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has quitado " + damage
-						+ " puntos de mana a " + targetUser.userName,
+						+ " puntos de mana a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
+				targetUser.sendMessage(this.user.getUserName() + " te ha quitado " + damage
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has quitado " + damage
@@ -1148,9 +1148,9 @@ public class UserSpells implements Constants {
 			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
-						+ " puntos de energia a " + targetUser.userName,
+						+ " puntos de energia a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
+				targetUser.sendMessage(this.user.getUserName() + " te ha restaurado "
 						+ damage + " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has restaurado " + damage
@@ -1171,9 +1171,9 @@ public class UserSpells implements Constants {
 			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has quitado " + damage
-						+ " puntos de energia a " + targetUser.userName,
+						+ " puntos de energia a " + targetUser.getUserName(),
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
+				targetUser.sendMessage(this.user.getUserName() + " te ha quitado " + damage
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage("Te has quitado " + damage
@@ -1434,8 +1434,8 @@ public class UserSpells implements Constants {
 		if (this.user.flags().TargetUser > 0) {
 			if (this.user.getId() != this.user.flags().TargetUser) {
 				User target = this.server.userById(this.user.flags().TargetUser);
-				user.sendMessage(spell.HechiceroMsg + " " + (target.showName ? target.userName : "alguien"), FONTTYPE_FIGHT);
-				target.sendMessage((user.showName ? user.getNick() : "Alguien") + " " + spell.TargetMsg, FONTTYPE_FIGHT);
+				user.sendMessage(spell.HechiceroMsg + " " + (target.showName ? target.getUserName() : "alguien"), FONTTYPE_FIGHT);
+				target.sendMessage((user.showName ? user.getUserName() : "Alguien") + " " + spell.TargetMsg, FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage(spell.PropioMsg, FONTTYPE_FIGHT);
 			}

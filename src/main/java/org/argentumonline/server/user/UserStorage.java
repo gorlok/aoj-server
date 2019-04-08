@@ -76,7 +76,7 @@ public class UserStorage {
 		loadPets(ini);
 		if (!validateChr()) {
 			user.sendError("Error en el personaje.");
-			throw new RuntimeException("Error en el personaje." + user.getNick());
+			throw new RuntimeException("Error en el personaje." + user.getUserName());
 		}
 	}
 
@@ -87,7 +87,7 @@ public class UserStorage {
 	public void loadUserFromStorageOffline(String userName)
 	throws IOException {
 		user.userName = userName;
-		IniFile ini = new IniFile(User.getPjFile(user.userName));
+		IniFile ini = new IniFile(User.getPjFile(user.getUserName()));
 		
 		loadUserInit(ini);
 		user.stats().loadUserStats(ini);
@@ -101,7 +101,7 @@ public class UserStorage {
 	
 	public String passwordHashFromStorage(String nick) 
 	throws FileNotFoundException, IOException {
-		IniFile ini = new IniFile(User.getPjFile(user.getNick()));
+		IniFile ini = new IniFile(User.getPjFile(user.getUserName()));
 		
 		return ini.getString("INIT", "PasswordHash");
 	}
@@ -429,9 +429,9 @@ public class UserStorage {
 			updateLastIp(ini);
 
 			// Guardar todo
-			ini.store(User.getPjFile(user.userName));
+			ini.store(User.getPjFile(user.getUserName()));
 		} catch (Exception e) {
-			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
+			log.fatal(user.getUserName() + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
@@ -468,7 +468,7 @@ public class UserStorage {
 		List<String> lastIP = new ArrayList<>();
 		IniFile ini;
 		try {
-			ini = new IniFile(User.getPjFile(user.getNick()));
+			ini = new IniFile(User.getPjFile(user.getUserName()));
 			IntStream.range(1, 6).forEach(i -> {
 				String ip = ini.getString("INIT", "LastIP" + i);
 				if (!ip.isEmpty()) {

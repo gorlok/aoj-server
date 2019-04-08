@@ -88,7 +88,7 @@ public class Motd {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(user.getNick(), "/MOTDCAMBIA");
+		Log.logGM(user.getUserName(), "/MOTDCAMBIA");
 		StringBuffer sb = new StringBuffer();
 		List<String> motd = getMOTD();
 		if (!motd.isEmpty()) {
@@ -107,7 +107,7 @@ public class Motd {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(user.getNick(), "ZMOTD " + s);
+		Log.logGM(user.getUserName(), "ZMOTD " + s);
 		List<String> motd = new ArrayList<String>();
 		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
 			motd.add(st.nextToken());

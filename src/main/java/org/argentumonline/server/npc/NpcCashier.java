@@ -47,7 +47,7 @@ public class NpcCashier extends Npc {
 		}
 		
 		if (!user.userExists()) {
-			log.error("ERROR, no existe el personaje " + user.getNick());
+			log.error("ERROR, no existe el personaje " + user.getUserName());
 			user.sendMessage("¡¡El personaje no existe, cree uno nuevo!!", FontType.FONTTYPE_WARNING);
 			user.quitGame();
 			return;

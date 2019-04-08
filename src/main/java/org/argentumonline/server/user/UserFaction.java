@@ -157,7 +157,7 @@ public class UserFaction implements Constants {
 			ini = new IniFile(fileName);
 			ini.setValue("FACCIONES", "EjercitoReal", 0);
 			ini.setValue("FACCIONES", "Reenlistadas", 200);
-			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getNick());
+			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getUserName());
 			
 			ini.store(fileName);
 		} catch (IOException ignored) {
@@ -171,7 +171,7 @@ public class UserFaction implements Constants {
 			ini = new IniFile(fileName);
 			ini.setValue("FACCIONES", "EjercitoCaos", 0);
 			ini.setValue("FACCIONES", "Reenlistadas", 200);
-			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getNick());
+			ini.setValue("FACCIONES", "Extra", "Expulsado por " + admin.getUserName());
 			
 			ini.store(fileName);
 		} catch (IOException ignored) {
@@ -263,7 +263,7 @@ public class UserFaction implements Constants {
             this.RecibioExpInicialReal = true;
             this.user.checkUserLevel();
         }
-        Log.logEjercitoReal(this.user.getNick());
+        Log.logEjercitoReal(this.user.getUserName());
     }
 
     public void darkLegionEnlist(Npc npc) {
@@ -310,7 +310,7 @@ public class UserFaction implements Constants {
             this.RecibioExpInicialCaos = true;
             this.user.checkUserLevel();
         }
-        Log.logEjercitoCaos(this.user.getNick());
+        Log.logEjercitoCaos(this.user.getUserName());
     }
 
     public void royalArmyReward(Npc npc) {

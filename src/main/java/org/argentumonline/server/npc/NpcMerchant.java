@@ -180,7 +180,7 @@ public class NpcMerchant extends Npc {
     			// tal vez suba el skill comerciar ;-)
     			user.riseSkill(Skill.SKILL_Comerciar);
     			if (info.objType == ObjType.Llaves) {
-    				Log.logVentaCasa(user.getNick() + " compro " + info.Nombre);
+    				Log.logVentaCasa(user.getUserName() + " compro " + info.Nombre);
     			}
     			removeBuyedItemFromNpcInventory(slotNpc, amount);
     		} else {

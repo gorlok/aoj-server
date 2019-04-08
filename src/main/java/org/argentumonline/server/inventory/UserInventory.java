@@ -291,7 +291,7 @@ public class UserInventory extends Inventory implements Constants {
                 getUser().sendInventorySlot(slot);
                 ObjectInfo iobj = findObject(objid);
                 if (getUser().flags().isGM()) {
-					Log.logGM(getUser().getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
+					Log.logGM(getUser().getUserName(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
                 getUser().sendMessage("No hay espacio en el piso.", FontType.FONTTYPE_INFO);

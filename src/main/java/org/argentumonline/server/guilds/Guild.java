@@ -418,10 +418,10 @@ public class Guild {
     public void removeMember(String userName) {
     	Optional<User> user = this.members.stream()
 			.map(GameServer.instance()::userByName)
-			.filter(u -> u.getNick().equalsIgnoreCase(userName))
+			.filter(u -> u.getUserName().equalsIgnoreCase(userName))
 			.findFirst();
     	if (user.isPresent()) {
-    		this.members.remove(user.get().getNick());          
+    		this.members.remove(user.get().getUserName());          
     	}
     }
     

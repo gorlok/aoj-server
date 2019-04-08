@@ -151,7 +151,7 @@ public class User extends AbstractCharacter {
 
 	String description = ""; // Descripcion
 	
-	int chatColor = Color.COLOR_BLANCO;
+	private int chatColor = Color.COLOR_BLANCO;
 
 	Clazz clazz = Clazz.Hunter;
 
@@ -316,12 +316,12 @@ public class User extends AbstractCharacter {
 		this.gender = gender;
 	}
 
-	public String getNick() {
+	public String getUserName() {
 		return this.userName;
 	}
 
-	public boolean hasNick() {
-		return getNick() != null && !getNick().isEmpty();
+	public boolean hasUserName() {
+		return getUserName() != null && !getUserName().isEmpty();
 	}
 
 	public Clazz clazz() {
@@ -494,7 +494,7 @@ public class User extends AbstractCharacter {
 		}
 		ObjectInfo iobj = findObj(flags().TargetObj);
 		if (iobj.esForo()) {
-			this.server.getForumManager().postOnForum(iobj.ForoID, title, body, getNick());
+			this.server.getForumManager().postOnForum(iobj.ForoID, title, body, getUserName());
 		}
 	}
 
@@ -2185,7 +2185,7 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		this.m_saliendo = true;
-		log.info("saliendo: " + this.getNick());
+		log.info("saliendo: " + this.getUserName());
 		boolean wasLogged = flags().UserLogged;
 		try {
 			Map mapa = this.server.getMap(pos().map);
@@ -2218,7 +2218,7 @@ public class User extends AbstractCharacter {
 				}
 			}
 		}
-		log.info("Salió: " + getNick());
+		log.info("Salió: " + getUserName());
 		server.getWorkWatcher().userLogout(this);
 	}
 
@@ -2410,10 +2410,10 @@ public class User extends AbstractCharacter {
 		User targetUser = this.server.userById(targetIndex);
 		if (targetUser != null) {
 			if (map.lookForUserAtArea(pos().x, pos().y, targetUser.getId()) == null) {
-				sendMessage("Estas muy lejos de " + targetUser.getNick(), FontType.FONTTYPE_INFO);
+				sendMessage("Estas muy lejos de " + targetUser.getUserName(), FontType.FONTTYPE_INFO);
 			} else {
 				if (flags().isCounselor()) {
-					Log.logGM(this.userName, "El consejero le susurró a " + targetUser.getNick() + ": " + text);
+					Log.logGM(this.userName, "El consejero le susurró a " + targetUser.getUserName() + ": " + text);
 				}
 
 				// send to target user
@@ -2426,7 +2426,7 @@ public class User extends AbstractCharacter {
 				if (!flags().isGM() || flags().isCounselor()) {
 					// send to admins at area
 					map.sendToAreaToAdminsButCounselor(pos().x, pos().y,
-							new ChatOverHeadResponse("a " + targetUser.getNick() + "> " + text, this.getId(),
+							new ChatOverHeadResponse("a " + targetUser.getUserName() + "> " + text, this.getId(),
 									Color.r(Color.COLOR_AMARILLO), Color.g(Color.COLOR_AMARILLO), Color.b(Color.COLOR_AMARILLO)));
 				}
 			}
@@ -2718,7 +2718,7 @@ public class User extends AbstractCharacter {
 			}
 			if (oldMap.hasUser(this) && !oldMap.exitMap(this)) {
 				// it fails to exit map
-				log.fatal(this.getNick() + " no pudo salir del mapa actual");
+				log.fatal(this.getUserName() + " no pudo salir del mapa actual");
 			}
 		}
 
@@ -3071,12 +3071,12 @@ public class User extends AbstractCharacter {
 	private String userNameAndTagForCC() {
         if (this.showName) {
         	if (flags().isGM() && (flags().Invisible || flags().Oculto)) {
-        		return getNick() + " " + TAG_USER_INVISIBLE;
+        		return getUserName() + " " + TAG_USER_INVISIBLE;
         	} else {
     			if (getGuildInfo().esMiembroClan()) {
-    				return getNick() + " <" + this.guildUser.getGuildName() + ">";
+    				return getUserName() + " <" + this.guildUser.getGuildName() + ">";
     			} else {
-    				return getNick();
+    				return getUserName();
     			}
         	}
         } else {
@@ -4139,7 +4139,7 @@ public class User extends AbstractCharacter {
 
 	public void allPetsAttackUser(User objetivo) {
 		getUserPets().getPets().forEach(pet -> {
-			pet.attackedByUserName(objetivo.getNick());
+			pet.attackedByUserName(objetivo.getUserName());
 			pet.defenderse();
 		});
 	}
@@ -4938,7 +4938,7 @@ public class User extends AbstractCharacter {
 	public String userNameTagDesc() {
 		var msg = new StringBuilder();
 		if (showName) {
-			msg.append(getNick());
+			msg.append(getUserName());
 			
 			if (this.description.length() > 0) {
 				msg.append(" - " + this.description);
@@ -5193,7 +5193,7 @@ public class User extends AbstractCharacter {
 			refreshCharStatus();
 		}
 
-		System.out.println(this.getNick() + "ahora es ciuda");
+		System.out.println(this.getUserName() + "ahora es ciuda");
 	}
 
 	public void refreshCharStatus() {
@@ -5325,7 +5325,7 @@ public class User extends AbstractCharacter {
 				if (Util.random(1, 100) < 60) {
 					victima.flags().Envenenado = true;
 					victima.sendMessage(this.userName + " te ha envenenado!!", FONTTYPE_FIGHT);
-					sendMessage("Has envenenado a " + victima.getNick() + "!!", FONTTYPE_FIGHT);
+					sendMessage("Has envenenado a " + victima.getUserName() + "!!", FONTTYPE_FIGHT);
 				}
 			}
 		}
@@ -5463,7 +5463,7 @@ public class User extends AbstractCharacter {
 					"Puedes solicitar asistencia con /GM y serás atendido cuando alguien esté disponible.", 
 					FontType.FONTTYPE_INFO);
 		} else {
-			server.sendToAdmins(new ConsoleMsgResponse(getNick() + " DENUNCIA: " + text, 
+			server.sendToAdmins(new ConsoleMsgResponse(getUserName() + " DENUNCIA: " + text, 
 					FontType.FONTTYPE_GUILDMSG.id()));
 			sendMessage("Denuncia enviada, espere..", FontType.FONTTYPE_INFO);
 		}
@@ -5474,7 +5474,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void useSpellMacro(User user) {
-		server.sendToAdmins(new ConsoleMsgResponse(user.getNick() + 
+		server.sendToAdmins(new ConsoleMsgResponse(user.getUserName() + 
 				" fue expulsado por Anti-macro de hechizos", FontType.FONTTYPE_VENENO.id()));
         user.sendError("Has sido expulsado por usar macro de hechizos. Recomendamos leer el reglamento sobre el tema macros");
 	}

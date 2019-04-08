@@ -154,7 +154,7 @@ public class GuildManager {
         guild.removePeaceProposition(guildName);
         User userGuild = this.server.userByName(guildName);
         if (userGuild != null) {
-            userGuild.sendMessage("El clan firmó la paz con " + user.getNick(), FontType.FONTTYPE_GUILD);
+            userGuild.sendMessage("El clan firmó la paz con " + user.getUserName(), FontType.FONTTYPE_GUILD);
         }
         guild.messageToGuildMembers("El clan firmó la paz con " +  guildName, FontType.FONTTYPE_GUILD);
     }
@@ -254,7 +254,7 @@ public class GuildManager {
         // El usuario miembro está online.
         miembro.sendMessage("Has sido expulsado del clan.", FontType.FONTTYPE_GUILD);
         
-		getGuild(miembro).removeMember(miembro.getNick());
+		getGuild(miembro).removeMember(miembro.getUserName());
 		miembro.getGuildInfo().salirClan();
         
         guild.messageToGuildMembers(userName + " fue expulsado del clan.", FontType.FONTTYPE_GUILD);
@@ -313,10 +313,10 @@ public class GuildManager {
         user.sendMessage("Felicitaciones, tu solicitud ha sido aceptada.", FontType.FONTTYPE_GUILD);
         user.sendMessage("Ahora sos un miembro activo del clan " + user.guildInfo().getGuildName(), FontType.FONTTYPE_GUILD);
         user.guildInfo().giveGuildPoints(25);
-        guild.addMember(solicitante.getNick());
+        guild.addMember(solicitante.getUserName());
         guild.joinRequest.remove(solicitud);
         guild.sendPlayWave(Constants.SOUND_ACEPTADO_CLAN);
-        guild.messageToGuildMembers(solicitante.getNick() + " ha sido aceptado en el clan.", FontType.FONTTYPE_GUILD);
+        guild.messageToGuildMembers(solicitante.getUserName() + " ha sido aceptado en el clan.", FontType.FONTTYPE_GUILD);
     }
 
 	private Guild getGuild(User user) {
@@ -345,15 +345,15 @@ public class GuildManager {
            applicant.sendMessage("Los newbies no pueden conformar clanes.", FontType.FONTTYPE_GUILD);
            return;
     	}
-    	GuildRequest solicitud = new GuildRequest(applicant.getNick(), desc);
+    	GuildRequest solicitud = new GuildRequest(applicant.getUserName(), desc);
         Guild guild = this.getGuild(guildName);
         if (guild == null) {
             return;
         }
-        if (guild.isMember(applicant.getNick())) {
+        if (guild.isMember(applicant.getUserName())) {
         	return;
         }
-        if (guild.solicitudesIncludes(applicant.getNick())) {
+        if (guild.solicitudesIncludes(applicant.getUserName())) {
             applicant.sendMessage("Tu solicitud ya fue recibida por el lider del clan, ahora debes esperar la respuesta.", FontType.FONTTYPE_GUILD);
         	return;
         }
@@ -676,7 +676,7 @@ public class GuildManager {
         }
         Guild guild;
         try {
-            guild = new Guild(guildInfo, user.getNick(), (long) user.reputation().getPromedio());
+            guild = new Guild(guildInfo, user.getUserName(), (long) user.reputation().getPromedio());
         } catch (InvalidGuildNameException e) {
             user.sendMessage("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
             return;
@@ -685,11 +685,11 @@ public class GuildManager {
             user.sendMessage("Ya existe un clan con ese nombre.", FontType.FONTTYPE_GUILD);
             return;
         }
-        guild.members.add(user.getNick());
+        guild.members.add(user.getUserName());
         addGuild(guild);
         user.guildInfo().fundarClan(guild.guildName);
         this.server.sendToAll(new PlayWaveResponse(Constants.SOUND_CREACION_CLAN, (byte)50, (byte)50));
-        this.server.sendToAll(new GuildChatResponse("¡¡¡" + user.getNick() + " fundó el clan '" + guild.guildName + "'!!!"));
+        this.server.sendToAll(new GuildChatResponse("¡¡¡" + user.getUserName() + " fundó el clan '" + guild.guildName + "'!!!"));
         
         if (guildsCount() == 1) {
             user.sendMessage("¡¡Felicidades!! Has creado el primer clan de Argentum!!!.", FontType.FONTTYPE_INFO);
@@ -741,9 +741,9 @@ public class GuildManager {
 		} else if (!user.getGuildInfo().esMiembroClan()) {
 			user.sendMessage("No perteneces a ningún clan.", FontType.FONTTYPE_INFO);
 		} else {
-			getGuild(user).removeMember(user.getNick());
+			getGuild(user).removeMember(user.getUserName());
 			user.getGuildInfo().salirClan();
-			getGuild(user).messageToGuildMembers(user.getNick() + " decidió dejar el clan.", FontType.FONTTYPE_GUILD);
+			getGuild(user).messageToGuildMembers(user.getUserName() + " decidió dejar el clan.", FontType.FONTTYPE_GUILD);
 		}
 	}
 

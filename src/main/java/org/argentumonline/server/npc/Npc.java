@@ -972,7 +972,7 @@ End Enum
                     			cambiarDir(dir);
                     			npcAtacaUser(user);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(user.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(user.getUserName()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
                     			npcAtacaUser(user);
                     			return;
@@ -982,7 +982,7 @@ End Enum
                     			cambiarDir(dir);
                     			npcAtacaUser(user);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(user.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(user.getUserName()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
                     			npcAtacaUser(user);
                     			return;
@@ -1047,7 +1047,7 @@ End Enum
             if (pos.isValid()) {
                 if (mapa.hasUser(pos.x, pos.y)) {
                     User user = mapa.getUser(pos.x, pos.y);
-                    if (user.isAlive() && user.isAllowingChase() && this.attackedBy.equalsIgnoreCase(user.getNick())) {
+                    if (user.isAlive() && user.isAllowingChase() && this.attackedBy.equalsIgnoreCase(user.getUserName())) {
                         if (isMagical()) {
                             npcCastSpell(user);
                         }
@@ -1100,7 +1100,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasUser(x, y)) {
                         User user = mapa.getUser(x, y);
-                        if (!user.flags().isGM() && this.attackedBy.equalsIgnoreCase(user.getNick())) {
+                        if (!user.flags().isGM() && this.attackedBy.equalsIgnoreCase(user.getUserName())) {
                             if (getPetUserOwner() != null) {
 		                        if (	!getPetUserOwner().isCriminal() && !user.isCriminal() &&
 		                        		(getPetUserOwner().hasSafeLock() || getPetUserOwner().userFaction().ArmadaReal)) {

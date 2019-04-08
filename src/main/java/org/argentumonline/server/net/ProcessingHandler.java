@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.GameServer;
+import org.argentumonline.server.gm.EditChar;
 import org.argentumonline.server.map.Heading;
 import org.argentumonline.server.protocol.*;
 import org.argentumonline.server.user.User;
@@ -465,7 +466,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			
 		case GMMessage:
 			server.manager().sendMessageToAdmins(user,
-					user.getNick() + "> " + ((GMMessageRequest)packet).message, 
+					user.getUserName() + "> " + ((GMMessageRequest)packet).message, 
 					FontType.FONTTYPE_GMMSG);
 			break;
 			
@@ -940,8 +941,8 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleEditChar(User admin, EditCharRequest packet) {
-		GameServer.instance().manager().handleEditCharacter(admin, 
-				packet.userName, packet.option, packet.param1, packet.param2);
+		EditChar.handleEditCharacter(GameServer.instance(), 
+				admin, packet.userName, packet.option, packet.param1, packet.param2);
 	}
 
 	private void handleImperialArmour(User admin, ImperialArmourRequest packet) {

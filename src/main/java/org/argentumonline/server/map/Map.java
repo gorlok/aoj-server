@@ -1035,7 +1035,7 @@ public class Map implements Constants {
             } else {
             	String npcName;
             	if (npc.getPetUserOwner() != null) {
-            		npcName = npc.name + " es mascota de " + npc.getPetUserOwner().getNick();
+            		npcName = npc.name + " es mascota de " + npc.getPetUserOwner().getUserName();
             	} else {
             		npcName = npc.name;
             	}

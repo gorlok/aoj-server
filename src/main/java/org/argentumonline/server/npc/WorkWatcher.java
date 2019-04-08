@@ -62,7 +62,7 @@ public class WorkWatcher {
 	
 	public boolean watchingUser(String userName) {
 		return userWatching != null 
-				&& userWatching.getNick().equalsIgnoreCase(userName);
+				&& userWatching.getUserName().equalsIgnoreCase(userName);
 	}
 	
 	public Npc getNpc() {
@@ -106,7 +106,7 @@ public class WorkWatcher {
 	                
 	                if (workWatcher != null) {
 	                    // Mandamos el mensaje (el centinela habla y aparece en consola para que no haya dudas)
-	                	workWatcher.talkToUser(p, "Saludos " + p.getNick() 
+	                	workWatcher.talkToUser(p, "Saludos " + p.getUserName() 
 	                		+ ", soy el Centinela de estas tierras. Me gustaría que escribas /CENTINELA " 
 	                		+ askingCode + " en no más de dos minutos.", Color.COLOR_VERDE);
 	                    p.sendMessage("El centinela intenta llamar tu atención. ¡Respóndele rápido!", FontType.FONTTYPE_CENTINELA);
@@ -136,12 +136,12 @@ public class WorkWatcher {
 	    
 	    if (!userWatching.flags().workWatcherRepliedOK) {
 	        // Logueamos el evento
-	        Log.logCentinela("Centinela baneo a " + userWatching.getNick() + " por uso de macro inasistido.");
+	        Log.logCentinela("Centinela baneo a " + userWatching.getUserName() + " por uso de macro inasistido.");
 	        
 	        // Ponemos el ban
 	        userWatching.banned = true;
 	        
-	        userName = userWatching.getNick();
+	        userName = userWatching.getUserName();
 	        
 	        // Avisamos a los admins
 	        server.sendToAdmins(new ConsoleMsgResponse("Servidor> El centinela ha baneado a " + userName, FontType.FONTTYPE_SERVER.id()));
@@ -172,7 +172,7 @@ public class WorkWatcher {
 		// ############################################################
 	    if (enteredCode == this.askingCode && user == userWatching) {
 	        userWatching.flags().workWatcherRepliedOK = true;
-	        workWatcher.talkToUser(userWatching, "¡Muchas gracias " + userWatching.getNick() 
+	        workWatcher.talkToUser(userWatching, "¡Muchas gracias " + userWatching.getUserName() 
 	        	+ "! Espero no haber sido una molestia", Color.COLOR_BLANCO);
 	        userWatching = null;
 	    } else {
@@ -180,9 +180,9 @@ public class WorkWatcher {
 	        
 	        // Logueamos el evento
 	        if (user != userWatching) {
-	            Log.logCentinela("El usuario " + user.getNick() + " respondió aunque no se le hablaba a él.");
+	            Log.logCentinela("El usuario " + user.getUserName() + " respondió aunque no se le hablaba a él.");
 	        } else {
-	        	Log.logCentinela("El usuario " + user.getNick() + " respondió una clave incorrecta: " 
+	        	Log.logCentinela("El usuario " + user.getUserName() + " respondió una clave incorrecta: " 
 	        			+ enteredCode + " - Se esperaba : " + askingCode);
 	        }
 	    }
@@ -193,7 +193,7 @@ public class WorkWatcher {
 		// Reset del Centinela
 		// ############################################################
 		server.getUsers().stream().forEach(p -> {
-			if (p.isLogged() && !p.getNick().isBlank() && p != userWatching) {
+			if (p.isLogged() && !p.getUserName().isBlank() && p != userWatching) {
 				p.flags().workWatcherRepliedOK = false;
 			}
 		});
@@ -214,7 +214,7 @@ public class WorkWatcher {
 	            user.sendMessage("El centinela está llamando tu atención. ¡Respóndele sin demora!", FontType.FONTTYPE_CENTINELA);
 	    	} else {
 	            // Logueamos el evento
-	            Log.logCentinela("El usuario " + userWatching.getNick() + " respondió más de una vez la contraseña correcta.");
+	            Log.logCentinela("El usuario " + userWatching.getUserName() + " respondió más de una vez la contraseña correcta.");
 	            workWatcher.talkToUser(user, "Te agradezco, pero ya me has respondido. Me retiraré pronto.", Color.COLOR_VERDE);
 	    	}
 	    } else {
@@ -256,10 +256,10 @@ public class WorkWatcher {
 	            }
 	            
 	            // El centinela habla y se manda a consola para que no quepan dudas
-	            workWatcher.talkToUser(userWatching, "¡" + userWatching.getNick() + 
+	            workWatcher.talkToUser(userWatching, "¡" + userWatching.getUserName() + 
 	            		", tienes un minuto más para responder! Debes escribir /CENTINELA " + askingCode + ".", 
 	            		Color.COLOR_ROJO);
-	            userWatching.sendMessage("¡" + userWatching.getNick() + ", tienes un minuto más para responder!", 
+	            userWatching.sendMessage("¡" + userWatching.getUserName() + ", tienes un minuto más para responder!", 
 	            		FontType.FONTTYPE_CENTINELA);
 	        }
 	    }
@@ -291,7 +291,7 @@ public class WorkWatcher {
 		// ############################################################
 	    if (userWatching != null && userWatching == user) {
 	        // Logueamos el evento
-	    	Log.logCentinela("El usuario " + userWatching.getNick() + " se desconectó al solicitarle la clave");
+	    	Log.logCentinela("El usuario " + userWatching.getUserName() + " se desconectó al solicitarle la clave");
 	        
 	        // Reseteamos y esperamos a otro PasarMinuto para ir al siguiente user
 	        askingCode = 0;
