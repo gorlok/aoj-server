@@ -34,8 +34,8 @@ public class Log {
     }
 
     /** TODO */
-    public static void logGM(String nickGM, String msg) {
-        System.out.println(getTimestamp() + " GM " + nickGM + "> " + msg);
+    public static void logGM(String gmName, String msg) {
+        System.out.println(getTimestamp() + " GM " + gmName + "> " + msg);
     }
     
     /** TODO */

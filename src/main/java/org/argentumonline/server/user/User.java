@@ -424,7 +424,7 @@ public class User extends AbstractCharacter {
 
 	@Override
 	public String toString() {
-		return "User(id=" + getId() + ",nick=" + this.userName + ")";
+		return "User(id=" + getId() + ",name=" + this.userName + ")";
 	}
 
 	public UserFaction userFaction() {
@@ -4365,9 +4365,9 @@ public class User extends AbstractCharacter {
 		this.userStorage.saveUserToStorage();
 	}
 
-	static String getPjFile(String nick) {
+	static String getPjFile(String userName) {
 		// FIXME
-		return Constants.CHARFILES_FOLDER + java.io.File.separator + nick.toLowerCase() + ".chr";
+		return Constants.CHARFILES_FOLDER + java.io.File.separator + userName.toLowerCase() + ".chr";
 	}
 
 	public boolean userExists() {
@@ -4455,7 +4455,7 @@ public class User extends AbstractCharacter {
 			this.infoChar.fx = 0;
 
 			// ¿El password es válido?
-			this.passwordHash = this.userStorage.passwordHashFromStorage(this.userName);
+			this.passwordHash = this.userStorage.passwordHashFromStorage();
 			if (!Security.validatePassword(userName, password, passwordHash)) {
 				sendError("Clave incorrecta.");
 				return;
@@ -5331,32 +5331,32 @@ public class User extends AbstractCharacter {
 		}
 	}
 
-	public static void changeGuildLeaderChr(String nick, boolean esLider) {
+	public static void changeGuildLeaderChr(String userName, boolean isLeader) {
 		try {
 			// ¿Existe el personaje?
-			if (!Util.fileExists(getPjFile(nick))) {
+			if (!Util.fileExists(getPjFile(userName))) {
 				return;
 			}
-			IniFile ini = new IniFile(getPjFile(nick));
-			ini.setValue("GUILD", "EsGuildLeader", esLider);
-			ini.store(getPjFile(nick));
+			IniFile ini = new IniFile(getPjFile(userName));
+			ini.setValue("GUILD", "EsGuildLeader", isLeader);
+			ini.store(getPjFile(userName));
 		} catch (Exception e) {
-			log.fatal(nick + ": ERROR EN SAVEUSER()", e);
+			log.fatal(userName + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 
-	public static void changeGuildPtsChr(String nick, int addedGuildPts) {
+	public static void changeGuildPtsChr(String userName, int addedGuildPts) {
 		try {
 			// ¿Existe el personaje?
-			if (!Util.fileExists(getPjFile(nick))) {
+			if (!Util.fileExists(getPjFile(userName))) {
 				return;
 			}
-			IniFile ini = new IniFile(getPjFile(nick));
+			IniFile ini = new IniFile(getPjFile(userName));
 			long guildPoints = ini.getLong("Guild", "GuildPts");
 			ini.setValue("GUILD", "GuildPts", guildPoints + addedGuildPts);
-			ini.store(getPjFile(nick));
+			ini.store(getPjFile(userName));
 		} catch (Exception e) {
-			log.fatal(nick + ": ERROR EN SAVEUSER()", e);
+			log.fatal(userName + ": ERROR EN SAVEUSER()", e);
 		}
 	}
 

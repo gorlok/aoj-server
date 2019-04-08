@@ -523,8 +523,8 @@ End Enum
         this.flags().set(FLAG_NPC_ACTIVE, true);
     }
 
-    public void attackedByUserName(String nick) {
-        this.attackedBy = nick;
+    public void attackedByUserName(String userName) {
+        this.attackedBy = userName;
     }
 
     public boolean isAttackedByUser() {
@@ -994,7 +994,7 @@ End Enum
                             cambiarDir(dir);
                             npcAtacaUser(user); // ok
                             return;
-                        } else if (!isFollowing() && m_attackedBy.equalsIgnoreCase(user.getNick())) {
+                        } else if (!isFollowing() && m_attackedBy.equalsIgnoreCase(user.getUserName())) {
                             cambiarDir(dir);
                             npcAtacaUser(user); // ok
                             return;

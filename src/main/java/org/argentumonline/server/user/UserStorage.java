@@ -99,7 +99,7 @@ public class UserStorage {
 		return user.infoChar().validateChr() && user.skills().validateSkills();
 	}
 	
-	public String passwordHashFromStorage(String nick) 
+	public String passwordHashFromStorage() 
 	throws FileNotFoundException, IOException {
 		IniFile ini = new IniFile(User.getPjFile(user.getUserName()));
 		

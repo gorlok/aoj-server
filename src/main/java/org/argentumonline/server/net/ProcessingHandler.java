@@ -619,7 +619,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case NickToIP:
-			server.manager().nick2IP(user, ((NickToIPRequest)packet).userName);
+			server.manager().userNameToIp(user, ((NickToIPRequest)packet).userName);
 			break;
 			
 		case IPToNick:
@@ -955,7 +955,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 
 	private void handleIpToNick(User admin, IPToNickRequest packet) {
 		String ip = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
-		GameServer.instance().manager().ipToNick(admin, ip);
+		GameServer.instance().manager().ipToUserName(admin, ip);
 	}
 
 	private void handleForceWaveToMap(User user, ForceWAVEToMapRequest packet) {

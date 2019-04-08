@@ -513,16 +513,16 @@ public class ManagerServer {
 			return;
 		}
 		
-    	// Agrega un (*) al nick del usuario que esté siendo monitoreado por el Centinela
+    	// Agrega un (*) al nombre del usuario que esté siendo monitoreado por el Centinela
 		var users = server.getUsers().stream()
 			    	.filter(c -> c.isLogged() && c.hasUserName() && c.isWorking())
-			    	.map(p -> decorateNick(p))
+			    	.map(p -> decorateUserName(p))
 			    	.collect(Collectors.toList());
 		
 		admin.sendMessage("Usuarios trabajando: " + String.join(", ", users), FontType.FONTTYPE_INFO);
 	}
 
-	private String decorateNick(User p) {
+	private String decorateUserName(User p) {
 		return p.getUserName() + (server.getWorkWatcher().watchingUser(p.getUserName()) ? "(*)" : "");
 	}
 	
@@ -648,7 +648,7 @@ public class ManagerServer {
 		server.sendToAll(new ShowMessageBoxResponse(msg));
 	}
 
-	public void nick2IP(final User admin, final String userName) {
+	public void userNameToIp(final User admin, final String userName) {
 		// Comando /NICK2IP
 		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
@@ -1960,7 +1960,7 @@ public class ManagerServer {
 		server.sendToAll(new PlayWaveResponse(waveId, x, y));
 	}
 
-	public void ipToNick(User admin, String ip) {
+	public void ipToUserName(User admin, String ip) {
 		// Comando /NICK2IP
 		if (!admin.isGod() && !admin.isAdmin() && !admin.isDemiGod()) {
 			return;
