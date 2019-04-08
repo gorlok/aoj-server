@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.api.ManagerApi;
 import org.argentumonline.server.forum.ForumManager;
 import org.argentumonline.server.gm.BannIP;
+import org.argentumonline.server.gm.HelpRequest;
 import org.argentumonline.server.gm.ManagerServer;
 import org.argentumonline.server.gm.Motd;
 import org.argentumonline.server.guilds.GuildManager;
@@ -107,6 +108,7 @@ public class GameServer implements Constants {
     private GamblerStats gamblerStats;
     private WorkWatcher workWatcher;
     private BannIP bannIP;
+    private HelpRequest helpRequest;
     private NetworkServer ns;
 
     private Feedback feedback = new Feedback();// FIXME
@@ -152,6 +154,7 @@ public class GameServer implements Constants {
     	this.gamblerStats = new GamblerStats();
     	this.workWatcher = new WorkWatcher(this);
     	this.bannIP = new BannIP(this);
+    	this.helpRequest = new HelpRequest(this);
     }
     
     private void init() {
@@ -207,6 +210,10 @@ public class GameServer implements Constants {
 
     public NpcLoader getNpcLoader() {
 		return this.npcLoader;
+	}
+    
+    public HelpRequest getHelpRequest() {
+		return helpRequest;
 	}
 
     public List<User> getUsers() {

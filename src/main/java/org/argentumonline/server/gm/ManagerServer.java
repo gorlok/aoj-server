@@ -27,9 +27,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -40,17 +38,13 @@ import org.argentumonline.server.ObjectInfo;
 import org.argentumonline.server.Pos;
 import org.argentumonline.server.Skill;
 import org.argentumonline.server.map.Map;
-import org.argentumonline.server.map.MapConstraint;
-import org.argentumonline.server.map.Terrain;
 import org.argentumonline.server.map.Tile.Trigger;
-import org.argentumonline.server.map.Zone;
 import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.protocol.ConsoleMsgResponse;
 import org.argentumonline.server.protocol.PlayMidiResponse;
 import org.argentumonline.server.protocol.PlayWaveResponse;
 import org.argentumonline.server.protocol.ShowGMPanelFormResponse;
 import org.argentumonline.server.protocol.ShowMessageBoxResponse;
-import org.argentumonline.server.protocol.ShowSOSFormResponse;
 import org.argentumonline.server.protocol.SpawnListResponse;
 import org.argentumonline.server.protocol.UserNameListResponse;
 import org.argentumonline.server.user.FactionArmors;
@@ -72,9 +66,6 @@ public class ManagerServer {
 
     private List<String> invalidNames = new ArrayList<>();
 
-    /** User names than asked for help */
-    private List<String> helpRequests = new ArrayList<>();
-    
     private short [] spawnList;
     private String [] spawnListNames;
 
@@ -206,21 +197,6 @@ public class ManagerServer {
         }
     }
 
-    public List<String> helpRequests() {
-        return this.helpRequests;
-    }
-
-	public void clearAllHelpRequestToGm(User admin) {
-		// Comando /BORRAR SOS
-		// Comando para borrar todos pedidos /GM pendientes
-		if (!admin.isGM()) {
-			return;
-		}
-    	this.helpRequests().clear();
-		admin.sendMessage("Todos los /GM pendientes han sido eliminados.", FontType.FONTTYPE_INFO);
-		Log.logGM(admin.getUserName(), "/BORRAR SOS");
-	}
-
 	public void saveGmComment(User admin, String comment) {
 		// Comando /REM comentario
 		if (!admin.isGM()) {
@@ -228,40 +204,6 @@ public class ManagerServer {
 		}
 		Log.logGM(admin.getUserName(), "Hace el comentario: " + comment);
 		admin.sendMessage("Comentario salvado...", FontType.FONTTYPE_INFO);
-	}
-
-	public void askForHelpToGM(User user) {
-		// Comando /GM
-		// Pedir ayuda a los GMs.
-		var requests = helpRequests();
-		if (!requests.contains(user.getUserName())) {
-			requests.add(user.getUserName());
-			user.sendMessage("El mensaje ha sido entregado, ahora solo debes esperar que se desocupe algun GM.",
-					FontType.FONTTYPE_INFO);
-		} else {
-			requests.remove(user.getUserName());
-			requests.add(user.getUserName());
-			user.sendMessage(
-					"Ya habias mandado un mensaje, tu mensaje ha sido movido al final de la cola de mensajes. Ten paciencia.",
-					FontType.FONTTYPE_INFO);
-		}
-	}
-
-	public void sendHelpRequests(User admin) {
-		// Comando /SHOW SOS
-		if (!admin.isGM()) {
-			return;
-		}
-		String sosList = String.join("" + Constants.NULL_CHAR, helpRequests);
-		admin.sendPacket(new ShowSOSFormResponse(sosList));
-	}
-
-	public void removeHelpRequest(User admin, String userName) {
-		// Comando SOSDONE
-		if (!admin.isGM()) {
-			return;
-		}
-		helpRequests().remove(userName);
 	}
 
 	public void goToChar(User admin, String userName) {

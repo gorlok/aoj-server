@@ -296,7 +296,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case GMRequest:
-			server.manager().askForHelpToGM(user);
+			server.getHelpRequest().askForHelpToGM(user);
 			break;
 			
 		case Online:
@@ -430,15 +430,15 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 	
 		case SOSShowList:
-			server.manager().sendHelpRequests(user);
+			server.getHelpRequest().sendHelpRequests(user);
 			break;
 		
 		case SOSRemove:
-			server.manager().removeHelpRequest(user, ((SOSRemoveRequest)packet).userName);
+			server.getHelpRequest().removeHelpRequest(user, ((SOSRemoveRequest)packet).userName);
 			break;
 			
 		case CleanSOS:
-			server.manager().clearAllHelpRequestToGm(user);
+			server.getHelpRequest().clearAllHelpRequestToGm(user);
 			break;
 			
 		case RequestUserList:
