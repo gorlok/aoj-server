@@ -17,8 +17,6 @@
  *******************************************************************************/
 package org.argentumonline.server.inventory;
 
-import java.util.ArrayList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.Clazz;
@@ -30,17 +28,11 @@ import org.argentumonline.server.Pos;
 import org.argentumonline.server.Skill;
 import org.argentumonline.server.map.Map;
 import org.argentumonline.server.map.MapPos;
-import org.argentumonline.server.net.BlacksmithArmors_DATA;
-import org.argentumonline.server.net.BlacksmithWeapons_DATA;
-import org.argentumonline.server.net.CarpenterObjects_DATA;
-import org.argentumonline.server.protocol.BlacksmithArmorsResponse;
-import org.argentumonline.server.protocol.BlacksmithWeaponsResponse;
-import org.argentumonline.server.protocol.CarpenterObjectsResponse;
 import org.argentumonline.server.protocol.ShowCarpenterFormResponse;
 import org.argentumonline.server.protocol.WorkRequestTargetResponse;
 import org.argentumonline.server.user.User;
-import org.argentumonline.server.user.UserGender;
 import org.argentumonline.server.user.UserAttributes.Attribute;
+import org.argentumonline.server.user.UserGender;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.Log;
 import org.argentumonline.server.util.Util;
@@ -682,51 +674,6 @@ public class UserInventory extends Inventory implements Constants {
         return false;
     }
     
-    public void sendBlacksmithWeapons() {
-    	var validWeapons = new ArrayList<BlacksmithWeapons_DATA>();
-    	for (short objid : this.server.getArmasHerrero()) {
-            ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= getUser().skillHerreriaEfectivo()) {
-            	validWeapons.add(new BlacksmithWeapons_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
-            }
-    	}
-
-        user.sendPacket(
-        		new BlacksmithWeaponsResponse(
-					(short) validWeapons.size(), 
-					validWeapons.toArray(new BlacksmithWeapons_DATA[0])));
-    }
- 
-    public void sendCarpenterObjects() {
-    	var validObjects = new ArrayList<CarpenterObjects_DATA>();
-    	for (short objid : this.server.getObjCarpintero()) {
-            ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= getUser().skillCarpinteriaEfectivo()) {
-            	validObjects.add(new CarpenterObjects_DATA(info.Nombre, (short)info.Madera, objid));
-            }
-    	}
-
-        user.sendPacket(
-        		new CarpenterObjectsResponse(
-        				(short) validObjects.size(), 
-        				validObjects.toArray(new CarpenterObjects_DATA[0])));
-    }
-
-    public void sendBlacksmithArmors() {
-    	var validArmaduras = new ArrayList<BlacksmithArmors_DATA>();
-    	for (short objid : this.server.getArmadurasHerrero()) {
-            ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= getUser().skillHerreriaEfectivo()) {
-            	validArmaduras.add(new BlacksmithArmors_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
-            }
-    	}
-
-        user.sendPacket(
-        		new BlacksmithArmorsResponse(
-        				(short) validArmaduras.size(), 
-        				validArmaduras.toArray(new BlacksmithArmors_DATA[0])));
-    }
-
     public void dropAllItemsNoNewbies() {
         Map mapa = this.server.getMap(getUser().pos().map);
         for (InventoryObject element : this.objs) {
@@ -852,7 +799,7 @@ public class UserInventory extends Inventory implements Constants {
                         break;
                         
                     case OBJ_INDEX_SERRUCHO_CARPINTERO:
-                    	sendCarpenterObjects();
+                    	server.getWork().sendCarpenterObjects(getUser());
                     	getUser().sendPacket(new ShowCarpenterFormResponse());
                         break;
                 }

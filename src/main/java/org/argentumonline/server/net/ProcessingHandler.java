@@ -280,11 +280,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case CraftCarpenter:
-			user.craftCarpenter(((CraftCarpenterRequest)packet).item);
+			server.getWork().craftCarpenter(user, ((CraftCarpenterRequest)packet).item);
 			break;
 			
 		case CraftBlacksmith:
-			user.craftBlacksmith(((CraftBlacksmithRequest)packet).item);
+			server.getWork().craftBlacksmith(user, ((CraftBlacksmithRequest)packet).item);
 			break;
 			
 		case SpellInfo:

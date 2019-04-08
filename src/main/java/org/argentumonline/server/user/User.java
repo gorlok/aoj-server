@@ -719,28 +719,6 @@ public class User extends AbstractCharacter {
 		}
 	}
 
-	public void craftBlacksmith(short objid) {
-		if (objid < 1) {
-			return;
-		}
-		ObjectInfo info = findObj(objid);
-		if (info.SkHerreria == 0) {
-			return;
-		}
-		herreroConstruirItem(objid);
-	}
-
-	public void craftCarpenter(short objid) {
-		if (objid < 1) {
-			return;
-		}
-		ObjectInfo info = findObj(objid);
-		if (info.SkCarpinteria == 0) {
-			return;
-		}
-		carpinteroConstruirItem(objid);
-	}
-
 	public void userTrainWithPet(byte petIndex) {
 		// Comando ENTR
 		// Entrenar con una mascota.
@@ -1714,8 +1692,8 @@ public class User extends AbstractCharacter {
 				mapa.lookAtTile(this, x, y);
 				if (getFlags().TargetObj > 0) {
 					if (findObj(getFlags().TargetObj).objType == ObjType.Yunque) {
-						this.userInv.sendBlacksmithWeapons();
-						this.userInv.sendBlacksmithArmors();
+						server.getWork().sendBlacksmithWeapons(this);
+						server.getWork().sendBlacksmithArmors(this);
 						sendPacket(new ShowBlacksmithFormResponse());
 					} else {
 						sendMessage("Ahí no hay ningún yunque.", FontType.FONTTYPE_INFO);
@@ -4819,153 +4797,6 @@ public class User extends AbstractCharacter {
 
 		return canUse;
 	}
-
-	// ////////////////////////////////////////////////////////////////////////
-	// ////////////////////////////////////////////////////////////////////////
-	// ////////////////////////////////////////////////////////////////////////
-	// ////////////////////////////////////////////////////////////////////////
-	// ESTO PROVIENE DE TRABAJO.BAS
-
-	private boolean tieneObjetos(short objid, int cant) {
-		int total = 0;
-		for (int i = 1; i <= this.userInv.getSize(); i++) {
-			if (this.userInv.getObject(i).objid == objid) {
-				total += this.userInv.getObject(i).cant;
-			}
-		}
-		return (cant <= total);
-	}
-
-	private void herreroQuitarMateriales(short objid) {
-		ObjectInfo info = findObj(objid);
-		if (info.LingH > 0) {
-			quitarObjetos(LingoteHierro, info.LingH);
-		}
-		if (info.LingP > 0) {
-			quitarObjetos(LingotePlata, info.LingP);
-		}
-		if (info.LingO > 0) {
-			quitarObjetos(LingoteOro, info.LingO);
-		}
-	}
-
-	public void carpinteroQuitarMateriales(short objid) {
-		ObjectInfo info = findObj(objid);
-		if (info.Madera > 0) {
-			quitarObjetos(Leña, info.Madera);
-		}
-	}
-
-	private boolean carpinteroTieneMateriales(short objid) {
-		ObjectInfo info = findObj(objid);
-		if (info.Madera > 0) {
-			if (!tieneObjetos(Leña, info.Madera)) {
-				sendMessage("No tenes suficientes madera.", FontType.FONTTYPE_INFO);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean herreroTieneMateriales(short objid) {
-		ObjectInfo info = findObj(objid);
-		if (info.LingH > 0) {
-			if (!tieneObjetos(LingoteHierro, info.LingH)) {
-				sendMessage("No tienes suficientes lingotes de hierro.", FontType.FONTTYPE_INFO);
-				return false;
-			}
-		}
-		if (info.LingP > 0) {
-			if (!tieneObjetos(LingotePlata, info.LingP)) {
-				sendMessage("No tienes suficientes lingotes de plata.", FontType.FONTTYPE_INFO);
-				return false;
-			}
-		}
-		if (info.LingO > 0) {
-			if (!tieneObjetos(LingoteOro, info.LingO)) {
-				sendMessage("No tienes suficientes lingotes de oro.", FontType.FONTTYPE_INFO);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean puedeConstruir(short objid) {
-		ObjectInfo info = findObj(objid);
-		return herreroTieneMateriales(objid) && skills().get(Skill.SKILL_Herreria) >= info.SkHerreria;
-	}
-
-	private boolean puedeConstruirHerreria(short objid) {
-		for (int i = 0; i < this.server.getArmasHerrero().length; i++) {
-			if (this.server.getArmasHerrero()[i] == objid) {
-				return true;
-			}
-		}
-		for (int i = 0; i < this.server.getArmadurasHerrero().length; i++) {
-			if (this.server.getArmadurasHerrero()[i] == objid) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void herreroConstruirItem(short objid) {
-		if (puedeConstruir(objid) && puedeConstruirHerreria(objid)) {
-			Map mapa = this.server.getMap(pos().map);
-			if (mapa == null) {
-				return;
-			}
-			ObjectInfo info = findObj(objid);
-			herreroQuitarMateriales(objid);
-			if (info.objType == ObjType.Weapon) {
-				sendMessage("Has construido el arma!.", FontType.FONTTYPE_INFO);
-			} else if (info.objType == ObjType.ESCUDO) {
-				sendMessage("Has construido el escudo!.", FontType.FONTTYPE_INFO);
-			} else if (info.objType == ObjType.CASCO) {
-				sendMessage("Has construido el casco!.", FontType.FONTTYPE_INFO);
-			} else if (info.objType == ObjType.Armadura) {
-				sendMessage("Has construido la armadura!.", FontType.FONTTYPE_INFO);
-			}
-			if (this.userInv.agregarItem(objid, 1) < 1) {
-				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, 1));
-			}
-			riseSkill(Skill.SKILL_Herreria);
-			sendInventoryToUser();
-			sendWave(SOUND_MARTILLO_HERRERO);
-			getFlags().Trabajando = true;
-		}
-	}
-
-	private boolean puedeConstruirCarpintero(short objid) {
-		for (int i = 0; i < this.server.getObjCarpintero().length; i++) {
-			if (this.server.getObjCarpintero()[i] == objid) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void carpinteroConstruirItem(short objid) {
-		ObjectInfo info = findObj(objid);
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa == null) {
-			return;
-		}
-		if (carpinteroTieneMateriales(objid) && skills().get(Skill.SKILL_Carpinteria) >= info.SkCarpinteria
-				&& puedeConstruirCarpintero(objid) && this.userInv.getArma().ObjIndex == SERRUCHO_CARPINTERO) {
-			carpinteroQuitarMateriales(objid);
-			sendMessage("¡Has construido el objeto!", FontType.FONTTYPE_INFO);
-			if (this.userInv.agregarItem(objid, 1) < 1) {
-				mapa.dropItemOnFloor(pos().x, pos().y, new InventoryObject(objid, 1));
-			}
-			riseSkill(Skill.SKILL_Carpinteria);
-			sendInventoryToUser();
-			sendWave(SOUND_LABURO_CARPINTERO);
-			getFlags().Trabajando = true;
-		}
-	}
-
-	// ################################# FIN TRABAJO ###################################
 
 	public void volverCiudadano() {
 		Map mapa = this.server.getMap(pos().map);

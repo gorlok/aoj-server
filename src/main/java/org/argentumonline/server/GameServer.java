@@ -51,6 +51,7 @@ import org.argentumonline.server.protocol.RainToggleResponse;
 import org.argentumonline.server.quest.Quest;
 import org.argentumonline.server.user.Spell;
 import org.argentumonline.server.user.User;
+import org.argentumonline.server.user.Work;
 import org.argentumonline.server.util.Feedback;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
@@ -80,10 +81,6 @@ public class GameServer implements Constants {
 
     private List<MapPos> trashCollector = new LinkedList<>();
 
-    private short[] armasHerrero;
-    private short[] armadurasHerrero;
-    private short[] objCarpintero;
-
     boolean running = false;
     boolean doingBackup = false;
     boolean serverRestrictedToGMs = false;
@@ -109,6 +106,7 @@ public class GameServer implements Constants {
     private WorkWatcher workWatcher;
     private BannIP bannIP;
     private HelpRequest helpRequest;
+    private Work work;
     private NetworkServer ns;
 
     private Feedback feedback = new Feedback();// FIXME
@@ -155,6 +153,7 @@ public class GameServer implements Constants {
     	this.workWatcher = new WorkWatcher(this);
     	this.bannIP = new BannIP(this);
     	this.helpRequest = new HelpRequest(this);
+    	this.work = new Work(this);
     }
     
     private void init() {
@@ -206,6 +205,10 @@ public class GameServer implements Constants {
     
     public BannIP getBannIP() {
 		return this.bannIP;
+	}
+    
+    public Work getWork() {
+		return work;
 	}
 
     public NpcLoader getNpcLoader() {
@@ -281,18 +284,6 @@ public class GameServer implements Constants {
 
     public int questCount() {
         return this.quests.size();
-    }
-
-    public short[] getArmasHerrero() {
-        return this.armasHerrero;
-    }
-
-    public short[] getArmadurasHerrero() {
-        return this.armadurasHerrero;
-    }
-
-    public short[] getObjCarpintero() {
-        return this.objCarpintero;
     }
 
     public boolean isShowDebug() {
@@ -486,9 +477,7 @@ public class GameServer implements Constants {
         loadMaps(loadBackup);
         loadQuests();
         loadCities();
-        loadBlacksmithingWeapons();
-        loadBlacksmithingArmors();
-        loadCarpentryObjects();
+        this.work.loadCraftableObjects();
         getBannIP().loadBannedIPList();
         this.manager.loadAdminsSpawnableCreatures();
         this.manager.loadInvalidNamesList();
@@ -841,60 +830,6 @@ public class GameServer implements Constants {
 	        getWorkWatcher().passMinute();
 	        
 	        log.info("Usuarios conectados: " + getUsuariosConectados().size() + " GMs:" + getGMsOnline().size());
-        }
-    }
-
-    private void loadBlacksmithingWeapons() {
-    	log.trace("loading blacksmithing weapons");
-        try {
-            IniFile ini = new IniFile(DAT_DIR + File.separator + "ArmasHerrero.dat");
-            short cant = ini.getShort("INIT", "NumArmas");
-            this.armasHerrero = new short[cant];
-            log.debug("ArmasHerreria cantidad=" + cant);
-            for (int i = 0; i < cant; i++) {
-                this.armasHerrero[i] = ini.getShort("Arma" + (i+1), "Index");
-                log.debug("ArmasHerrero[" + i + "]=" + this.armasHerrero[i]);
-            }
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadBlacksmithingArmors() {
-    	log.trace("loading backsmithing armors");
-        try {
-            IniFile ini = new IniFile(DAT_DIR + File.separator + "ArmadurasHerrero.dat");
-            short cant = ini.getShort("INIT", "NumArmaduras");
-            log.debug("ArmadurasHerrero cantidad=" + cant);
-            this.armadurasHerrero = new short[cant];
-            for (int i = 0; i < cant; i++) {
-                this.armadurasHerrero[i] = ini.getShort("Armadura" + (i+1), "Index");
-                log.debug("ArmadurasHerrero[" + i + "]=" + this.armadurasHerrero[i]);
-            }
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadCarpentryObjects() {
-    	log.trace("loading carpentry objects");
-        try {
-            IniFile ini = new IniFile(DAT_DIR + File.separator + "ObjCarpintero.dat");
-            short cant = ini.getShort("INIT", "NumObjs");
-            log.debug("ObjCarpintero cantidad=" + cant);
-            this.objCarpintero = new short[cant];
-            for (int i = 0; i < cant; i++) {
-                this.objCarpintero[i] = ini.getShort("Obj" + (i+1), "Index");
-                log.debug("ObjCarpintero[" + i + "]=" + this.objCarpintero[i]);
-            }
-        } catch (java.io.FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
         }
     }
 
