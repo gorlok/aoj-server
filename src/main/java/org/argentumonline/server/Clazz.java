@@ -539,7 +539,7 @@ public enum Clazz {
 
 	/** Subir las estadísticas segun la clase */
 	public void incStats(User user) {
-		UserStats stats = user.stats();
+		UserStats stats = user.getStats();
 
 		// Las mejoras varian según las características de cada clase.
 		int aumentoSalud = getMejoraSalud(stats);
@@ -561,8 +561,8 @@ public enum Clazz {
 			user.sendMessage("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoGolpe > 0) {
-			stats.addMaxHIT(aumentoGolpe, user.stats().ELV);
-			stats.addMinHIT(aumentoGolpe, user.stats().ELV);
+			stats.addMaxHIT(aumentoGolpe, user.getStats().ELV);
+			stats.addMinHIT(aumentoGolpe, user.getStats().ELV);
 			user.sendMessage("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
 		}
 	}

@@ -532,7 +532,7 @@ public class Map implements Constants {
         	try {
         		area().sendToUserArea(this, user, new RemoveCharDialogResponse(user.getId()));
         		
-        		if (user.flags().AdminInvisible) {
+        		if (user.getFlags().AdminInvisible) {
         			user.sendPacket(new CharacterRemoveResponse(user.getId()));
         		} else {
         			sendToArea(user.pos().x, user.pos().y, new CharacterRemoveResponse(user.getId()));
@@ -787,7 +787,7 @@ public class Map implements Constants {
             for (short x = x1; x <= x2; x++) {
                 if (tile(x,y).userId() > 0) {
                     user = this.server.userById(tile(x,y).userId());
-                    if (user != null && (user.flags().isGod() || user.flags().isDemiGod())) {
+                    if (user != null && (user.getFlags().isGod() || user.getFlags().isDemiGod())) {
 						user.sendPacket(packet);
 					}
                 }
@@ -878,7 +878,7 @@ public class Map implements Constants {
     		new CharacterMoveResponse(user.getId(), newPos.x, newPos.y));
         area().checkUpdateNeededUser(this, user, user.infoChar().getHeading());
         
-        if (!casper.flags().AdminInvisible) {
+        if (!casper.getFlags().AdminInvisible) {
         	area().sendToAreaButIndex(this, oldPos.x, oldPos.y, casper.getId(), 
             		new CharacterMoveResponse(casper.getId(), oldPos.x, oldPos.y));
         }
@@ -991,10 +991,10 @@ public class Map implements Constants {
         	} else {
         		user.sendMessage(obj.objInfo().Nombre, FontType.FONTTYPE_INFO);
         	}
-            user.flags().TargetObj = obj.objInfo().ObjIndex;
-            user.flags().TargetObjMap = this.mapNumber;
-            user.flags().TargetObjX = obj.x;
-            user.flags().TargetObjY = obj.y;
+            user.getFlags().TargetObj = obj.objInfo().ObjIndex;
+            user.getFlags().TargetObjMap = this.mapNumber;
+            user.getFlags().TargetObjX = obj.x;
+            user.getFlags().TargetObjY = obj.y;
             foundSomething = true;
             System.out.println("OBJ " + obj.objInfo().Nombre + " OID:" + obj.objInfo().ObjIndex + " x="+obj.x + ",y="+obj.y);
         }
@@ -1002,7 +1002,7 @@ public class Map implements Constants {
         // Ver si hay un jugador
         User anotherUser;
         if ((anotherUser = lookForNearbyUser(x, y)) != null) {
-        	if (!anotherUser.flags().AdminInvisible || user.flags().isGM()) {
+        	if (!anotherUser.getFlags().AdminInvisible || user.getFlags().isGM()) {
         		
         		if (anotherUser.descRM.length() > 0 || !anotherUser.showName) {
         			// tiene descRM, o no quiere que se vea su nombre.
@@ -1011,12 +1011,12 @@ public class Map implements Constants {
         			user.sendMessage("Ves a " + anotherUser.userNameTagDesc(), anotherUser.getTagColor());
         		}
         		
-        		user.flags().TargetUser = anotherUser.getId();
-        		user.flags().TargetNpc = 0;
-        		user.flags().TargetObj = 0;
-        		user.flags().TargetMap = this.mapNumber;
-        		user.flags().TargetX = x;
-        		user.flags().TargetY = y;
+        		user.getFlags().TargetUser = anotherUser.getId();
+        		user.getFlags().TargetNpc = 0;
+        		user.getFlags().TargetObj = 0;
+        		user.getFlags().TargetMap = this.mapNumber;
+        		user.getFlags().TargetX = x;
+        		user.getFlags().TargetY = y;
         		foundSomething = true;
         	}
         }
@@ -1040,30 +1040,30 @@ public class Map implements Constants {
             		npcName = npc.name;
             	}
             	user.sendMessage(npcName + " " + npc.healthDescription(user), FontType.FONTTYPE_INFO);
-            	if (user.flags().isGM() && npc.attackedFirstBy != "") {
+            	if (user.getFlags().isGM() && npc.attackedFirstBy != "") {
             		user.sendMessage("Le pegó primero: " + npc.attackedFirstBy + ".", FontType.FONTTYPE_INFO);
             	}
             }
             
-            user.flags().TargetNpc = npc.getId();
-            user.flags().TargetMap = this.mapNumber;
-            user.flags().TargetX = x;
-            user.flags().TargetY = y;
-            user.flags().TargetUser = 0;
-            user.flags().TargetObj = 0;
+            user.getFlags().TargetNpc = npc.getId();
+            user.getFlags().TargetMap = this.mapNumber;
+            user.getFlags().TargetX = x;
+            user.getFlags().TargetY = y;
+            user.getFlags().TargetUser = 0;
+            user.getFlags().TargetObj = 0;
         }
         
         if (!foundSomething) {
-            user.flags().TargetNpc = 0;
-            user.flags().TargetNpcTipo = 0;
-            user.flags().TargetUser = 0;
-            user.flags().TargetObj = 0;
-            user.flags().TargetObjMap = 0;
-            user.flags().TargetObjX = 0;
-            user.flags().TargetObjY = 0;
-            user.flags().TargetMap = this.mapNumber;
-            user.flags().TargetX = x;
-            user.flags().TargetY = y;
+            user.getFlags().TargetNpc = 0;
+            user.getFlags().TargetNpcTipo = 0;
+            user.getFlags().TargetUser = 0;
+            user.getFlags().TargetObj = 0;
+            user.getFlags().TargetObjMap = 0;
+            user.getFlags().TargetObjX = 0;
+            user.getFlags().TargetObjY = 0;
+            user.getFlags().TargetMap = this.mapNumber;
+            user.getFlags().TargetX = x;
+            user.getFlags().TargetY = y;
             user.sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
     }
@@ -1133,7 +1133,7 @@ public class Map implements Constants {
 		}
         if (obj.objInfo().Clave == 0) {
             toggleDoor(obj);
-            user.flags().TargetObj = obj.objInfo().ObjIndex;
+            user.getFlags().TargetObj = obj.objInfo().ObjIndex;
         } else {
             user.sendMessage("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
@@ -1670,7 +1670,7 @@ public class Map implements Constants {
     public boolean isForbbidenMap(User user) {
     	// ¿Es mapa de newbies?
     	if (isNewbieMap()) {
-    		if (user.isNewbie() || user.flags().isGM()) {
+    		if (user.isNewbie() || user.getFlags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un newbie/gm, "NO PASARÁS!"
@@ -1682,7 +1682,7 @@ public class Map implements Constants {
 		// ¿Es mapa de Armadas?
     	if (isRoyalArmyMap()) {
             // ¿El usuario es Armada?
-    		if (user.isRoyalArmy() || user.flags().isGM()) {
+    		if (user.isRoyalArmy() || user.getFlags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/gm, "NO PASARÁS!"
@@ -1694,7 +1694,7 @@ public class Map implements Constants {
 		// ¿Es mapa de Caos?
     	if (isDarkLegionMap()) {
             // ¿El usuario es Caos?
-    		if (user.isDarkLegion() || user.flags().isGM()) {
+    		if (user.isDarkLegion() || user.getFlags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un caos/gm, "NO PASARÁS!"
@@ -1706,7 +1706,7 @@ public class Map implements Constants {
 		// ¿Es mapa de faccionarios?
     	if (isFactionMap()) {
             // ¿El usuario es Caos?
-    		if (user.isRoyalArmy() || user.isDarkLegion() || user.flags().isGM()) {
+    		if (user.isRoyalArmy() || user.isDarkLegion() || user.getFlags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/caos/gm, "NO PASARÁS!"

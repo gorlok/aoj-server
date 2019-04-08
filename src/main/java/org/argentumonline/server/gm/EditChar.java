@@ -106,7 +106,7 @@ public class EditChar {
 					admin.sendMessage("Se le ha agregado " + bankGoldToAdd + " monedas de oro a " + userName + ".", 
 							FontType.FONTTYPE_TALK);
 				} else {
-					user.stats().addBankGold(bankGoldToAdd);
+					user.getStats().addBankGold(bankGoldToAdd);
 					user.sendMessage(Constants.STANDARD_BOUNTY_HUNTER_MESSAGE, FontType.FONTTYPE_TALK);
 				}
 			}
@@ -127,7 +127,7 @@ public class EditChar {
 							+ userName, FontType.FONTTYPE_INFO);
 				} else {
 					// User online
-					user.stats().setGold(gold);
+					user.getStats().setGold(gold);
 					user.sendPacket(new UpdateGoldResponse(gold));
 					admin.sendMessage("Usuario conectado. Se ha asignado " + gold + " de ORO a la billetera de " 
 							+ user.getUserName(), FontType.FONTTYPE_INFO);
@@ -149,9 +149,9 @@ public class EditChar {
 						FontType.FONTTYPE_INFO);
             } else {
             	// User online
-            	user.stats().addExp(exp);
+            	user.getStats().addExp(exp);
             	user.checkUserLevel();
-            	user.sendPacket(new UpdateExpResponse(user.stats().Exp));
+            	user.sendPacket(new UpdateExpResponse(user.getStats().Exp));
             }
             // Log it
             commandString.append("EXP ");
@@ -192,7 +192,7 @@ public class EditChar {
             			FontType.FONTTYPE_INFO);
             } else {
             	// User Online
-            	user.stats().ELV = level;
+            	user.getStats().ELV = level;
             	user.sendUpdateUserStats();
             }
             // Log it
@@ -292,7 +292,7 @@ public class EditChar {
             			+ nobleRep + " puntos de Nobleza.", FontType.FONTTYPE_INFO);
             } else {
             	// User Online
-            	user.reputation().setNobleRep(nobleRep);
+            	user.getReputation().setNobleRep(nobleRep);
             	admin.sendMessage("Usuario conectado: " + user.getUserName() + " ahora tiene " 
             			+ nobleRep + " puntos de Nobleza.", FontType.FONTTYPE_INFO);
             }
@@ -312,7 +312,7 @@ public class EditChar {
             			+ assassinRep + " puntos de Asesino.", FontType.FONTTYPE_INFO);
             } else {
             	// User Online
-            	user.reputation().setAsesinoRep(assassinRep);
+            	user.getReputation().setAsesinoRep(assassinRep);
             	admin.sendMessage("Usuario conectado: " + user.getUserName() + " ahora tiene " 
             			+ assassinRep + " puntos de Asesino.", FontType.FONTTYPE_INFO);
             }

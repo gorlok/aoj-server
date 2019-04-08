@@ -76,7 +76,7 @@ public class WorkWatcher {
 		if (System.currentTimeMillis() - spawnTime >= 5000) {
 	        if (userWatching != null && activated) {
 	        	Map map = server.getMap(workWatcher.pos().map);
-	            if (!userWatching.flags().workWatcherRepliedOK) {
+	            if (!userWatching.getFlags().workWatcherRepliedOK) {
 	            	map.sendPlayWave(Constants.SOUND_WARP, workWatcher.pos().x, workWatcher.pos().y);
 	            	userWatching.sendPacket(new CreateFXResponse(workWatcher.getId(), (short)Constants.FXWARP, (short)0));
 	                
@@ -93,7 +93,7 @@ public class WorkWatcher {
 		// ############################################################
 		server.getUsers().stream().forEach(p -> {
 			if (p.isLogged() && p.isWorking() && !p.isGM()) {
-				if (!p.flags().workWatcherRepliedOK) {
+				if (!p.getFlags().workWatcherRepliedOK) {
 	                // Inicializamos
 	                userWatching = p;
 	                userRemainingMinutes = TIEMPO_INICIAL;
@@ -134,7 +134,7 @@ public class WorkWatcher {
 	    
 		String userName;
 	    
-	    if (!userWatching.flags().workWatcherRepliedOK) {
+	    if (!userWatching.getFlags().workWatcherRepliedOK) {
 	        // Logueamos el evento
 	        Log.logCentinela("Centinela baneo a " + userWatching.getUserName() + " por uso de macro inasistido.");
 	        
@@ -171,7 +171,7 @@ public class WorkWatcher {
 		// Corrobora la clave que le envia el usuario
 		// ############################################################
 	    if (enteredCode == this.askingCode && user == userWatching) {
-	        userWatching.flags().workWatcherRepliedOK = true;
+	        userWatching.getFlags().workWatcherRepliedOK = true;
 	        workWatcher.talkToUser(userWatching, "¡Muchas gracias " + userWatching.getUserName() 
 	        	+ "! Espero no haber sido una molestia", Color.COLOR_BLANCO);
 	        userWatching = null;
@@ -194,7 +194,7 @@ public class WorkWatcher {
 		// ############################################################
 		server.getUsers().stream().forEach(p -> {
 			if (p.isLogged() && !p.getUserName().isBlank() && p != userWatching) {
-				p.flags().workWatcherRepliedOK = false;
+				p.getFlags().workWatcherRepliedOK = false;
 			}
 		});
 	}
@@ -209,7 +209,7 @@ public class WorkWatcher {
 		}
 	    
 	    if (user == userWatching) {
-	    	if (!user.flags().workWatcherRepliedOK) {
+	    	if (!user.getFlags().workWatcherRepliedOK) {
 	    		workWatcher.talkToUser(user, "¡Te he dicho que escribas /CENTINELA " + askingCode + ", escríbelo rápido!", Color.COLOR_VERDE);
 	            user.sendMessage("El centinela está llamando tu atención. ¡Respóndele sin demora!", FontType.FONTTYPE_CENTINELA);
 	    	} else {

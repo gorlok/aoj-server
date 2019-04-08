@@ -644,7 +644,7 @@ End Enum
             if (user.partyIndex > 0) {
             	Party.obtenerExito(user, exp, pos());
             } else {
-            	user.stats().addExp(exp);
+            	user.getStats().addExp(exp);
                 user.sendMessage("Has ganado " + exp + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             }
             user.checkUserLevel();
@@ -663,20 +663,20 @@ End Enum
             if (this.snd3 > 0) {
             	m.sendToArea(pos.x, pos.y, new PlayWaveResponse(this.snd3, user.pos().x, user.pos().y));
             }
-            user.flags().TargetNpc = 0;
-            user.flags().TargetNpcTipo = 0;
+            user.getFlags().TargetNpc = 0;
+            user.getFlags().TargetNpcTipo = 0;
             // El user que lo mato tiene mascotas?
             if (user.getUserPets().hasPets()) {
                 user.getUserPets().petsFollowMaster(this);
             }
             user.sendMessage("Has matado la criatura!", FONTTYPE_FIGHT);
             if (this.expCount > 0) {
-                user.stats().addExp(this.expCount * 1000); // FIXME experiencia FACIL
+                user.getStats().addExp(this.expCount * 1000); // FIXME experiencia FACIL
                 user.sendMessage("Has ganado " + this.expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
             } else {
                 user.sendMessage("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
             }
-            user.stats().incNPCsMuertos();
+            user.getStats().incNPCsMuertos();
             user.quest().checkNpcEnemigo(user, this);
 
             if (this.stats.alineacion == 0) {
@@ -684,15 +684,15 @@ End Enum
                 if (this.npcNumber == GUARDIAS) {
                     user.turnCriminal();
                 }
-                if (!user.flags().isGod()) {
-                    user.reputation().incAsesino(vlAsesino);
+                if (!user.getFlags().isGod()) {
+                    user.getReputation().incAsesino(vlAsesino);
                 }
             } else if (this.stats.alineacion == 1) {
-                user.reputation().incPlebe(vlCazador);
+                user.getReputation().incPlebe(vlCazador);
             } else if (this.stats.alineacion == 2) {
-                user.reputation().incNoble(vlAsesino / 2);
+                user.getReputation().incNoble(vlAsesino / 2);
             } else if (this.stats.alineacion == 4) {
-                user.reputation().incPlebe(vlCazador);
+                user.getReputation().incPlebe(vlCazador);
             }
             // Controla el nivel del usuario
             user.checkUserLevel();
@@ -1100,7 +1100,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasUser(x, y)) {
                         User user = mapa.getUser(x, y);
-                        if (!user.flags().isGM() && this.attackedBy.equalsIgnoreCase(user.getUserName())) {
+                        if (!user.getFlags().isGM() && this.attackedBy.equalsIgnoreCase(user.getUserName())) {
                             if (getPetUserOwner() != null) {
 		                        if (	!getPetUserOwner().isCriminal() && !user.isCriminal() &&
 		                        		(getPetUserOwner().hasSafeLock() || getPetUserOwner().userFaction().ArmadaReal)) {
@@ -1178,7 +1178,7 @@ End Enum
                 if (pos.isValid()) {
                     if (mapa.hasUser(x, y)) {
                         User user = mapa.getUser(x, y);
-                        if (!user.isCriminal() && user.isAlive() && !user.isInvisible() && !user.flags().isGM()) {
+                        if (!user.isCriminal() && user.isAlive() && !user.isInvisible() && !user.getFlags().isGM()) {
                             if (isMagical()) {
                                 npcCastSpell(user);
                             }
@@ -1503,14 +1503,14 @@ End Enum
             daño = Util.random(spell.MinHP, spell.MaxHP);
             user.sendWave(spell.WAV);
             user.sendCreateFX(spell.FXgrh, spell.loops);
-            user.stats().addHP(daño);
+            user.getStats().addHP(daño);
             user.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             user.sendUpdateUserStats();
             
         }
 
         if (spell.SubeHP == 2) {
-            if (user.flags().isGM()) {
+            if (user.getFlags().isGM()) {
     			return;
     		}
             daño = Util.random(spell.MinHP, spell.MaxHP);
@@ -1535,12 +1535,12 @@ End Enum
             
             user.sendWave(spell.WAV);
             user.sendCreateFX(spell.FXgrh, spell.loops);
-            user.stats().removeHP(daño);
+            user.getStats().removeHP(daño);
             user.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
             user.sendUpdateUserStats();
             // Muere
-            if (user.stats().MinHP < 1) {
-                user.stats().MinHP = 0;
+            if (user.getStats().MinHP < 1) {
+                user.getStats().MinHP = 0;
                 user.userDie();
                 if (getPetUserOwner() != null) {
                     getPetUserOwner().contarMuerte(user);
@@ -1550,7 +1550,7 @@ End Enum
         }
         
         if (spell.isParaliza() || spell.isInmoviliza()) {
-    		if (!user.flags().Paralizado) {
+    		if (!user.getFlags().Paralizado) {
     			user.sendWave(spell.WAV);
     			user.sendCreateFX(spell.FXgrh, spell.loops);
     			
@@ -1560,10 +1560,10 @@ End Enum
     			}
     			
     			if (spell.isInmoviliza()) {
-    				user.flags().Inmovilizado = true;
+    				user.getFlags().Inmovilizado = true;
     			}
     			
-    			user.flags().Paralizado = true;
+    			user.getFlags().Paralizado = true;
     			user.getCounters().Paralisis = IntervaloParalizado;
     			user.sendPacket(new ParalizeOKResponse());
     		}
@@ -1584,7 +1584,7 @@ End Enum
     }
 
     private void npcAtacaUser(User user) {
-    	if (user.flags().AdminInvisible || !user.isAllowingChase()) {
+    	if (user.getFlags().AdminInvisible || !user.isAllowingChase()) {
     		return;
     	}
     	
@@ -1593,13 +1593,13 @@ End Enum
         if (!canAttack()) {
 			return;
 		}
-        if (user.flags().isGM()) {
+        if (user.getFlags().isGM()) {
 			return;
 		}
         user.getUserPets().petsAttackNpc(this);
 		targetUser(user.getId());
-        if (user.flags().AtacadoPorNpc == 0 && user.flags().AtacadoPorUser == 0) {
-			user.flags().AtacadoPorNpc = this.getId();
+        if (user.getFlags().AtacadoPorNpc == 0 && user.getFlags().AtacadoPorUser == 0) {
+			user.getFlags().AtacadoPorNpc = this.getId();
 		}
         this.flags().set(FLAG_PUEDE_ATACAR, false);
         if (this.snd1 > 0) {
@@ -1835,7 +1835,7 @@ End Enum
 			return "";
 		}
 
-    	if (user.flags().isGM()) {
+    	if (user.getFlags().isGM()) {
 			return estadoVidaExacta();
 		}
     	

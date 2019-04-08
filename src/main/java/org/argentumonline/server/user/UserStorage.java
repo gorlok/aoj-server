@@ -69,7 +69,7 @@ public class UserStorage {
 		IniFile ini = new IniFile(User.getPjFile(user.userName));
 		
 		loadUserInit(ini);
-		user.stats().loadUserStats(ini);
+		user.getStats().loadUserStats(ini);
 		user.skills().loadUserSkills(ini);
 		user.spells().loadSpells(ini);
 		user.reputation.loadUserReputacion(ini);
@@ -90,7 +90,7 @@ public class UserStorage {
 		IniFile ini = new IniFile(User.getPjFile(user.getUserName()));
 		
 		loadUserInit(ini);
-		user.stats().loadUserStats(ini);
+		user.getStats().loadUserStats(ini);
 		user.skills().loadUserSkills(ini);
 		user.reputation.loadUserReputacion(ini);
 	}
@@ -114,16 +114,16 @@ public class UserStorage {
 		user.bannedBy = ini.getString("BAN", "BannedBy");
 		user.bannedReason = ini.getString("BAN", "Reason");
 		
-		user.flags().Muerto = ini.getShort("FLAGS", "Muerto") == 1;
-		user.flags().Escondido = ini.getShort("FLAGS", "Escondido") == 1;
-		user.flags().Hambre = ini.getShort("FLAGS", "Hambre") == 1;
-		user.flags().Sed = ini.getShort("FLAGS", "Sed") == 1;
-		user.flags().Desnudo = ini.getShort("FLAGS", "Desnudo") == 1;
-		user.flags().Envenenado = ini.getShort("FLAGS", "Envenenado") == 1;
-		user.flags().Paralizado = ini.getShort("FLAGS", "Paralizado") == 1;
-		user.flags().Desnudo = (ini.getShort("Inventory", "ArmourEqpSlot") == 0);
-		user.flags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
-		if (user.flags().Paralizado) {
+		user.getFlags().Muerto = ini.getShort("FLAGS", "Muerto") == 1;
+		user.getFlags().Escondido = ini.getShort("FLAGS", "Escondido") == 1;
+		user.getFlags().Hambre = ini.getShort("FLAGS", "Hambre") == 1;
+		user.getFlags().Sed = ini.getShort("FLAGS", "Sed") == 1;
+		user.getFlags().Desnudo = ini.getShort("FLAGS", "Desnudo") == 1;
+		user.getFlags().Envenenado = ini.getShort("FLAGS", "Envenenado") == 1;
+		user.getFlags().Paralizado = ini.getShort("FLAGS", "Paralizado") == 1;
+		user.getFlags().Desnudo = (ini.getShort("Inventory", "ArmourEqpSlot") == 0);
+		user.getFlags().Navegando = ini.getShort("FLAGS", "Navegando") == 1;
+		if (user.getFlags().Paralizado) {
 			user.getCounters().Paralisis = IntervaloParalizado;
 		}
 		user.getCounters().Pena = ini.getLong("COUNTERS", "Pena");
@@ -263,14 +263,14 @@ public class UserStorage {
 		// / guardar en archivo .chr
 		try {
 			IniFile ini = new IniFile();
-			ini.setValue("FLAGS", "Muerto", user.flags().Muerto);
-			ini.setValue("FLAGS", "Escondido", user.flags().Escondido);
-			ini.setValue("FLAGS", "Hambre", user.flags().Hambre);
-			ini.setValue("FLAGS", "Sed", user.flags().Sed);
-			ini.setValue("FLAGS", "Desnudo", user.flags().Desnudo);
-			ini.setValue("FLAGS", "Navegando", user.flags().Navegando);
-			ini.setValue("FLAGS", "Envenenado", user.flags().Envenenado);
-			ini.setValue("FLAGS", "Paralizado", user.flags().Paralizado);
+			ini.setValue("FLAGS", "Muerto", user.getFlags().Muerto);
+			ini.setValue("FLAGS", "Escondido", user.getFlags().Escondido);
+			ini.setValue("FLAGS", "Hambre", user.getFlags().Hambre);
+			ini.setValue("FLAGS", "Sed", user.getFlags().Sed);
+			ini.setValue("FLAGS", "Desnudo", user.getFlags().Desnudo);
+			ini.setValue("FLAGS", "Navegando", user.getFlags().Navegando);
+			ini.setValue("FLAGS", "Envenenado", user.getFlags().Envenenado);
+			ini.setValue("FLAGS", "Paralizado", user.getFlags().Paralizado);
 
 			ini.setValue("COUNTERS", "Pena", user.getCounters().Pena);
 
@@ -300,10 +300,10 @@ public class UserStorage {
 			// ¿Fueron modificados los atributos del usuario?
 			int i = 1;
 			for (Attribute attr : Attribute.values()) {
-				if (!user.flags().TomoPocion) {
-					ini.setValue("ATRIBUTOS", "AT" + (i++), user.stats().attr().get(attr));
+				if (!user.getFlags().TomoPocion) {
+					ini.setValue("ATRIBUTOS", "AT" + (i++), user.getStats().attr().get(attr));
 				} else {
-					ini.setValue("ATRIBUTOS", "AT" + (i++), user.stats().attr().getBackup(attr));
+					ini.setValue("ATRIBUTOS", "AT" + (i++), user.getStats().attr().getBackup(attr));
 				}
 			}
 
@@ -322,7 +322,7 @@ public class UserStorage {
 			ini.setValue("INIT", "Desc", user.description);
 			ini.setValue("INIT", "Heading", user.infoChar().heading.value());
 
-			if (user.flags().Muerto || user.flags().Invisible || user.flags().Navegando) {
+			if (user.getFlags().Muerto || user.getFlags().Invisible || user.getFlags().Navegando) {
 				ini.setValue("INIT", "Head", user.origChar().head);
 				ini.setValue("INIT", "Body", user.origChar().body);
 			} else {
@@ -336,37 +336,37 @@ public class UserStorage {
 			ini.setValue("INIT", "LastIP", user.getIP());
 			ini.setValue("INIT", "Position", user.pos().map + "-" + user.pos().x + "-" + user.pos().y);
 
-			ini.setValue("STATS", "GLD", user.stats().getGold());
-			ini.setValue("STATS", "BANCO", user.stats().getBankGold());
+			ini.setValue("STATS", "GLD", user.getStats().getGold());
+			ini.setValue("STATS", "BANCO", user.getStats().getBankGold());
 
 			// ini.setValue("STATS", "MET", user.getEstads().MET);
-			ini.setValue("STATS", "MaxHP", user.stats().MaxHP);
-			ini.setValue("STATS", "MinHP", user.stats().MinHP);
+			ini.setValue("STATS", "MaxHP", user.getStats().MaxHP);
+			ini.setValue("STATS", "MinHP", user.getStats().MinHP);
 
 			// ini.setValue("STATS", "FIT", user.getEstads().FIT);
-			ini.setValue("STATS", "MaxSTA", user.stats().maxStamina);
-			ini.setValue("STATS", "MinSTA", user.stats().stamina);
+			ini.setValue("STATS", "MaxSTA", user.getStats().maxStamina);
+			ini.setValue("STATS", "MinSTA", user.getStats().stamina);
 
-			ini.setValue("STATS", "MaxMAN", user.stats().maxMana);
-			ini.setValue("STATS", "MinMAN", user.stats().mana);
+			ini.setValue("STATS", "MaxMAN", user.getStats().maxMana);
+			ini.setValue("STATS", "MinMAN", user.getStats().mana);
 
-			ini.setValue("STATS", "MaxHIT", user.stats().MaxHIT);
-			ini.setValue("STATS", "MinHIT", user.stats().MinHIT);
+			ini.setValue("STATS", "MaxHIT", user.getStats().MaxHIT);
+			ini.setValue("STATS", "MinHIT", user.getStats().MinHIT);
 
-			ini.setValue("STATS", "MaxAGU", user.stats().maxDrinked);
-			ini.setValue("STATS", "MinAGU", user.stats().drinked);
+			ini.setValue("STATS", "MaxAGU", user.getStats().maxDrinked);
+			ini.setValue("STATS", "MinAGU", user.getStats().drinked);
 
-			ini.setValue("STATS", "MaxHAM", user.stats().maxEaten);
-			ini.setValue("STATS", "MinHAM", user.stats().eaten);
+			ini.setValue("STATS", "MaxHAM", user.getStats().maxEaten);
+			ini.setValue("STATS", "MinHAM", user.getStats().eaten);
 
 			ini.setValue("STATS", "SkillPtsLibres", user.skills().freeSkillPts);
 
-			ini.setValue("STATS", "EXP", user.stats().Exp);
-			ini.setValue("STATS", "ELV", user.stats().ELV);
-			ini.setValue("STATS", "ELU", user.stats().ELU);
+			ini.setValue("STATS", "EXP", user.getStats().Exp);
+			ini.setValue("STATS", "ELV", user.getStats().ELV);
+			ini.setValue("STATS", "ELU", user.getStats().ELU);
 
-			ini.setValue("MUERTES", "UserMuertes", user.stats().usuariosMatados);
-			ini.setValue("MUERTES", "NpcsMuertes", user.stats().NPCsMuertos);
+			ini.setValue("MUERTES", "UserMuertes", user.getStats().usuariosMatados);
+			ini.setValue("MUERTES", "NpcsMuertes", user.getStats().NPCsMuertos);
 
 			i = 1;
 			for (InventoryObject invObj : user.getBankInventory()) {
@@ -398,14 +398,14 @@ public class UserStorage {
 			ini.setValue("Inventory", "EspadaMataDragonesSlot", user.getUserInv().getEspadaMataDragonesSlot());
 
 			// Reputacion
-			ini.setValue("REP", "Asesino", user.reputation().asesinoRep);
-			ini.setValue("REP", "Bandido", user.reputation().bandidoRep);
-			ini.setValue("REP", "Burguesia", user.reputation().burguesRep);
-			ini.setValue("REP", "Ladrones", user.reputation().ladronRep);
-			ini.setValue("REP", "Nobles", user.reputation().nobleRep);
-			ini.setValue("REP", "Plebe", user.reputation().plebeRep);
+			ini.setValue("REP", "Asesino", user.getReputation().asesinoRep);
+			ini.setValue("REP", "Bandido", user.getReputation().bandidoRep);
+			ini.setValue("REP", "Burguesia", user.getReputation().burguesRep);
+			ini.setValue("REP", "Ladrones", user.getReputation().ladronRep);
+			ini.setValue("REP", "Nobles", user.getReputation().nobleRep);
+			ini.setValue("REP", "Plebe", user.getReputation().plebeRep);
 
-			ini.setValue("REP", "Promedio", user.reputation().getPromedio());
+			ini.setValue("REP", "Promedio", user.getReputation().getPromedio());
 
 			for (int slot = 1; slot <= user.spells().getCount(); slot++) {
 				ini.setValue("HECHIZOS", "H" + slot, user.spells().getSpell(slot));

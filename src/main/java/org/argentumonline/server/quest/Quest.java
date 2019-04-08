@@ -191,7 +191,7 @@ public class Quest implements Constants {
 
 	public void recibirRecompensaQuest(User user) {
 		try {
-			Npc npc = this.server.npcById(user.flags().TargetNpc);
+			Npc npc = this.server.npcById(user.getFlags().TargetNpc);
 			if (user.isNewbie()) {
 				user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
@@ -209,9 +209,9 @@ public class Quest implements Constants {
 			Quest quest = user.quest().getQuest();
 			switch (quest.Objetivo) {
 			case OBJETIVO_MATAR_NPCS:
-				if (user.stats().NPCsMuertos >= quest.NPCs) {
+				if (user.getStats().NPCsMuertos >= quest.NPCs) {
 					if (quest.DaExp) {
-						user.stats().addExp(quest.Exp);
+						user.getStats().addExp(quest.Exp);
 						user.checkUserLevel();
 						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
@@ -220,7 +220,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						user.stats().addGold(quest.Oro);
+						user.getStats().addGold(quest.Oro);
 						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
 						user.quest().m_realizoQuest = false;
@@ -246,7 +246,7 @@ public class Quest implements Constants {
 					if (user.userFaction().citizensKilled
 							+ user.userFaction().criminalsKilled >= quest.Usuarios) {
 						if (quest.DaExp) {
-							user.stats().addExp(quest.Exp);
+							user.getStats().addExp(quest.Exp);
 							user.checkUserLevel();
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
@@ -256,7 +256,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							user.stats().addGold(quest.Oro);
+							user.getStats().addGold(quest.Oro);
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
 							user.quest().m_realizoQuest = false;
@@ -280,7 +280,7 @@ public class Quest implements Constants {
 				} else if (user.userFaction().ArmadaReal) {
 					if (user.userFaction().criminalsKilled >= quest.Criminales) {
 						if (quest.DaExp) {
-							user.stats().addExp(quest.Exp);
+							user.getStats().addExp(quest.Exp);
 							user.checkUserLevel();
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
@@ -290,7 +290,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							user.stats().addGold(quest.Oro);
+							user.getStats().addGold(quest.Oro);
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
 							user.quest().m_realizoQuest = false;
@@ -314,7 +314,7 @@ public class Quest implements Constants {
 				} else if (user.userFaction().FuerzasCaos) {
 					if (user.userFaction().citizensKilled >= quest.Ciudadanos) {
 						if (quest.DaExp) {
-							user.stats().addExp(quest.Exp);
+							user.getStats().addExp(quest.Exp);
 							user.checkUserLevel();
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
@@ -324,7 +324,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							user.stats().addGold(quest.Oro);
+							user.getStats().addGold(quest.Oro);
 							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
 							user.quest().m_realizoQuest = false;
@@ -350,7 +350,7 @@ public class Quest implements Constants {
 			case OBJETIVO_ENCONTRAR_NPC:
 				if (user.quest().m_realizoQuest) {
 					if (quest.DaExp) {
-						user.stats().addExp(quest.Exp);
+						user.getStats().addExp(quest.Exp);
 						user.checkUserLevel();
 						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
@@ -359,7 +359,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						user.stats().addGold(quest.Oro);
+						user.getStats().addGold(quest.Oro);
 						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
 						user.quest().m_realizoQuest = false;
@@ -383,7 +383,7 @@ public class Quest implements Constants {
 			case OBJETIVO_MATAR_UN_NPC:
 				if (user.quest().m_realizoQuest) {
 					if (quest.DaExp) {
-						user.stats().addExp(quest.Exp);
+						user.getStats().addExp(quest.Exp);
 						user.checkUserLevel();
 						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
@@ -392,7 +392,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						user.stats().addGold(quest.Oro);
+						user.getStats().addGold(quest.Oro);
 						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
 						user.quest().m_realizoQuest = false;
@@ -422,7 +422,7 @@ public class Quest implements Constants {
 
 	public void checkNpcAmigo(User user) {
 		if (user.quest().m_enQuest) {
-			Npc npc = this.server.npcById(user.flags().TargetNpc);
+			Npc npc = this.server.npcById(user.getFlags().TargetNpc);
 			if (npc.npcType() == NpcType.NPCTYPE_AMIGOQUEST) {
 				Quest quest = user.quest().getQuest();
 				if (quest.Objetivo == 3) {
@@ -442,7 +442,7 @@ public class Quest implements Constants {
 	}
 
 	public void sendInfoQuest(User user) {
-		Npc npc = this.server.npcById(user.flags().TargetNpc);
+		Npc npc = this.server.npcById(user.getFlags().TargetNpc);
 		if (user.isNewbie()) {
 			user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 			return;
@@ -482,7 +482,7 @@ public class Quest implements Constants {
 	}
 
 	public void userSeRinde(User user) {
-		Npc npc = this.server.npcById(user.flags().TargetNpc);
+		Npc npc = this.server.npcById(user.getFlags().TargetNpc);
 		try {
 			if (user.isNewbie()) {
 				user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());

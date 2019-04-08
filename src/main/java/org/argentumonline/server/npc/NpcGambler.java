@@ -52,7 +52,7 @@ public class NpcGambler extends Npc {
 			return;
 		}
 		
-		if (user.stats().getGold() < gold) {
+		if (user.getStats().getGold() < gold) {
 			switch (user.gender()) {
 			case GENERO_MAN:
 				user.talk(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
@@ -65,12 +65,12 @@ public class NpcGambler extends Npc {
 		}
 		
 		if (Util.random(1, 100) <= 45) {
-			user.stats().addGold( gold );
+			user.getStats().addGold( gold );
 			user.talk(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
 			
 			server.getGamblerStats().incrementLost(gold);
 		} else {
-			user.stats().addGold( -gold );
+			user.getStats().addGold( -gold );
 			user.talk(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
 			
 			server.getGamblerStats().incrementWins(gold);
@@ -79,7 +79,7 @@ public class NpcGambler extends Npc {
 	}
 
 	public void balance(User user) {
-		if (user.flags().isGM()) {
+		if (user.getFlags().isGM()) {
 			var gamblerStats = server.getGamblerStats();
 			
             long earnings = gamblerStats.getGanancias() - gamblerStats.getPerdidas();

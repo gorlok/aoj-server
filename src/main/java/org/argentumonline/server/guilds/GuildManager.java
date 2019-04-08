@@ -649,7 +649,7 @@ public class GuildManager {
     }
     
     private boolean canCreateGuild(User user) {
-        if (user.stats().ELV < 20) {
+        if (user.getStats().ELV < 20) {
             user.sendMessage("Para fundar un clan debes de ser nivel 20 o superior", FontType.FONTTYPE_GUILD);
             return false;
         }
@@ -676,7 +676,7 @@ public class GuildManager {
         }
         Guild guild;
         try {
-            guild = new Guild(guildInfo, user.getUserName(), (long) user.reputation().getPromedio());
+            guild = new Guild(guildInfo, user.getUserName(), (long) user.getReputation().getPromedio());
         } catch (InvalidGuildNameException e) {
             user.sendMessage("Los datos del clan son inválidos, asegurate que no contiene caracteres inválidos.", FontType.FONTTYPE_GUILD);
             return;

@@ -208,23 +208,23 @@ public class AreasAO implements Constants {
 //	    			}
 	    			
                     // Solo avisa al otro cliente si no es un admin invisible
-                    if (!other.flags().AdminInvisible) {
+                    if (!other.getFlags().AdminInvisible) {
                     	user.sendPacket(other.characterCreate());
                         
                         // Si el user estaba invisible le avisamos al nuevo cliente de eso
-                    	if (other.flags().Invisible || other.flags().Oculto) {
-                    		if (!user.flags().isGM()) {
+                    	if (other.getFlags().Invisible || other.getFlags().Oculto) {
+                    		if (!user.getFlags().isGM()) {
                     			user.sendPacket(new SetInvisibleResponse(other.getId(), (byte)1));
                     		}
                     	}
                     }
                     
                     // Solo avisa al otro cliente si no es un admin invisible
-                    if (!user.flags().AdminInvisible) {
+                    if (!user.getFlags().AdminInvisible) {
 	    				other.sendPacket(user.characterCreate());
                         
-	    				if (user.flags().Invisible || user.flags().Oculto) {
-	    					if (!other.flags().isGM()) {
+	    				if (user.getFlags().Invisible || user.getFlags().Oculto) {
+	    					if (!other.getFlags().isGM()) {
 	    						other.sendPacket(new SetInvisibleResponse(user.getId(), (byte)1));
 	    					}
 	    				}

@@ -221,7 +221,7 @@ public class Tile {
     	
 	    if (userId() > 0) {
 	        isDeadChar = !getUser().isAlive();
-	        isAdminInvisible = getUser().flags().AdminInvisible;
+	        isAdminInvisible = getUser().getFlags().AdminInvisible;
 	    }
     	
         if (canWater && canLand) {

@@ -290,7 +290,7 @@ public class UserInventory extends Inventory implements Constants {
                 quitarUserInvItem(slot, cant);
                 getUser().sendInventorySlot(slot);
                 ObjectInfo iobj = findObject(objid);
-                if (getUser().flags().isGM()) {
+                if (getUser().getFlags().isGM()) {
 					Log.logGM(getUser().getUserName(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
@@ -314,7 +314,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.armaSlot = 0;
                 this.armaEquipada = false;
-                if (!getUser().flags().Mimetizado) {
+                if (!getUser().getFlags().Mimetizado) {
                 	getUser().infoChar().weapon = NingunArma;
 	                getUser().sendCharacterChange();
                 }
@@ -344,7 +344,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.cascoSlot = 0;
                 this.cascoEquipado = false;
-                if (!getUser().flags().Mimetizado) {
+                if (!getUser().getFlags().Mimetizado) {
 	                getUser().infoChar().helmet = NingunCasco;
 	                getUser().sendCharacterChange();
                 }
@@ -354,7 +354,7 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.escudoSlot = 0;
                 this.escudoEquipado = false;
-                if (!getUser().flags().Mimetizado) {
+                if (!getUser().getFlags().Mimetizado) {
 	                getUser().infoChar().shield = NingunEscudo;
 	                getUser().sendCharacterChange();
                 }
@@ -396,7 +396,7 @@ public class UserInventory extends Inventory implements Constants {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (getUser().flags().Mimetizado) {
+                        if (getUser().getFlags().Mimetizado) {
                         	getUser().mimetizeChar().weapon = NingunArma;
                         } else {
                         	getUser().infoChar().weapon = NingunArma;
@@ -414,7 +414,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaSlot = slot;
                 	getUser().sendWave(SOUND_SACAR_ARMA);
                     
-                    if (getUser().flags().Mimetizado) {
+                    if (getUser().getFlags().Mimetizado) {
                         getUser().mimetizeChar().weapon = infoObj.WeaponAnim; 
                     } else {
 	                    getUser().infoChar().weapon = infoObj.WeaponAnim;
@@ -482,7 +482,7 @@ public class UserInventory extends Inventory implements Constants {
                         // Quitamos del inv el item
                         desequipar(slot);
                         getUser().undress();
-                        if (!getUser().flags().Mimetizado) {
+                        if (!getUser().getFlags().Mimetizado) {
                         	getUser().sendCharacterChange();
                         }
                         return;
@@ -496,13 +496,13 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaduraEquipada = true;
                     this.armaduraSlot = slot;
                     
-                    if (getUser().flags().Mimetizado) {
+                    if (getUser().getFlags().Mimetizado) {
                     	getUser().mimetizeChar().body = infoObj.Ropaje;
                     } else {
 	                    getUser().infoChar().body = infoObj.Ropaje;
 	                    getUser().sendCharacterChange();
                     }
-                    getUser().flags().Desnudo = false;
+                    getUser().getFlags().Desnudo = false;
                 } else {
                     getUser().sendMessage("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
@@ -516,7 +516,7 @@ public class UserInventory extends Inventory implements Constants {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (getUser().flags().Mimetizado) {
+                        if (getUser().getFlags().Mimetizado) {
                         	getUser().mimetizeChar().helmet = NingunCasco;
                         } else {
                             getUser().infoChar().helmet = NingunCasco;
@@ -533,7 +533,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.cascoEquipado = true;
                     this.cascoSlot = slot;
                     
-                    if (getUser().flags().Mimetizado) {
+                    if (getUser().getFlags().Mimetizado) {
                     	getUser().mimetizeChar().helmet = infoObj.CascoAnim;
                     } else {
 	                    getUser().infoChar().helmet = infoObj.CascoAnim;
@@ -553,7 +553,7 @@ public class UserInventory extends Inventory implements Constants {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (getUser().flags().Mimetizado) {
+                        if (getUser().getFlags().Mimetizado) {
                         	getUser().mimetizeChar().shield = NingunEscudo;
                         } else {
                             getUser().infoChar().shield = NingunEscudo;
@@ -570,7 +570,7 @@ public class UserInventory extends Inventory implements Constants {
                     this.escudoEquipado = true;
                     this.escudoSlot = slot;
                     
-                    if (getUser().flags().Mimetizado) {
+                    if (getUser().getFlags().Mimetizado) {
                     	getUser().mimetizeChar().shield = infoObj.ShieldAnim;
                     } else {
 	                    getUser().infoChar().shield = infoObj.ShieldAnim;
@@ -760,8 +760,8 @@ public class UserInventory extends Inventory implements Constants {
         if (!getUser().getCounters().intervaloPermiteUsar()) {
             return;
         }
-        getUser().flags().TargetObjInvIndex = objInv.objid;
-        getUser().flags().TargetObjInvSlot = slot;
+        getUser().getFlags().TargetObjInvIndex = objInv.objid;
+        getUser().getFlags().TargetObjInvSlot = slot;
         
         Map map = this.server.getMap(getUser().pos().map);
         switch (infoObjInv.objType) {
@@ -770,8 +770,8 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 // Usa el item
-                getUser().stats().aumentarHambre(infoObjInv.MinHam);
-                getUser().flags().Hambre = false;
+                getUser().getStats().aumentarHambre(infoObjInv.MinHam);
+                getUser().getFlags().Hambre = false;
                 getUser().sendUpdateHungerAndThirst();
                 // Sonido
                 if (objInv.objid == Manzana || objInv.objid == ManzanaNewbie || objInv.objid == ManzanaNewbie) {
@@ -786,7 +786,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                getUser().stats().addGold(objInv.cant);
+                getUser().getStats().addGold(objInv.cant);
                 getUser().sendUpdateUserStats();
                 quitarUserInvItem(slot, objInv.cant);
                 break;
@@ -795,7 +795,7 @@ public class UserInventory extends Inventory implements Constants {
                     return;
                 }
                 
-                if (getUser().stats().isTooTired()) {
+                if (getUser().getStats().isTooTired()) {
 					if (getUser().gender() == UserGender.GENERO_MAN) {
 						getUser().sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
 					} else {
@@ -818,8 +818,8 @@ public class UserInventory extends Inventory implements Constants {
                 	
                 } else {
                 	// No es un arma de proyectiles
-                	if (getUser().flags().TargetObj != 0) {
-	                	ObjectInfo targetInfo = findObject(getUser().flags().TargetObj);
+                	if (getUser().getFlags().TargetObj != 0) {
+	                	ObjectInfo targetInfo = findObject(getUser().getFlags().TargetObj);
 	                	// ¿El objetivo es leña?
 	                	if (targetInfo != null && targetInfo.objType == ObjType.Leña) {
 	                    	// ¿Estoy usando una daga?
@@ -866,36 +866,36 @@ public class UserInventory extends Inventory implements Constants {
                     getUser().sendMessage("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
                     return;
                 }
-                getUser().flags().TomoPocion = true;
-                getUser().flags().TipoPocion = infoObjInv.TipoPocion;
+                getUser().getFlags().TomoPocion = true;
+                getUser().getFlags().TipoPocion = infoObjInv.TipoPocion;
                 
-                switch (getUser().flags().TipoPocion) {
+                switch (getUser().getFlags().TipoPocion) {
                 	// TODO enum
                     case 1: // Modif la agilidad
-                        getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        getUser().stats().attr().modifyByEffect(Attribute.AGILITY, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().getFlags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        getUser().getStats().attr().modifyByEffect(Attribute.AGILITY, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
-                        getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        getUser().stats().attr().modifyByEffect(Attribute.STRENGTH, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().getFlags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        getUser().getStats().attr().modifyByEffect(Attribute.STRENGTH, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
-                        getUser().stats().addHP(Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().getStats().addHP(Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         getUser().sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
-                        getUser().stats().aumentarMana(Util.percentage(getUser().stats().maxMana, 4)
-                        		+ ( (getUser().stats().ELV / 2) + 40 / getUser().stats().ELV) );
+                        getUser().getStats().aumentarMana(Util.percentage(getUser().getStats().maxMana, 4)
+                        		+ ( (getUser().getStats().ELV / 2) + 40 / getUser().getStats().ELV) );
                         getUser().sendUpdateUserStats();
                         break;
                     case 5: // Pocion violeta
-                        if (getUser().flags().Envenenado) {
-                            getUser().flags().Envenenado = false;
+                        if (getUser().getFlags().Envenenado) {
+                            getUser().getFlags().Envenenado = false;
                             getUser().sendMessage("Te has curado del envenenamiento.", FontType.FONTTYPE_INFO);
                         }
                         break;
                     case 6: // Pocion negra
-                        if (!getUser().flags().isGM()) {
+                        if (!getUser().getFlags().isGM()) {
                         	getUser().userDie();
                             getUser().sendMessage("Sientes un gran mareo y pierdes el conocimiento.", FontType.FONTTYPE_INFO);
                         }
@@ -911,8 +911,8 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                getUser().stats().aumentarSed(infoObjInv.MinSed);
-                getUser().flags().Sed = false;
+                getUser().getStats().aumentarSed(infoObjInv.MinSed);
+                getUser().getFlags().Sed = false;
                 getUser().sendUpdateHungerAndThirst();
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
@@ -923,21 +923,21 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (getUser().flags().TargetObj == 0) {
+                if (getUser().getFlags().TargetObj == 0) {
 					return;
 				}
-                ObjectInfo targetInfo = findObject(getUser().flags().TargetObj);
+                ObjectInfo targetInfo = findObject(getUser().getFlags().TargetObj);
                 // ¿El objeto cliqueado es una puerta?
                 if (targetInfo.objType == ObjType.Puertas) {
                     // ¿Esta cerrada?
                     if (targetInfo.estaCerrada()) {
                         // ¿Cerrada con llave?
-                        byte targetX = getUser().flags().TargetObjX;
-                        byte targetY = getUser().flags().TargetObjY;
+                        byte targetX = getUser().getFlags().TargetObjX;
+                        byte targetY = getUser().getFlags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == infoObjInv.Clave) {
                                 map.toggleDoor(map.getObject(targetX, targetY));
-                                getUser().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
+                                getUser().getFlags().TargetObj = map.getObject(targetX, targetY).obj_ind;
                                 getUser().sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
@@ -946,7 +946,7 @@ public class UserInventory extends Inventory implements Constants {
                         }
                         if (targetInfo.Clave == infoObjInv.Clave) {
                             map.toggleDoor(map.getObject(targetX, targetY));
-                            getUser().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
+                            getUser().getFlags().TargetObj = map.getObject(targetX, targetY).obj_ind;
                             getUser().sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 
@@ -962,8 +962,8 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                Pos lugar = new Pos(getUser().flags().TargetX, getUser().flags().TargetY);
-                if (!lugar.isValid() || !map.isWater(getUser().flags().TargetX, getUser().flags().TargetY)) {
+                Pos lugar = new Pos(getUser().getFlags().TargetX, getUser().getFlags().TargetY);
+                if (!lugar.isValid() || !map.isWater(getUser().getFlags().TargetX, getUser().getFlags().TargetY)) {
                     getUser().sendMessage("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
@@ -978,8 +978,8 @@ public class UserInventory extends Inventory implements Constants {
                     getUser().sendMessage("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
                 }
-                getUser().stats().aumentarSed(infoObjInv.MinSed);
-                getUser().flags().Sed = false;
+                getUser().getStats().aumentarSed(infoObjInv.MinSed);
+                getUser().getFlags().Sed = false;
                 getUser().sendUpdateHungerAndThirst();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(infoObjInv.IndexCerrada, 1) == 0) {
@@ -991,7 +991,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!getUser().flags().Hambre && !getUser().flags().Sed) {
+                if (!getUser().getFlags().Hambre && !getUser().getFlags().Sed) {
                     getUser().agregarHechizo(slot);
                     getUser().sendInventoryToUser();
                 } else {
@@ -1042,11 +1042,11 @@ public class UserInventory extends Inventory implements Constants {
                 break;
                 
             case Barcos:
-            	if (getUser().stats().ELV < 25) {
+            	if (getUser().getStats().ELV < 25) {
             		if (getUser().clazz() != Clazz.Fisher && getUser().clazz() != Clazz.Pirate) {
                 		getUser().sendMessage("Para recorrer los mares debes ser nivel 25 o superior.", FontType.FONTTYPE_INFO);
                 		return;
-            		} else if (getUser().stats().ELV < 20) {
+            		} else if (getUser().getStats().ELV < 20) {
                 		getUser().sendMessage("Para recorrer los mares debes ser nivel 20 o superior.", FontType.FONTTYPE_INFO);
                 		return;
             		}
@@ -1059,8 +1059,8 @@ public class UserInventory extends Inventory implements Constants {
                 		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true, false) 
                 		|| map.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true, false) 
                 		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true, false)) 
-                		&& !getUser().flags().Navegando) 
-                	|| getUser().flags().Navegando) {
+                		&& !getUser().getFlags().Navegando) 
+                	|| getUser().getFlags().Navegando) {
 		                    this.barcoSlot = slot;
 		                    getUser().sailingToggle();
                 } else {

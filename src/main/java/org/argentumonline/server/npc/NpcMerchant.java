@@ -138,7 +138,7 @@ public class NpcMerchant extends Npc {
         double infla = (this.inflation * info.Valor) / 100;
         double val = (info.Valor + infla) / dto;
         
-        if (user.stats().getGold() < (val * amount)) {
+        if (user.getStats().getGold() < (val * amount)) {
             user.sendMessage("No tienes suficiente oro.", FontType.FONTTYPE_INFO);
             return;
         }
@@ -176,7 +176,7 @@ public class NpcMerchant extends Npc {
     			// Le sustraemos el valor en oro del obj comprado
     			double unidad = ((info.Valor + infla) / dto);
     			int monto = (int) (unidad * amount);
-    			user.stats().addGold( -monto );
+    			user.getStats().addGold( -monto );
     			// tal vez suba el skill comerciar ;-)
     			user.riseSkill(Skill.SKILL_Comerciar);
     			if (info.objType == ObjType.Llaves) {
@@ -246,7 +246,7 @@ public class NpcMerchant extends Npc {
                     // Le sumamos al user el valor en oro del obj vendido
                     //double monto = ((info.Valor / 3 + infla) * cant);
                     double monto = ((info.Valor / 3) * cant);
-                    user.stats().addGold((int) monto);
+                    user.getStats().addGold((int) monto);
                     // tal vez suba el skill comerciar ;-)
                     user.riseSkill(Skill.SKILL_Comerciar);
                 } else {
@@ -257,7 +257,7 @@ public class NpcMerchant extends Npc {
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);
-                user.stats().addGold((int) monto);
+                user.getStats().addGold((int) monto);
             }
             
             

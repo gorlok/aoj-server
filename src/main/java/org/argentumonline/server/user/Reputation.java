@@ -188,7 +188,7 @@ public class Reputation {
         	return;
         }
         
-        if (!user.flags().isGM() || user.flags().isCounselor()) {
+        if (!user.getFlags().isGM() || user.getFlags().isCounselor()) {
         	// pierdo nobleza...
         	decNoble(noblePts);
 			// gano bandido...

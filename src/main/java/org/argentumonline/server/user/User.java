@@ -342,75 +342,75 @@ public class User extends AbstractCharacter {
 	}
 	
 	public boolean isGM() {
-		return flags().isGM();
+		return getFlags().isGM();
 	}
 	
 	public boolean isGod() {
-		return flags().isGod();
+		return getFlags().isGod();
 	}
 	
 	public boolean isAdmin() {
-		return flags().isAdmin();
+		return getFlags().isAdmin();
 	}
 	
 	public boolean isDemiGod() {
-		return flags().isDemiGod();
+		return getFlags().isDemiGod();
 	}
 	
 	public boolean isCounselor() {
-		return flags().isCounselor();
+		return getFlags().isCounselor();
 	}
 	
 	public boolean isRoleMaster() {
-		return flags().isRoleMaster();
+		return getFlags().isRoleMaster();
 	}
 	
 	public boolean isChaosCouncil() {
-		return flags().isChaosCouncil(); 
+		return getFlags().isChaosCouncil(); 
 	}
 
 	public boolean isRoyalCouncil() {
-		return flags().isRoyalCouncil(); 
+		return getFlags().isRoyalCouncil(); 
 	}
 	
 	
 	public boolean isAlive() {
-		return !flags().Muerto;
+		return !getFlags().Muerto;
 	}
 
 	public boolean isInvisible() {
-		return flags().Invisible;
+		return getFlags().Invisible;
 	}
 
 	public boolean isTrading() {
-		return flags().Comerciando;
+		return getFlags().Comerciando;
 	}
 
 	public boolean isHidden() {
-		return flags().Oculto;
+		return getFlags().Oculto;
 	}
 	
 	public boolean isAllowingChase() {
-		return flags().AdminPerseguible;
+		return getFlags().AdminPerseguible;
 	}
 
 	public boolean isSailing() {
-		return flags().Navegando;
+		return getFlags().Navegando;
 	}
 
 	public boolean isWorking() {
-		return flags().Trabajando;
+		return getFlags().Trabajando;
 	}
 
-	public UserStats stats() {
+	public UserStats getStats() {
 		return this.stats;
 	}
 
-	public Reputation reputation() {
+	public Reputation getReputation() {
 		return this.reputation;
 	}
 
-	public UserFlags flags() {
+	public UserFlags getFlags() {
 		return this.flags;
 	}
 
@@ -432,7 +432,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean hasSafeLock() {
-		return flags().Seguro;
+		return getFlags().Seguro;
 	}
 
 	/**
@@ -485,10 +485,10 @@ public class User extends AbstractCharacter {
 
 	public void postOnForum(String title, String body) {
 		// Comando DEMSG
-		if (flags().TargetObj == 0) {
+		if (getFlags().TargetObj == 0) {
 			return;
 		}
-		ObjectInfo iobj = findObj(flags().TargetObj);
+		ObjectInfo iobj = findObj(getFlags().TargetObj);
 		if (iobj.esForo()) {
 			this.server.getForumManager().postOnForum(iobj.ForoID, title, body, getUserName());
 		}
@@ -552,8 +552,8 @@ public class User extends AbstractCharacter {
 		sendPacket(new MiniStatsResponse(
 				(int) this.faction.citizensKilled,
 				(int) this.faction.criminalsKilled,
-				stats().usuariosMatados,
-				(short) stats().NPCsMuertos,
+				getStats().usuariosMatados,
+				(short) getStats().NPCsMuertos,
 				this.clazz.id(),
 				(int) this.getCounters().Pena));
 
@@ -563,7 +563,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean isLogged() {
-		return flags().UserLogged;
+		return getFlags().UserLogged;
 	}
 
 	public String getIP() {
@@ -673,10 +673,10 @@ public class User extends AbstractCharacter {
 
 	public Npc getNearNpcSelected(int distance) {
 		// Se asegura que el target es un npc
-		if (flags().TargetNpc == 0) {
+		if (getFlags().TargetNpc == 0) {
 			sendMessage("Debes seleccionar un personaje cercano para poder interactuar.", FontType.FONTTYPE_INFO);
 		} else {
-			Npc npc = this.server.npcById(flags().TargetNpc);
+			Npc npc = this.server.npcById(getFlags().TargetNpc);
 			if (checkNpcNear(npc, distance)) {
 				return npc;
 			}
@@ -747,10 +747,10 @@ public class User extends AbstractCharacter {
 		if (!checkAlive()) {
 			return;
 		}
-		if (flags().TargetNpc == 0) {
+		if (getFlags().TargetNpc == 0) {
 			return;
 		}
-		Npc npc = this.server.npcById(flags().TargetNpc);
+		Npc npc = this.server.npcById(getFlags().TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -777,10 +777,10 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		// ¿El target es un Npc valido?
-		if (flags().TargetNpc == 0) {
+		if (getFlags().TargetNpc == 0) {
 			return;
 		}
-		Npc npc = this.server.npcById(flags().TargetNpc);
+		Npc npc = this.server.npcById(getFlags().TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -805,10 +805,10 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		// ¿El target es un Npc valido?
-		if (flags().TargetNpc == 0) {
+		if (getFlags().TargetNpc == 0) {
 			return;
 		}
-		Npc npc = this.server.npcById(flags().TargetNpc);
+		Npc npc = this.server.npcById(getFlags().TargetNpc);
 		if (npc == null) {
 			return;
 		}
@@ -842,7 +842,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void commerceEnd() {
-		flags().Comerciando = false;
+		getFlags().Comerciando = false;
 		sendPacket(new CommerceEndResponse());
 	}
 
@@ -862,8 +862,8 @@ public class User extends AbstractCharacter {
 				2.0, 2.0 // 91-100
 		};
 		int ptsComercio = skills().get(Skill.SKILL_Comerciar);
-		flags().Descuento = indicesDto[(short) (ptsComercio / 5)];
-		return flags().Descuento;
+		getFlags().Descuento = indicesDto[(short) (ptsComercio / 5)];
+		return getFlags().Descuento;
 	}
 
 	public void commerceStart() {
@@ -871,7 +871,7 @@ public class User extends AbstractCharacter {
 		if (!checkAlive()) {
 			return;
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			return;
 		}
 
@@ -901,18 +901,18 @@ public class User extends AbstractCharacter {
 
 			// Iniciamos el comercio con el Npc
 			sendPacket(new CommerceInitResponse());
-			flags().Comerciando = true;
+			getFlags().Comerciando = true;
 		}
 
-		if (flags().TargetUser > 0) {
+		if (getFlags().TargetUser > 0) {
             //User commerce...
             //Can he commerce??
-			if (flags().isCounselor()) {
+			if (getFlags().isCounselor()) {
 				sendMessage("No puedes vender items.", FontType.FONTTYPE_WARNING);
                 return;
 			}
 
-			User targetUser = this.server.userById(flags().TargetUser);
+			User targetUser = this.server.userById(getFlags().TargetUser);
 			if (targetUser == null) {
 				return;
 			}
@@ -935,18 +935,18 @@ public class User extends AbstractCharacter {
 			}
 
             //Is he already trading?? is it with me or someone else??
-			if (targetUser.isTrading() && targetUser.flags().TargetUser != this.getId()) {
+			if (targetUser.isTrading() && targetUser.getFlags().TargetUser != this.getId()) {
 				sendMessage("No puedes comerciar con el usuario en este momento.", FontType.FONTTYPE_INFO);
 			}
 
             //Initialize some variables...
-			this.userTrade.destUsu = flags().TargetUser;
+			this.userTrade.destUsu = getFlags().TargetUser;
 			this.userTrade.cant = 0;
 			this.userTrade.objectSlot = 0;
 			this.userTrade.acepto = false;
 
             //Rutina para comerciar con otro usuario
-            this.userTrade.iniciarComercioConUsuario(flags().TargetUser);
+            this.userTrade.iniciarComercioConUsuario(getFlags().TargetUser);
 		}
 
 		sendMessage("Primero haz click izquierdo sobre el personaje.", FontType.FONTTYPE_INFO);
@@ -977,16 +977,16 @@ public class User extends AbstractCharacter {
 		}
 		if (mapa.hasObject(pos().x, pos().y) && mapa.getObject(pos().x, pos().y).obj_ind == FOGATA) {
 			sendPacket(new RestOKResponse());
-			if (!flags().Descansar) {
+			if (!getFlags().Descansar) {
 				sendMessage("Te acomodas junto a la fogata y comienzas a descansar.", FontType.FONTTYPE_INFO);
 			} else {
 				sendMessage("Te levantas.", FontType.FONTTYPE_INFO);
 			}
-			flags().Descansar = !flags().Descansar;
+			getFlags().Descansar = !getFlags().Descansar;
 		} else {
-			if (flags().Descansar) {
+			if (getFlags().Descansar) {
 				sendMessage("Te levantas.", FontType.FONTTYPE_INFO);
-				flags().Descansar = false;
+				getFlags().Descansar = false;
 				sendPacket(new RestOKResponse());
 				return;
 			}
@@ -995,7 +995,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void sendFame() {
-		sendPacket(reputation().createFameResponse());
+		sendPacket(getReputation().createFameResponse());
 	}
 
 	public void sailingToggle() {
@@ -1008,7 +1008,7 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		
-		if (!flags().Navegando) {
+		if (!getFlags().Navegando) {
 			this.infoChar.head = 0;
 			if (isAlive()) {
 				this.infoChar.body = barco.Ropaje;
@@ -1018,9 +1018,9 @@ public class User extends AbstractCharacter {
 			this.infoChar.shield = NingunEscudo;
 			this.infoChar.weapon = NingunArma;
 			this.infoChar.helmet = NingunCasco;
-			flags().Navegando = true;
+			getFlags().Navegando = true;
 		} else {
-			flags().Navegando = false;
+			getFlags().Navegando = false;
 			if (isAlive()) {
 				this.infoChar.head = this.origChar.head;
 				if (this.userInv.tieneArmaduraEquipada()) {
@@ -1050,7 +1050,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void tratarDeHacerFogata() {
-		MapPos targetPos = MapPos.mxy(flags().TargetObjMap, flags().TargetObjX, flags().TargetObjY);
+		MapPos targetPos = MapPos.mxy(getFlags().TargetObjMap, getFlags().TargetObjX, getFlags().TargetObjY);
 		Map mapa = this.server.getMap(targetPos.map);
 		if (!mapa.isLegalPos(targetPos, false, true)) {
 			return;
@@ -1097,9 +1097,9 @@ public class User extends AbstractCharacter {
 			mapa.removeObject(targetPos.x, targetPos.y);
 			mapa.addObject(objid, cant, targetPos.x, targetPos.y);
 		} else {
-			if (flags().UltimoMensaje != 10) {
+			if (getFlags().UltimoMensaje != 10) {
 				sendMessage("No has podido hacer la fogata.", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 10;
+				getFlags().UltimoMensaje = 10;
 			}
 		}
 		riseSkill(Skill.SKILL_Supervivencia);
@@ -1118,17 +1118,17 @@ public class User extends AbstractCharacter {
 	 * Fabricar lingotes
 	 */
 	private void makeIngots() {
-		if (this.userInv.getObject(flags().TargetObjInvSlot).cant < 5) {
+		if (this.userInv.getObject(getFlags().TargetObjInvSlot).cant < 5) {
 			sendMessage("No tienes suficientes minerales para hacer un lingote.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		ObjectInfo info = findObj(flags().TargetObjInvIndex);
+		ObjectInfo info = findObj(getFlags().TargetObjInvIndex);
 		if (info.objType != ObjType.Minerales) {
 			sendMessage("Debes utilizar minerales para hacer un lingote.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		this.userInv.quitarUserInvItem(flags().TargetObjInvSlot, 5);
-		sendInventorySlot(flags().TargetObjInvSlot);
+		this.userInv.quitarUserInvItem(getFlags().TargetObjInvSlot, 5);
+		sendInventorySlot(getFlags().TargetObjInvSlot);
 		if (Util.random(1, info.MinSkill) <= 10) {
 			sendMessage("Has obtenido un lingote!!!", FontType.FONTTYPE_INFO);
 			Map mapa = this.server.getMap(pos().map);
@@ -1137,21 +1137,21 @@ public class User extends AbstractCharacter {
 			}
 			sendMessage("¡Has obtenido un lingote!", FontType.FONTTYPE_INFO);
 		} else {
-			if (flags().UltimoMensaje != 7) {
+			if (getFlags().UltimoMensaje != 7) {
 				sendMessage("Los minerales no eran de buena calidad, no has logrado hacer un lingote.",
 						FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 7;
+				getFlags().UltimoMensaje = 7;
 			}
 		}
-		flags().Trabajando = true;
+		getFlags().Trabajando = true;
 	}
 
 	/**
 	 * Fundir mineral
 	 */
 	private void meltOre() {
-		if (flags().TargetObjInvIndex > 0) {
-			ObjectInfo info = findObj(flags().TargetObjInvIndex);
+		if (getFlags().TargetObjInvIndex > 0) {
+			ObjectInfo info = findObj(getFlags().TargetObjInvIndex);
 			if (info.objType == ObjType.Minerales
 					&& info.MinSkill <= skills().get(Skill.SKILL_Mineria) / this.clazz().modFundicion()) {
 				makeIngots();
@@ -1184,7 +1184,7 @@ public class User extends AbstractCharacter {
 	    }
 
 	    
-	    int puntosDomar = stats().attr().get(Attribute.CHARISMA) * skills().get(Skill.SKILL_Domar);
+	    int puntosDomar = getStats().attr().get(Attribute.CHARISMA) * skills().get(Skill.SKILL_Domar);
 	    int puntosRequeridos = npc.domable();
 	    if (clazz() == Clazz.Druid && getUserInv().tieneAnilloEquipado() && getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
 	    	puntosRequeridos = (int) (puntosRequeridos * 0.8);
@@ -1207,9 +1207,9 @@ public class User extends AbstractCharacter {
 	        }
 			
 		} else {
-			if (flags().UltimoMensaje != 5) {
+			if (getFlags().UltimoMensaje != 5) {
 				sendMessage("No has logrado domar la criatura.", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 5;
+				getFlags().UltimoMensaje = 5;
 			}
 		}
 	    
@@ -1236,12 +1236,12 @@ public class User extends AbstractCharacter {
 	 * Hacer minería
 	 */
 	private void mining() {
-		stats().quitarStamina(this.clazz().getEsfuerzoExcavar());
+		getStats().quitarStamina(this.clazz().getEsfuerzoExcavar());
 		if (suerteMineria()) {
-			if (flags().TargetObj == 0) {
+			if (getFlags().TargetObj == 0) {
 				return;
 			}
-			short objid = findObj(flags().TargetObj).MineralIndex;
+			short objid = findObj(getFlags().TargetObj).MineralIndex;
 			int cant = this.clazz().getCantMinerales();
 			int agregados = this.userInv.agregarItem(objid, cant);
 			if (agregados < cant) {
@@ -1251,13 +1251,13 @@ public class User extends AbstractCharacter {
 			}
 			sendMessage("¡Has extraido algunos minerales!", FontType.FONTTYPE_INFO);
 		} else {
-			if (flags().UltimoMensaje != 9) {
+			if (getFlags().UltimoMensaje != 9) {
 				sendMessage("¡No has conseguido nada!", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 9;
+				getFlags().UltimoMensaje = 9;
 			}
 		}
 		riseSkill(Skill.SKILL_Mineria);
-		flags().Trabajando = true;
+		getFlags().Trabajando = true;
 	}
 
 	private boolean suerteTalar() {
@@ -1270,7 +1270,7 @@ public class User extends AbstractCharacter {
 	 * Talar madera
 	 */
 	private void cutWood() {
-		stats().quitarStamina(this.clazz().getEsfuerzoTalar());
+		getStats().quitarStamina(this.clazz().getEsfuerzoTalar());
 		if (suerteTalar()) {
 			int cant = this.clazz().getCantLeños();
 			short objid = Leña;
@@ -1282,13 +1282,13 @@ public class User extends AbstractCharacter {
 			}
 			sendMessage("¡Has conseguido algo de leña!", FontType.FONTTYPE_INFO);
 		} else {
-			if (flags().UltimoMensaje != 8) {
+			if (getFlags().UltimoMensaje != 8) {
 				sendMessage("No has conseguido leña. Intenta otra vez.", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 8;
+				getFlags().UltimoMensaje = 8;
 			}
 		}
 		riseSkill(Skill.SKILL_Talar);
-		flags().Trabajando = true;
+		getFlags().Trabajando = true;
 	}
 
 	/**
@@ -1356,7 +1356,7 @@ public class User extends AbstractCharacter {
 	}
 
 	private void steal(User victima) {
-		if (victima.flags().isGM() || this.flags().isGM()) {
+		if (victima.getFlags().isGM() || this.getFlags().isGM()) {
 			return;
 		}
 		
@@ -1374,10 +1374,10 @@ public class User extends AbstractCharacter {
 					sendMessage(victima.userName + " no tiene objetos.", FontType.FONTTYPE_INFO);
 				}
 			} else { // Roba oro
-				if (victima.stats().getGold() > 0) {
+				if (victima.getStats().getGold() > 0) {
 					int cantidadRobada = Util.random(1, 100);
-					victima.stats().addGold( -cantidadRobada );
-					stats().addGold( cantidadRobada );
+					victima.getStats().addGold( -cantidadRobada );
+					getStats().addGold( cantidadRobada );
 					sendMessage("Le has robado " + cantidadRobada + " monedas de oro a " + victima.userName, FontType.FONTTYPE_INFO);
 				} else {
 					sendMessage(this.userName + " no tiene oro.", FontType.FONTTYPE_INFO);
@@ -1408,7 +1408,7 @@ public class User extends AbstractCharacter {
 	 * Pescar con caña
 	 */
 	private void fishingWithRod() {
-		stats().quitarStamina(this.clazz().getEsfuerzoPescar());
+		getStats().quitarStamina(this.clazz().getEsfuerzoPescar());
 		if (fishingWithRodLucky()) {
 			Map mapa = this.server.getMap(pos().map);
 			if (this.userInv.agregarItem(OBJ_PESCADO, 1) < 1) {
@@ -1416,13 +1416,13 @@ public class User extends AbstractCharacter {
 			}
 			sendMessage("¡Has pescado un lindo pez!", FontType.FONTTYPE_INFO);
 		} else {
-			if (flags().UltimoMensaje != 6) {
+			if (getFlags().UltimoMensaje != 6) {
 				sendMessage("¡No has pescado nada!", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 6;
+				getFlags().UltimoMensaje = 6;
 			}
 		}
 		riseSkill(Skill.SKILL_Pesca);
-		flags().Trabajando = true;
+		getFlags().Trabajando = true;
 	}
 
 	private boolean fishingWithNetLucky() {
@@ -1435,7 +1435,7 @@ public class User extends AbstractCharacter {
 	 * Pescar con red
 	 */
 	private void fishingWithNet() {
-		stats().quitarStamina(this.clazz().getEsfuerzoPescar());
+		getStats().quitarStamina(this.clazz().getEsfuerzoPescar());
 		int skills = skills().get(Skill.SKILL_Pesca);
 		if (skills == 0) {
 			return;
@@ -1457,7 +1457,7 @@ public class User extends AbstractCharacter {
 
 	public void workLeftClick(byte x, byte y, byte skill) {
 		Pos pos = new Pos(x, y);
-		if (!isAlive() || flags().Descansar || flags().Meditando || !pos.isValid()) {
+		if (!isAlive() || getFlags().Descansar || getFlags().Meditando || !pos.isValid()) {
 			return;
 		}
 		if (!pos().inRangoVision(pos)) {
@@ -1470,8 +1470,8 @@ public class User extends AbstractCharacter {
 		if (skill == Skill.SKILL_FundirMetal) {
 			// UGLY HACK!!! This is a constant, not a skill!!
 			mapa.lookAtTile(this, x, y);
-			if (flags().TargetObj > 0) {
-				if (findObj(flags().TargetObj).objType == ObjType.Fragua) {
+			if (getFlags().TargetObj > 0) {
+				if (findObj(getFlags().TargetObj).objType == ObjType.Fragua) {
 					meltOre();
 				} else {
 					sendMessage("Ahi no hay ninguna fragua.", FontType.FONTTYPE_INFO);
@@ -1494,8 +1494,8 @@ public class User extends AbstractCharacter {
 					return;
 				}
 				// Quitamos stamina
-				if (stats().stamina >= 10) {
-					stats().quitarStamina(Util.random(1, 10));
+				if (getStats().stamina >= 10) {
+					getStats().quitarStamina(Util.random(1, 10));
 				} else {
 					if (gender() == UserGender.GENERO_MAN) {
 						sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
@@ -1506,8 +1506,8 @@ public class User extends AbstractCharacter {
 				}
 
 				mapa.lookAtTile(this, x, y);
-				User targetUser = this.server.userById(flags().TargetUser);
-				Npc npc = this.server.npcById(flags().TargetNpc);
+				User targetUser = this.server.userById(getFlags().TargetUser);
+				Npc npc = this.server.npcById(getFlags().TargetNpc);
 				if (npc != null) {
 					if (!npc.isAttackable()) {
 						return;
@@ -1521,7 +1521,7 @@ public class User extends AbstractCharacter {
 					usuarioAtacaNpc(npc);
 				}
 				if (targetUser != null) {
-					if (flags().Seguro) {
+					if (getFlags().Seguro) {
 						if (!targetUser.isCriminal()) {
 							sendMessage(
 									"No puedes atacar a ciudadanos. Para hacerlo, antes debes desactivar el seguro.",
@@ -1545,12 +1545,12 @@ public class User extends AbstractCharacter {
 				if (!getCounters().intervaloPermiteLanzarSpell()) {
 					return;
 				}
-				if (flags().isCounselor())
+				if (getFlags().isCounselor())
 					return;
 				mapa.lookAtTile(this, x, y);
-				if (flags().Hechizo > 0) {
-					this.spells.hitSpell(this.server.getSpell(flags().Hechizo));
-					flags().Hechizo = 0;
+				if (getFlags().Hechizo > 0) {
+					this.spells.hitSpell(this.server.getSpell(getFlags().Hechizo));
+					getFlags().Hechizo = 0;
 				} else {
 					sendMessage("¡Primero selecciona el hechizo que deseas lanzar!", FontType.FONTTYPE_INFO);
 				}
@@ -1600,8 +1600,8 @@ public class User extends AbstractCharacter {
 						return;
 					}
 					mapa.lookAtTile(this, x, y);
-					if (flags().TargetUser > 0 && flags().TargetUser != getId()) {
-						targetUser = this.server.userById(flags().TargetUser);
+					if (getFlags().TargetUser > 0 && getFlags().TargetUser != getId()) {
+						targetUser = this.server.userById(getFlags().TargetUser);
 						if (targetUser.isAlive()) {
 							MapPos wpaux = MapPos.mxy(pos().map, x, y);
 							if (wpaux.distance(pos()) > 2) {
@@ -1688,8 +1688,8 @@ public class User extends AbstractCharacter {
 
 			case SKILL_Domar:
 				mapa.lookAtTile(this, x, y);
-				if (flags().TargetNpc > 0) {
-					npc = this.server.npcById(flags().TargetNpc);
+				if (getFlags().TargetNpc > 0) {
+					npc = this.server.npcById(getFlags().TargetNpc);
 					if (npc.domable() > 0) {
 						MapPos wpaux = MapPos.mxy(pos().map, x, y);
 						if (wpaux.distance(pos()) > 2) {
@@ -1712,8 +1712,8 @@ public class User extends AbstractCharacter {
 
 			case SKILL_Herreria:
 				mapa.lookAtTile(this, x, y);
-				if (flags().TargetObj > 0) {
-					if (findObj(flags().TargetObj).objType == ObjType.Yunque) {
+				if (getFlags().TargetObj > 0) {
+					if (findObj(getFlags().TargetObj).objType == ObjType.Yunque) {
 						this.userInv.sendBlacksmithWeapons();
 						this.userInv.sendBlacksmithArmors();
 						sendPacket(new ShowBlacksmithFormResponse());
@@ -1752,17 +1752,17 @@ public class User extends AbstractCharacter {
 			break;
 
 		case SKILL_Ocultarse:
-			if (flags().Navegando) {
-				if (flags().UltimoMensaje != 3) {
+			if (getFlags().Navegando) {
+				if (getFlags().UltimoMensaje != 3) {
 					sendMessage("No puedes ocultarte si estas navegando.", FontType.FONTTYPE_INFO);
-					flags().UltimoMensaje = 3;
+					getFlags().UltimoMensaje = 3;
 				}
 				return;
 			}
-			if (flags().Oculto) {
-				if (flags().UltimoMensaje != 2) {
+			if (getFlags().Oculto) {
+				if (getFlags().UltimoMensaje != 2) {
 					sendMessage("Ya estabas oculto.", FontType.FONTTYPE_INFO);
-					flags().UltimoMensaje = 2;
+					getFlags().UltimoMensaje = 2;
 				}
 				return;
 			}
@@ -1815,21 +1815,21 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		sendPacket(new MeditateToggleResponse());
-		if (!flags().Meditando) {
+		if (!getFlags().Meditando) {
 			sendMessage("Comienzas a meditar.", FontType.FONTTYPE_INFO);
 		} else {
 			sendMessage("Dejas de meditar.", FontType.FONTTYPE_INFO);
 		}
-		flags().Meditando = !flags().Meditando;
-		if (flags().Meditando) {
+		getFlags().Meditando = !getFlags().Meditando;
+		if (getFlags().Meditando) {
 			this.getCounters().tInicioMeditar = System.currentTimeMillis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
 			sendMessage("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.FONTTYPE_INFO);
 			this.infoChar.loops = LoopAdEternum;
-			if (stats().ELV < 15) {
+			if (getStats().ELV < 15) {
 				sendCreateFX(FXMEDITARCHICO, LoopAdEternum);
 				this.infoChar.fx = FXMEDITARCHICO;
-			} else if (stats().ELV < 30) {
+			} else if (getStats().ELV < 30) {
 				sendCreateFX(FXMEDITARMEDIANO, LoopAdEternum);
 				this.infoChar.fx = FXMEDITARMEDIANO;
 			} else {
@@ -1885,7 +1885,7 @@ public class User extends AbstractCharacter {
 		if (!checkAlive("¡Solo puedo curar a los vivos! ¡Resucítate primero!")) {
 			return;
 		}
-		stats().MinHP = stats().MaxHP;
+		getStats().MinHP = getStats().MaxHP;
 		sendUpdateUserStats();
 		sendMessage("¡¡Has sido curado!!", FontType.FONTTYPE_INFO);
 	}
@@ -1907,7 +1907,7 @@ public class User extends AbstractCharacter {
 	public void changeCharDescription(String newDescRM) {
 		// Comando "/SETDESC "
         if (isGod() || isAdmin() || isRoleMaster()) {
-        	User targetUser = server.userById(flags().TargetUser);
+        	User targetUser = server.userById(getFlags().TargetUser);
         	if (targetUser != null) {
                 targetUser.descRM = newDescRM;
         	} else {
@@ -1921,14 +1921,14 @@ public class User extends AbstractCharacter {
 	    	return;
 	    }
 		
-		if (flags().Inmovilizado) {
+		if (getFlags().Inmovilizado) {
 			return;
 		}
 		
 		int posX = 0;
 		int posY = 0;
 		Heading heading = Heading.value(newHeading);
-        if (flags().Paralizado && !flags().Inmovilizado) {
+        if (getFlags().Paralizado && !getFlags().Inmovilizado) {
         	switch (heading) {
 	        case NORTH:
                 posY = -1;
@@ -1971,7 +1971,7 @@ public class User extends AbstractCharacter {
 		}
 		this.m_saliendo = true;
 		log.info("saliendo: " + this.getUserName());
-		boolean wasLogged = flags().UserLogged;
+		boolean wasLogged = getFlags().UserLogged;
 		try {
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa != null && mapa.hasUser(this)) {
@@ -1988,7 +1988,7 @@ public class User extends AbstractCharacter {
 				}
 				sendPacket(new DisconnectResponse());
 			}
-			flags().UserLogged = false;
+			getFlags().UserLogged = false;
 		} catch (Exception ex) {
 			log.fatal("ERROR EN doSALIR(): ", ex);
 		} finally {
@@ -2010,18 +2010,18 @@ public class User extends AbstractCharacter {
 	public void throwDices() { // and get lucky!
 
 		// FIXME dados fáciles, hacerlo configurable
-		stats().attr().set(Attribute.STRENGTH, Util.random(16, 18));
-		stats().attr().set(Attribute.AGILITY, Util.random(16, 18));
-		stats().attr().set(Attribute.INTELIGENCE, Util.random(16, 18));
-		stats().attr().set(Attribute.CHARISMA, Util.random(16, 18));
-		stats().attr().set(Attribute.CONSTITUTION, Util.random(16, 18));
+		getStats().attr().set(Attribute.STRENGTH, Util.random(16, 18));
+		getStats().attr().set(Attribute.AGILITY, Util.random(16, 18));
+		getStats().attr().set(Attribute.INTELIGENCE, Util.random(16, 18));
+		getStats().attr().set(Attribute.CHARISMA, Util.random(16, 18));
+		getStats().attr().set(Attribute.CONSTITUTION, Util.random(16, 18));
 
 		sendPacket(new DiceRollResponse(
-			stats().attr().get(Attribute.STRENGTH),
-			stats().attr().get(Attribute.AGILITY),
-			stats().attr().get(Attribute.INTELIGENCE),
-			stats().attr().get(Attribute.CHARISMA),
-			stats().attr().get(Attribute.CONSTITUTION)));
+			getStats().attr().get(Attribute.STRENGTH),
+			getStats().attr().get(Attribute.AGILITY),
+			getStats().attr().get(Attribute.INTELIGENCE),
+			getStats().attr().get(Attribute.CHARISMA),
+			getStats().attr().get(Attribute.CONSTITUTION)));
 	}
 
 	/**
@@ -2055,7 +2055,7 @@ public class User extends AbstractCharacter {
 			// ¿Hay un objeto en el tile?
 			if (mapa.hasObject(x, y)) {
 				MapObject obj = mapa.getObject(x, y);
-				flags().TargetObj = obj.objInfo().ObjIndex;
+				getFlags().TargetObj = obj.objInfo().ObjIndex;
 				switch (obj.objInfo().objType) {
 				case Puertas:
 					mapa.accionParaPuerta(x, y, this);
@@ -2067,7 +2067,7 @@ public class User extends AbstractCharacter {
 					mapa.accionParaForo(x, y, this);
 					break;
 				case Leña:
-					if (flags().TargetObj == FOGATA_APAG) {
+					if (getFlags().TargetObj == FOGATA_APAG) {
 						mapa.accionParaRamita(x, y, this);
 					}
 					break;
@@ -2078,7 +2078,7 @@ public class User extends AbstractCharacter {
 				// ¿Hay un objeto que ocupa más de un tile?
 				MapObject obj = mapa.lookForNearbyObject(x, y);
 				if (obj != null) {
-					flags().TargetObj = obj.objInfo().ObjIndex;
+					getFlags().TargetObj = obj.objInfo().ObjIndex;
 					if (obj.objInfo().objType == ObjType.Puertas) {
 						mapa.accionParaPuerta(obj.x, obj.y, this);
 						return;
@@ -2088,7 +2088,7 @@ public class User extends AbstractCharacter {
 				// Hay un npc?
 				Npc npc;
 				if ((npc = mapa.getNPC(x, y)) != null) {
-					flags().TargetNpc = npc.getId();
+					getFlags().TargetNpc = npc.getId();
 					if (npc.isTrade()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
 						commerceStart();
@@ -2111,10 +2111,10 @@ public class User extends AbstractCharacter {
 						}
 					}
 				} else {
-					flags().TargetNpc = 0;
-					flags().TargetNpcTipo = 0;
-					flags().TargetUser = 0;
-					flags().TargetObj = 0;
+					getFlags().TargetNpc = 0;
+					getFlags().TargetNpcTipo = 0;
+					getFlags().TargetUser = 0;
+					getFlags().TargetObj = 0;
 					sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
 				}
 			}
@@ -2135,7 +2135,7 @@ public class User extends AbstractCharacter {
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa != null) {
 			
-	        if ( !flags().AdminInvisible ) {
+	        if ( !getFlags().AdminInvisible ) {
 	        	if (isAlive()) {
 	        		mapa.sendToArea(pos().x, pos().y,
 	        				new ChatOverHeadResponse(chat, getId(),
@@ -2155,7 +2155,7 @@ public class User extends AbstractCharacter {
 	        }
 			
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			Log.logGM(this.userName, "El consejero dijo: " + chat);
 		}
 	}
@@ -2174,7 +2174,7 @@ public class User extends AbstractCharacter {
 				new ChatOverHeadResponse(text, getId(),
 						Color.r(Color.COLOR_ROJO), Color.g(Color.COLOR_ROJO), Color.b(Color.COLOR_ROJO)));
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			Log.logGM(this.userName, "El consejero gritó: " + text);
 		}
 	}
@@ -2197,7 +2197,7 @@ public class User extends AbstractCharacter {
 			if (map.lookForUserAtArea(pos().x, pos().y, targetUser.getId()) == null) {
 				sendMessage("Estas muy lejos de " + targetUser.getUserName(), FontType.FONTTYPE_INFO);
 			} else {
-				if (flags().isCounselor()) {
+				if (getFlags().isCounselor()) {
 					Log.logGM(this.userName, "El consejero le susurró a " + targetUser.getUserName() + ": " + text);
 				}
 
@@ -2208,7 +2208,7 @@ public class User extends AbstractCharacter {
 				sendPacket(new ChatOverHeadResponse(text, getId(),
 						Color.r(Color.COLOR_AZUL), Color.g(Color.COLOR_AZUL), Color.b(Color.COLOR_AZUL)));
 
-				if (!flags().isGM() || flags().isCounselor()) {
+				if (!getFlags().isGM() || getFlags().isCounselor()) {
 					// send to admins at area
 					map.sendToAreaToAdminsButCounselor(pos().x, pos().y,
 							new ChatOverHeadResponse("a " + targetUser.getUserName() + "> " + text, this.getId(),
@@ -2234,39 +2234,39 @@ public class User extends AbstractCharacter {
 			this.getCounters().Saliendo = false;
 		}
 
-		if (flags().Paralizado) {
-			if (flags().UltimoMensaje != 1) {
+		if (getFlags().Paralizado) {
+			if (getFlags().UltimoMensaje != 1) {
 				sendMessage("No puedes moverte por estar paralizado.", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 1;
+				getFlags().UltimoMensaje = 1;
 			}
 			return;
 		}
-		if (flags().Descansar) {
-			flags().Descansar = false;
+		if (getFlags().Descansar) {
+			getFlags().Descansar = false;
 			sendPacket(new RestOKResponse());
 			sendMessage("Has dejado de descansar.", FontType.FONTTYPE_INFO);
 		}
-		if (flags().Meditando) {
-			flags().Meditando = false;
+		if (getFlags().Meditando) {
+			getFlags().Meditando = false;
 			sendPacket(new MeditateToggleResponse());
 			sendMessage("Dejas de meditar.", FontType.FONTTYPE_INFO);
 			this.infoChar.fx = 0;
 			this.infoChar.loops = 0;
 			sendCreateFX(0, 0);
 		}
-		if (flags().Oculto) {
+		if (getFlags().Oculto) {
 			if (this.clazz != Clazz.Thief) {
 				turnVisible();
 			}
 		}
 		move(heading);
-		flags().Trabajando = false;
+		getFlags().Trabajando = false;
 	}
 
 	private void turnVisible() {
 		sendMessage("¡Has vuelto a ser visible!", FontType.FONTTYPE_INFO);
-		flags().Oculto = false;
-		flags().Invisible = false;
+		getFlags().Oculto = false;
+		getFlags().Invisible = false;
 		Map map = this.server.getMap(pos().map);
 		map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)0));
 	}
@@ -2290,7 +2290,7 @@ public class User extends AbstractCharacter {
 		if ( map.isLegalPos(newPos, isSailing(), !isSailing())) {
 			casper = map.getUser(newPos.x, newPos.y);
 			if (casper != null) {
-				if (flags().AdminInvisible) {
+				if (getFlags().AdminInvisible) {
 					// los admins invisibles no pueden patear caspers
 					// user can't move
 					sendPositionUpdate();
@@ -2311,7 +2311,7 @@ public class User extends AbstractCharacter {
 				boolean sendingData = pos().map != targetPos.map;
 				if (!enterIntoMap(targetPos.map, targetPos.x, targetPos.y, withFX, sendingData)) {
 					// if fails, go back to the closest original position
-					MapPos warpPos = map.closestLegalPosUser(oldPos.x, oldPos.y, flags().Navegando, flags().isGM());
+					MapPos warpPos = map.closestLegalPosUser(oldPos.x, oldPos.y, getFlags().Navegando, getFlags().isGM());
 					warpMe(warpPos.map, warpPos.x, warpPos.y, true);
 				}
 			}
@@ -2325,7 +2325,7 @@ public class User extends AbstractCharacter {
 		if (!checkAlive("¡¡No puedes atacar a nadie por estar muerto!!")) {
 			return;
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			sendMessage("¡¡No puedes atacar a nadie!!", FontType.FONTTYPE_INFO);
 			return;
 		} else {
@@ -2351,7 +2351,7 @@ public class User extends AbstractCharacter {
 		if (!checkAlive("¡¡Estas muerto!! Los muertos no pueden recoger objetos.")) {
 			return;
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			sendMessage("No puedes recoger ningún objeto.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2370,7 +2370,7 @@ public class User extends AbstractCharacter {
 				} else {
 					// Quitamos el objeto
 					mapa.removeObject(pos().x, pos().y);
-					if (flags().isGM()) {
+					if (getFlags().isGM()) {
 						Log.logGM(this.userName, "Agarró: " + obj.obj_ind + " objeto=" + obj.objInfo().Nombre);
 					}
 				}
@@ -2388,7 +2388,7 @@ public class User extends AbstractCharacter {
 			sendMessage("No puedes tirar objetos mientras navegas.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			sendMessage("No puedes tirar ningún objeto.", FontType.FONTTYPE_INFO);
 			return;
 		}
@@ -2464,24 +2464,24 @@ public class User extends AbstractCharacter {
 
 	public void sendUpdateUserStats() {
 		sendPacket(new UpdateUserStatsResponse(
-				(short) stats().MaxHP,
-				(short) stats().MinHP,
-				(short) stats().maxMana,
-				(short) stats().mana,
-				(short) stats().maxStamina,
-				(short) stats().stamina,
-				stats().getGold(),
-				(byte)stats().ELV, // Current Level
-				stats().ELU, // Experience to Level Up
-				stats().Exp)); // Current Experience
+				(short) getStats().MaxHP,
+				(short) getStats().MinHP,
+				(short) getStats().maxMana,
+				(short) getStats().mana,
+				(short) getStats().maxStamina,
+				(short) getStats().stamina,
+				getStats().getGold(),
+				(byte)getStats().ELV, // Current Level
+				getStats().ELU, // Experience to Level Up
+				getStats().Exp)); // Current Experience
 	}
 	
 	public void sendUpdateHungerAndThirst() {
 		sendPacket(new UpdateHungerAndThirstResponse(
-				(byte) stats().maxDrinked,
-				(byte) stats().drinked,
-				(byte) stats().maxEaten,
-				(byte) stats().eaten));
+				(byte) getStats().maxDrinked,
+				(byte) getStats().drinked,
+				(byte) getStats().maxEaten,
+				(byte) getStats().eaten));
 	}
 	
 	public void sendUpdateHP(short minHP) {
@@ -2517,7 +2517,7 @@ public class User extends AbstractCharacter {
 			return false;
 		}
 
-		MapPos freePos = targetMap.closestLegalPosUser(x, y, flags().Navegando, flags().isGM());
+		MapPos freePos = targetMap.closestLegalPosUser(x, y, getFlags().Navegando, getFlags().isGM());
 
 		// enter into the new map
 		if (!targetMap.enterMap(this, freePos.x, freePos.y)) {
@@ -2535,7 +2535,7 @@ public class User extends AbstractCharacter {
 
 		if (withFX) {
 			sendCreateFX(1, 0);
-			if (flags().UserLogged) { // No hacer sonido en el LOGIN.
+			if (getFlags().UserLogged) { // No hacer sonido en el LOGIN.
 				sendWave(SOUND_WARP);
 			}
 		}
@@ -2558,7 +2558,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean isParalized() {
-		return flags().Paralizado;
+		return getFlags().Paralizado;
 	}
 
 	public void revive() {
@@ -2569,13 +2569,13 @@ public class User extends AbstractCharacter {
 		if (m == null) {
 			return;
 		}
-		flags().Muerto = false;
-		stats().MinHP = stats().MaxHP;// 10;
-		if (stats().drinked <= 0) {
-			stats().drinked = 10;
+		getFlags().Muerto = false;
+		getStats().MinHP = getStats().MaxHP;// 10;
+		if (getStats().drinked <= 0) {
+			getStats().drinked = 10;
 		}
-		if (stats().eaten <= 0) {
-			stats().eaten = 10;
+		if (getStats().eaten <= 0) {
+			getStats().eaten = 10;
 		}
 		this.infoChar.head = this.origChar.head;
 		undress();
@@ -2604,7 +2604,7 @@ public class User extends AbstractCharacter {
 			sendPacket(new PlayMidiResponse((byte) newMap.getMusic(), (short)45));
 		}
 		
-		MapPos freePos = newMap.closestLegalPosUser(x, y, flags().Navegando, flags().isGM());
+		MapPos freePos = newMap.closestLegalPosUser(x, y, getFlags().Navegando, getFlags().isGM());
 		if (freePos == null) {
 			log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + targetMap + " x=" + x + " y=" + y);
 			return false;
@@ -2615,11 +2615,11 @@ public class User extends AbstractCharacter {
 		sendPacket(new UserCharIndexInServerResponse(getId()));
 		
 		// Seguis invisible al pasar de mapa
-		if ((flags().Invisible || flags().Oculto) && !flags().AdminInvisible) {
+		if ((getFlags().Invisible || getFlags().Oculto) && !getFlags().AdminInvisible) {
 			map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
 		}
 		
-		if (withFX && !flags().AdminInvisible) {
+		if (withFX && !getFlags().AdminInvisible) {
 			sendWave(SOUND_WARP);
 			sendCreateFX(FXWARP, 0);
 		}
@@ -2716,11 +2716,11 @@ public class User extends AbstractCharacter {
 	}
 	
 	public void rainingEffect() {
-		if (flags().UserLogged) {
+		if (getFlags().UserLogged) {
 			Map mapa = this.server.getMap(pos().map);
 			if (this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y) && mapa.getZone() != Zone.DUNGEON) {
-				int modifi = Util.percentage(stats().maxStamina, 3);
-				stats().quitarStamina(modifi);
+				int modifi = Util.percentage(getStats().maxStamina, 3);
+				getStats().quitarStamina(modifi);
 				sendMessage("¡¡Has perdido stamina, busca pronto refugio de la lluvia!!.", FontType.FONTTYPE_INFO);
 				sendUpdateUserStats();
 			}
@@ -2731,8 +2731,8 @@ public class User extends AbstractCharacter {
 		if (this.getCounters().Paralisis > 0) {
 			this.getCounters().Paralisis--;
 		} else {
-			flags().Paralizado = false;
-			flags().Inmovilizado = false;
+			getFlags().Paralizado = false;
+			getFlags().Inmovilizado = false;
 			sendPacket(new ParalizeOKResponse());
 		}
 	}
@@ -2753,8 +2753,8 @@ public class User extends AbstractCharacter {
 	}
 
 	private void turnHiding() {
-		flags().Oculto = true;
-		flags().Invisible = true;
+		getFlags().Oculto = true;
+		getFlags().Invisible = true;
 		Map map = this.server.getMap(pos().map);
 		map.sendToArea(pos().x, pos().y, new SetInvisibleResponse(getId(), (byte)1));
 		sendMessage("¡Te has escondido entre las sombras!", FontType.FONTTYPE_INFO);
@@ -2770,12 +2770,12 @@ public class User extends AbstractCharacter {
 			turnHiding();
 			riseSkill(Skill.SKILL_Ocultarse);
 		} else {
-			if (flags().UltimoMensaje != 4) {
+			if (getFlags().UltimoMensaje != 4) {
 				sendMessage("¡No has logrado esconderte!", FontType.FONTTYPE_INFO);
-				flags().UltimoMensaje = 4;
+				getFlags().UltimoMensaje = 4;
 			}
 		}
-		flags().Trabajando = true;
+		getFlags().Trabajando = true;
 	}
 
 	public void sayMagicWords(String magicWords) {
@@ -2797,11 +2797,11 @@ public class User extends AbstractCharacter {
 	
 	public void talkAsNpc(String chat) {
 		// Solo dioses, admins y RMS
-		if (!flags().isGM()) {
+		if (!getFlags().isGM()) {
 			return;
 		}
 		// Asegurarse haya un NPC seleccionado
-		Npc targetNpc = this.server.npcById(flags().TargetNpc);
+		Npc targetNpc = this.server.npcById(getFlags().TargetNpc);
 		if (targetNpc != null) {
 			talk(Color.COLOR_BLANCO, chat, targetNpc.getId());
 		} else {
@@ -2850,12 +2850,12 @@ public class User extends AbstractCharacter {
 				this.infoChar.loops,
 				userNameAndTagForCC(),
 				(byte) (this.isCriminal() ? 1 : 0),
-				(byte)flags().privileges);
+				(byte)getFlags().privileges);
 	}
 
 	private String userNameAndTagForCC() {
         if (this.showName) {
-        	if (flags().isGM() && (flags().Invisible || flags().Oculto)) {
+        	if (getFlags().isGM() && (getFlags().Invisible || getFlags().Oculto)) {
         		return getUserName() + " " + TAG_USER_INVISIBLE;
         	} else {
     			if (getGuildInfo().esMiembroClan()) {
@@ -2900,12 +2900,12 @@ public class User extends AbstractCharacter {
 	}
 
 	public void undress() {
-		if (this.flags().Mimetizado) {
+		if (this.getFlags().Mimetizado) {
 			this.mimetizadoChar.undress(this.race, this.gender);
 		} else {
 			this.infoChar.undress(this.race, this.gender);
 		}
-		flags().Desnudo = true;
+		getFlags().Desnudo = true;
 	}
 
 	public void removePet(Npc pet) {
@@ -2917,7 +2917,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void sendWave(int sound) {
-	    if (flags().AdminInvisible) {
+	    if (getFlags().AdminInvisible) {
 	    	// Los admin invisibles solo producen sonidos a si mismos
 	    	sendPacket(new PlayWaveResponse((byte) sound, pos().x, pos().y));
 	    
@@ -2930,7 +2930,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void userDie() {
-		if (flags().isGM()) {
+		if (getFlags().isGM()) {
 			return;
 		}
 		Map map = this.server.getMap(pos().map);
@@ -2939,43 +2939,43 @@ public class User extends AbstractCharacter {
 		// Quitar el dialogo del usuario muerto
 		map.sendToArea(pos().x, pos().y, new RemoveCharDialogResponse(getId()));
 		
-		stats().MinHP = 0;
-		stats().stamina = 0;
-		flags().AtacadoPorNpc = 0;
-		flags().AtacadoPorUser = 0;
-		flags().Envenenado = false;
-		flags().Muerto = true;
+		getStats().MinHP = 0;
+		getStats().stamina = 0;
+		getFlags().AtacadoPorNpc = 0;
+		getFlags().AtacadoPorUser = 0;
+		getFlags().Envenenado = false;
+		getFlags().Muerto = true;
 		
         // SeguroResu: No se activa en arenas
 		if (duelStatus(this) != DuelStatus.DUEL_ALLOWED) {
-			flags().SeguroResu = true;
+			getFlags().SeguroResu = true;
 			sendPacket(new ResuscitationSafeOnResponse());
 		} else {
-			flags().SeguroResu = false;
+			getFlags().SeguroResu = false;
 			sendPacket(new ResuscitationSafeOffResponse());
 		}
         
-		if (flags().AtacadoPorNpc > 0) {
-			Npc npc = this.server.npcById(flags().AtacadoPorNpc);
+		if (getFlags().AtacadoPorNpc > 0) {
+			Npc npc = this.server.npcById(getFlags().AtacadoPorNpc);
 			if (npc != null) {
 				npc.oldMovement();
 			} else {
-				flags().AtacadoPorNpc = 0;
+				getFlags().AtacadoPorNpc = 0;
 			}
 		}
 		// <<<< Paralisis >>>>
-		if (flags().Paralizado) {
-			flags().Paralizado = false;
+		if (getFlags().Paralizado) {
+			getFlags().Paralizado = false;
 			sendPacket(new ParalizeOKResponse());
 		}
 		// <<<< Descansando >>>>
-		if (flags().Descansar) {
-			flags().Descansar = false;
+		if (getFlags().Descansar) {
+			getFlags().Descansar = false;
 			sendPacket(new RestOKResponse());
 		}
 		// <<<< Meditando >>>>
-		if (flags().Meditando) {
-			flags().Meditando = false;
+		if (getFlags().Meditando) {
+			getFlags().Meditando = false;
 			sendPacket(new MeditateToggleResponse());
 		}
 		// desequipar armadura
@@ -3009,7 +3009,7 @@ public class User extends AbstractCharacter {
 			this.infoChar.loops = 0;
 		}
 		// << Cambiamos la apariencia del char >>
-		if ( !flags().Navegando ) {
+		if ( !getFlags().Navegando ) {
 			this.infoChar.body = OBJ_INDEX_CUERPO_MUERTO;
 			this.infoChar.head = OBJ_INDEX_CABEZA_MUERTO;
 			this.infoChar.shield = NingunEscudo;
@@ -3026,11 +3026,11 @@ public class User extends AbstractCharacter {
 
 	public void dropAll() {
 		Map map = this.server.getMap(pos().map);
-		if (map.isArenaZone(pos().x, pos().y) || flags().isGM()) {
+		if (map.isArenaZone(pos().x, pos().y) || getFlags().isGM()) {
 			return;
 		}
 		dropAllItems();
-		dropGold(stats().getGold()); 
+		dropGold(getStats().getGold()); 
 	}
 
 	private void dropAllItems() {
@@ -3074,19 +3074,19 @@ public class User extends AbstractCharacter {
 		}
 		Map m = this.server.getMap(pos().map);
 		// SI EL Npc TIENE ORO LO TIRAMOS
-		if ((amount > 0) && (amount <= stats().getGold())) {
-			while ((amount > 0) && (stats().getGold() > 0)) {
+		if ((amount > 0) && (amount <= getStats().getGold())) {
+			while ((amount > 0) && (getStats().getGold() > 0)) {
 				InventoryObject oi = new InventoryObject(OBJ_ORO, amount);
-				if ((amount > MAX_INVENTORY_OBJS) && (stats().getGold() > MAX_INVENTORY_OBJS)) {
+				if ((amount > MAX_INVENTORY_OBJS) && (getStats().getGold() > MAX_INVENTORY_OBJS)) {
 					oi.cant = MAX_INVENTORY_OBJS;
-					stats().addGold( -MAX_INVENTORY_OBJS);
+					getStats().addGold( -MAX_INVENTORY_OBJS);
 					amount -= oi.cant;
 				} else {
 					oi.cant = amount;
-					stats().addGold( -amount );
+					getStats().addGold( -amount );
 					amount -= oi.cant;
 				}
-				if (flags().isGM()) {
+				if (getFlags().isGM()) {
 					Log.logGM(this.userName,
 							"Tiró " + oi.cant + " unidades del objeto " + findObj(oi.objid).Nombre);
 				}
@@ -3100,7 +3100,7 @@ public class User extends AbstractCharacter {
 		if (map.isArenaZone(pos().x, pos().y)) {
 			return;
 		}
-		if (!flags().isGM()) {
+		if (!getFlags().isGM()) {
 			if (!isCriminal()) {
 				this.reputation.condenar();
 				if (this.faction.ArmadaReal) {
@@ -3116,10 +3116,10 @@ public class User extends AbstractCharacter {
 	 * @param skill
 	 */
 	public void riseSkill(Skill skill) {
-		if (!flags().Hambre && !flags().Sed) {
+		if (!getFlags().Hambre && !getFlags().Sed) {
 			
 			// Alcanzó el máximo del skill para este nivel?
-			if (skills().get(skill) >= Skill.levelSkill[stats().ELV]) {
+			if (skills().get(skill) >= Skill.levelSkill[getStats().ELV]) {
 				return;
 			}
 			
@@ -3129,13 +3129,13 @@ public class User extends AbstractCharacter {
 			}
 			
 			int prob;
-			if (stats().ELV <= 3) {
+			if (getStats().ELV <= 3) {
 				prob = 25;
-			} else if (stats().ELV < 6) {
+			} else if (getStats().ELV < 6) {
 				prob = 35;
-			} else if (stats().ELV < 10) {
+			} else if (getStats().ELV < 10) {
 				prob = 40;
-			} else if (stats().ELV < 20) {
+			} else if (getStats().ELV < 20) {
 				prob = 45;
 			} else {
 				prob = 50;
@@ -3146,7 +3146,7 @@ public class User extends AbstractCharacter {
 				sendMessage("¡Has mejorado tu skill " + skill + " en un punto!. Ahora tienes " 
 							+ skills().get(skill) + " pts.", FontType.FONTTYPE_INFO);
 				
-				stats().addExp((byte) EXPERIENCE_BY_LEVEL_UP);
+				getStats().addExp((byte) EXPERIENCE_BY_LEVEL_UP);
 				sendMessage("¡Has ganado " + EXPERIENCE_BY_LEVEL_UP +" puntos de experiencia!", FONTTYPE_FIGHT);
 				checkUserLevel();
 			}
@@ -3165,7 +3165,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean isNewbie() {
-		return stats().ELV <= LimiteNewbie;
+		return getStats().ELV <= LimiteNewbie;
 	}
 
 	public boolean isRoyalArmy() {
@@ -3188,18 +3188,18 @@ public class User extends AbstractCharacter {
 	 * Envenenar
 	 */
 	public void poison() {
-		flags().Envenenado = true;
+		getFlags().Envenenado = true;
 		sendMessage("¡¡La criatura te ha envenenado!!", FONTTYPE_FIGHT);
 	}
 
 	public void checkUserLevel() {
-		while (stats().Exp >= stats().ELU) {
+		while (getStats().Exp >= getStats().ELU) {
 			boolean wasNewbie = isNewbie();
 
 			// ¿Alcanzo el maximo nivel?
-			if (stats().ELV == STAT_MAXELV) {
-				stats().Exp = 0;
-				stats().ELU = 0;
+			if (getStats().ELV == STAT_MAXELV) {
+				getStats().Exp = 0;
+				getStats().ELU = 0;
 				return;
 			}
 			
@@ -3207,23 +3207,23 @@ public class User extends AbstractCharacter {
 			sendWave(SOUND_NIVEL);
 			sendMessage("¡Has subido de nivel!", FontType.FONTTYPE_INFO);
 			
-			int skillPoints = (stats().ELV == 1) ? 10 : 5;
+			int skillPoints = (getStats().ELV == 1) ? 10 : 5;
 			skills().freeSkillPts += skillPoints;
 			sendMessage("Has ganado " + skillPoints + " skillpoints.", FontType.FONTTYPE_INFO);
 			
-			stats().ELV++;
-			stats().Exp -= stats().ELU;
+			getStats().ELV++;
+			getStats().Exp -= getStats().ELU;
 			
-            if (stats().ELV < 15) {
-            	stats().ELU *= 1.4;
-            } else if (stats().ELV < 21) {
-            	stats().ELU *= 1.35;
-            } else if (stats().ELV < 33) {
-            	stats().ELU *= 1.3;
-            } else if (stats().ELV < 41) {
-            	stats().ELU *= 1.225;
+            if (getStats().ELV < 15) {
+            	getStats().ELU *= 1.4;
+            } else if (getStats().ELV < 21) {
+            	getStats().ELU *= 1.35;
+            } else if (getStats().ELV < 33) {
+            	getStats().ELU *= 1.3;
+            } else if (getStats().ELV < 41) {
+            	getStats().ELU *= 1.225;
             } else {
-            	stats().ELU *= 1.175;
+            	getStats().ELU *= 1.175;
             }
 			
 			clazz().incStats(this);
@@ -3257,16 +3257,16 @@ public class User extends AbstractCharacter {
 		if (skills().get(Skill.SKILL_Tacticas) < 31) {
 			tmp = skills().get(Skill.SKILL_Tacticas) * this.clazz().modificadorEvasion();
 		} else if (skills().get(Skill.SKILL_Tacticas) < 61) {
-			tmp = (skills().get(Skill.SKILL_Tacticas) + stats().attr().get(Attribute.AGILITY))
+			tmp = (skills().get(Skill.SKILL_Tacticas) + getStats().attr().get(Attribute.AGILITY))
 					* this.clazz().modificadorEvasion();
 		} else if (skills().get(Skill.SKILL_Tacticas) < 91) {
-			tmp = (skills().get(Skill.SKILL_Tacticas) + (2 * stats().attr().get(Attribute.AGILITY)))
+			tmp = (skills().get(Skill.SKILL_Tacticas) + (2 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorEvasion();
 		} else {
-			tmp = (skills().get(Skill.SKILL_Tacticas) + (3 * stats().attr().get(Attribute.AGILITY)))
+			tmp = (skills().get(Skill.SKILL_Tacticas) + (3 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorEvasion();
 		}
-		return (tmp + (2.5 * Math.max(stats().ELV - 12, 0)));
+		return (tmp + (2.5 * Math.max(getStats().ELV - 12, 0)));
 	}
 
 	public double poderAtaqueArma() {
@@ -3274,16 +3274,16 @@ public class User extends AbstractCharacter {
 		if (skills().get(Skill.SKILL_Armas) < 31) {
 			tmp = skills().get(Skill.SKILL_Armas) * this.clazz().modificadorPoderAtaqueArmas();
 		} else if (skills().get(Skill.SKILL_Armas) < 61) {
-			tmp = ((skills().get(Skill.SKILL_Armas) + stats().attr().get(Attribute.AGILITY))
+			tmp = ((skills().get(Skill.SKILL_Armas) + getStats().attr().get(Attribute.AGILITY))
 					* this.clazz().modificadorPoderAtaqueArmas());
 		} else if (skills().get(Skill.SKILL_Armas) < 91) {
-			tmp = ((skills().get(Skill.SKILL_Armas) + (2 * stats().attr().get(Attribute.AGILITY)))
+			tmp = ((skills().get(Skill.SKILL_Armas) + (2 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueArmas());
 		} else {
-			tmp = ((skills().get(Skill.SKILL_Armas) + (3 * stats().attr().get(Attribute.AGILITY)))
+			tmp = ((skills().get(Skill.SKILL_Armas) + (3 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueArmas());
 		}
-		return tmp + (2.5 * Math.max(stats().ELV - 12, 0));
+		return tmp + (2.5 * Math.max(getStats().ELV - 12, 0));
 	}
 
 	public double poderAtaqueProyectil() {
@@ -3291,16 +3291,16 @@ public class User extends AbstractCharacter {
 		if (skills().get(Skill.SKILL_Proyectiles) < 31) {
 			tmp = (skills().get(Skill.SKILL_Proyectiles) * this.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (skills().get(Skill.SKILL_Proyectiles) < 61) {
-			tmp = ((skills().get(Skill.SKILL_Proyectiles) + stats().attr().get(Attribute.AGILITY))
+			tmp = ((skills().get(Skill.SKILL_Proyectiles) + getStats().attr().get(Attribute.AGILITY))
 					* this.clazz().modificadorPoderAtaqueProyectiles());
 		} else if (skills().get(Skill.SKILL_Proyectiles) < 91) {
-			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (2 * stats().attr().get(Attribute.AGILITY)))
+			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (2 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueProyectiles());
 		} else {
-			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (3 * stats().attr().get(Attribute.AGILITY)))
+			tmp = ((skills().get(Skill.SKILL_Proyectiles) + (3 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueProyectiles());
 		}
-		return (tmp + (2.5 * Math.max(stats().ELV - 12, 0)));
+		return (tmp + (2.5 * Math.max(getStats().ELV - 12, 0)));
 	}
 
 	public double poderAtaqueWresterling() {
@@ -3308,16 +3308,16 @@ public class User extends AbstractCharacter {
 		if (skills().get(Skill.SKILL_Wresterling) < 31) {
 			tmp = (skills().get(Skill.SKILL_Wresterling) * this.clazz().modificadorPoderAtaqueArmas());
 		} else if (skills().get(Skill.SKILL_Wresterling) < 61) {
-			tmp = (skills().get(Skill.SKILL_Wresterling) + stats().attr().get(Attribute.AGILITY))
+			tmp = (skills().get(Skill.SKILL_Wresterling) + getStats().attr().get(Attribute.AGILITY))
 					* this.clazz().modificadorPoderAtaqueArmas();
 		} else if (skills().get(Skill.SKILL_Wresterling) < 91) {
-			tmp = (skills().get(Skill.SKILL_Wresterling) + (2 * stats().attr().get(Attribute.AGILITY)))
+			tmp = (skills().get(Skill.SKILL_Wresterling) + (2 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueArmas();
 		} else {
-			tmp = (skills().get(Skill.SKILL_Wresterling) + (3 * stats().attr().get(Attribute.AGILITY)))
+			tmp = (skills().get(Skill.SKILL_Wresterling) + (3 * getStats().attr().get(Attribute.AGILITY)))
 					* this.clazz().modificadorPoderAtaqueArmas();
 		}
-		return tmp + (2.5 * Math.max(stats().ELV - 12, 0));
+		return tmp + (2.5 * Math.max(getStats().ELV - 12, 0));
 	}
 
 	public boolean userImpactoNpc(Npc npc) {
@@ -3437,8 +3437,8 @@ public class User extends AbstractCharacter {
 				}
 			}
 		}
-		dañoUsuario = Util.random(stats().MinHIT, stats().MaxHIT);
-		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Math.max(0, (stats().attr.get(Attribute.STRENGTH) - 15)))
+		dañoUsuario = Util.random(getStats().MinHIT, getStats().MaxHIT);
+		double daño = (((3 * dañoArma) + ((dañoMaxArma / 5) * Math.max(0, (getStats().attr.get(Attribute.STRENGTH) - 15)))
 				+ dañoUsuario) * modifClase);
 		return (short) daño;
 	}
@@ -3446,7 +3446,7 @@ public class User extends AbstractCharacter {
 	public void userDañoNpc(Npc npc) {
 		int daño = calcularDaño(npc);
 		// esta navegando? si es asi le sumamos el daño del barco
-		if (flags().Navegando) {
+		if (getFlags().Navegando) {
 			daño += Util.random(this.userInv.getBarco().MinHIT, this.userInv.getBarco().MaxHIT);
 		}
 		daño -= npc.stats().defensa;
@@ -3541,14 +3541,14 @@ public class User extends AbstractCharacter {
 			break;
 		}
 		sendPacket(new NPCHitUserResponse(lugar, (short)daño));
-		if (!flags().isGM()) {
-			stats().MinHP -= daño;
+		if (!getFlags().isGM()) {
+			getStats().MinHP -= daño;
 		}
 
 		sendUpdateUserStats();
 
 		// Muere el usuario
-		if (stats().MinHP <= 0) {
+		if (getStats().MinHP <= 0) {
 			sendPacket(new NPCKillUserResponse()); // Le informamos que ha muerto ;)
 			// Si lo mato un guardia
 			if (isCriminal() && npc.isNpcGuard()) {
@@ -3578,11 +3578,11 @@ public class User extends AbstractCharacter {
 					FontType.FONTTYPE_WARNING);
 			return;
 		}
-		if (npc.getPetUserOwner() != null && flags().Seguro && !npc.getPetUserOwner().isCriminal()) {
+		if (npc.getPetUserOwner() != null && getFlags().Seguro && !npc.getPetUserOwner().isCriminal()) {
 			sendMessage("Debes quitar el seguro para atacar a una mascota de un ciudadano.", FontType.FONTTYPE_WARNING);
 			return;
 		}
-		if (npc.stats().alineacion == 0 && flags().Seguro) {
+		if (npc.stats().alineacion == 0 && getFlags().Seguro) {
 			sendMessage("Debes quitar el seguro para atacar a una criatura no hostil.", FontType.FONTTYPE_WARNING);
 			return;
 		}
@@ -3601,8 +3601,8 @@ public class User extends AbstractCharacter {
 	}
 
 	public void safeToggle() {
-		flags().Seguro = !flags().Seguro;
-		if (flags().Seguro) {
+		getFlags().Seguro = !getFlags().Seguro;
+		if (getFlags().Seguro) {
 			sendPacket(new SafeModeOnResponse());
 		} else {
 			sendPacket(new SafeModeOffResponse());
@@ -3611,9 +3611,9 @@ public class User extends AbstractCharacter {
 	
 	public void resuscitationToggle() {
 		// HandleResuscitationToggle
-		flags().SeguroResu = !flags().SeguroResu;
+		getFlags().SeguroResu = !getFlags().SeguroResu;
 		
-		if (flags().SeguroResu) {
+		if (getFlags().SeguroResu) {
 			sendPacket(new ResuscitationSafeOnResponse());
 		} else {
 			sendPacket(new ResuscitationSafeOffResponse());
@@ -3621,7 +3621,7 @@ public class User extends AbstractCharacter {
 	}
 	
 	public boolean isInCombatMode() {
-		return flags().ModoCombate;
+		return getFlags().ModoCombate;
 	}
 
 	public void toggleCombatMode() {
@@ -3631,7 +3631,7 @@ public class User extends AbstractCharacter {
 		} else {
 			sendMessage("Has pasado al modo de combate.", FontType.FONTTYPE_INFO);
 		}
-		flags().ModoCombate = !flags().ModoCombate;
+		getFlags().ModoCombate = !getFlags().ModoCombate;
 	}
 
 	public void showUsersOnline() {
@@ -3653,8 +3653,8 @@ public class User extends AbstractCharacter {
 	public void usuarioAtaca() {
 		if (getCounters().intervaloPermiteAtacar()) {
 			// Pierde stamina
-			if (stats().stamina >= 10) {
-				stats().quitarStamina(Util.random(1, 10));
+			if (getStats().stamina >= 10) {
+				getStats().quitarStamina(Util.random(1, 10));
 			} else {
 				if (gender() == UserGender.GENERO_MAN) {
 					sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
@@ -3696,7 +3696,7 @@ public class User extends AbstractCharacter {
 			}
 			sendWave(SOUND_SWING);
 			sendUpdateUserStats();
-			flags().Trabajando = false;
+			getFlags().Trabajando = false;
 		} else {
 			log.info("NO PUEDE ATACAR");
 		}
@@ -3820,8 +3820,8 @@ public class User extends AbstractCharacter {
 		}
 		sendPacket(new UserHittedUserResponse(victima.getId(), target, damage));
 		victima.sendPacket(new UserHittedByUserResponse(getId(), target, damage));
-		victima.stats().removeHP(damage);
-		if (!flags().Hambre && !flags().Sed) {
+		victima.getStats().removeHP(damage);
+		if (!getFlags().Hambre && !getFlags().Sed) {
 			if (this.userInv.tieneArmaEquipada()) {
 				// Si usa un arma quizas suba "Combate con armas"
 				riseSkill(Skill.SKILL_Armas);
@@ -3836,7 +3836,7 @@ public class User extends AbstractCharacter {
 				riseSkill(Skill.SKILL_Apuñalar);
 			}
 		}
-		if (victima.stats().MinHP <= 0) {
+		if (victima.getStats().MinHP <= 0) {
 			contarMuerte(victima);
 			getUserPets().petsFollowMaster(victima.getId());
 			actStats(victima);
@@ -3848,8 +3848,8 @@ public class User extends AbstractCharacter {
 
 	public void actStats(User victima) {
 		// ActStats
-		int daExp = victima.stats().ELV * 2;
-		stats().addExp(daExp);
+		int daExp = victima.getStats().ELV * 2;
+		getStats().addExp(daExp);
 		
 		// Lo mata
 		sendMessage("Has matado a " + victima.userName + "!", FONTTYPE_FIGHT);
@@ -3860,12 +3860,12 @@ public class User extends AbstractCharacter {
 		if (duelStatus(victima) != DuelStatus.DUEL_ALLOWED) {
 			boolean eraCriminal = isCriminal();
 			if (!victima.isCriminal()) {
-				this.reputation().incAsesino(vlAsesino * 2);
-				this.reputation().burguesRep = 0;
-				this.reputation().nobleRep = 0;
-				this.reputation().plebeRep = 0;
+				this.getReputation().incAsesino(vlAsesino * 2);
+				this.getReputation().burguesRep = 0;
+				this.getReputation().nobleRep = 0;
+				this.getReputation().plebeRep = 0;
 			} else {
-				this.reputation().incNoble(vlNoble);
+				this.getReputation().incNoble(vlNoble);
 			}
 			if (isCriminal()) {
 				if (!eraCriminal) {
@@ -3877,7 +3877,7 @@ public class User extends AbstractCharacter {
 				}
 			}
 		}
-		stats().incUsuariosMatados();
+		getStats().incUsuariosMatados();
 		log.info("ASESINATO: " + this.userName + " asesino a " + victima.userName);
 	}
 	
@@ -3891,7 +3891,7 @@ public class User extends AbstractCharacter {
 		}
 
 		userFaction().countKill(killedUser);
-		stats().incUsuariosMatados();
+		getStats().incUsuariosMatados();
 	}
 
 	public void usuarioAtacadoPorUsuario(User victima) {
@@ -3965,7 +3965,7 @@ public class User extends AbstractCharacter {
 			return false;
 		}
 		// Se asegura que la victima no es un GM
-		if (victima.flags().isGM()) {
+		if (victima.getFlags().isGM()) {
 			sendMessage("¡¡No puedes atacar a los administradores del juego!!", FontType.FONTTYPE_WARNING);
 			return false;
 		}
@@ -3973,7 +3973,7 @@ public class User extends AbstractCharacter {
 			sendMessage("No puedes atacar a un espíritu.", FontType.FONTTYPE_WARNING);
 			return false;
 		}
-		if (flags().Seguro) {
+		if (getFlags().Seguro) {
 			if (!victima.isCriminal()) {
 				sendMessage(
 						"No puedes atacar ciudadanos, para hacerlo debes desactivar el seguro apretando la tecla S",
@@ -4016,7 +4016,7 @@ public class User extends AbstractCharacter {
 		// DoApuñalar
 		if (suerteApuñalar()) {
 			daño *= 1.5;
-			victimaUsuario.stats().MinHP -= daño;
+			victimaUsuario.getStats().MinHP -= daño;
 			sendMessage("Has apuñalado a " + victimaUsuario.userName + " por " + daño, FONTTYPE_FIGHT);
 			victimaUsuario.sendMessage("Te ha apuñalado " + this.userName + " por " + daño, FONTTYPE_FIGHT);
 		} else {
@@ -4080,8 +4080,8 @@ public class User extends AbstractCharacter {
 		}
 		
 		this.userName = userName;
-		this.flags().Muerto = false;
-		this.flags().Escondido = false;
+		this.getFlags().Muerto = false;
+		this.getFlags().Escondido = false;
 		this.reputation.asesinoRep = 0;
 		this.reputation.bandidoRep = 0;
 		this.reputation.burguesRep = 0;
@@ -4111,7 +4111,7 @@ public class User extends AbstractCharacter {
 		this.infoChar.helmet = NingunCasco;
 		this.origChar = new CharInfo(this.infoChar);
 
-		this.stats().inicializarEstads(this.clazz);
+		this.getStats().inicializarEstads(this.clazz);
 
 		// Inicializar hechizos:
 		if (this.clazz().isMagickal()) {
@@ -4200,11 +4200,11 @@ public class User extends AbstractCharacter {
 	}
 
 	public void modifyAttributesByRace() {
-		stats().attr().set(Attribute.STRENGTH, 		stats().attr().get(Attribute.STRENGTH) 		+ race().getStrengthModifier());
-		stats().attr().set(Attribute.AGILITY, 		stats().attr().get(Attribute.AGILITY) 		+ race().getAgilityModifier());
-		stats().attr().set(Attribute.INTELIGENCE, 	stats().attr().get(Attribute.INTELIGENCE) 	+ race().getInteligenceModifier());
-		stats().attr().set(Attribute.CHARISMA, 		stats().attr().get(Attribute.CHARISMA) 		+ race().getCharismaModifier());
-		stats().attr().set(Attribute.CONSTITUTION, 	stats().attr().get(Attribute.CONSTITUTION) 	+ race().getConstitutionModifier());
+		getStats().attr().set(Attribute.STRENGTH, 		getStats().attr().get(Attribute.STRENGTH) 		+ race().getStrengthModifier());
+		getStats().attr().set(Attribute.AGILITY, 		getStats().attr().get(Attribute.AGILITY) 		+ race().getAgilityModifier());
+		getStats().attr().set(Attribute.INTELIGENCE, 	getStats().attr().get(Attribute.INTELIGENCE) 	+ race().getInteligenceModifier());
+		getStats().attr().set(Attribute.CHARISMA, 		getStats().attr().get(Attribute.CHARISMA) 		+ race().getCharismaModifier());
+		getStats().attr().set(Attribute.CONSTITUTION, 	getStats().attr().get(Attribute.CONSTITUTION) 	+ race().getConstitutionModifier());
 	}
 
 	public void sendError(String msg) {
@@ -4233,10 +4233,10 @@ public class User extends AbstractCharacter {
 			this.userName = userName;
 			
 			// Reseteamos los FLAGS
-			flags().Escondido = false;
-			flags().TargetNpc = 0;
-			flags().TargetObj = 0;
-			flags().TargetUser = 0;
+			getFlags().Escondido = false;
+			getFlags().TargetNpc = 0;
+			getFlags().TargetObj = 0;
+			getFlags().TargetUser = 0;
 			this.infoChar.fx = 0;
 
 			// ¿El password es válido?
@@ -4253,15 +4253,15 @@ public class User extends AbstractCharacter {
 			}
 			
 			if (this.server.manager().isGod(this.userName)) {
-				flags().setGod();
+				getFlags().setGod();
 				chatColor = Color.rgb(250, 250, 150);
 				Log.logGM(this.userName, "El GM-DIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isDemiGod(this.userName)) {
-				flags().setDemiGod();
+				getFlags().setDemiGod();
 				chatColor = Color.rgb(0, 255, 0);
 				Log.logGM(this.userName, "El GM-SEMIDIOS se conectó desde la ip=" + this.ip);
 			} else if (this.server.manager().isCounsellor(this.userName)) {
-				flags().setCounselor();
+				getFlags().setCounselor();
 				chatColor = Color.rgb(0, 255, 0);
 				Log.logGM(this.userName, "El GM-CONSEJERO se conectó desde la ip=" + this.ip);
 				// FIXME
@@ -4273,8 +4273,8 @@ public class User extends AbstractCharacter {
 //				chatColor = Color.rgb(255, 128, 64);
 			} else {
 				// Usuario no privilegiado.
-				flags().setOrdinaryUser();
-				flags().AdminPerseguible = true;
+				getFlags().setOrdinaryUser();
+				getFlags().AdminPerseguible = true;
 				chatColor = Color.COLOR_BLANCO;
 			}
 			
@@ -4298,7 +4298,7 @@ public class User extends AbstractCharacter {
 				this.infoChar.weapon = NingunArma;
 			}
 
-			if (flags().Navegando) {
+			if (getFlags().Navegando) {
 				this.infoChar.body = !isAlive() ? OBJ_INDEX_FRAGATA_FANTASMAL : this.userInv.getBarco().Ropaje;
 				this.infoChar.head = 0;
 				this.infoChar.weapon = NingunArma;
@@ -4307,10 +4307,10 @@ public class User extends AbstractCharacter {
 			}
 
 			if (isAlive()) {
-				flags().SeguroResu = false;
+				getFlags().SeguroResu = false;
 				sendPacket(new ResuscitationSafeOffResponse());
 			} else {
-				flags().SeguroResu = true;
+				getFlags().SeguroResu = true;
 				sendPacket(new ResuscitationSafeOnResponse());
 			}
 			
@@ -4343,11 +4343,11 @@ public class User extends AbstractCharacter {
 				sendPacket(new RainToggleResponse());
 			}
 			if (!isCriminal()) {
-				flags().Seguro = true;
+				getFlags().Seguro = true;
 				sendPacket(new SafeModeOnResponse());
 			} else {
 				sendPacket(new SafeModeOffResponse());
-				flags().Seguro = false;
+				getFlags().Seguro = false;
 			}
 			
 			sendCharIndexInServer();
@@ -4371,7 +4371,7 @@ public class User extends AbstractCharacter {
 			}			
 			
 			sendPositionUpdate();
-			flags().UserLogged = true;
+			getFlags().UserLogged = true;
 
 			sendCreateFX(FXWARP, 0);
 
@@ -4380,7 +4380,7 @@ public class User extends AbstractCharacter {
 			sendError("Hubo un error conectando.");
 
 		} finally {
-			if (!flags().UserLogged) {
+			if (!getFlags().UserLogged) {
 				// if anything went wrong...
 				quitGame();
 				this.userName = "";
@@ -4401,25 +4401,25 @@ public class User extends AbstractCharacter {
 	}
 
 	private void makeNoBlind() {
-		flags().Ceguera = false;
+		getFlags().Ceguera = false;
 		sendPacket(new BlindNoMoreResponse());
 	}
 
 	public void makeNoDumb() {
-		flags().Estupidez = false;
+		getFlags().Estupidez = false;
 		sendPacket(new DumbNoMoreResponse());
 	}
 	
 	public boolean isBlind() {
-		return flags().Ceguera;
+		return getFlags().Ceguera;
 	}
 	
 	public boolean isDumb() {
-		return flags().Estupidez;
+		return getFlags().Estupidez;
 	}
 	
 	public void makeDumb() {
-		flags().Estupidez = true;
+		getFlags().Estupidez = true;
 		getCounters().Ceguera = IntervaloInvisible;
 		sendPacket(new DumbResponse());
 	}
@@ -4431,18 +4431,18 @@ public class User extends AbstractCharacter {
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa.getTerrain() == Terrain.SNOW) {
 				sendMessage("¡¡Estas muriendo de frio, abrígate o morirás!!.", FontType.FONTTYPE_INFO);
-				int modifi = Util.percentage(stats().MaxHP, 5);
-				stats().MinHP -= modifi;
+				int modifi = Util.percentage(getStats().MaxHP, 5);
+				getStats().MinHP -= modifi;
 
-				if (stats().MinHP < 1) {
+				if (getStats().MinHP < 1) {
 					sendMessage("¡¡Has muerto de frio!!.", FontType.FONTTYPE_INFO);
-					stats().MinHP = 0;
+					getStats().MinHP = 0;
 					userDie();
 				}
 			} else {
-				if (!stats().isTooTired()) { // Verificación agregada por gorlok
-					int modifi = Util.percentage(stats().maxStamina, 5);
-					stats().quitarStamina(modifi);
+				if (!getStats().isTooTired()) { // Verificación agregada por gorlok
+					int modifi = Util.percentage(getStats().maxStamina, 5);
+					getStats().quitarStamina(modifi);
 					sendMessage("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.FONTTYPE_INFO);
 				}
 			}
@@ -4459,16 +4459,16 @@ public class User extends AbstractCharacter {
 		}
 		
 		// Con el paso del tiempo se va sanando... pero muy lentamente ;-)
-		if (stats().MinHP < stats().MaxHP) {
+		if (getStats().MinHP < getStats().MaxHP) {
 			if (this.getCounters().HPCounter < intervalo) {
 				this.getCounters().HPCounter++;
 			} else {
-				int mashit = Util.random(2, Util.percentage(stats().maxStamina, 5));
+				int mashit = Util.random(2, Util.percentage(getStats().maxStamina, 5));
 				this.getCounters().HPCounter = 0;
-				stats().MinHP += mashit;
+				getStats().MinHP += mashit;
 
-				if (stats().MinHP > stats().MaxHP) {
-					stats().MinHP = stats().MaxHP;
+				if (getStats().MinHP > getStats().MaxHP) {
+					getStats().MinHP = getStats().MaxHP;
 				}
 				sendMessage("Has sanado.", FontType.FONTTYPE_INFO);
 
@@ -4490,22 +4490,22 @@ public class User extends AbstractCharacter {
 		if (tActual - this.getCounters().tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
 			return;
 		}
-		if (stats().stamina < stats().maxStamina) {
+		if (getStats().stamina < getStats().maxStamina) {
 			return;
 		}
 		this.getCounters().IdleCount = 0;
-		if (stats().mana >= stats().maxMana) {
+		if (getStats().mana >= getStats().maxMana) {
 			sendMessage("Has terminado de meditar.", FontType.FONTTYPE_INFO);
 			sendPacket(new MeditateToggleResponse());
-			flags().Meditando = false;
+			getFlags().Meditando = false;
 			this.infoChar.fx = 0;
 			this.infoChar.loops = 0;
 			sendCreateFX(0, 0);
 			return;
 		}
 		if (suerteMeditar()) {
-			int cant = Util.percentage(stats().maxMana, 3);
-			stats().aumentarMana(cant);
+			int cant = Util.percentage(getStats().maxMana, 3);
+			getStats().aumentarMana(cant);
 			sendMessage("¡Has recuperado " + cant + " puntos de mana!", FontType.FONTTYPE_INFO);
 			sendUpdateUserStats();
 			riseSkill(Skill.SKILL_Meditar);
@@ -4518,9 +4518,9 @@ public class User extends AbstractCharacter {
 		} else {
 			sendMessage("Estas envenenado, si no te curas moriras.", FontType.FONTTYPE_VENENO);
 			this.getCounters().Veneno = 0;
-			stats().MinHP -= Util.random(1, 5);
+			getStats().MinHP -= Util.random(1, 5);
 			sendUpdateUserStats();
-			if (stats().MinHP < 1) {
+			if (getStats().MinHP < 1) {
 				userDie();
 			}
 			return true;
@@ -4538,51 +4538,51 @@ public class User extends AbstractCharacter {
 
 	public void duracionPociones() {
 		// Controla la duracion de las pociones
-		if (flags().DuracionEfecto > 0) {
-			flags().DuracionEfecto--;
-		} else if (flags().DuracionEfecto == 0) {
-			flags().TomoPocion = false;
-			flags().TipoPocion = 0;
+		if (getFlags().DuracionEfecto > 0) {
+			getFlags().DuracionEfecto--;
+		} else if (getFlags().DuracionEfecto == 0) {
+			getFlags().TomoPocion = false;
+			getFlags().TipoPocion = 0;
 			// Volver los atributos al estado normal
-			stats().attr().restoreAttributes();
+			getStats().attr().restoreAttributes();
 		}
 	}
 
 	public void sendUserAttributes() {
 		sendPacket(new AttributesResponse(
-			stats().attr().get(Attribute.STRENGTH),
-			stats().attr().get(Attribute.AGILITY),
-			stats().attr().get(Attribute.INTELIGENCE),
-			stats().attr().get(Attribute.CHARISMA),
-			stats().attr().get(Attribute.CONSTITUTION)));
+			getStats().attr().get(Attribute.STRENGTH),
+			getStats().attr().get(Attribute.AGILITY),
+			getStats().attr().get(Attribute.INTELIGENCE),
+			getStats().attr().get(Attribute.CHARISMA),
+			getStats().attr().get(Attribute.CONSTITUTION)));
 	}
 
 	public boolean updateHungerAndThirst() {
 		// Sed
 		boolean wasUpdated = false;
-		if (stats().drinked > 0) {
+		if (getStats().drinked > 0) {
 			if (this.getCounters().drinkCounter < IntervaloSed) {
 				this.getCounters().drinkCounter++;
 			} else {
 				this.getCounters().drinkCounter = 0;
-				stats().quitarSed(10);
-				if (stats().drinked <= 0) {
-					stats().drinked = 0;
-					flags().Sed = true;
+				getStats().quitarSed(10);
+				if (getStats().drinked <= 0) {
+					getStats().drinked = 0;
+					getFlags().Sed = true;
 				}
 				wasUpdated = true;
 			}
 		}
 		// hambre
-		if (stats().eaten > 0) {
+		if (getStats().eaten > 0) {
 			if (this.getCounters().foodCounter < IntervaloHambre) {
 				this.getCounters().foodCounter++;
 			} else {
 				this.getCounters().foodCounter = 0;
-				stats().quitarHambre(10);
-				if (stats().eaten <= 0) {
-					stats().eaten = 0;
-					flags().Hambre = true;
+				getStats().quitarHambre(10);
+				if (getStats().eaten <= 0) {
+					getStats().eaten = 0;
+					getFlags().Hambre = true;
 				}
 				wasUpdated = true;
 			}
@@ -4591,17 +4591,17 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean recStamina(int intervalo) {
-		if (stats().stamina < stats().maxStamina) {
+		if (getStats().stamina < getStats().maxStamina) {
 			if (getCounters().STACounter < intervalo) {
 				getCounters().STACounter++;
 			} else {
 				getCounters().STACounter = 0;
-				if (flags().Desnudo) {
+				if (getFlags().Desnudo) {
 					// Desnudo no sube energía.
 					return false;
 				}
-				int massta = Util.random(1, Util.percentage(stats().maxStamina, 5));
-				stats().aumentarStamina(massta);
+				int massta = Util.random(1, Util.percentage(getStats().maxStamina, 5));
+				getStats().aumentarStamina(massta);
 				sendUpdateUserStats();
 				return true;
 			}
@@ -4629,42 +4629,42 @@ public class User extends AbstractCharacter {
 	public void procesarEventos() {
 		// This is like GameTimer_Timer
 		// Is user logged?
-		if (flags().UserLogged) {
+		if (getFlags().UserLogged) {
 			boolean statsChanged = false;
 			boolean hungerAndThristChanged = false;
 
 			this.NumeroPaquetesPorMiliSec = 0;
-			if (flags().Paralizado || flags().Inmovilizado) {
+			if (getFlags().Paralizado || getFlags().Inmovilizado) {
 				paralizedEffect();
 			}
 			if (isBlind() || isDumb()) {
 				efectoCegueEstu();
 			}
 			if (isAlive()) {
-				if (flags().Desnudo && !flags().isGM()) {
+				if (getFlags().Desnudo && !getFlags().isGM()) {
 					efectoFrio();
 				}
-				if (flags().Meditando) {
+				if (getFlags().Meditando) {
 					meditar();
 				}
-				if (flags().Envenenado && !flags().isGM()) {
+				if (getFlags().Envenenado && !getFlags().isGM()) {
 					statsChanged = efectoVeneno();
 				}
-				if (!flags().AdminInvisible && flags().Invisible) {
+				if (!getFlags().AdminInvisible && getFlags().Invisible) {
 					efectoInvisibilidad();
 				}
 				duracionPociones();
 				hungerAndThristChanged = updateHungerAndThirst();
 				Map mapa = this.server.getMap(pos().map);
 				if (!(this.server.isRaining() && mapa.isOutdoor(pos().x, pos().y))) {
-					if (!flags().Descansar && !flags().Hambre && !flags().Sed) {
+					if (!getFlags().Descansar && !getFlags().Hambre && !getFlags().Sed) {
 						// No esta descansando
 						if (sanar(SanaIntervaloSinDescansar))
 							statsChanged = true;
 						if (recStamina(StaminaIntervaloSinDescansar))
 							statsChanged = true;
 
-					} else if (flags().Descansar) {
+					} else if (getFlags().Descansar) {
 						// esta descansando
 
 						if (sanar(SanaIntervaloDescansar))
@@ -4673,23 +4673,23 @@ public class User extends AbstractCharacter {
 							statsChanged = true;
 
 						// termina de descansar automaticamente
-						if (stats().MaxHP == stats().MinHP && stats().maxStamina == stats().stamina) {
+						if (getStats().MaxHP == getStats().MinHP && getStats().maxStamina == getStats().stamina) {
 							sendPacket(new RestOKResponse());
 							sendMessage("Has terminado de descansar.", FontType.FONTTYPE_INFO);
-							flags().Descansar = false;
+							getFlags().Descansar = false;
 						}
 					}
 				}
 				// Verificar muerte por hambre
-				if (stats().eaten <= 0 && !flags().isGM()) {
+				if (getStats().eaten <= 0 && !getFlags().isGM()) {
 					sendMessage("¡¡Has muerto de hambre!!.", FontType.FONTTYPE_INFO);
-					stats().eaten = 0;
+					getStats().eaten = 0;
 					userDie();
 				}
 				// Verificar muerte de sed
-				if (stats().drinked <= 0 && !flags().isGM()) {
+				if (getStats().drinked <= 0 && !getFlags().isGM()) {
 					sendMessage("¡¡Has muerto de sed!!.", FontType.FONTTYPE_INFO);
-					stats().drinked = 0;
+					getStats().drinked = 0;
 					userDie();
 				}
 				if (statsChanged) {
@@ -4729,7 +4729,7 @@ public class User extends AbstractCharacter {
 				msg.append(" - " + this.description);
 			}
 			
-			if (!flags().isGM() && isNewbie()) {
+			if (!getFlags().isGM() && isNewbie()) {
 				msg.append(" <NEWBIE>");
 			}
 			
@@ -4739,13 +4739,13 @@ public class User extends AbstractCharacter {
 				msg.append(" <" + this.guildUser.getGuildName() + ">");
 			}
 			
-			if (flags().isRoyalCouncil()) {
+			if (getFlags().isRoyalCouncil()) {
 				msg.append(" [CONSEJO DE BANDERBILL]");
-			} else if (flags().isChaosCouncil()) {
+			} else if (getFlags().isChaosCouncil()) {
 				msg.append(" [CONCILIO DE LAS SOMBRAS]");
 			}
 			
-			if (flags().isGod() || flags().isDemiGod() || flags().isCounselor()) {
+			if (getFlags().isGod() || getFlags().isDemiGod() || getFlags().isCounselor()) {
 				msg.append(" <GAME MASTER>");
 			} else if (isCriminal()) {
 				msg.append(" <CRIMINAL>");
@@ -4757,23 +4757,23 @@ public class User extends AbstractCharacter {
 	}
 
 	public FontType getTagColor() {
-		if (flags().isRoyalCouncil()) {
+		if (getFlags().isRoyalCouncil()) {
 			return FontType.FONTTYPE_CONSEJOVesA;
-		} else if (flags().isChaosCouncil()) {
+		} else if (getFlags().isChaosCouncil()) {
 			return FontType.FONTTYPE_CONSEJOCAOSVesA;
 		}
 		
 		
-		if (flags().isGod()) {
+		if (getFlags().isGod()) {
 			return FontType.FONTTYPE_DIOS;
 		}
-		if (flags().isDemiGod()) {
+		if (getFlags().isDemiGod()) {
 			return FontType.FONTTYPE_GM;
 		}
-		if (flags().isCounselor()) {
+		if (getFlags().isCounselor()) {
 			return FontType.FONTTYPE_CONSEJO;
 		}
-		if (flags().isRoleMaster()) {
+		if (getFlags().isRoleMaster()) {
 			return FontType.FONTTYPE_EJECUCION;
 		}
 		
@@ -4932,7 +4932,7 @@ public class User extends AbstractCharacter {
 			riseSkill(Skill.SKILL_Herreria);
 			sendInventoryToUser();
 			sendWave(SOUND_MARTILLO_HERRERO);
-			flags().Trabajando = true;
+			getFlags().Trabajando = true;
 		}
 	}
 
@@ -4961,7 +4961,7 @@ public class User extends AbstractCharacter {
 			riseSkill(Skill.SKILL_Carpinteria);
 			sendInventoryToUser();
 			sendWave(SOUND_LABURO_CARPINTERO);
-			flags().Trabajando = true;
+			getFlags().Trabajando = true;
 		}
 	}
 
@@ -5032,7 +5032,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void startQuitGame() {
-		if (flags().UserLogged && !this.getCounters().Saliendo) {
+		if (getFlags().UserLogged && !this.getCounters().Saliendo) {
 			this.getCounters().Saliendo = true;
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa != null && mapa.isSafeMap()) {
@@ -5095,7 +5095,7 @@ public class User extends AbstractCharacter {
 			}
 			if (arma.envenena()) {
 				if (Util.random(1, 100) < 60) {
-					victima.flags().Envenenado = true;
+					victima.getFlags().Envenenado = true;
 					victima.sendMessage(this.userName + " te ha envenenado!!", FONTTYPE_FIGHT);
 					sendMessage("Has envenenado a " + victima.getUserName() + "!!", FONTTYPE_FIGHT);
 				}
@@ -5159,11 +5159,11 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		// Se asegura que el target es un npc
-		if (flags().TargetNpc == 0) {
+		if (getFlags().TargetNpc == 0) {
 			sendMessage("Debes seleccionar un personaje.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		Npc npc = this.server.npcById(flags().TargetNpc);
+		Npc npc = this.server.npcById(getFlags().TargetNpc);
 		if (npc.pos().distance(pos()) > 3) {
 			sendMessage("Estas demasiado lejos del vendedor.", FontType.FONTTYPE_INFO);
 			return;
@@ -5183,7 +5183,7 @@ public class User extends AbstractCharacter {
 			return;
 		}
 		
-		flags().Navegando = !flags().Navegando;
+		getFlags().Navegando = !getFlags().Navegando;
 		sendPacket(new NavigateToggleResponse());
 	}
 
@@ -5192,8 +5192,8 @@ public class User extends AbstractCharacter {
         	return;
         }
         
-    	flags().AdminPerseguible = !flags().AdminPerseguible;
-    	if (flags().AdminPerseguible) {
+    	getFlags().AdminPerseguible = !getFlags().AdminPerseguible;
+    	if (getFlags().AdminPerseguible) {
     		sendMessage("Los NPCs hostiles te perseguirán.", FontType.FONTTYPE_INFO);
     	} else {
     		sendMessage("Los NPCs hostiles te ignorarán.", FontType.FONTTYPE_INFO);
@@ -5217,15 +5217,15 @@ public class User extends AbstractCharacter {
 	}
 
 	public boolean isSilenced() {
-		return flags().Silenciado;
+		return getFlags().Silenciado;
 	}
 
 	public void turnSilence() {
-		flags().Silenciado = true;
+		getFlags().Silenciado = true;
 	}
 
 	public void undoSilence() {
-		flags().Silenciado = false;
+		getFlags().Silenciado = false;
 	}
 
 	public void denounce(String text) {

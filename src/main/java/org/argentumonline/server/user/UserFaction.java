@@ -238,7 +238,7 @@ public class UserFaction implements Constants {
             this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.criminalsKilled, npc.getId());
             return;
         }
-        if (this.user.stats().ELV < 18) {
+        if (this.user.getStats().ELV < 18) {
             this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
             return;
         }
@@ -258,7 +258,7 @@ public class UserFaction implements Constants {
             this.RecibioArmaduraReal = true;
         }
         if (!this.RecibioExpInicialReal) {
-            this.user.stats().addExp(EXP_AL_UNIRSE);
+            this.user.getStats().addExp(EXP_AL_UNIRSE);
             this.user.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialReal = true;
             this.user.checkUserLevel();
@@ -289,7 +289,7 @@ public class UserFaction implements Constants {
             this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.citizensKilled + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
             return;
         }
-        if (this.user.stats().ELV < 25) {
+        if (this.user.getStats().ELV < 25) {
             this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
             return;
         }
@@ -305,7 +305,7 @@ public class UserFaction implements Constants {
             this.RecibioArmaduraCaos = true;
         }
         if (!this.RecibioExpInicialCaos) {
-            this.user.stats().addExp(EXP_AL_UNIRSE);
+            this.user.getStats().addExp(EXP_AL_UNIRSE);
             this.user.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialCaos = true;
             this.user.checkUserLevel();
@@ -318,7 +318,7 @@ public class UserFaction implements Constants {
             this.user.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
         } else {
             this.user.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.user.stats().addExp(EXP_X_100);
+            this.user.getStats().addExp(EXP_X_100);
             this.user.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
             this.user.checkUserLevel();
@@ -330,7 +330,7 @@ public class UserFaction implements Constants {
             this.user.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
         } else {
             this.user.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.user.stats().addExp(EXP_X_100);
+            this.user.getStats().addExp(EXP_X_100);
             this.user.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;
             this.user.checkUserLevel();

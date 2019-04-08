@@ -132,8 +132,8 @@ public class UserSpells implements Constants {
 		if (slot < 1 || slot > this.spells.length) {
 			return;
 		}
-		this.user.flags().Hechizo = this.spells[slot - 1];
-		log.info("castSpell =====> " + this.user.flags().Hechizo);
+		this.user.getFlags().Hechizo = this.spells[slot - 1];
+		log.info("castSpell =====> " + this.user.getFlags().Hechizo);
 	}
 
 	public boolean hasSpell(int spellIndex) {
@@ -207,7 +207,7 @@ public class UserSpells implements Constants {
 		if (canCastSpell(spell)) {
 			switch (spell.Target) {
 			case USER:
-				if (this.user.flags().TargetUser > 0) {
+				if (this.user.getFlags().TargetUser > 0) {
 					handleSpellTargetUser(spell);
 				} else {
 					this.user.sendMessage("Este hechizo actua solo sobre usuarios.",
@@ -216,7 +216,7 @@ public class UserSpells implements Constants {
 				break;
 				
 			case NPC:
-				if (this.user.flags().TargetNpc > 0) {
+				if (this.user.getFlags().TargetNpc > 0) {
 					handleSpellTargetNPC(spell);
 				} else {
 					this.user.sendMessage("Este hechizo solo afecta a los npcs.",
@@ -225,9 +225,9 @@ public class UserSpells implements Constants {
 				break;
 				
 			case USER_AND_NPC:
-				if (this.user.flags().TargetUser > 0) {
+				if (this.user.getFlags().TargetUser > 0) {
 					handleSpellTargetUser(spell);
-				} else if (this.user.flags().TargetNpc > 0) {
+				} else if (this.user.getFlags().TargetNpc > 0) {
 					handleSpellTargetNPC(spell);
 				} else {
 					this.user.sendMessage("Target inválido.", FontType.FONTTYPE_INFO);
@@ -242,14 +242,14 @@ public class UserSpells implements Constants {
 				break;
 			}
 		}
-		this.user.flags().Trabajando = false;
-		this.user.flags().Oculto = false;
+		this.user.getFlags().Trabajando = false;
+		this.user.getFlags().Oculto = false;
 	}
 
 	private boolean statusSpellTargetUser() {
 		// HechizoEstadoUsuario
-		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
-		User targetUser = this.server.userById(this.user.flags().TargetUser);
+		Spell spell = this.server.getSpell(this.user.getFlags().Hechizo);
+		User targetUser = this.server.userById(this.user.getFlags().TargetUser);
 		
 		boolean result = false;
 		if (spell.Invisibilidad) {
@@ -292,11 +292,11 @@ public class UserSpells implements Constants {
 		    }
 		    
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!user.flags().isGM() && targetUser.flags().isGM()) {
+		    if (!user.getFlags().isGM() && targetUser.getFlags().isGM()) {
 		    	return false;
 		    }
 		    
-			targetUser.flags().Invisible = true;
+			targetUser.getFlags().Invisible = true;
 			Map map = this.server.getMap(targetUser.pos().map);
 			map.sendToArea(targetUser.pos().x, targetUser.pos().y, 
 					new SetInvisibleResponse(targetUser.getId(), (byte) 1)); // FIXME está comentado en vb6
@@ -312,20 +312,20 @@ public class UserSpells implements Constants {
 				return false;
 			}
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!user.flags().isGM() && targetUser.flags().isGM()) {
+		    if (!user.getFlags().isGM() && targetUser.getFlags().isGM()) {
 		    	return false;
 		    }
-		    if (user.flags().Mimetizado) {
+		    if (user.getFlags().Mimetizado) {
 		    	this.user.sendMessage("Ya te encuentras transformado. El hechizo no ha tenido efecto", FontType.FONTTYPE_INFO);
 		    	return false;
 		    }
-		    if (targetUser.flags().AdminInvisible) {
+		    if (targetUser.getFlags().AdminInvisible) {
 		    	return false;
 		    }
 		    
 		    // Guardo el char original en mimetizado
 		    user.mimetizeChar().copyFrom(user.infoChar());
-		    user.flags().Mimetizado = true;
+		    user.getFlags().Mimetizado = true;
 	        // Le copio el char del target
 		    user.infoChar().copyFrom(targetUser.infoChar());
 		    user.sendCharacterChange();
@@ -344,7 +344,7 @@ public class UserSpells implements Constants {
 			if (this.user != targetUser) {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
-			targetUser.flags().Envenenado = true;
+			targetUser.getFlags().Envenenado = true;
 			sendInfoSpell();
 			result = true;
 		}
@@ -356,7 +356,7 @@ public class UserSpells implements Constants {
 			}
 			
 		    // Los usuarios no pueden usar este hechizo con los GMs.
-		    if (!user.flags().isGM() && targetUser.flags().isGM()) {
+		    if (!user.getFlags().isGM() && targetUser.getFlags().isGM()) {
 		    	return false;
 		    }
 			
@@ -371,12 +371,12 @@ public class UserSpells implements Constants {
 				    	this.user.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 				    	return false;
 		    		} else {
-		                user.reputation().disminuyeNoblezaAumentaBandido(user, user.reputation().nobleRep * 0.5f, 10000);
+		                user.getReputation().disminuyeNoblezaAumentaBandido(user, user.getReputation().nobleRep * 0.5f, 10000);
 		    		}
 		    	}
 		    }
 			
-			targetUser.flags().Envenenado = false;
+			targetUser.getFlags().Envenenado = false;
 			sendInfoSpell();
 			result = true;
 		}
@@ -392,19 +392,19 @@ public class UserSpells implements Constants {
 			if (this.user != targetUser) {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
-			targetUser.flags().Maldicion = true;
+			targetUser.getFlags().Maldicion = true;
 			sendInfoSpell();
 			result = true;
 		}
 		
 		if (spell.RemoverMaldicion) {
-			targetUser.flags().Maldicion = false;
+			targetUser.getFlags().Maldicion = false;
 			sendInfoSpell();
 			result = true;
 		}
 		
 		if (spell.Bendicion) {
-			targetUser.flags().Bendicion = true;
+			targetUser.getFlags().Bendicion = true;
 			sendInfoSpell();
 			result = true;
 		}
@@ -414,7 +414,7 @@ public class UserSpells implements Constants {
 		    	this.user.sendMessage("No puedes atacarte a ti mismo.", FontType.FONTTYPE_INFO);
 		    	return false;
 			}
-			if (!targetUser.flags().Paralizado) {
+			if (!targetUser.getFlags().Paralizado) {
 				if (!this.user.puedeAtacar(targetUser)) {
 					return false;
 				}
@@ -428,9 +428,9 @@ public class UserSpells implements Constants {
 			    	return false;
 	            }
 				
-				targetUser.flags().Paralizado = true;
+				targetUser.getFlags().Paralizado = true;
 				if (spell.inmoviliza) {
-					targetUser.flags().Inmovilizado = true;
+					targetUser.getFlags().Inmovilizado = true;
 				}
 				targetUser.getCounters().Paralisis = IntervaloParalizado;
 				targetUser.sendPacket(new ParalizeOKResponse());
@@ -440,7 +440,7 @@ public class UserSpells implements Constants {
 		}
 		
 		if (spell.RemoverParalisis) {
-			if (targetUser.flags().Paralizado) {
+			if (targetUser.getFlags().Paralizado) {
 				
 			    // Para poder usar con un pk en el ring
 			    if (user.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
@@ -458,8 +458,8 @@ public class UserSpells implements Constants {
 			    	}
 			    }
 				
-				targetUser.flags().Paralizado = false;
-				targetUser.flags().Inmovilizado = false;
+				targetUser.getFlags().Paralizado = false;
+				targetUser.getFlags().Inmovilizado = false;
 				targetUser.sendPacket(new ParalizeOKResponse());
 				sendInfoSpell();
 				result = true;
@@ -479,7 +479,7 @@ public class UserSpells implements Constants {
 					    	this.user.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 					    	return false;
 			    		} else {
-			    			user.reputation().disminuyeNoblezaAumentaBandido(user, user.reputation().nobleRep * 0.5f, 10000);
+			    			user.getReputation().disminuyeNoblezaAumentaBandido(user, user.getReputation().nobleRep * 0.5f, 10000);
 			    		}
 			    	}
 			    }
@@ -493,7 +493,7 @@ public class UserSpells implements Constants {
 			if (!targetUser.isAlive()) {
 				
 		        // Seguro de resurreccion (solo afecta a los hechizos, no al sacerdote ni al comando de GM)
-		        if (user.flags().SeguroResu) {
+		        if (user.getFlags().SeguroResu) {
 		        	this.user.sendMessage("¡El espíritu no tiene intenciones de regresar al mundo de los vivos!", FontType.FONTTYPE_INFO);
 		        	return false;
 		        }
@@ -506,7 +506,7 @@ public class UserSpells implements Constants {
 		        }
 		        
 		        // No podemos resucitar si nuestra barra de energía no está llena. (GD: 29/04/07)
-		        if (!user.stats().isFullStamina()) {
+		        if (!user.getStats().isFullStamina()) {
 		        	this.user.sendMessage("No puedes resucitar si no tienes tu barra de energía llena.", FontType.FONTTYPE_INFO);
 		        	return false;
 		        }
@@ -564,26 +564,26 @@ public class UserSpells implements Constants {
 					user.refreshCharStatus();
 				}
 
-				targetUser.stats().drinked = 0;
-				targetUser.flags().Sed = true;
-				targetUser.stats().eaten = 0;
-				targetUser.flags().Hambre = true;
+				targetUser.getStats().drinked = 0;
+				targetUser.getFlags().Sed = true;
+				targetUser.getStats().eaten = 0;
+				targetUser.getFlags().Hambre = true;
 				targetUser.refreshCharStatus();
 				targetUser.revive();
 				
 				sendInfoSpell();
-				user.stats().mana = 0;
-				user.stats().stamina = 0;
+				user.getStats().mana = 0;
+				user.getStats().stamina = 0;
 		        
 		        // Agregado para quitar la penalización de vida en el ring y cambio de ecuacion. (NicoNZ)
 				if (user.duelStatus(targetUser) != DuelStatus.DUEL_ALLOWED) {
 		            // Solo saco vida si es User. no quiero que exploten GMs por ahi.
-		            if (!user.flags().isGM()) {
-		            	user.stats().MinHP = (int) (user.stats().MinHP * (1 - user.stats().ELV * 0.015f));
+		            if (!user.getFlags().isGM()) {
+		            	user.getStats().MinHP = (int) (user.getStats().MinHP * (1 - user.getStats().ELV * 0.015f));
 		            }
 				}
 		        
-				if (user.stats().MinHP <= 0) {
+				if (user.getStats().MinHP <= 0) {
 					user.userDie();
 					user.sendMessage("El esfuerzo de resucitar fue demasiado grande.", FontType.FONTTYPE_INFO);
 					return false;
@@ -605,7 +605,7 @@ public class UserSpells implements Constants {
 			if (this.user != targetUser) {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
-			targetUser.flags().Ceguera = true;
+			targetUser.getFlags().Ceguera = true;
 			targetUser.getCounters().Ceguera = IntervaloParalizado / 3;
 			targetUser.sendPacket(new BlindResponse());
 			sendInfoSpell();
@@ -624,8 +624,8 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			
-			if (!targetUser.flags().Estupidez) {
-				targetUser.flags().Estupidez = true;
+			if (!targetUser.getFlags().Estupidez) {
+				targetUser.getFlags().Estupidez = true;
 				targetUser.getCounters().Ceguera = IntervaloParalizado;
 			}
 			targetUser.sendPacket(new DumbResponse());
@@ -727,7 +727,7 @@ public class UserSpells implements Constants {
 		if (spell.SubeHP == 1) {
 			// Curar la salud
 			int cura = Util.random(spell.MinHP, spell.MaxHP);
-			cura += Util.percentage(cura, 3 * this.user.stats().ELV);
+			cura += Util.percentage(cura, 3 * this.user.getStats().ELV);
 			sendInfoSpell();
 			npc.stats.addHP(cura);
 			this.user.sendMessage("Has curado " + cura
@@ -743,7 +743,7 @@ public class UserSpells implements Constants {
 			
 			this.user.npcAtacado(npc);
 			int damage = Util.random(spell.MinHP, spell.MaxHP);
-			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
+			damage += Util.percentage(damage, 3 * this.user.getStats().ELV);
 			
 			if (spell.StaffAffected) {
 				if (user.clazz() == Clazz.Mage) {
@@ -811,8 +811,8 @@ public class UserSpells implements Constants {
 
 	private boolean propertySpellTargetUser() {
 		// HechizoPropUsuario
-		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
-		User targetUser = this.server.userById(this.user.flags().TargetUser);
+		Spell spell = this.server.getSpell(this.user.getFlags().Hechizo);
+		User targetUser = this.server.userById(this.user.getFlags().TargetUser);
 		
 		if (!targetUser.isAlive()) {
 	    	this.user.sendMessage("No podés lanzar ese hechizo a un muerto.", FontType.FONTTYPE_INFO);
@@ -864,7 +864,7 @@ public class UserSpells implements Constants {
 			}
 			if (targetUser.stats.eaten < 1) {
 				targetUser.stats.eaten = 0;
-				targetUser.flags().Hambre = true;
+				targetUser.getFlags().Hambre = true;
 			}
 			targetUser.sendUpdateHungerAndThirst();
 			return true;
@@ -914,7 +914,7 @@ public class UserSpells implements Constants {
 			}
 			if (targetUser.stats.drinked < 1) {
 				targetUser.stats.drinked = 0;
-				targetUser.flags().Sed = true;
+				targetUser.getFlags().Sed = true;
 			}
 			targetUser.sendUpdateHungerAndThirst();
 			return true;
@@ -933,15 +933,15 @@ public class UserSpells implements Constants {
 				    	this.user.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 				    	return false;
 		    		} else {
-		    			user.reputation().disminuyeNoblezaAumentaBandido(user, user.reputation().nobleRep * 0.5f, 10000);
+		    			user.getReputation().disminuyeNoblezaAumentaBandido(user, user.getReputation().nobleRep * 0.5f, 10000);
 		    		}
 		    	}
 		    }
 			sendInfoSpell();
 			int damage = Util.random(spell.MinAgilidad, spell.MaxAgilidad);
-			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modifyByEffect(Attribute.AGILITY, damage);
-			targetUser.flags().TomoPocion = true;
+			targetUser.getFlags().DuracionEfecto = 1200;
+			targetUser.getStats().attr().modifyByEffect(Attribute.AGILITY, damage);
+			targetUser.getFlags().TomoPocion = true;
 			return true;
 
 		} else if (spell.SubeAgilidad == 2) {
@@ -952,10 +952,10 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			sendInfoSpell();
-			targetUser.flags().TomoPocion = true;
+			targetUser.getFlags().TomoPocion = true;
 			int damage = Util.random(spell.MinAgilidad, spell.MaxAgilidad);
-			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modifyByEffect(Attribute.AGILITY, -damage);
+			targetUser.getFlags().DuracionEfecto = 700;
+			targetUser.getStats().attr().modifyByEffect(Attribute.AGILITY, -damage);
 			return true;
 		}
 		
@@ -972,15 +972,15 @@ public class UserSpells implements Constants {
 				    	this.user.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 				    	return false;
 		    		} else {
-		    			user.reputation().disminuyeNoblezaAumentaBandido(user, user.reputation().nobleRep * 0.5f, 10000);
+		    			user.getReputation().disminuyeNoblezaAumentaBandido(user, user.getReputation().nobleRep * 0.5f, 10000);
 		    		}
 		    	}
 		    }
 			sendInfoSpell();
 			int damage = Util.random(spell.MinFuerza, spell.MaxFuerza);
-			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modifyByEffect(Attribute.STRENGTH, damage);
-			targetUser.flags().TomoPocion = true;
+			targetUser.getFlags().DuracionEfecto = 1200;
+			targetUser.getStats().attr().modifyByEffect(Attribute.STRENGTH, damage);
+			targetUser.getFlags().TomoPocion = true;
 			return true;
 
 		} else if (spell.SubeFuerza == 2) {
@@ -991,10 +991,10 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			sendInfoSpell();
-			targetUser.flags().TomoPocion = true;
+			targetUser.getFlags().TomoPocion = true;
 			int damage = Util.random(spell.MinFuerza, spell.MaxFuerza);
-			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modifyByEffect(Attribute.STRENGTH, -damage);
+			targetUser.getFlags().DuracionEfecto = 700;
+			targetUser.getStats().attr().modifyByEffect(Attribute.STRENGTH, -damage);
 			return true;
 		}
 
@@ -1015,15 +1015,15 @@ public class UserSpells implements Constants {
 				    	this.user.sendMessage("Para ayudar criminales debes sacarte el seguro, y te volverás criminal como ellos", FontType.FONTTYPE_INFO);
 				    	return false;
 		    		} else {
-		    			user.reputation().disminuyeNoblezaAumentaBandido(user, user.reputation().nobleRep * 0.5f, 10000);
+		    			user.getReputation().disminuyeNoblezaAumentaBandido(user, user.getReputation().nobleRep * 0.5f, 10000);
 		    		}
 		    	}
 		    }
 			int damage = Util.random(spell.MinHP, spell.MaxHP);
-			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
+			damage += Util.percentage(damage, 3 * this.user.getStats().ELV);
 			sendInfoSpell();
 			targetUser.stats.addHP(damage);
-			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
+			targetUser.sendUpdateHP((short) targetUser.getStats().MinHP);
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de vida a " + targetUser.getUserName(),
@@ -1043,7 +1043,7 @@ public class UserSpells implements Constants {
 				return false;
 			}
 			int damage = Util.random(spell.MinHP, spell.MaxHP);
-			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
+			damage += Util.percentage(damage, 3 * this.user.getStats().ELV);
 			
 			// Potenciador de ataque Báculo
 			if (spell.StaffAffected) {
@@ -1083,7 +1083,7 @@ public class UserSpells implements Constants {
 			}
 			sendInfoSpell();
 			targetUser.stats.removeHP(damage);
-			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
+			targetUser.sendUpdateHP((short) targetUser.getStats().MinHP);
 			this.user.sendMessage("Le has quitado " + damage + " puntos de vida a "
 					+ targetUser.getUserName(), FONTTYPE_FIGHT);
 			targetUser.sendMessage(this.user.getUserName() + " te ha quitado " + damage
@@ -1103,7 +1103,7 @@ public class UserSpells implements Constants {
 			sendInfoSpell();
 			int damage = Util.random(spell.MinMana, spell.MaxMana);
 			targetUser.stats.aumentarMana(damage);
-			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
+			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.getStats().mana));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de mana a " + targetUser.getUserName(),
@@ -1126,7 +1126,7 @@ public class UserSpells implements Constants {
 			sendInfoSpell();
 			int damage = Util.random(spell.MinMana, spell.MaxMana);
 			targetUser.stats.quitarMana(damage);
-			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
+			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.getStats().mana));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has quitado " + damage
 						+ " puntos de mana a " + targetUser.getUserName(),
@@ -1145,7 +1145,7 @@ public class UserSpells implements Constants {
 			sendInfoSpell();
 			int damage = Util.random(spell.MinSta, spell.MaxSta);
 			targetUser.stats.aumentarStamina(damage);
-			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
+			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.getStats().stamina));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de energia a " + targetUser.getUserName(),
@@ -1168,7 +1168,7 @@ public class UserSpells implements Constants {
 			sendInfoSpell();
 			int damage = Util.random(spell.MinSta, spell.MaxSta);
 			targetUser.stats.quitarStamina(damage);
-			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
+			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.getStats().stamina));
 			if (this.user != targetUser) {
 				this.user.sendMessage("Le has quitado " + damage
 						+ " puntos de energia a " + targetUser.getUserName(),
@@ -1210,7 +1210,7 @@ public class UserSpells implements Constants {
 	    	return false;
 	    }
 	    
-	    if (this.user.stats().isTooTired() || this.user.stats().stamina < spell.StaRequerida) {
+	    if (this.user.getStats().isTooTired() || this.user.getStats().stamina < spell.StaRequerida) {
 	    	if (this.user.gender() == UserGender.GENERO_MAN) {
 	    		this.user.sendMessage("Estas muy cansado para lanzar este hechizo.", FontType.FONTTYPE_INFO);
 	    	} else {
@@ -1239,15 +1239,15 @@ public class UserSpells implements Constants {
 	        druidManaBonus = 1f;
 	    }	    
 	    
-	    if (this.user.stats().mana < spell.ManaRequerido * druidManaBonus) {
+	    if (this.user.getStats().mana < spell.ManaRequerido * druidManaBonus) {
 	    	this.user.sendMessage("No tienes suficiente mana.", FontType.FONTTYPE_INFO);
 	    	return false;
 	    }
 	    
 		MapPos targetPos = MapPos.mxy(
-				this.user.flags().TargetMap,
-				this.user.flags().TargetX,
-				this.user.flags().TargetY);
+				this.user.getFlags().TargetMap,
+				this.user.getFlags().TargetX,
+				this.user.getFlags().TargetY);
 		if (this.user.pos().distance(targetPos) > MAX_DISTANCIA_MAGIA) {
 			this.user.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
 			return false;
@@ -1271,10 +1271,10 @@ public class UserSpells implements Constants {
 				
 		boolean success = false;
 		MapPos targetPos = MapPos.mxy(
-								this.user.flags().TargetMap,
-								this.user.flags().TargetX, 
-								this.user.flags().TargetY);
-		Spell hechizo = this.server.getSpell(this.user.flags().Hechizo);
+								this.user.getFlags().TargetMap,
+								this.user.getFlags().TargetX, 
+								this.user.getFlags().TargetY);
+		Spell hechizo = this.server.getSpell(this.user.getFlags().Hechizo);
 		
 		for (int i = 0; i < hechizo.Cant; i++) {
 			// Considero que hubo success si se pudo invocar alguna criatura.
@@ -1309,11 +1309,11 @@ public class UserSpells implements Constants {
 			
 			if (user.clazz() == Clazz.Druid && user.getUserInv().tieneAnilloEquipado() 
 					&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
-				this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.7f));
+				this.user.getStats().quitarMana((int) (spell.ManaRequerido * 0.7f));
 			} else {
-				this.user.stats().quitarMana(spell.ManaRequerido);
+				this.user.getStats().quitarMana(spell.ManaRequerido);
 			}
-			this.user.stats().quitarStamina(spell.StaRequerida);
+			this.user.getStats().quitarStamina(spell.StaRequerida);
 			this.user.sendUpdateUserStats();
 		}
 	}
@@ -1321,11 +1321,11 @@ public class UserSpells implements Constants {
 	private boolean statusSpellTargetTerrain() {
 		// HechizoTerrenoEstado
 		MapPos targetPos = MapPos.mxy(
-			this.user.flags().TargetMap,
-			this.user.flags().TargetX, 
-			this.user.flags().TargetY);
+			this.user.getFlags().TargetMap,
+			this.user.getFlags().TargetX, 
+			this.user.getFlags().TargetY);
 		Map map = this.server.getMap(targetPos.map);
-		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
+		Spell spell = this.server.getSpell(this.user.getFlags().Hechizo);
 		
 		if (spell.RemueveInvisibilidadParcial) {
 			for (byte x = (byte) (targetPos.x - 8); x <= targetPos.x + 8; x++) {
@@ -1333,7 +1333,7 @@ public class UserSpells implements Constants {
 					if (Pos.isValid(x, y)) {
 						if (map.hasUser(x, y)) {
 							User tmpUser = map.getUser((byte)x, (byte)y);
-							if (tmpUser.isInvisible() && !tmpUser.flags().AdminInvisible) {
+							if (tmpUser.isInvisible() && !tmpUser.getFlags().AdminInvisible) {
 								map.sendToArea(x, y, new CreateFXResponse(tmpUser.getId(), spell.FXgrh, (short)spell.loops));
 							}
 						}
@@ -1348,8 +1348,8 @@ public class UserSpells implements Constants {
 	private void handleSpellTargetUser(Spell spell) {
 		// HandleHechizoUsuario
 		boolean success = false;
-		User target = this.server.userById(this.user.flags().TargetUser);
-		if (target == null || target.flags().isGM()) {
+		User target = this.server.userById(this.user.getFlags().TargetUser);
+		if (target == null || target.getFlags().isGM()) {
 			return;
 		}
 		switch (spell.spellAction) {
@@ -1373,21 +1373,21 @@ public class UserSpells implements Constants {
 		    		&& user.getUserInv().tieneAnilloEquipado() 
 		    		&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA
 		    		&& spell.Mimetiza){
-        		this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
+        		this.user.getStats().quitarMana((int) (spell.ManaRequerido * 0.5f));
 		    } else {
-        		this.user.stats().quitarMana(spell.ManaRequerido);
+        		this.user.getStats().quitarMana(spell.ManaRequerido);
 		    }
 			
-			this.user.stats().quitarStamina(spell.StaRequerida);
+			this.user.getStats().quitarStamina(spell.StaRequerida);
 			this.user.sendUpdateUserStats();
-			this.user.flags().TargetUser = 0;
+			this.user.getFlags().TargetUser = 0;
 		}
 	}
 
 	private void handleSpellTargetNPC(Spell spell) {
 		// HandleHechizoNPC
 		boolean success = false;
-		Npc targetNPC = this.server.npcById(this.user.flags().TargetNpc);
+		Npc targetNPC = this.server.npcById(this.user.getFlags().TargetNpc);
 		switch (spell.spellAction) {
 		case STATUS: // Afectan estados (por ejem : Envenenamiento)
 			success = statusSpellTargetNpc(targetNPC, spell);
@@ -1402,44 +1402,44 @@ public class UserSpells implements Constants {
 		}
 		if (success) {
 			this.user.riseSkill(Skill.SKILL_Magia);
-			this.user.flags().TargetNpc = 0;
+			this.user.getFlags().TargetNpc = 0;
 			
 		    // Bonificación para druidas.
 		    if (user.clazz() == Clazz.Druid 
 		    		&& user.getUserInv().tieneAnilloEquipado() 
 		    		&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA 
 		    		&& spell.Mimetiza) {
-		    	this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
+		    	this.user.getStats().quitarMana((int) (spell.ManaRequerido * 0.5f));
 		    } else {
-		    	this.user.stats().quitarMana(spell.ManaRequerido);
+		    	this.user.getStats().quitarMana(spell.ManaRequerido);
 		    }
 			
-			this.user.stats().quitarStamina(spell.StaRequerida);
+			this.user.getStats().quitarStamina(spell.StaRequerida);
 			this.user.sendUpdateUserStats();
 		}
 	}
 
 	public void sendInfoSpell() {
 		Map map = this.server.getMap(this.user.pos().map);
-		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
+		Spell spell = this.server.getSpell(this.user.getFlags().Hechizo);
 		this.user.sayMagicWords(spell.PalabrasMagicas);
 		this.user.sendWave(spell.WAV);
-		if (this.user.flags().TargetUser > 0) {
-			map.sendCreateFX(this.user.pos().x, this.user.pos().y, this.user.flags().TargetUser,
+		if (this.user.getFlags().TargetUser > 0) {
+			map.sendCreateFX(this.user.pos().x, this.user.pos().y, this.user.getFlags().TargetUser,
 					spell.FXgrh, spell.loops);
-		} else if (this.user.flags().TargetNpc > 0) {
-			map.sendCreateFX(this.user.pos().x, this.user.pos().y, this.user.flags().TargetNpc,
+		} else if (this.user.getFlags().TargetNpc > 0) {
+			map.sendCreateFX(this.user.pos().x, this.user.pos().y, this.user.getFlags().TargetNpc,
 					spell.FXgrh, spell.loops);
 		}
-		if (this.user.flags().TargetUser > 0) {
-			if (this.user.getId() != this.user.flags().TargetUser) {
-				User target = this.server.userById(this.user.flags().TargetUser);
+		if (this.user.getFlags().TargetUser > 0) {
+			if (this.user.getId() != this.user.getFlags().TargetUser) {
+				User target = this.server.userById(this.user.getFlags().TargetUser);
 				user.sendMessage(spell.HechiceroMsg + " " + (target.showName ? target.getUserName() : "alguien"), FONTTYPE_FIGHT);
 				target.sendMessage((user.showName ? user.getUserName() : "Alguien") + " " + spell.TargetMsg, FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage(spell.PropioMsg, FONTTYPE_FIGHT);
 			}
-		} else if (this.user.flags().TargetNpc > 0) {
+		} else if (this.user.getFlags().TargetNpc > 0) {
 			this.user.sendMessage(spell.HechiceroMsg + "la criatura.",
 					FONTTYPE_FIGHT);
 		}

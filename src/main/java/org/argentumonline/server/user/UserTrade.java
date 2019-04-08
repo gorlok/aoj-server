@@ -70,7 +70,7 @@ public class UserTrade {
 		} else {
 		    //Es el primero que comercia ?
 			user.sendMessage(targetUser.getUserName() + " desea comerciar. Si deseas aceptar, Escribe /COMERCIAR.", FontType.FONTTYPE_TALK);
-			targetUser.flags().TargetUser = user.getId();
+			targetUser.getFlags().TargetUser = user.getId();
 		}
 	}
 	
@@ -195,7 +195,7 @@ public class UserTrade {
 		this.cant = 0;
 		this.destUsu = 0;
 		this.objectSlot = 0;
-		user.flags().Comerciando = false;
+		user.getFlags().Comerciando = false;
 		user.sendPacket(new UserCommerceEndResponse());
 	}
 
@@ -221,7 +221,7 @@ public class UserTrade {
 		}
 		User targetUser = user.server.userById(this.destUsu);
 		// sigue conectado el usuario ?
-		if (!targetUser.flags().UserLogged) {
+		if (!targetUser.getFlags().UserLogged) {
 			sendCommerceEnded();
 			return;
 		}

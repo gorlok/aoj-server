@@ -305,14 +305,14 @@ public class GameServer implements Constants {
 
     public List<String> getUsuariosConectados() {
     	return getUsers().stream()
-			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.flags().isGM())
+			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.getFlags().isGM())
 			    	.map(User::getUserName)
 			    	.collect(Collectors.toList());
     }
 
     public void echarPjsNoPrivilegiados() {
     	var users = getUsers().stream()
-			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.flags().isGM())
+			    	.filter(c -> c.isLogged() && c.hasUserName() && !c.getFlags().isGM())
 			    	.collect(Collectors.toList());
 
     	users.forEach(c -> {
@@ -337,7 +337,7 @@ public class GameServer implements Constants {
 
     public List<String> getGMsOnline() {
     	return getUsers().stream()
-		    	.filter(c -> c.isLogged() && c.hasUserName() && c.flags().isGM())
+		    	.filter(c -> c.isLogged() && c.hasUserName() && c.getFlags().isGM())
 		    	.map(User::getUserName)
 		    	.collect(Collectors.toList());
     }
@@ -1038,7 +1038,7 @@ public class GameServer implements Constants {
 		}
 		Log.logGM(admin.getUserName(), "Mensaje Broadcast: " + message);
 		if (!message.equals("")) {
-			if (admin.flags().isGM()) {
+			if (admin.getFlags().isGM()) {
 				Log.logGM(admin.getUserName(), "Mensaje Broadcast:" + message);
 				sendToAll(new ConsoleMsgResponse(message, FontType.FONTTYPE_TALK.id()));
 			}
@@ -1060,7 +1060,7 @@ public class GameServer implements Constants {
 		}
 		getUsers().stream()
 			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
-					&& (u.flags().isGM() || u.isRoyalArmy()))
+					&& (u.getFlags().isGM() || u.isRoyalArmy()))
 			.forEach(u -> u.sendMessage("ARMADA REAL> " + message, FontType.FONTTYPE_TALK));
     }
 
@@ -1070,7 +1070,7 @@ public class GameServer implements Constants {
 		}
 		getUsers().stream()
 			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
-					&& (u.flags().isGM() || u.isDarkLegion()))
+					&& (u.getFlags().isGM() || u.isDarkLegion()))
 			.forEach(u -> u.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK));
     }
 

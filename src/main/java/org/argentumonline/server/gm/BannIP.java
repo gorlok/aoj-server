@@ -53,7 +53,7 @@ public class BannIP {
 				return;							
 			}
 		}
-		if (user.flags().privileges > admin.flags().privileges) {
+		if (user.getFlags().privileges > admin.getFlags().privileges) {
 			admin.sendMessage("No puedes /BAN a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}

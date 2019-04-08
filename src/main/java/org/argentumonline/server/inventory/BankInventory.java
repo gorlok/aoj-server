@@ -203,13 +203,13 @@ public class BankInventory extends Inventory {
 		// Actualizamos el dinero
 		user.sendUpdateUserStats();
 		user.sendPacket(new BankInitResponse());
-		user.flags().Comerciando = true;
+		user.getFlags().Comerciando = true;
 	}
 
 	public void bankEnd() {
 		// Comando FINBAN
 		// User sale del modo BANCO
-		user.flags().Comerciando = false;
+		user.getFlags().Comerciando = false;
 		user.sendPacket(new BankEndResponse());
 	}
 
