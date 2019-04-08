@@ -145,7 +145,7 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	private int freeSpellSlot() {
+	private int findFreeSlot() {
 		for (int i = 0; i < this.spells.length; i++) {
 			if (this.spells[i] == 0) {
 				return i + 1;
@@ -160,7 +160,7 @@ public class UserSpells implements Constants {
 		short spellIndex = spellObj.HechizoIndex;
 		if (!hasSpell(spellIndex)) {
 			// Buscamos un slot vacio
-			int slotLibre = freeSpellSlot();
+			int slotLibre = findFreeSlot();
 			if (slotLibre == 0) {
 				this.user.sendMessage("No tienes espacio para más hechizos.", FontType.FONTTYPE_INFO);
 			} else {
@@ -214,6 +214,7 @@ public class UserSpells implements Constants {
 							FontType.FONTTYPE_INFO);
 				}
 				break;
+				
 			case NPC:
 				if (this.user.flags().TargetNpc > 0) {
 					handleSpellTargetNPC(spell);
@@ -222,6 +223,7 @@ public class UserSpells implements Constants {
 							FontType.FONTTYPE_INFO);
 				}
 				break;
+				
 			case USER_AND_NPC:
 				if (this.user.flags().TargetUser > 0) {
 					handleSpellTargetUser(spell);
@@ -231,8 +233,12 @@ public class UserSpells implements Constants {
 					this.user.sendMessage("Target inválido.", FontType.FONTTYPE_INFO);
 				}
 				break;
+				
 			case TERRAIN:
 				handleSpellTargetTerrain(spell);
+				break;
+				
+			default:
 				break;
 			}
 		}
@@ -240,7 +246,7 @@ public class UserSpells implements Constants {
 		this.user.flags().Oculto = false;
 	}
 
-	private boolean hechizoEstadoUsuario() {
+	private boolean statusSpellTargetUser() {
 		// HechizoEstadoUsuario
 		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
 		User targetUser = this.server.userById(this.user.flags().TargetUser);
@@ -630,7 +636,7 @@ public class UserSpells implements Constants {
 		return result;
 	}
 
-	private boolean hechizoEstadoNPC(Npc npc, Spell spell) {
+	private boolean statusSpellTargetNpc(Npc npc, Spell spell) {
 		// hechizoEstadoNPC
 		if (spell.Invisibilidad) {
 			sendInfoSpell();
@@ -674,8 +680,8 @@ public class UserSpells implements Constants {
 		if (spell.isParaliza()) {
 			if (!npc.afectaParalisis()) {
 				sendInfoSpell();
-				npc.paralizar();
-				npc.desinmovilizar();
+				npc.paralize();
+				npc.unimmobilize();
 				return true;
 			}
 			this.user.sendMessage("El npc es inmune a este hechizo.", FONTTYPE_FIGHT);
@@ -684,24 +690,24 @@ public class UserSpells implements Constants {
 			if (npc.isParalized() || npc.isInmovilized()) {
 				if (npc.getPetUserOwner() == this.user) {
 					sendInfoSpell();
-					npc.desparalizar();
-					npc.desinmovilizar();// FIXME revisar...
+					npc.unparalize();
+					npc.unimmobilize();// FIXME revisar...
 					return true;
-				} else if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_REAL) {
+				} else if (npc.npcType() == NpcType.NPCTYPE_ROYAL_GUARD) {
 					if (user.isRoyalArmy()) {
 						sendInfoSpell();
-						npc.desparalizar();
-						npc.desinmovilizar();// FIXME revisar...
+						npc.unparalize();
+						npc.unimmobilize();// FIXME revisar...
 						return true;
 					} else {
 						user.sendMessage("Solo puedes Remover la Parálisis de los Guardias si perteneces a su facción.", FontType.FONTTYPE_INFO);
 						return false;
 					}
-				} else if (npc.npcType() == NpcType.NPCTYPE_GUARDIAS_CAOS) {
+				} else if (npc.npcType() == NpcType.NPCTYPE_GUARDAS_CHAOS) {
 					if (user.isDarkLegion()) {
 						sendInfoSpell();
-						npc.desparalizar();
-						npc.desinmovilizar();// FIXME revisar...
+						npc.unparalize();
+						npc.unimmobilize();// FIXME revisar...
 						return true;
 					} else {
 						user.sendMessage("Solo puedes Remover la Parálisis de los Guardias si perteneces a su facción.", FontType.FONTTYPE_INFO);
@@ -715,13 +721,13 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	private boolean hechizoPropNPC(Npc npc, Spell spell) {
+	private boolean propertySpellTargetNpc(Npc npc, Spell spell) {
 		// HechizoPropNPC
 		// Salud
 		if (spell.SubeHP == 1) {
 			// Curar la salud
-			int cura = Util.Azar(spell.MinHP, spell.MaxHP);
-			cura += Util.porcentaje(cura, 3 * this.user.stats().ELV);
+			int cura = Util.random(spell.MinHP, spell.MaxHP);
+			cura += Util.percentage(cura, 3 * this.user.stats().ELV);
 			sendInfoSpell();
 			npc.stats.addHP(cura);
 			this.user.sendMessage("Has curado " + cura
@@ -736,23 +742,23 @@ public class UserSpells implements Constants {
 			}
 			
 			this.user.npcAtacado(npc);
-			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
-			daño += Util.porcentaje(daño, 3 * this.user.stats().ELV);
+			int damage = Util.random(spell.MinHP, spell.MaxHP);
+			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
 			
 			if (spell.StaffAffected) {
 				if (user.clazz() == Clazz.Mage) {
 					if (user.userInv().tieneArmaEquipada()) {
-		                daño = (daño * (user.userInv().getArma().StaffDamageBonus + 70)) / 100;
+		                damage = (damage * (user.userInv().getArma().StaffDamageBonus + 70)) / 100;
                         // Aumenta daño segun el staff-
                         // Daño = (Daño* (70 + BonifBáculo)) / 100
 					} else {
-						daño = (int) (daño * 0.7f); // Baja daño a 70% del original
+						damage = (int) (damage * 0.7f); // Baja daño a 70% del original
 					}
 				}
 			}
 			if (user.userInv().tieneAnilloEquipado() && 
 					(user.userInv().getAnillo().ObjIndex == LAUDMAGICO || user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
-				daño = (int) (daño * 1.04f); // laud magico de los bardos
+				damage = (int) (damage * 1.04f); // laud magico de los bardos
 			}
 
 			sendInfoSpell();
@@ -762,15 +768,15 @@ public class UserSpells implements Constants {
 			}
 			
 		    // Quizas tenga defenza magica el NPC. Pablo (ToxicWaste)
-		    daño = daño - npc.stats().defensaMagica;
-		    if (daño < 0) {
-		    	daño = 0;
+		    damage = damage - npc.stats().defensaMagica;
+		    if (damage < 0) {
+		    	damage = 0;
 		    }
 			
-			npc.stats.removeHP(daño);
-			this.user.sendMessage("Le has causado " + daño
+			npc.stats.removeHP(damage);
+			this.user.sendMessage("Le has causado " + damage
 					+ " puntos de daño a la criatura!", FONTTYPE_FIGHT);
-			npc.calcularDarExp(this.user, daño);
+			npc.calcularDarExp(this.user, damage);
 			if (npc.stats.MinHP < 1) {
 				npc.muereNpc(this.user);
 			}
@@ -803,7 +809,7 @@ public class UserSpells implements Constants {
 		return false;
 	}
 
-	private boolean hechizoPropUsuario() {
+	private boolean propertySpellTargetUser() {
 		// HechizoPropUsuario
 		Spell spell = this.server.getSpell(this.user.flags().Hechizo);
 		User targetUser = this.server.userById(this.user.flags().TargetUser);
@@ -817,16 +823,16 @@ public class UserSpells implements Constants {
 		if (spell.SubeHam == 1) {
 			// Aumentar hambre
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinHam, spell.MaxHam);
-			targetUser.stats.aumentarHambre(daño);
+			int damage = Util.random(spell.MinHam, spell.MaxHam);
+			targetUser.stats.aumentarHambre(damage);
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has restaurado " + daño
+				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de hambre a " + targetUser.userName,
 						FONTTYPE_FIGHT);
 				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
-						+ daño + " puntos de hambre.", FONTTYPE_FIGHT);
+						+ damage + " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has restaurado " + daño
+				this.user.sendMessage("Te has restaurado " + damage
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			targetUser.sendUpdateHungerAndThirst();
@@ -844,16 +850,16 @@ public class UserSpells implements Constants {
 				return false;
 			}
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinHam, spell.MaxHam);
-			targetUser.stats.quitarHambre(daño);
+			int damage = Util.random(spell.MinHam, spell.MaxHam);
+			targetUser.stats.quitarHambre(damage);
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has provocado " + daño
+				this.user.sendMessage("Le has provocado " + damage
 						+ " puntos de hambre a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + daño
+				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + damage
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has provocado " + daño
+				this.user.sendMessage("Te has provocado " + damage
 						+ " puntos de hambre.", FONTTYPE_FIGHT);
 			}
 			if (targetUser.stats.eaten < 1) {
@@ -867,17 +873,17 @@ public class UserSpells implements Constants {
 		// Sed
 		if (spell.SubeSed == 1) {
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinSed, spell.MaxSed);
-			targetUser.stats.aumentarSed(daño);
+			int damage = Util.random(spell.MinSed, spell.MaxSed);
+			targetUser.stats.aumentarSed(damage);
 			targetUser.sendUpdateHungerAndThirst();
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has restaurado " + daño
+				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de sed a " + targetUser.userName,
 						FONTTYPE_FIGHT);
 				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
-						+ daño + " puntos de sed.", FONTTYPE_FIGHT);
+						+ damage + " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has restaurado " + daño
+				this.user.sendMessage("Te has restaurado " + damage
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -893,17 +899,17 @@ public class UserSpells implements Constants {
 				return false;
 			}
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinSed, spell.MaxSed);
-			targetUser.stats.quitarSed(daño);
+			int damage = Util.random(spell.MinSed, spell.MaxSed);
+			targetUser.stats.quitarSed(damage);
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has provocado " + daño
+				this.user.sendMessage("Le has provocado " + damage
 						+ " puntos de sed a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + daño
+				targetUser.sendMessage(this.user.getNick() + " te ha provocado " + damage
 						+ " puntos de sed.", FONTTYPE_FIGHT);
 			} else {
 				this.user.sendMessage(
-						"Te has provocado " + daño + " puntos de sed.",
+						"Te has provocado " + damage + " puntos de sed.",
 						FONTTYPE_FIGHT);
 			}
 			if (targetUser.stats.drinked < 1) {
@@ -932,9 +938,9 @@ public class UserSpells implements Constants {
 		    	}
 		    }
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinAgilidad, spell.MaxAgilidad);
+			int damage = Util.random(spell.MinAgilidad, spell.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modifyByEffect(Attribute.AGILIDAD, daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.AGILITY, damage);
 			targetUser.flags().TomoPocion = true;
 			return true;
 
@@ -947,9 +953,9 @@ public class UserSpells implements Constants {
 			}
 			sendInfoSpell();
 			targetUser.flags().TomoPocion = true;
-			int daño = Util.Azar(spell.MinAgilidad, spell.MaxAgilidad);
+			int damage = Util.random(spell.MinAgilidad, spell.MaxAgilidad);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modifyByEffect(Attribute.AGILIDAD, -daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.AGILITY, -damage);
 			return true;
 		}
 		
@@ -971,9 +977,9 @@ public class UserSpells implements Constants {
 		    	}
 		    }
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinFuerza, spell.MaxFuerza);
+			int damage = Util.random(spell.MinFuerza, spell.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 1200;
-			targetUser.stats().attr().modifyByEffect(Attribute.FUERZA, daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.STRENGTH, damage);
 			targetUser.flags().TomoPocion = true;
 			return true;
 
@@ -986,9 +992,9 @@ public class UserSpells implements Constants {
 			}
 			sendInfoSpell();
 			targetUser.flags().TomoPocion = true;
-			int daño = Util.Azar(spell.MinFuerza, spell.MaxFuerza);
+			int damage = Util.random(spell.MinFuerza, spell.MaxFuerza);
 			targetUser.flags().DuracionEfecto = 700;
-			targetUser.stats().attr().modifyByEffect(Attribute.FUERZA, -daño);
+			targetUser.stats().attr().modifyByEffect(Attribute.STRENGTH, -damage);
 			return true;
 		}
 
@@ -1013,19 +1019,19 @@ public class UserSpells implements Constants {
 		    		}
 		    	}
 		    }
-			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
-			daño += Util.porcentaje(daño, 3 * this.user.stats().ELV);
+			int damage = Util.random(spell.MinHP, spell.MaxHP);
+			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
 			sendInfoSpell();
-			targetUser.stats.addHP(daño);
+			targetUser.stats.addHP(damage);
 			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has restaurado " + daño
+				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de vida a " + targetUser.userName,
 						FONTTYPE_FIGHT);
 				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
-						+ daño + " puntos de vida.", FONTTYPE_FIGHT);
+						+ damage + " puntos de vida.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has restaurado " + daño
+				this.user.sendMessage("Te has restaurado " + damage
 						+ " puntos de vida.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -1036,38 +1042,38 @@ public class UserSpells implements Constants {
 						FONTTYPE_FIGHT);
 				return false;
 			}
-			int daño = Util.Azar(spell.MinHP, spell.MaxHP);
-			daño += Util.porcentaje(daño, 3 * this.user.stats().ELV);
+			int damage = Util.random(spell.MinHP, spell.MaxHP);
+			damage += Util.percentage(damage, 3 * this.user.stats().ELV);
 			
 			// Potenciador de ataque Báculo
 			if (spell.StaffAffected) {
 				if (user.clazz() == Clazz.Mage) {
 					if (user.userInv().tieneArmaEquipada() && user.userInv().getArma().StaffDamageBonus > 0) {
-						daño = (daño * (user.userInv().getArma().StaffDamageBonus + 70)) / 100; 
+						damage = (damage * (user.userInv().getArma().StaffDamageBonus + 70)) / 100; 
 					} else {
-						daño = (int) (daño * 0.7f); // Baja daño a 70% del original
+						damage = (int) (damage * 0.7f); // Baja daño a 70% del original
 					}
 				}
 			}
 			// Potenciador de ataque Laúd o Flauta
 			if (user.userInv().tieneAnilloEquipado() && (user.userInv().getAnillo().ObjIndex == LAUDMAGICO || user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
-				daño = (int) (daño * 1.04f);  // laud magico de los bardos
+				damage = (int) (damage * 1.04f);  // laud magico de los bardos
 			}
 			
 			// Defensa mágica Sombreros
 			if (targetUser.userInv().tieneCascoEquipado()) {
-				daño = daño - Util.Azar(
+				damage = damage - Util.random(
 						targetUser.userInv().getCasco().DefensaMagicaMin,
 						targetUser.userInv().getCasco().DefensaMagicaMax);  // sombreros antimagia
 			}
 			// Defensa mágica Anillos
 			if (targetUser.userInv().tieneAnilloEquipado()) {
-				daño = daño - Util.Azar(
+				damage = damage - Util.random(
 						targetUser.userInv().getAnillo().DefensaMagicaMin,
 						targetUser.userInv().getAnillo().DefensaMagicaMax);  // anillos antimagia
 			}
-			if (daño < 0) {
-				daño = 0;
+			if (damage < 0) {
+				damage = 0;
 			}
 			if (!this.user.puedeAtacar(targetUser)) {
 				return false;
@@ -1076,11 +1082,11 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			sendInfoSpell();
-			targetUser.stats.removeHP(daño);
+			targetUser.stats.removeHP(damage);
 			targetUser.sendUpdateHP((short) targetUser.stats().MinHP);
-			this.user.sendMessage("Le has quitado " + daño + " puntos de vida a "
+			this.user.sendMessage("Le has quitado " + damage + " puntos de vida a "
 					+ targetUser.userName, FONTTYPE_FIGHT);
-			targetUser.sendMessage(this.user.getNick() + " te ha quitado " + daño
+			targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
 					+ " puntos de vida.", FONTTYPE_FIGHT);
 			// Muere
 			if (targetUser.stats.MinHP < 1) {
@@ -1095,17 +1101,17 @@ public class UserSpells implements Constants {
 		// Mana
 		if (spell.SubeMana == 1) {
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinMana, spell.MaxMana);
-			targetUser.stats.aumentarMana(daño);
+			int damage = Util.random(spell.MinMana, spell.MaxMana);
+			targetUser.stats.aumentarMana(damage);
 			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has restaurado " + daño
+				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de mana a " + targetUser.userName,
 						FONTTYPE_FIGHT);
 				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
-						+ daño + " puntos de mana.", FONTTYPE_FIGHT);
+						+ damage + " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has restaurado " + daño
+				this.user.sendMessage("Te has restaurado " + damage
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -1118,17 +1124,17 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinMana, spell.MaxMana);
-			targetUser.stats.quitarMana(daño);
+			int damage = Util.random(spell.MinMana, spell.MaxMana);
+			targetUser.stats.quitarMana(damage);
 			targetUser.sendPacket(new UpdateManaResponse((short) targetUser.stats().mana));
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has quitado " + daño
+				this.user.sendMessage("Le has quitado " + damage
 						+ " puntos de mana a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + daño
+				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has quitado " + daño
+				this.user.sendMessage("Te has quitado " + damage
 						+ " puntos de mana.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -1137,17 +1143,17 @@ public class UserSpells implements Constants {
 		// Stamina
 		if (spell.SubeSta == 1) {
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinSta, spell.MaxSta);
-			targetUser.stats.aumentarStamina(daño);
+			int damage = Util.random(spell.MinSta, spell.MaxSta);
+			targetUser.stats.aumentarStamina(damage);
 			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has restaurado " + daño
+				this.user.sendMessage("Le has restaurado " + damage
 						+ " puntos de energia a " + targetUser.userName,
 						FONTTYPE_FIGHT);
 				targetUser.sendMessage(this.user.getNick() + " te ha restaurado "
-						+ daño + " puntos de energia.", FONTTYPE_FIGHT);
+						+ damage + " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has restaurado " + daño
+				this.user.sendMessage("Te has restaurado " + damage
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -1160,17 +1166,17 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			sendInfoSpell();
-			int daño = Util.Azar(spell.MinSta, spell.MaxSta);
-			targetUser.stats.quitarStamina(daño);
+			int damage = Util.random(spell.MinSta, spell.MaxSta);
+			targetUser.stats.quitarStamina(damage);
 			targetUser.sendPacket(new UpdateStaResponse((short) targetUser.stats().stamina));
 			if (this.user != targetUser) {
-				this.user.sendMessage("Le has quitado " + daño
+				this.user.sendMessage("Le has quitado " + damage
 						+ " puntos de energia a " + targetUser.userName,
 						FONTTYPE_FIGHT);
-				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + daño
+				targetUser.sendMessage(this.user.getNick() + " te ha quitado " + damage
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			} else {
-				this.user.sendMessage("Te has quitado " + daño
+				this.user.sendMessage("Te has quitado " + damage
 						+ " puntos de energia.", FONTTYPE_FIGHT);
 			}
 			return true;
@@ -1205,7 +1211,7 @@ public class UserSpells implements Constants {
 	    }
 	    
 	    if (this.user.stats().isTooTired() || this.user.stats().stamina < spell.StaRequerida) {
-	    	if (this.user.gender() == UserGender.GENERO_HOMBRE) {
+	    	if (this.user.gender() == UserGender.GENERO_MAN) {
 	    		this.user.sendMessage("Estas muy cansado para lanzar este hechizo.", FontType.FONTTYPE_INFO);
 	    	} else {
 	    		this.user.sendMessage("Estas muy cansada para lanzar este hechizo.", FontType.FONTTYPE_INFO);
@@ -1250,7 +1256,7 @@ public class UserSpells implements Constants {
 		return true;
 	}
 
-	private boolean hechizoInvocacion() {
+	private boolean summonSpell() {
 		if (this.user.getUserPets().isFullPets()) {
 			//this.user.sendMessage("No puedes invocar más mascotas!", FontType.FONTTYPE_INFO);
 			return false;
@@ -1263,7 +1269,7 @@ public class UserSpells implements Constants {
 			return false;
 		}
 				
-		boolean exito = false;
+		boolean success = false;
 		MapPos targetPos = MapPos.mxy(
 								this.user.flags().TargetMap,
 								this.user.flags().TargetX, 
@@ -1271,11 +1277,11 @@ public class UserSpells implements Constants {
 		Spell hechizo = this.server.getSpell(this.user.flags().Hechizo);
 		
 		for (int i = 0; i < hechizo.Cant; i++) {
-			// Considero que hubo exito si se pudo invocar alguna criatura.
-			exito = exito || (this.user.crateSummonedPet(hechizo.NumNpc, targetPos) != null);
+			// Considero que hubo success si se pudo invocar alguna criatura.
+			success = success || (this.user.crateSummonedPet(hechizo.NumNpc, targetPos) != null);
 		}
 		sendInfoSpell();
-		return exito;
+		return success;
 	}
 
 	private void handleSpellTargetTerrain(Spell spell) {
@@ -1284,17 +1290,21 @@ public class UserSpells implements Constants {
 			return;
 		}
 		
-		boolean exito = false;
+		boolean success = false;
 		switch (spell.spellAction) {
 		case SUMMON:
-			exito = hechizoInvocacion();
+			success = summonSpell();
 			break;
+			
 		case STATUS:
-			exito = hechizoTerrenoEstado();
+			success = statusSpellTargetTerrain();
+			break;
+			
+		default:
 			break;
 		}
 		
-		if (exito) {
+		if (success) {
 			this.user.riseSkill(Skill.SKILL_Magia);
 			
 			if (user.clazz() == Clazz.Druid && user.userInv().tieneAnilloEquipado() 
@@ -1308,7 +1318,7 @@ public class UserSpells implements Constants {
 		}
 	}
 
-	private boolean hechizoTerrenoEstado() {
+	private boolean statusSpellTargetTerrain() {
 		// HechizoTerrenoEstado
 		MapPos targetPos = MapPos.mxy(
 			this.user.flags().TargetMap,
@@ -1337,22 +1347,25 @@ public class UserSpells implements Constants {
 
 	private void handleSpellTargetUser(Spell spell) {
 		// HandleHechizoUsuario
-		boolean exito = false;
+		boolean success = false;
 		User target = this.server.userById(this.user.flags().TargetUser);
 		if (target == null || target.flags().isGM()) {
 			return;
 		}
 		switch (spell.spellAction) {
 		case STATUS: // Afectan estados (por ejem : Envenenamiento)
-			exito = hechizoEstadoUsuario();
+			success = statusSpellTargetUser();
 			break;
 			
 		case PROPERTIES: // Afectan HP,MANA,STAMINA,ETC
-			exito = hechizoPropUsuario();
+			success = propertySpellTargetUser();
+			break;
+			
+		default:
 			break;
 		}
 		
-		if (exito) {
+		if (success) {
 			this.user.riseSkill(Skill.SKILL_Magia);
 			
 		    // Agregado para que los druidas, al tener equipada la flauta magica, el coste de mana de mimetismo es de 50% menos.
@@ -1373,17 +1386,21 @@ public class UserSpells implements Constants {
 
 	private void handleSpellTargetNPC(Spell spell) {
 		// HandleHechizoNPC
-		boolean exito = false;
+		boolean success = false;
 		Npc targetNPC = this.server.npcById(this.user.flags().TargetNpc);
 		switch (spell.spellAction) {
 		case STATUS: // Afectan estados (por ejem : Envenenamiento)
-			exito = hechizoEstadoNPC(targetNPC, spell);
+			success = statusSpellTargetNpc(targetNPC, spell);
 			break;
+			
 		case PROPERTIES: // Afectan HP,MANA,STAMINA,ETC
-			exito = hechizoPropNPC(targetNPC, spell);
+			success = propertySpellTargetNpc(targetNPC, spell);
+			break;
+			
+		default:
 			break;
 		}
-		if (exito) {
+		if (success) {
 			this.user.riseSkill(Skill.SKILL_Magia);
 			this.user.flags().TargetNpc = 0;
 			

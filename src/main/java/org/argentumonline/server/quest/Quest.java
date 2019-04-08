@@ -160,7 +160,7 @@ public class Quest implements Constants {
 				}
 				break;
 			case OBJETIVO_ENCONTRAR_NPC:
-				azar = Util.Azar(1, CANT_NPCS);
+				azar = Util.random(1, CANT_NPCS);
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
@@ -172,7 +172,7 @@ public class Quest implements Constants {
 				Npc.spawnNpc(this.AmigoNpc, this.Coordenadas[azar - 1], true, false);
 				break;
 			case OBJETIVO_MATAR_UN_NPC:
-				azar = Util.Azar(1, CANT_NPCS);
+				azar = Util.random(1, CANT_NPCS);
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
@@ -472,7 +472,7 @@ public class Quest implements Constants {
 					npc.getId());
 			break;
 		case 4:
-			int azar = Util.Azar(0, Pista.length);
+			int azar = Util.random(0, Pista.length);
 			user.talk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas " +
 					this.Pista[azar]
 					+ " para recibir tu recompensa! PD: Si no te apresuras y lo mata otro usuario perderás esta quest, en tal caso deberás clikearme y poner /MERINDO",

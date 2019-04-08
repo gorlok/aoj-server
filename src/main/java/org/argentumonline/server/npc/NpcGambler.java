@@ -54,17 +54,17 @@ public class NpcGambler extends Npc {
 		
 		if (user.stats().getGold() < gold) {
 			switch (user.gender()) {
-			case GENERO_HOMBRE:
+			case GENERO_MAN:
 				user.talk(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
 				break;
-			case GENERO_MUJER:
+			case GENERO_WOMAN:
 				user.talk(COLOR_BLANCO, "No tienes esa cantidad, embustera!", getId());
 				break;
 			};
 			return;
 		}
 		
-		if (Util.Azar(1, 100) <= 45) {
+		if (Util.random(1, 100) <= 45) {
 			user.stats().addGold( gold );
 			user.talk(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
 			

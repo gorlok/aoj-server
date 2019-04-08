@@ -205,10 +205,10 @@ public class UserStats extends AbstractCharStats {
 
 	public void inicializarEstads(Clazz clazz) {
 		// Salud
-		this.MaxHP = 15 + Util.Azar(1, attr.get(Attribute.CONSTITUCION) / 3);
+		this.MaxHP = 15 + Util.random(1, attr.get(Attribute.CONSTITUTION) / 3);
 		this.MinHP = this.MaxHP;
 		// Stamina
-		int agil = Util.Azar(1, attr.get(Attribute.AGILIDAD) / 6);
+		int agil = Util.random(1, attr.get(Attribute.AGILITY) / 6);
 		if (agil < 2) {
 			agil = 2;
 		}
@@ -221,7 +221,7 @@ public class UserStats extends AbstractCharStats {
 		this.maxEaten = 100;
 		this.eaten = this.maxEaten;
 		// Mana (magia y meditacion de clases mágicas)
-		this.maxMana = clazz.getManaInicial(attr.get(Attribute.INTELIGENCIA));
+		this.maxMana = clazz.getManaInicial(attr.get(Attribute.INTELIGENCE));
 		this.mana = this.maxMana;
 		// Golpe al atacar.
 		this.MaxHIT = 2;

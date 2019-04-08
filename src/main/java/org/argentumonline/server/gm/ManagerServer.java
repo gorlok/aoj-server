@@ -754,8 +754,8 @@ public class ManagerServer {
 		}
 		
 		npc.followUser(admin.getNick());
-		npc.desparalizar();
-		npc.desinmovilizar();
+		npc.unparalize();
+		npc.unimmobilize();
 	}
 
 	public void killNpc(User admin) {
@@ -1382,11 +1382,11 @@ public class ManagerServer {
 		
 		admin.sendMessage("Oro: " + user.stats().getGold() + "  Posición: " + 
 				user.pos().x + "," + user.pos().y + " en mapa " + user.pos().map, FontType.FONTTYPE_INFO);
-		admin.sendMessage("Dados: Fue. " + user.stats().attr().get(Attribute.FUERZA) +  
-				" Agi. " + user.stats().attr().get(Attribute.AGILIDAD) + 
-				" Int. " + user.stats().attr().get(Attribute.INTELIGENCIA) + 
-				" Car. " + user.stats().attr().get(Attribute.CARISMA) + 
-				" Con. " + user.stats().attr().get(Attribute.CONSTITUCION), FontType.FONTTYPE_INFO);
+		admin.sendMessage("Dados: Fue. " + user.stats().attr().get(Attribute.STRENGTH) +  
+				" Agi. " + user.stats().attr().get(Attribute.AGILITY) + 
+				" Int. " + user.stats().attr().get(Attribute.INTELIGENCE) + 
+				" Car. " + user.stats().attr().get(Attribute.CHARISMA) + 
+				" Con. " + user.stats().attr().get(Attribute.CONSTITUTION), FontType.FONTTYPE_INFO);
 		
 		/*
 		admin.sendMessage(" Tiene " + user.userInv().getCantObjs() + " objetos.", FontType.FONTTYPE_INFO);

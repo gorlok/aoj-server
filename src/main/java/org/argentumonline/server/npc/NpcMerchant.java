@@ -216,9 +216,9 @@ public class NpcMerchant extends Npc {
                 user.sendMessage("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
                 return;
             }
-            if (this.tipoItems != OBJ_INDEX_CUALQUIERA) {
+            if (this.objType != OBJ_INDEX_CUALQUIERA) {
                 // ¿Son los items con los que comercia el npc?
-                if (this.tipoItems != info.objType.value()) {
+                if (this.objType != info.objType.value()) {
                     user.sendMessage("No me interesa comprar ese objeto.", FontType.FONTTYPE_WARNING);
                     return;
                 }

@@ -24,7 +24,7 @@ public class Util {
 
 	private Util() {}
 
-	public static boolean asciiValidos(String str) {
+	public static boolean isValidAscii(String str) {
 		byte[] bytes = str.toLowerCase().getBytes();
 		for (byte b : bytes) {
 			if ((b < 97 || b > 122) 
@@ -54,45 +54,13 @@ public class Util {
 		return Math.sqrt(((y1 - y2) * (y1 - y2)) + ((x1 - x2) * (x1 - x2)));
 	}
 
-	public static int porcentaje(long total, long porc) {
+	public static int percentage(long total, long porc) {
 		return (int) Math.round((total * porc) / 100.0);
 	}
 
-	public static int Azar(int min, int max) {
+	public static int random(int min, int max) {
 		int valor = (int) ((Math.random() * (max - min + 1)) + min);
 		return (valor < min) ? min : valor;
-	}
-
-	public static short Min(short a, short b) {
-		return a < b ? a : b;
-	}
-
-	public static int Min(int a, int b) {
-		return a < b ? a : b;
-	}
-
-	public static long Min(long a, long b) {
-		return a < b ? a : b;
-	}
-
-	public static double Min(double a, double b) {
-		return a < b ? a : b;
-	}
-
-	public static short Max(short a, short b) {
-		return a > b ? a : b;
-	}
-
-	public static int Max(int a, int b) {
-		return a > b ? a : b;
-	}
-
-	public static long Max(long a, long b) {
-		return a > b ? a : b;
-	}
-
-	public static double Max(double a, double b) {
-		return a > b ? a : b;
 	}
 
 	public static boolean fileExists(String fileName) {

@@ -365,6 +365,9 @@ public class UserInventory extends Inventory implements Constants {
                 this.barcoSlot = 0;
                 this.barcoEquipado = false;
                 break;
+                
+            default:
+            	break;
         }
 
 		getUser().sendUpdateUserStats();
@@ -577,6 +580,9 @@ public class UserInventory extends Inventory implements Constants {
                     getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
+                
+            default:
+            	break;
         }
         // Actualiza el inventario
         getUser().sendInventoryToUser();
@@ -790,7 +796,7 @@ public class UserInventory extends Inventory implements Constants {
                 }
                 
                 if (getUser().stats().isTooTired()) {
-					if (getUser().gender() == UserGender.GENERO_HOMBRE) {
+					if (getUser().gender() == UserGender.GENERO_MAN) {
 						getUser().sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
 					} else {
 						getUser().sendMessage("Estas muy cansada para luchar.", FontType.FONTTYPE_INFO);
@@ -867,18 +873,18 @@ public class UserInventory extends Inventory implements Constants {
                 	// TODO enum
                     case 1: // Modif la agilidad
                         getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        getUser().stats().attr().modifyByEffect(Attribute.AGILIDAD, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().stats().attr().modifyByEffect(Attribute.AGILITY, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
                         getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        getUser().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().stats().attr().modifyByEffect(Attribute.STRENGTH, Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
-                        getUser().stats().addHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().stats().addHP(Util.random(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         getUser().sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
-                        getUser().stats().aumentarMana(Util.porcentaje(getUser().stats().maxMana, 4)
+                        getUser().stats().aumentarMana(Util.percentage(getUser().stats().maxMana, 4)
                         		+ ( (getUser().stats().ELV / 2) + 40 / getUser().stats().ELV) );
                         getUser().sendUpdateUserStats();
                         break;

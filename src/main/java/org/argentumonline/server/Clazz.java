@@ -382,7 +382,7 @@ public enum Clazz {
 	public int getCantMinerales() {
 		switch (this) {
 		case Miner:
-			return Util.Azar(1, 6);
+			return Util.random(1, 6);
 		default:
 			return 1;
 		}
@@ -391,7 +391,7 @@ public enum Clazz {
 	public int getCantLeños() {
 		switch (this) {
 		case Lumberjack:
-			return Util.Azar(1, 5);
+			return Util.random(1, 5);
 		default:
 			return 1;
 		}
@@ -408,7 +408,7 @@ public enum Clazz {
 		case Druid:
 			return 50;
 		case Mage:
-			return 100 + Util.Azar(1, atribInteligencia / 3);
+			return 100 + Util.random(1, atribInteligencia / 3);
 		default:
 			return 0;
 		}
@@ -418,33 +418,33 @@ public enum Clazz {
 	private int getMejoraSalud(UserStats estads) {
 		switch (this) {
 		case Assassin:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Bard:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Cleric:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Druid:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Fisher:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Hunter:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2) + AdicionalHPGuerrero;
 		case Lumberjack:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Mage:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero / 2;
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2) + AdicionalHPGuerrero / 2;
 		case Miner:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Paladin:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2) + AdicionalHPGuerrero;
 		case Pirate:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2) + AdicionalHPGuerrero;
 		case Thief:
-			return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+			return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		case Warrior:
-	        return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2) + AdicionalHPGuerrero;
+	        return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2) + AdicionalHPGuerrero;
 	    default:
-	    	return Util.Azar(4, estads.attr().get(Attribute.CONSTITUCION) / 2);
+	    	return Util.random(4, estads.attr().get(Attribute.CONSTITUTION) / 2);
 		}
 	}
 
@@ -452,17 +452,17 @@ public enum Clazz {
 	private int getMejoraMana(UserStats estads) {
 		switch (this) {
 		case Assassin:
-			return estads.attr().get(Attribute.INTELIGENCIA);
+			return estads.attr().get(Attribute.INTELIGENCE);
 		case Bard:
-			return 2 * estads.attr().get(Attribute.INTELIGENCIA);
+			return 2 * estads.attr().get(Attribute.INTELIGENCE);
 		case Cleric:
-			return 2 * estads.attr().get(Attribute.INTELIGENCIA);
+			return 2 * estads.attr().get(Attribute.INTELIGENCE);
 		case Druid:
-			return 2 * estads.attr().get(Attribute.INTELIGENCIA);
+			return 2 * estads.attr().get(Attribute.INTELIGENCE);
 		case Mage:
-			return 3 * estads.attr().get(Attribute.INTELIGENCIA);
+			return 3 * estads.attr().get(Attribute.INTELIGENCE);
 		case Paladin:
-			return estads.attr().get(Attribute.INTELIGENCIA);
+			return estads.attr().get(Attribute.INTELIGENCE);
 		default:
 			return 0;
 		}
@@ -570,39 +570,39 @@ public enum Clazz {
 	public short getRoyalArmyArmor(User user) {
 		switch (this) {
 		case Assassin:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 
 		case Bandit:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 
 		case Hunter:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 		case Mage:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL);
 		case Paladin:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 		case Warrior:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	        	return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 	    default:
-			if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+			if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 				return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 			}
 			return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
@@ -612,37 +612,37 @@ public enum Clazz {
 	public short getDarkLegionArmor(User user) {
 		switch (this) {
 		case Assassin:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Bandit:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Hunter:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Mage:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS);
 		case Paladin:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Warrior:
-	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 	    default:
-			if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
+			if (user.race() == UserRace.RAZA_DWARF || user.race() == UserRace.RAZA_GNOME) {
 				return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 			}
 			return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);

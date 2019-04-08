@@ -1094,7 +1094,7 @@ public class Map implements Constants {
 		} else {
 			suerte = 1;
 		}
-        if (Util.Azar(1, suerte) == 1) {
+        if (Util.random(1, suerte) == 1) {
         	removeObject(x, y);
             addObject(FOGATA, 1, x, y);
             user.sendMessage("Has prendido la fogata.", FontType.FONTTYPE_INFO);
@@ -1609,7 +1609,7 @@ public class Map implements Constants {
     }
     
     public void soundFx() {
-        if (getUsersCount() > 0 && Util.Azar(1, 150) < 12) {
+        if (getUsersCount() > 0 && Util.random(1, 150) < 12) {
         	final byte sound = randomSoundFx();
             if (sound > -1) {
             	this.users.stream()
@@ -1622,7 +1622,7 @@ public class Map implements Constants {
 		byte sound = -1;
 		switch (this.terrain) {
 		    case FOREST:
-		        int n = Util.Azar(1, 100);
+		        int n = Util.random(1, 100);
 		        switch (this.zone) {
 		            case COUNTRY:
 		            case CITY:

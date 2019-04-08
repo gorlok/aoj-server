@@ -1,6 +1,6 @@
 package org.argentumonline.server;
 
-public enum Ciudad {
+public enum City {
 	NONE(""),
 	
     /*1*/ ULLATHORPE	("Ullathorpe"),
@@ -11,7 +11,7 @@ public enum Ciudad {
 	
 	private String name;
 	
-	private Ciudad(String name) {
+	private City(String name) {
 		this.name = name;
 	}
 	
@@ -23,8 +23,8 @@ public enum Ciudad {
 		return this.name;
 	}
 	
-	private static final Ciudad[] VALUES = Ciudad.values(); 
-	public static Ciudad value(int index) {
+	private static final City[] VALUES = City.values(); 
+	public static City value(int index) {
 		return VALUES[index];
 	}
 	

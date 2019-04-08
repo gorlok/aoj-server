@@ -616,25 +616,25 @@ public class GameServer implements Constants {
     	log.trace("loading cities");
         try {
             IniFile ini = new IniFile(DAT_DIR + File.separator + "Ciudades.dat");
-            this.cities = new MapPos[Ciudad.values().length];
-            loadCity(ini, Ciudad.NIX, "NIX");
-            loadCity(ini, Ciudad.ULLATHORPE, "Ullathorpe");
-            loadCity(ini, Ciudad.BANDERBILL, "Banderbill");
-            loadCity(ini, Ciudad.LINDOS, "Lindos");
-            loadCity(ini, Ciudad.ARGHAL, "Arghal");
+            this.cities = new MapPos[City.values().length];
+            loadCity(ini, City.NIX, "NIX");
+            loadCity(ini, City.ULLATHORPE, "Ullathorpe");
+            loadCity(ini, City.BANDERBILL, "Banderbill");
+            loadCity(ini, City.LINDOS, "Lindos");
+            loadCity(ini, City.ARGHAL, "Arghal");
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
     }
 
-	private void loadCity(IniFile ini, Ciudad ciudad, String section) {
+	private void loadCity(IniFile ini, City ciudad, String section) {
 		this.cities[ciudad.id()] = 
 				MapPos.mxy(ini.getShort(section, "MAPA"), 
 						ini.getShort(section, "X"), 
 						ini.getShort(section, "Y"));
 	}
 
-    public MapPos getCiudadPos(Ciudad ciudad) {
+    public MapPos getCiudadPos(City ciudad) {
         return this.cities[ciudad.id()];
     }
 
@@ -644,7 +644,7 @@ public class GameServer implements Constants {
             maps.stream()
             	.filter(Map::isHasUsers)
             	.forEach(m -> {
-            		if (Util.Azar(1, 150) < 12) {
+            		if (Util.random(1, 150) < 12) {
             			m.soundFx();
             		}
             	});
@@ -732,7 +732,7 @@ public class GameServer implements Constants {
 	        if (!this.raining) {
 	            this.minutosSinLluvia++;
 	            if (this.minutosSinLluvia >= 15 && this.minutosSinLluvia < 1440) {
-	                if (Util.Azar(1, 100) <= 10) {
+	                if (Util.random(1, 100) <= 10) {
 	                    rainStart();
 	                }
 	            } else if (this.minutosSinLluvia >= 1440) {
@@ -743,7 +743,7 @@ public class GameServer implements Constants {
 	            if (this.minutosLloviendo >= 5) {
 	                rainStop();
 	            } else {
-	                if (Util.Azar(1, 100) <= 7) {
+	                if (Util.random(1, 100) <= 7) {
 	                    rainStop();
 	                }
 	            }

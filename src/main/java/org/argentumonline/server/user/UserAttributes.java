@@ -24,11 +24,11 @@ public class UserAttributes {
     
     public enum Attribute {
     	
-	    FUERZA,
-	    AGILIDAD,
-	    INTELIGENCIA,
-	    CARISMA,
-	    CONSTITUCION;
+	    STRENGTH,
+	    AGILITY,
+	    INTELIGENCE,
+	    CHARISMA,
+	    CONSTITUTION;
     	
     	private static final Attribute[] VALUES = Attribute.values();
     	

@@ -17,7 +17,7 @@
  *******************************************************************************/
 package org.argentumonline.server;
 
-import static org.argentumonline.server.user.UserGender.GENERO_HOMBRE;
+import static org.argentumonline.server.user.UserGender.GENERO_MAN;
 
 import org.argentumonline.server.map.Heading;
 import org.argentumonline.server.user.UserGender;
@@ -116,45 +116,45 @@ public class CharInfo implements Constants {
 
 	public void undress(UserRace race, UserGender gender) {
 		switch (race) {
-		case RAZA_HUMANO:
-			this.body = (gender == GENERO_HOMBRE) ? (short) 21 : (short) 39;
+		case RAZA_HUMAN:
+			this.body = (gender == GENERO_MAN) ? (short) 21 : (short) 39;
 			break;
 		case RAZA_DROW:
-			this.body = (gender == GENERO_HOMBRE) ? (short) 32 : (short) 40;
+			this.body = (gender == GENERO_MAN) ? (short) 32 : (short) 40;
 			break;
-		case RAZA_ELFO:
-			this.body = (gender == GENERO_HOMBRE) ? (short) 210 : (short) 259;
+		case RAZA_ELF:
+			this.body = (gender == GENERO_MAN) ? (short) 210 : (short) 259;
 			break;
-		case RAZA_ENANO:
-			this.body = (gender == GENERO_HOMBRE) ? (short) 53 : (short) 60;
+		case RAZA_DWARF:
+			this.body = (gender == GENERO_MAN) ? (short) 53 : (short) 60;
 			break;
-		case RAZA_GNOMO:
-			this.body = (gender == GENERO_HOMBRE) ? (short) 222 : (short) 260;
+		case RAZA_GNOME:
+			this.body = (gender == GENERO_MAN) ? (short) 222 : (short) 260;
 			break;
 		}
 	}
 
 	public void ramdonBodyAndHead(UserRace race, UserGender gender) {
 		switch (gender) {
-		case GENERO_HOMBRE:
+		case GENERO_MAN:
 			switch (race) {
-			case RAZA_HUMANO:
-				this.head = (short) Util.Azar(1, 11);
+			case RAZA_HUMAN:
+				this.head = (short) Util.random(1, 11);
 				this.body = 1;
 				break;
-			case RAZA_ELFO:
-				this.head = (short) (Util.Azar(1, 4) + 100);
+			case RAZA_ELF:
+				this.head = (short) (Util.random(1, 4) + 100);
 				this.body = 2;
 				break;
 			case RAZA_DROW:
-				this.head = (short) (Util.Azar(1, 3) + 200);
+				this.head = (short) (Util.random(1, 3) + 200);
 				this.body = 3;
 				break;
-			case RAZA_ENANO:
+			case RAZA_DWARF:
 				this.head = 301;
 				this.body = 52;
 				break;
-			case RAZA_GNOMO:
+			case RAZA_GNOME:
 				this.head = 401;
 				this.body = 52;
 				break;
@@ -165,25 +165,25 @@ public class CharInfo implements Constants {
 			}
 			break;
 
-		case GENERO_MUJER:
+		case GENERO_WOMAN:
 			switch (race) {
-			case RAZA_HUMANO:
-				this.head = (short) (Util.Azar(1, 3) + 69);
+			case RAZA_HUMAN:
+				this.head = (short) (Util.random(1, 3) + 69);
 				this.body = 1;
 				break;
-			case RAZA_ELFO:
-				this.head = (short) (Util.Azar(1, 3) + 169);
+			case RAZA_ELF:
+				this.head = (short) (Util.random(1, 3) + 169);
 				this.body = 2;
 				break;
 			case RAZA_DROW:
-				this.head = (short) (Util.Azar(1, 3) + 269);
+				this.head = (short) (Util.random(1, 3) + 269);
 				this.body = 3;
 				break;
-			case RAZA_GNOMO:
-				this.head = (short) (Util.Azar(1, 2) + 469);
+			case RAZA_GNOME:
+				this.head = (short) (Util.random(1, 2) + 469);
 				this.body = 52;
 				break;
-			case RAZA_ENANO:
+			case RAZA_DWARF:
 				this.head = 370;
 				this.body = 52;
 				break;

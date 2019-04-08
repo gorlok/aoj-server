@@ -40,13 +40,13 @@ public class NpcLoader {
         NpcType npcType = NpcType.value(ini.getShort(section, "NpcType"));
         boolean comerciante = (ini.getInt(section, "Comercia") == 1);        
     	
-    	if (npcType == NpcType.NPCTYPE_BANQUERO)
+    	if (npcType == NpcType.NPCTYPE_CASHIER)
     		return new NpcCashier(npcNumber, server);
     	
-    	if (npcType == NpcType.NPCTYPE_ENTRENADOR)
+    	if (npcType == NpcType.NPCTYPE_TRAINER)
     		return new NpcTrainer(npcNumber, server);
     	
-    	if (npcType == NpcType.NPCTYPE_TIMBERO)
+    	if (npcType == NpcType.NPCTYPE_GAMBLER)
     		return new NpcGambler(npcNumber, server);
     	
     	if (comerciante)

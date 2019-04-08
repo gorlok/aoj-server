@@ -97,7 +97,7 @@ public class WorkWatcher {
 	                // Inicializamos
 	                userWatching = p;
 	                userRemainingMinutes = TIEMPO_INICIAL;
-	                askingCode = Util.Azar(1, 32000);
+	                askingCode = Util.random(1, 32000);
 	                spawnTime = System.currentTimeMillis();
 	                secondsToCallUserAttention = 0;
 	                

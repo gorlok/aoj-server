@@ -42,8 +42,6 @@ import static org.argentumonline.server.npc.NpcFlags.FLAG_RESPAWN_ORIG_POS;
 import static org.argentumonline.server.npc.NpcFlags.FLAG_TIERRA_INVALIDA;
 import static org.argentumonline.server.util.FontType.FONTTYPE_FIGHT;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.AbstractCharacter;
@@ -51,7 +49,6 @@ import org.argentumonline.server.Constants;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.ObjectInfo;
 import org.argentumonline.server.Skill;
-import org.argentumonline.server.aStar.Node;
 import org.argentumonline.server.inventory.Inventory;
 import org.argentumonline.server.inventory.InventoryObject;
 import org.argentumonline.server.map.Heading;
@@ -65,8 +62,8 @@ import org.argentumonline.server.protocol.NPCSwingResponse;
 import org.argentumonline.server.protocol.ParalizeOKResponse;
 import org.argentumonline.server.protocol.PlayWaveResponse;
 import org.argentumonline.server.user.Party;
-import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.Spell;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.Color;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
@@ -85,17 +82,17 @@ public class Npc extends AbstractCharacter implements Constants {
 	public enum AiType {
 		NONE,
 		
-		/* 1*/ ESTATICO,
-		/* 2*/ MUEVE_AL_AZAR,
-		/* 3*/ NPC_MALO_ATACA_USUARIOS_BUENOS,
-		/* 4*/ NPC_DEFENSA,
-		/* 5*/ GUARDIAS_ATACAN_CRIMINALES,
-		/* 6*/ NPC_OBJETO,
+		/* 1*/ STATIC,
+		/* 2*/ RANDOM_MOVE,
+		/* 3*/ BAD_NPC_ATTACK_GOOD_USER,
+		/* 4*/ DEFENSE_NPC,
+		/* 5*/ GUARDS_ATTACK_CRIMINALS,
+		/* 6*/ NPC_OBJECT,
 		/* 7*/ UNUSED,
-		/* 8*/ SIGUE_AMO,
-		/* 9*/ NPC_ATACA_NPC,
+		/* 8*/ FOLLOW_MASTER,
+		/* 9*/ NPC_ATTACK_NPC,
 		/*10*/ NPC_PATHFINDING,
-		/*11*/ GUARDIAS_ATACAN_CIUDADANOS; // DEPRECATED? Usado por [NPC102] "Guardia Armada WACHO"
+		/*11*/ GUARDS_ATTACK_CITIZENS; // DEPRECATED? Only used by [NPC102] "Guardia Armada WACHO"
 		
 		private static AiType[] VALUES = AiType.values();
 		
@@ -114,65 +111,63 @@ public class Npc extends AbstractCharacter implements Constants {
 End Enum
      */
 	
-    public final static short GUARDIAS_PERSIGUEN_CIUDADANOS = 1;
-    public final static short GUARDIAS_PERSIGUEN_CRIMINALES = 0;
+    public final static short GUARDS_FOLLOW_CITIZENS = 1;
+    public final static short GUARDS_FOLLOW_CRIMINALS = 0;
 
     protected MapPos origPos  = MapPos.empty();
     
-    long lastMove = 0;
+    private long lastMove = 0;
 
     public String name = "";
     public String description = "";
 
-    NpcType npcType = NpcType.NPCTYPE_COMUN;
-    int   npcNumber = 0;
-    short level     = 0;
+    private NpcType npcType = NpcType.NPCTYPE_COMMON;
+    protected int   npcNumber = 0;
 
     private NpcFlags flags = new NpcFlags();
 
-    AiType movement    = AiType.NONE;
-    AiType oldMovement = AiType.NONE;
+    private AiType movement    = AiType.NONE;
+    private AiType oldMovement = AiType.NONE;
     
     public String  attackedBy = "";
     public String  attackedFirstBy = ""; // FIXME
 
-    int   targetUser    = 0;
-    Npc   targetNpc = null;
-    short tipoItems = 0;
+    private int   targetUser    = 0;
+    private Npc   targetNpc = null;
+    protected short objType = 0;
 
-    short skillDomar = 0;
+    private int attackPower  = 0;
+    private int dodgePower   = 0;
+    protected int inflation    = 0; // TODO REVISAR
+    private int giveEXP      = 0;
+    private int giveGLD      = 0;
 
-    int poderAtaque  = 0;
-    int poderEvasion = 0;
-    int inflation    = 0; // TODO REVISAR
-    int giveEXP      = 0;
-    int giveGLD      = 0;
+    private int expCount = 0;
 
-    //int expDada = 0;
-    int expCount = 0;
-
-    public short   domable   = 0;
+    /** domable */
+    public short  tamable = 0;
     
-    boolean isQuest = false;
-    short guardiaPersigue = GUARDIAS_PERSIGUEN_CRIMINALES; // TODO
+    private boolean isQuest = false;
     
-    public byte   snd1 = 0; // Sonido ataque NPC
-    public byte   snd2 = 0; // Sonido ataque exitoso NPC
-    public byte   snd3 = 0; // Sonido muere NPC
-    public byte   snd4 = 0; // ???
+    private short guardiaPersigue = GUARDS_FOLLOW_CRIMINALS; // TODO
+    
+    private byte snd1 = 0; // Sonido ataque NPC
+    private byte snd2 = 0; // Sonido ataque exitoso NPC
+    private byte snd3 = 0; // Sonido muere NPC
+    private byte snd4 = 0; // ???
 
     public NpcStats stats = new NpcStats();
 
-    NpcCounters counters = new NpcCounters();
+    private NpcCounters counters = new NpcCounters();
 
-    byte  expressionsCount = 0;
-    String expressions[] = new String[MAX_EXPRESIONES];
+    private byte  expressionsCount = 0;
+    private String expressions[] = new String[MAX_EXPRESIONES];
 
-    byte  spellsCount = 0;
-    short spells[] = new short[MAX_NUM_SPELLS];  // le da vida ;)
+    private byte  spellsCount = 0;
+    private short spells[] = new short[MAX_NUM_SPELLS];  // le da vida ;)
 
-    User petUserOwner = null;
-    short petNpcOwnerId  = 0;
+    private User petUserOwner = null;
+    private short petNpcOwnerId  = 0;
 
     /**
      * El inventario tiene doble función:
@@ -181,26 +176,15 @@ End Enum
      */
     protected Inventory npcInv;
 
-    public class PFINFO {
-    	public MapPos m_targetPos;
-    	public User m_targetUser;
-
-    	public PFINFO(MapPos pos, User user) {
-    		this.m_targetPos = pos;
-    		this.m_targetUser = user;
-    	}
-    }
-    public PFINFO m_pfinfo; // FIXME
-    List<Node> current_path = null;
-    int current_step = 0;
-
+    private PathFinding pfInfo; // FIXME
+    
     protected GameServer server;
 
     /** Creates a new instance of NPC */
-    protected Npc(int npc_numero, GameServer server) {
+    protected Npc(int npcNumber, GameServer server) {
     	this.server = server;
 
-        this.npcNumber = npc_numero;
+        this.npcNumber = npcNumber;
         this.npcInv = new Inventory(server, 20);
         this.setId(server.nextId());
         loadInfoNPC(this.npcNumber, server.isLoadBackup());
@@ -244,8 +228,8 @@ End Enum
         int i = 0;
         while (!hayPosValida && i < MAXSPAWNATTEMPS) {
             if (!orig.isValid()) {
-                orig.x = (byte) Util.Azar(1, MAP_WIDTH);
-                orig.y = (byte) Util.Azar(1, MAP_HEIGHT);
+                orig.x = (byte) Util.random(1, MAP_WIDTH);
+                orig.y = (byte) Util.random(1, MAP_HEIGHT);
             }
             tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.isWaterValid(), npc.isLandInvalid(), false);
             if (tmp != null) {
@@ -298,11 +282,11 @@ End Enum
     }
 
     public boolean isNpcGuard() {
-    	return this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL;
+    	return this.npcType == NpcType.NPCTYPE_ROYAL_GUARD;
     }
 
     public boolean isGambler() {
-    	return this.npcType == NpcType.NPCTYPE_TIMBERO;
+    	return this.npcType == NpcType.NPCTYPE_GAMBLER;
     }
 
     // added by gorlok
@@ -316,11 +300,11 @@ End Enum
 
 
     public boolean isStatic() {
-    	return this.movement == AiType.ESTATICO;
+    	return this.movement == AiType.STATIC;
     }
 
     public Npc makeStatic() {
-    	this.movement = AiType.ESTATICO;
+    	this.movement = AiType.STATIC;
     	return this;
     }
 
@@ -431,21 +415,21 @@ End Enum
         return this.flags().get(FLAG_AFECTA_PARALISIS);
     }
 
-    public void paralizar() {
+    public void paralize() {
         this.flags().set(FLAG_PARALIZADO, true);
         this.counters.Paralisis = IntervaloParalizado;
     }
 
-    public void desparalizar() {
+    public void unparalize() {
         this.flags().set(FLAG_PARALIZADO, false);
         this.counters.Paralisis = 0;
     }
 
-    public void inmovilizar() {
+    public void immobilize() {
         this.flags().set(FLAG_INMOVILIZADO, true);
     }
 
-    public void desinmovilizar() {
+    public void unimmobilize() {
         this.flags().set(FLAG_INMOVILIZADO, false);
     }
 
@@ -467,11 +451,11 @@ End Enum
     }
 
     public int getPoderAtaque() {
-        return this.poderAtaque;
+        return this.attackPower;
     }
 
     public int getPoderEvasion() {
-        return this.poderEvasion;
+        return this.dodgePower;
     }
 
     public boolean isAttackable() {
@@ -520,15 +504,15 @@ End Enum
     }
 
     public boolean isBankCashier() {
-    	return npcType() == NpcType.NPCTYPE_BANQUERO;
+    	return npcType() == NpcType.NPCTYPE_CASHIER;
     }
 
     public boolean isPriest() {
-    	return npcType() == NpcType.NPCTYPE_SACERDOTE;
+    	return npcType() == NpcType.NPCTYPE_PRIEST;
     }
 
     public boolean isPriestNewbies() {
-    	return npcType() == NpcType.NPCTYPE_SACERDOTE_NEWBIES;
+    	return npcType() == NpcType.NPCTYPE_PRIEST_NEWBIES;
     }
 
     public boolean isNoble() {
@@ -580,7 +564,7 @@ End Enum
     }
 
     public short domable() {
-        return this.domable;
+        return this.tamable;
     }
 
     public CharacterCreateResponse characterCreate() {
@@ -790,14 +774,14 @@ End Enum
         }
     }
 
-    public void mover(Heading dir) {
+    public void move(Heading heading) {
         long now = (new java.util.Date()).getTime();
         if ((now - this.lastMove) < 250) {
 			return;
 		}
         this.lastMove = now;
         MapPos newPos = pos().copy();
-        newPos.moveToHeading(dir);
+        newPos.moveToHeading(heading);
         Map mapa = this.server.getMap(newPos.map);
         if (mapa == null) {
 			return;
@@ -820,7 +804,7 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.heading(dir);
+                this.infoChar.heading(heading);
                 mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             }
@@ -841,15 +825,14 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.heading(dir);
+                this.infoChar.heading(heading);
                 mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             } else {
                 if (this.movement == AiType.NPC_PATHFINDING) {
                     // Someone has blocked the npc's way, we must to seek a new path!
                     //////////// FIXME
-                    this.current_step = 0;
-                    this.current_path = null;
+                    this.pfInfo.reset();
                     moverAlAzar();
                 }
             }
@@ -857,7 +840,7 @@ End Enum
     }
 
     public void npcEnvenenarUser(User user) {
-        int n = Util.Azar(1, 100);
+        int n = Util.random(1, 100);
         if (n < 30) {
             user.poison();
         }
@@ -899,7 +882,7 @@ End Enum
         } else {
             this.attackedBy = nombreUsuario;
             this.flags().set(FLAG_FOLLOW, true);
-            this.movement = AiType.NPC_DEFENSA; // follow
+            this.movement = AiType.DEFENSE_NPC; // follow
             this.flags().set(FLAG_HOSTIL, false);
         }
     }
@@ -907,7 +890,7 @@ End Enum
     /** Seguir al amo / Follow master */
     public void followMaster() {
         this.flags().set(FLAG_FOLLOW, true);
-        this.movement  = AiType.SIGUE_AMO; // follow npc's master.
+        this.movement  = AiType.FOLLOW_MASTER; // follow npc's master.
         this.flags().set(FLAG_HOSTIL, false);
         this.targetUser = 0;
         this.targetNpc  = null;
@@ -918,7 +901,7 @@ End Enum
 			return this;
 		}
         if (this.expressionsCount > 0) {
-            int azar = Util.Azar(0, this.expressionsCount - 1);
+            int azar = Util.random(0, this.expressionsCount - 1);
             Map mapa = this.server.getMap(pos().map);
             if (mapa != null) {
                 talkToArea(this.expressions[azar], Color.COLOR_BLANCO);
@@ -943,7 +926,7 @@ End Enum
     }
 
     public void defenderse() {
-        this.movement = AiType.NPC_DEFENSA;
+        this.movement = AiType.DEFENSE_NPC;
         this.flags().set(FLAG_HOSTIL, true);
     }
 
@@ -984,7 +967,7 @@ End Enum
                     User user = mapa.getUser(pos.x, pos.y);
                     if (user.isAlive() && user.isAllowingChase()) {
                         // ¿ES CRIMINAL?
-                    	if (npcType() != NpcType.NPCTYPE_GUARDIAS_CAOS) {
+                    	if (npcType() != NpcType.NPCTYPE_GUARDAS_CHAOS) {
                     		if (user.isCriminal()) {
                     			cambiarDir(dir);
                     			npcAtacaUser(user);
@@ -1095,7 +1078,7 @@ End Enum
                                    npcCastSpell(user);
                                 }
                                 Heading dir = pos().findDirection(user.pos());
-                                mover(dir);
+                                move(dir);
                                 return;
                             }
                         }
@@ -1132,7 +1115,7 @@ End Enum
                                     npcCastSpell(user);
                                 }
                                 Heading dir = pos().findDirection(user.pos());
-                                mover(dir);
+                                move(dir);
                                 return;
                             }
                         }
@@ -1174,7 +1157,7 @@ End Enum
                                 npcCastSpell(user);
                             }
                             Heading dir = pos().findDirection(user.pos());
-                            mover(dir);
+                            move(dir);
                             return;
                         }
                     }
@@ -1200,7 +1183,7 @@ End Enum
                                 npcCastSpell(user);
                             }
                             Heading dir = pos().findDirection(user.pos());
-                            mover(dir);
+                            move(dir);
                             return;
                         }
                     }
@@ -1220,7 +1203,7 @@ End Enum
     		&& !master.isInvisible() 
     		&& master.pos().distance(pos()) > 3) {
 		            Heading dir = pos().findDirection(master.pos());
-		            mover(dir);
+		            move(dir);
 		            return;
         }
         restoreOldMovement();
@@ -1312,7 +1295,7 @@ End Enum
 	                        		return;
 	                        	}
         						Heading heading = pos().findDirection(npc.pos());
-        						mover(heading);
+        						move(heading);
         						return;
         					}
         				}
@@ -1343,7 +1326,7 @@ End Enum
     					User user = map.getUser(x, y);
     					if (user.isAlive() && !user.isInvisible() && !user.isHidden() && user.isAllowingChase()) {
     						// No quiero que ataque siempre al primero
-    						if (Util.Azar(1,  3) < 3) {
+    						if (Util.random(1,  3) < 3) {
     							if (flags().get(FLAG_LANZA_SPELLS)) {
     								npcCastSpell(user);
     								return;
@@ -1358,7 +1341,7 @@ End Enum
 
     private void npcLanzaUnSpellSobreNpc(Npc targetNpc) {
     	if (isMagical()) {
-    		int spellIndex = Util.Azar(0, spellsCount-1);
+    		int spellIndex = Util.random(0, spellsCount-1);
     		npcLanzaSpellSobreNpc(targetNpc, spells[spellIndex]);
     	}
     	
@@ -1375,7 +1358,7 @@ End Enum
     	
     	Spell spell = server.getSpell(spellId);
     	if (spell.SubeHP == 2) {
-	        int daño = Util.Azar(spell.MinHP, spell.MaxHP);
+	        int daño = Util.random(spell.MinHP, spell.MaxHP);
 	        
             sendPlayWave(spell.WAV);
             sendCreateFX(spell.FXgrh, spell.loops);
@@ -1389,7 +1372,7 @@ End Enum
 	}
     
 	public void moverAlAzar() {
-        mover(Heading.value(Util.Azar(1, 4)));
+        move(Heading.value(Util.random(1, 4)));
     }
 
     public void doAI() {
@@ -1403,7 +1386,7 @@ End Enum
         if (this.petUserOwner == null) {
             // Busca a alguien para atacar
             // ¿Es un guardia?
-            if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL || this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
+            if (this.npcType == NpcType.NPCTYPE_ROYAL_GUARD || this.npcType == NpcType.NPCTYPE_GUARDAS_CHAOS) {
                 guardiasAI();
             } else if (isHostile() && this.stats.alineacion != 0) {
                 hostilMalvadoAI();
@@ -1415,66 +1398,66 @@ End Enum
         switch (this.movement) {
     	case NONE: 
     	case UNUSED:
-    	case ESTATICO:
+    	case STATIC:
     		// do nothing.
     		break;
     		
-        case MUEVE_AL_AZAR:
-            if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
-                if (Util.Azar(1, 12) == 3) {
+        case RANDOM_MOVE:
+            if (this.npcType == NpcType.NPCTYPE_ROYAL_GUARD) {
+                if (Util.random(1, 12) == 3) {
                     moverAlAzar();
                 }
                 persigueCriminal();
-            } else if (this.npcType == NpcType.NPCTYPE_GUARDIAS_CAOS) {
-                if (Util.Azar(1, 12) == 3) {
+            } else if (this.npcType == NpcType.NPCTYPE_GUARDAS_CHAOS) {
+                if (Util.random(1, 12) == 3) {
                     moverAlAzar();
                 }
                 persigueCiudadano();
             } else {
-                if (Util.Azar(1, 12) == 3) {
+                if (Util.random(1, 12) == 3) {
                     moverAlAzar();
                 }
             }
             break;
             
-        case NPC_MALO_ATACA_USUARIOS_BUENOS:
+        case BAD_NPC_ATTACK_GOOD_USER:
             // Va hacia el usuario cercano
             irUsuarioCercano();
             break;
             
-        case NPC_DEFENSA:
+        case DEFENSE_NPC:
             // Va hacia el usuario que lo ataco(FOLLOW)
             seguirAgresor();
             break;
             
-        case GUARDIAS_ATACAN_CRIMINALES:
+        case GUARDS_ATTACK_CRIMINALS:
             // Persigue criminales
             persigueCriminal();
             break;
             
-        case GUARDIAS_ATACAN_CIUDADANOS:
+        case GUARDS_ATTACK_CITIZENS:
             // Persigue criminales
             persigueCiudadano();
             break;
             
-        case SIGUE_AMO:
+        case FOLLOW_MASTER:
             seguirAmo();
-            if (Util.Azar(1, 12) == 3) {
+            if (Util.random(1, 12) == 3) {
                 moverAlAzar();
             }
             break;
             
-        case NPC_ATACA_NPC:
+        case NPC_ATTACK_NPC:
             aiNpcAtacaNpc();
             break;
             
-        case NPC_OBJETO:
+        case NPC_OBJECT:
         	aiNpcObjeto();
         	break;
             
         case NPC_PATHFINDING:
             ////irUsuarioCercano();
-        	aiPathFinding();
+        	pfInfo.aiPathFinding();
             break;
             /********************** FIXME
              * case NPC_PATHFINDING:
@@ -1514,10 +1497,10 @@ End Enum
         this.flags().set(FLAG_PUEDE_ATACAR, false);
         int daño = 0;
         
-        short spellIndex = this.spells[Util.Azar(0, this.spellsCount-1)];
+        short spellIndex = this.spells[Util.random(0, this.spellsCount-1)];
         Spell spell = this.server.getSpell(spellIndex);
         if (spell.SubeHP == 1) {
-            daño = Util.Azar(spell.MinHP, spell.MaxHP);
+            daño = Util.random(spell.MinHP, spell.MaxHP);
             user.sendWave(spell.WAV);
             user.sendCreateFX(spell.FXgrh, spell.loops);
             user.stats().addHP(daño);
@@ -1530,18 +1513,18 @@ End Enum
             if (user.flags().isGM()) {
     			return;
     		}
-            daño = Util.Azar(spell.MinHP, spell.MaxHP);
+            daño = Util.random(spell.MinHP, spell.MaxHP);
             
             // Si el usuario tiene un sombrero mágico de defensa, se reduce el daño
             if (user.userInv().tieneCascoEquipado()) {
-            	daño = daño - Util.Azar(
+            	daño = daño - Util.random(
             			user.userInv().getCasco().DefensaMagicaMin,
             			user.userInv().getCasco().DefensaMagicaMax);
             }
             
             // Si el usuario tiene un anillo mágico de defensa, se reduce el daño
             if (user.userInv().tieneAnilloEquipado()) {
-            	daño = daño - Util.Azar(
+            	daño = daño - Util.random(
             			user.userInv().getAnillo().DefensaMagicaMin,
             			user.userInv().getAnillo().DefensaMagicaMax);
             }
@@ -1643,14 +1626,14 @@ End Enum
     }
 
     private boolean npcImpactoNpc(Npc victim) {
-        long poderAtt = this.poderAtaque;
-        long poderEva = victim.poderEvasion;
-        double probExito = Util.Max(10, Util.Min(90, 50 + ((poderAtt - poderEva) * 0.4)));
-        return (Util.Azar(1, 100) <= probExito);
+        long poderAtt = this.attackPower;
+        long poderEva = victim.dodgePower;
+        double probExito = Math.max(10, Math.min(90, 50 + ((poderAtt - poderEva) * 0.4)));
+        return (Util.random(1, 100) <= probExito);
     }
 
     private void npcDañoNpc(Npc victima) {
-        int daño = Util.Azar(this.stats.MinHIT, this.stats.MaxHIT);
+        int daño = Util.random(this.stats.MinHIT, this.stats.MaxHIT);
         victima.stats.removeHP(daño);
         if (victima.stats.MinHP < 1) {
             this.movement = this.oldMovement;
@@ -1671,7 +1654,7 @@ End Enum
 		}
         this.flags().set(FLAG_PUEDE_ATACAR, false);
         victim.targetNpc = this;
-        victim.movement = AiType.NPC_ATACA_NPC;
+        victim.movement = AiType.NPC_ATTACK_NPC;
 
         if (this.snd1 > 0) {
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x, pos().y));
@@ -1697,96 +1680,12 @@ End Enum
         }
     }
 
-    private boolean userNear() {
-        //#################################################################
-        //Returns True if there is an user adjacent to the npc position.
-        //#################################################################
-        return pos().distance(this.m_pfinfo.m_targetPos) <= 1;
-    }
-
-    private boolean isPathEnd() {
-	    //#################################################################
-	    //Returns if the npc has arrived to the end of its path
-	    //#################################################################
-	    return this.current_step >= this.current_path.size() - 1;
-	}
-
-	private boolean reCalculatePath() {
-        //#################################################################
-        //Returns true if we have to seek a new path
-        //#################################################################
-        if (this.current_path == null) {
-        	return true;
-        } else if (!userNear() && this.current_step == this.current_path.size()) {
-        	return true;
-        }
-        return false;
-    }
-
-    private void followPath() {
-        //#################################################################
-        //Moves the npc.
-        //#################################################################
-        this.current_step++;
-        org.argentumonline.server.aStar.Node node = this.current_path.get(this.current_step);
-        org.argentumonline.server.aStar.Location loc = node.location;
-        MapPos pos = MapPos.mxy(pos().map, (short)loc.x, (short)loc.y);
-        Heading dir = pos().findDirection(pos);
-
-        if (DEBUG)
-        	System.out.println("[PF] " + this.current_step + "/" + this.current_path.size() + ": " + pos() + " >> " + pos + " tg=" + this.m_pfinfo.m_targetPos);
-
-        mover(dir);
-    }
-
-    private void aiPathFinding() {
-        if (reCalculatePath()) {
-            calculatePath();
-            // Existe el camino?
-            if (this.current_path == null) { // Si no existe nos movemos al azar
-            	// Move randomly
-            	moverAlAzar();
-            }
-         } else {
-            if (!isPathEnd()) {
-            	followPath();
-            } else {
-            	this.current_path = null;
-            	this.current_step = 0;
-            }
-          }
-    }
-
-    private void calculatePath() {
-        //private void pathFindingAI() {
-        Map mapa = this.server.getMap(pos().map);
-        if (mapa == null) {
-			return;
-		}
-        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
-            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
-                MapPos pos = MapPos.mxy(pos().map, x, y);
-                if (pos.isValid()) {
-                    if (mapa.hasUser(x, y)) {
-                        User user = mapa.getUser(x, y);
-                        if (user.isAlive() && !user.isInvisible() && !user.isHidden() && user.isAllowingChase()) {
-                        	this.m_pfinfo = new PFINFO(MapPos.mxy(pos().map, x, y), user);
-                        	PathFinding pf = new PathFinding();
-                        	this.current_path = pf.seekPath(this);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     public void backupNpc(IniFile ini) {
         // Sub BackUPnPc(NpcIndex As Integer)
         // General
         String section = "NPC" + this.npcNumber;
         ini.setValue(section, "NpcType", this.npcType.value());
-        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
+        if (this.npcType == NpcType.NPCTYPE_ROYAL_GUARD) {
             ini.setValue(section, "GuardiaPersigue", this.guardiaPersigue);
         }
         ini.setValue(section, "Name", this.name);
@@ -1795,7 +1694,7 @@ End Enum
         ini.setValue(section, "Body", this.infoChar.body);
         ini.setValue(section, "Heading", this.infoChar.heading.value());
         ini.setValue(section, "Movement", this.movement.ordinal());
-        ini.setValue(section, "TipoItems", this.tipoItems);
+        ini.setValue(section, "TipoItems", this.objType);
         ini.setValue(section, "GiveEXP", this.giveEXP);
         ini.setValue(section, "GiveGLD", this.giveGLD);
         ini.setValue(section, "Inflacion", this.inflation);
@@ -1822,9 +1721,9 @@ End Enum
         ini.setValue(section, "AfectaParalisis", this.flags().get(FLAG_AFECTA_PARALISIS));
         ini.setValue(section, "GolpeExacto", this.flags().get(FLAG_GOLPE_EXACTO));
         
-        ini.setValue(section, "Domable", this.domable);
-        ini.setValue(section, "PoderAtaque", this.poderAtaque);
-        ini.setValue(section, "PoderEvasion", this.poderEvasion);
+        ini.setValue(section, "Domable", this.tamable);
+        ini.setValue(section, "PoderAtaque", this.attackPower);
+        ini.setValue(section, "PoderEvasion", this.dodgePower);
 
         ini.setValue(section, "Snd1", this.snd1);
         ini.setValue(section, "Snd2", this.snd2);
@@ -1848,7 +1747,7 @@ End Enum
         String section = "NPC" + npc_ind;
 
         this.npcType = NpcType.value(ini.getShort(section, "NpcType"));
-        if (this.npcType == NpcType.NPCTYPE_GUARDIAS_REAL) {
+        if (this.npcType == NpcType.NPCTYPE_ROYAL_GUARD) {
         	this.guardiaPersigue = ini.getShort(section, "GuardiaPersigue");
         }
         this.name = ini.getString(section, "Name");
@@ -1858,7 +1757,7 @@ End Enum
         this.infoChar.heading      = Heading.value(ini.getShort(section, "Heading"));
         this.movement 	 = AiType.value(ini.getShort(section, "Movement"));
         this.oldMovement = this.movement;
-        this.tipoItems = ini.getShort(section, "TipoItems"); // Tipo de items con los que comercia
+        this.objType = ini.getShort(section, "TipoItems"); // Tipo de items con los que comercia
         this.giveEXP   = ini.getInt(section, "GiveEXP");
         this.giveGLD        = ini.getInt(section, "GiveGLD");
         this.expCount  = this.giveEXP / 2;
@@ -1889,9 +1788,9 @@ End Enum
         this.flags().set(FLAG_AFECTA_PARALISIS, ini.getInt(section, "AfectaParalisis") == 1);
         this.flags().set(FLAG_GOLPE_EXACTO, ini.getInt(section, "GolpeExacto") == 1);
 
-        this.domable = ini.getShort(section, "Domable");
-        this.poderAtaque	= ini.getInt(section, "PoderAtaque");
-        this.poderEvasion	= ini.getInt(section, "PoderEvasion");
+        this.tamable = ini.getShort(section, "Domable");
+        this.attackPower	= ini.getInt(section, "PoderAtaque");
+        this.dodgePower	= ini.getInt(section, "PoderEvasion");
 
         this.snd1  = (byte) ini.getShort(section, "Snd1");
         this.snd2  = (byte) ini.getShort(section, "Snd2");
@@ -1992,7 +1891,7 @@ End Enum
     }
 
     public boolean isTrainer() {
-    	return npcType() == NpcType.NPCTYPE_ENTRENADOR;
+    	return npcType() == NpcType.NPCTYPE_TRAINER;
     }
 
     public void setPetTargetNpc(Npc targetNpc) {
@@ -2001,7 +1900,7 @@ End Enum
     		return;
     	}
 		this.targetNpc = targetNpc;
-		this.movement = AiType.NPC_ATACA_NPC;
+		this.movement = AiType.NPC_ATTACK_NPC;
     }
 
 
@@ -2012,5 +1911,28 @@ End Enum
 	private NpcFlags flags() {
 		return flags;
 	}
+
+    public void calculatePath() {
+        //private void pathFindingAI() {
+        Map mapa = this.server.getMap(pos().map);
+        if (mapa == null) {
+			return;
+		}
+        for (byte x = (byte) (pos().x-10); x <= (byte) (pos().x+10); x++) {
+            for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
+                MapPos pos = MapPos.mxy(pos().map, x, y);
+                if (pos.isValid()) {
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
+                        if (user.isAlive() && !user.isInvisible() && !user.isHidden() && user.isAllowingChase()) {
+                        	this.pfInfo = new PathFinding(this, MapPos.mxy(pos().map, x, y), user);
+                        	this.pfInfo.init();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }

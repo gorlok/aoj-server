@@ -37,7 +37,7 @@ import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.argentumonline.server.Ciudad;
+import org.argentumonline.server.City;
 import org.argentumonline.server.Clazz;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.Skill;
@@ -134,7 +134,7 @@ public class UserStorage {
 			throw new java.io.IOException("Clase desconocida: " + ini.getString("INIT", "Clase").toUpperCase());
 		}
 		user.race = UserRace.value(ini.getShort("INIT", "Raza"));
-		user.homeland = Ciudad.value(ini.getShort("INIT", "Hogar"));
+		user.homeland = City.value(ini.getShort("INIT", "Hogar"));
 
 		user.origChar().head = ini.getShort("INIT", "Head");
 		user.origChar().body = ini.getShort("INIT", "Body");

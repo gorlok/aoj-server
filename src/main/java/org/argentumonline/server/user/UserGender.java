@@ -19,8 +19,8 @@ package org.argentumonline.server.user;
 
 public enum UserGender {
 	
-    /* 1 */ GENERO_HOMBRE("HOMBRE"),
-    /* 2 */ GENERO_MUJER("MUJER");
+    /* 1 */ GENERO_MAN("HOMBRE"),
+    /* 2 */ GENERO_WOMAN("MUJER");
 	
 	private String name;
 	
@@ -39,9 +39,9 @@ public enum UserGender {
 	
 	public static UserGender fromString(String value) {
 		if ("MUJER".equalsIgnoreCase(value))
-			return GENERO_MUJER;
+			return GENERO_WOMAN;
 		if ("HOMBRE".equalsIgnoreCase(value))
-			return GENERO_HOMBRE;
+			return GENERO_MAN;
 		return null;
 	}
 	

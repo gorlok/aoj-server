@@ -24,33 +24,31 @@ import java.util.Arrays;
  */
 public enum UserRace {
 	
-	/*1*/ RAZA_HUMANO ("Humano", 2, 1, 2, 1, 0),
-	/*2*/ RAZA_ELFO 	("Elfo", 0, 2, 0, 2, 2),
-	/*3*/ RAZA_DROW   ("Elfo Oscuro", 1, 2, 0, 2, 2),
-	/*4*/ RAZA_ENANO	("Enano", 3, 0, 3, -6, 0),
-	/*5*/ RAZA_GNOMO	("Gnomo", -5, 3, 0, 3, 0);
+	/*1*/ RAZA_HUMAN 	("Humano", 2, 1, 2, 1, 0),
+	/*2*/ RAZA_ELF 		("Elfo", 0, 2, 0, 2, 2),
+	/*3*/ RAZA_DROW   	("Elfo Oscuro", 1, 2, 0, 2, 2),
+	/*4*/ RAZA_DWARF	("Enano", 3, 0, 3, -6, 0),
+	/*5*/ RAZA_GNOME	("Gnomo", -5, 3, 0, 3, 0);
 
 	private String name;
-    private int modificadorFuerza;
-    private int modificadorAgilidad;
-    private int modificadorConstitucion;
-    private int modificadorInteligencia;
-    private int modificadorCarisma;
 	
-	private UserRace(String name, 
-			int modificadorFuerza, 
-			int modificadorAgilidad, 
-			int modificadorConstitucion,
-			int modificadorInteligencia, 
-			int modificadorCarisma) {
+    private int strengthModifier;
+    private int agilityModifier;
+    private int constitutionModifier;
+    private int inteligenceModifier;
+    private int charismaModifier;
+	
+	
+	private UserRace(String name, int strengthModifier, int agilityModifier, int constitutionModifier,
+			int inteligenceModifier, int charismaModifier) {
 		this.name = name;
-		this.modificadorFuerza = modificadorFuerza;
-		this.modificadorAgilidad = modificadorAgilidad;
-		this.modificadorConstitucion = modificadorConstitucion;
-		this.modificadorInteligencia = modificadorInteligencia;
-		this.modificadorCarisma = modificadorCarisma;
+		this.strengthModifier = strengthModifier;
+		this.agilityModifier = agilityModifier;
+		this.constitutionModifier = constitutionModifier;
+		this.inteligenceModifier = inteligenceModifier;
+		this.charismaModifier = charismaModifier;
 	}
-	
+
 	private static final UserRace[] VALUES = UserRace.values();
 	public static UserRace value(int value) {
 		return VALUES[value-1];
@@ -74,24 +72,24 @@ public enum UserRace {
 		return name;
 	}
 
-	public byte modificadorFuerza() {
-		return (byte)modificadorFuerza;
+	public byte getStrengthModifier() {
+		return (byte)strengthModifier;
 	}
 
-	public byte modificadorAgilidad() {
-		return (byte)modificadorAgilidad;
+	public byte getAgilityModifier() {
+		return (byte)agilityModifier;
 	}
 
-	public byte modificadorConstitucion() {
-		return (byte)modificadorConstitucion;
+	public byte getConstitutionModifier() {
+		return (byte)constitutionModifier;
 	}
 
-	public byte modificadorInteligencia() {
-		return (byte)modificadorInteligencia;
+	public byte getInteligenceModifier() {
+		return (byte)inteligenceModifier;
 	}
 
-	public byte modificadorCarisma() {
-		return (byte)modificadorCarisma;
+	public byte getCharismaModifier() {
+		return (byte)charismaModifier;
 	}
 	
 }

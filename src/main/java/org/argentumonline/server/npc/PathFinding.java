@@ -24,21 +24,17 @@ import org.argentumonline.server.aStar.AStar;
 import org.argentumonline.server.aStar.Constants;
 import org.argentumonline.server.aStar.Location;
 import org.argentumonline.server.aStar.Node;
+import org.argentumonline.server.map.Heading;
 import org.argentumonline.server.map.Map;
 import org.argentumonline.server.map.MapPos;
+import org.argentumonline.server.user.User;
 
-/**
- * @author gorlok
- */
 public class PathFinding {
-    
-    static int current = Constants.NOTHING, startI = Constants.NOTHING, startJ = Constants.NOTHING, finishI = Constants.NOTHING,
-	finishJ = Constants.NOTHING;
-
-	int[][] grid = new int[100][100];
-	static int[] costs = new int[Constants.NUMCOLORS];
 	
-	private void init() {
+	private int[][] grid = new int[100][100];
+	
+	private static int[] costs = new int[Constants.NUMCOLORS];
+	static {
 	    costs[Constants.EMPTY] = 1;
 	    costs[Constants.TERRAIN1] = 5;
 	    costs[Constants.TERRAIN2] = 10;
@@ -47,18 +43,27 @@ public class PathFinding {
 	    costs[Constants.START] = 1;
 	    costs[Constants.FINISH] = 1;
 	}
+	
+	private Npc npc;
+	
+	private List<Node> current_path = null;
+	private int current_step = 0;
 
-    /** Creates a new instance of PathFinding */
-    public PathFinding() {
-    	init();
-    }
-    
+	private MapPos targetPos;
+	private User targetUser;
+	
+	public PathFinding(Npc npc, MapPos targetPos, User targetUser) {
+		this.npc = npc;
+		this.targetPos = targetPos;
+		this.targetUser = targetUser;
+	}
+	
     public List<Node> seekPath(Npc npc) {
     	GameServer server = GameServer.instance();
     	short m = npc.pos().map;
     	Map mapa = server.getMap(m);
     	MapPos start = npc.pos();
-    	MapPos end = npc.m_pfinfo.m_targetPos;
+    	MapPos end = this.targetPos;
     	for (short x = 1; x <= 100; x++) {
 			for (short y = 1; y <= 100; y++) {
     			if (mapa.isLegalPosNPC(MapPos.mxy(m, x, y), npc.isWaterValid())) {
@@ -75,5 +80,71 @@ public class PathFinding {
     	AStar astar = new AStar(this.grid, costs, loc_start, loc_end);
     	return astar.AStarSearch(null);
     }
+	
+	public MapPos getTargetPos() {
+		return targetPos;
+	}
+	
+	public User getTargetUser() {
+		return targetUser;
+	}
+	
+	public void reset() {
+        this.current_step = 0;
+        this.current_path = null;
+	}
+	
+	/** Returns if the npc has arrived to the end of its path */
+    private boolean isPathEnd() {
+	    return this.current_step >= this.current_path.size() - 1;
+	}
     
+    /** Returns True if there is an user adjacent to the npc position. */
+    private boolean userNear() {
+        return this.npc.pos().distance(this.targetPos) <= 1;
+    }
+
+    /** Returns true if we have to seek a new path */
+	private boolean reCalculatePath() {
+        if (this.current_path == null) {
+        	return true;
+        } else if (!userNear() && this.current_step == this.current_path.size()) {
+        	return true;
+        }
+        return false;
+    }
+
+	/** Moves the npc. */
+    private void followPath() {
+        this.current_step++;
+        org.argentumonline.server.aStar.Node node = this.current_path.get(this.current_step);
+        org.argentumonline.server.aStar.Location loc = node.location;
+        MapPos pos = MapPos.mxy(this.npc.pos().map, (short)loc.x, (short)loc.y);
+        Heading dir = this.npc.pos().findDirection(pos);
+
+        this.npc.move(dir);
+    }
+
+    public void aiPathFinding() {
+        if (reCalculatePath()) {
+            this.npc.calculatePath();
+            // Existe el camino?
+            if (this.current_path == null) { // Si no existe nos movemos al azar
+            	// Move randomly
+            	this.npc.moverAlAzar();
+            }
+         } else {
+            if (!isPathEnd()) {
+            	followPath();
+            } else {
+            	this.current_path = null;
+            	this.current_step = 0;
+            }
+          }
+    }
+
+	public void init() {
+    	this.current_path = seekPath(npc);
+	}
+
 }
