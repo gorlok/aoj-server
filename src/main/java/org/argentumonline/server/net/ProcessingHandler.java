@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.GameServer;
+import org.argentumonline.server.gm.ChangeMapInfo;
 import org.argentumonline.server.gm.EditChar;
 import org.argentumonline.server.map.Heading;
 import org.argentumonline.server.protocol.*;
@@ -839,35 +840,35 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case ChangeMapInfoBackup:
-			server.manager().changeMapInfoBackup(user, ((ChangeMapInfoBackupRequest)packet).doTheBackup == 1);
+			ChangeMapInfo.changeMapInfoBackup(server, user, ((ChangeMapInfoBackupRequest)packet).doTheBackup == 1);
 			break;
 			
 		case ChangeMapInfoLand:
-			server.manager().changeMapInfoLand(user, ((ChangeMapInfoLandRequest)packet).infoLand);
+			ChangeMapInfo.changeMapInfoLand(server, user, ((ChangeMapInfoLandRequest)packet).infoLand);
 			break;
 			
 		case ChangeMapInfoZone:
-			server.manager().changeMapInfoZone(user, ((ChangeMapInfoZoneRequest)packet).infoZone);
+			ChangeMapInfo.changeMapInfoZone(server, user, ((ChangeMapInfoZoneRequest)packet).infoZone);
 			break;
 			
 		case ChangeMapInfoNoInvi:
-			server.manager().changeMapInfoNoInvi(user, ((ChangeMapInfoNoInviRequest)packet).noInvisible == 1);
+			ChangeMapInfo.changeMapInfoNoInvi(server, user, ((ChangeMapInfoNoInviRequest)packet).noInvisible == 1);
 			break;
 			 
 		case ChangeMapInfoNoMagic:
-			server.manager().changeMapInfoNoMagic(user, ((ChangeMapInfoNoMagicRequest)packet).noMagic == 1);
+			ChangeMapInfo.changeMapInfoNoMagic(server, user, ((ChangeMapInfoNoMagicRequest)packet).noMagic == 1);
 			break;			
 			
 		case ChangeMapInfoNoResu:
-			server.manager().changeMapInfoNoResu(user, ((ChangeMapInfoNoResuRequest)packet).noResu == 1);
+			ChangeMapInfo.changeMapInfoNoResu(server, user, ((ChangeMapInfoNoResuRequest)packet).noResu == 1);
 			break;
 			
 		case ChangeMapInfoPK:
-			server.manager().changeMapInfoPK(user, ((ChangeMapInfoPKRequest)packet).isMapPk == 1);
+			ChangeMapInfo.changeMapInfoPK(server, user, ((ChangeMapInfoPKRequest)packet).isMapPk == 1);
 			break;
 			
 		case ChangeMapInfoRestricted:
-			server.manager().changeMapInfoRestricted(user, ((ChangeMapInfoRestrictedRequest)packet).status);
+			ChangeMapInfo.changeMapInfoRestricted(server, user, ((ChangeMapInfoRestrictedRequest)packet).status);
 			break;
 			
 		case EditChar:
