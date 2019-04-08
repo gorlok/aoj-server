@@ -132,7 +132,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 
 		case Attack:
-			user.atack();
+			user.attack();
 			break;
 			
 		case UseItem:
@@ -144,11 +144,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case CommerceStart:
-			user.commerceStart();
+			user.getUserTrade().commerceStart();
 			break;
 			
 		case CommerceEnd:
-			user.commerceEnd();
+			user.getUserTrade().commerceEnd();
 			break;
 			
 		case CommerceBuy:
@@ -1023,11 +1023,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleCommerceSell(CommerceSellRequest packet, User user) {
-		user.commerceSellToMerchant(packet.slot, packet.amount);		
+		user.getUserTrade().commerceSellToMerchant(packet.slot, packet.amount);		
 	}
 
 	private void handleCommerceBuy(CommerceBuyRequest packet, User user) {
-		user.commerceBuyFromMerchant(packet.slot, packet.amount);
+		user.getUserTrade().commerceBuyFromMerchant(packet.slot, packet.amount);
 	}
 
 	private void handleEquipItem(EquipItemRequest packet, User user) {
@@ -1064,7 +1064,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleDoubleClick(DoubleClickRequest packet, User user) {
-		user.clicDerechoMapa(packet.x, packet.y);
+		user.doubleClickOnMap(packet.x, packet.y);
 	}
 
 	private void handleLeftClick(LeftClickRequest packet, User user) {

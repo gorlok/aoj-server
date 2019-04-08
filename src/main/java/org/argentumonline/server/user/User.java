@@ -56,7 +56,6 @@ import org.argentumonline.server.net.ServerPacket;
 import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.npc.NpcCashier;
 import org.argentumonline.server.npc.NpcGambler;
-import org.argentumonline.server.npc.NpcMerchant;
 import org.argentumonline.server.npc.NpcTrainer;
 import org.argentumonline.server.npc.NpcType;
 import org.argentumonline.server.protocol.AttributesResponse;
@@ -66,12 +65,9 @@ import org.argentumonline.server.protocol.BlockedWithShieldOtherResponse;
 import org.argentumonline.server.protocol.BlockedWithShieldUserResponse;
 import org.argentumonline.server.protocol.ChangeInventorySlotResponse;
 import org.argentumonline.server.protocol.ChangeMapResponse;
-import org.argentumonline.server.protocol.ChangeUserTradeSlotResponse;
 import org.argentumonline.server.protocol.CharacterChangeResponse;
 import org.argentumonline.server.protocol.CharacterCreateResponse;
 import org.argentumonline.server.protocol.ChatOverHeadResponse;
-import org.argentumonline.server.protocol.CommerceEndResponse;
-import org.argentumonline.server.protocol.CommerceInitResponse;
 import org.argentumonline.server.protocol.ConsoleMsgResponse;
 import org.argentumonline.server.protocol.DiceRollResponse;
 import org.argentumonline.server.protocol.DisconnectResponse;
@@ -213,13 +209,13 @@ public class User extends AbstractCharacter {
     public short partyIndex = 0;  // index a la party q es miembro
     public short partySolicitud = 0; // index a la party q solicito
     
-	SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
+	private SpeedHackCheck speedHackMover = new SpeedHackCheck("SpeedHack de mover");
 	
-	GameServer server;
+	private GameServer server;
 	
-	public User(GameServer aoserver) {
-		init(aoserver);
-		this.userTrade = new UserTrade(this);
+	public User(GameServer server) {
+		init(server);
+		this.userTrade = new UserTrade(server, this);
 	}
 	
 	public void setChannel(Channel channel) {
@@ -289,6 +285,10 @@ public class User extends AbstractCharacter {
 
 	public GuildUser guildInfo() {
 		return this.guildUser;
+	}
+	
+	public UserTrade getUserTrade() {
+		return userTrade;
 	}
 
 	public int nextCRC() {
@@ -746,188 +746,6 @@ public class User extends AbstractCharacter {
 		} else {
 			npcTrainer.spawnTrainerPet(petIndex);
 		}
-	}
-
-	public void commerceBuyFromMerchant(byte slotNpc, short amount) {
-		// Comando COMP
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!checkAlive()) {
-			return;
-		}
-		// ¿El target es un Npc valido?
-		if (getFlags().TargetNpc == 0) {
-			return;
-		}
-		Npc npc = this.server.npcById(getFlags().TargetNpc);
-		if (npc == null) {
-			return;
-		}
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa == null) {
-			return;
-		}
-		// ¿El Npc puede comerciar?
-		if (!npc.isTrade()) {
-			talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
-			return;
-		}
-		if (npc.npcInv().isValidSlot(slotNpc)) {
-			((NpcMerchant)npc).sellItemToUser(this, slotNpc, amount);
-		}
-	}
-
-	public void commerceSellToMerchant(byte slot, short amount) {
-		// Comando VEND
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!checkAlive()) {
-			return;
-		}
-		// ¿El target es un Npc valido?
-		if (getFlags().TargetNpc == 0) {
-			return;
-		}
-		Npc npc = this.server.npcById(getFlags().TargetNpc);
-		if (npc == null) {
-			return;
-		}
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa == null) {
-			return;
-		}
-		// ¿El Npc puede comerciar?
-		if (!npc.isTrade()) {
-			talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
-			return;
-		}
-
-		if (npc.npcInv().isValidSlot(slot)) {
-			((NpcMerchant)npc).buyItemFromUser(this, slot, amount);
-		}
-	}
-
-	public void updateVentanaComercio(short objIndex, int amount) {
-		ObjectInfo objInfo = (objIndex == 0) ? ObjectInfo.EMPTY : findObj(objIndex);
-		sendPacket(new ChangeUserTradeSlotResponse(
-				objInfo.ObjIndex,
-				objInfo.Nombre,
-				amount,
-				objInfo.GrhIndex,
-				objInfo.objType.value(),
-				objInfo.MaxHIT,
-				objInfo.MinHIT,
-				objInfo.Def,
-				objInfo.Valor));
-	}
-
-	public void commerceEnd() {
-		getFlags().Comerciando = false;
-		sendPacket(new CommerceEndResponse());
-	}
-
-	public double descuento() {
-		// Establece el descuento en funcion del skill comercio
-		final double indicesDto[] = {
-				1.0, // 0-5
-				1.1, 1.1, // 6-10
-				1.2, 1.2, // 11-20
-				1.3, 1.3, // 21-30
-				1.4, 1.4, // 31-40
-				1.5, 1.5, // 41-50
-				1.6, 1.6, // 51-60
-				1.7, 1.7, // 61-70
-				1.8, 1.8, // 71-80
-				1.9, 1.9, // 81-90
-				2.0, 2.0 // 91-100
-		};
-		int ptsComercio = skills().get(Skill.SKILL_Comerciar);
-		getFlags().Descuento = indicesDto[(short) (ptsComercio / 5)];
-		return getFlags().Descuento;
-	}
-
-	public void commerceStart() {
-		// Comando /COMERCIAR
-		if (!checkAlive()) {
-			return;
-		}
-		if (getFlags().isCounselor()) {
-			return;
-		}
-
-		if (isTrading()) {
-			sendMessage("Ya estás comerciando", FontType.FONTTYPE_INFO);
-			return;
-		}
-
-		Map mapa = this.server.getMap(pos().map);
-		if (mapa == null) {
-			return;
-		}
-		Npc npc = getNearNpcSelected(DISTANCE_MERCHANT);
-		if (npc != null) {
-			// ¿El Npc puede comerciar?
-			if (!npc.isTrade()) {
-				if (npc.getDesc().length() > 0) {
-					talk(COLOR_BLANCO, "No tengo ningun interes en comerciar.", npc.getId());
-				}
-				return;
-			}
-
-			// Mandamos el Inventario
-			((NpcMerchant)npc).sendNpcInventoryToUser(this);
-			sendInventoryToUser();
-			sendUpdateUserStats();
-
-			// Iniciamos el comercio con el Npc
-			sendPacket(new CommerceInitResponse());
-			getFlags().Comerciando = true;
-		}
-
-		if (getFlags().TargetUser > 0) {
-            //User commerce...
-            //Can he commerce??
-			if (getFlags().isCounselor()) {
-				sendMessage("No puedes vender items.", FontType.FONTTYPE_WARNING);
-                return;
-			}
-
-			User targetUser = this.server.userById(getFlags().TargetUser);
-			if (targetUser == null) {
-				return;
-			}
-            //Is the other one dead??
-			if (!targetUser.isAlive()) {
-				sendMessage("¡¡No puedes comerciar con los muertos!!", FontType.FONTTYPE_INFO);
-                return;
-			}
-
-            //Is it me??
-			if (targetUser == this) {
-				sendMessage("No puedes comerciar con vos mismo...", FontType.FONTTYPE_INFO);
-                return;
-			}
-
-            //Check distance
-			if (pos().distance(targetUser.pos()) > 3) {
-				sendMessage("Estás demasiado lejos del usuario.", FontType.FONTTYPE_INFO);
-                return;
-			}
-
-            //Is he already trading?? is it with me or someone else??
-			if (targetUser.isTrading() && targetUser.getFlags().TargetUser != this.getId()) {
-				sendMessage("No puedes comerciar con el usuario en este momento.", FontType.FONTTYPE_INFO);
-			}
-
-            //Initialize some variables...
-			this.userTrade.destUsu = getFlags().TargetUser;
-			this.userTrade.cant = 0;
-			this.userTrade.objectSlot = 0;
-			this.userTrade.acepto = false;
-
-            //Rutina para comerciar con otro usuario
-            this.userTrade.iniciarComercioConUsuario(getFlags().TargetUser);
-		}
-
-		sendMessage("Primero haz click izquierdo sobre el personaje.", FontType.FONTTYPE_INFO);
 	}
 
 	public void trainList() {
@@ -1986,7 +1804,6 @@ public class User extends AbstractCharacter {
 	}
 
 	public void throwDices() { // and get lucky!
-
 		// FIXME dados fáciles, hacerlo configurable
 		getStats().attr().set(Attribute.STRENGTH, Util.random(16, 18));
 		getStats().attr().set(Attribute.AGILITY, Util.random(16, 18));
@@ -2022,7 +1839,7 @@ public class User extends AbstractCharacter {
 	 * @param x es la posición x del clic
 	 * @param y es la posición y del clic
 	 */
-	public void clicDerechoMapa(byte x, byte y) {
+	public void doubleClickOnMap(byte x, byte y) {
 		Map mapa = this.server.getMap(pos().map);
 		if (mapa == null) {
 			return;
@@ -2069,7 +1886,7 @@ public class User extends AbstractCharacter {
 					getFlags().TargetNpc = npc.getId();
 					if (npc.isTrade()) {
 						// Doble clic sobre un comerciante, hace /COMERCIAR
-						commerceStart();
+						this.userTrade.commerceStart();
 					} else if (npc.isBankCashier()) {
 						if (!checkAlive()) {
 							return;
@@ -2299,7 +2116,7 @@ public class User extends AbstractCharacter {
 		}
 	}
 
-	public void atack() {
+	public void attack() {
 		if (!checkAlive("¡¡No puedes atacar a nadie por estar muerto!!")) {
 			return;
 		}

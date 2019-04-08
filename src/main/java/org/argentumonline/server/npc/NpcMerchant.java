@@ -90,7 +90,7 @@ public class NpcMerchant extends Npc {
 	
     public void sendNpcInventoryToUser(User user) {
         // Enviamos el inventario del npc con el cual el user va a comerciar...
-        double dto = user.descuento();
+        double dto = user.getUserTrade().descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
@@ -131,7 +131,7 @@ public class NpcMerchant extends Npc {
 		}
         // Calculamos el porc de inflacion del npc
         ObjectInfo info = findObj(npcInv().getObject(slotNpc).objid);
-        double dto = user.descuento();
+        double dto = user.getUserTrade().descuento();
         if (dto == 0.0) {
 			dto = 1.0; // evitamos dividir por 0!
 		}
@@ -196,7 +196,7 @@ public class NpcMerchant extends Npc {
         short objid = npcInv().getObject(slotNpc).objid;
         sendNpcInventoryToUser(user);
         user.sendPacket(new TradeOKResponse());
-        user.updateVentanaComercio(objid, amount);
+        user.getUserTrade().updateVentanaComercio(objid, amount);
     }
 
     public void buyItemFromUser(User user, short slot, int cant) {
@@ -267,7 +267,7 @@ public class NpcMerchant extends Npc {
             user.sendUpdateUserStats();
             sendNpcInventoryToUser(user);
             // Actualizamos la ventana de comercio
-        	user.updateVentanaComercio(objid, cant);
+        	user.getUserTrade().updateVentanaComercio(objid, cant);
         	user.sendPacket(new TradeOKResponse());
         }
     }
