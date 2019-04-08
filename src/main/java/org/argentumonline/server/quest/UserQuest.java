@@ -20,7 +20,7 @@ package org.argentumonline.server.quest;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.npc.NpcType;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 
 /**
@@ -45,99 +45,99 @@ public class UserQuest {
         return this.server.quest(this.m_nroQuest);
     }
     
-    public void checkNpcEnemigo(Player player, Npc npc) {
+    public void checkNpcEnemigo(User user, Npc npc) {
         if (this.m_enQuest && npc.isQuest()) {
             Quest quest  = this.server.quest(this.m_nroQuest);
             if (quest.Objetivo == 4) {
                 this.m_realizoQuest = true;
-                player.sendMessage("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);
+                user.sendMessage("Has encontrado y eliminado a la criatura de la quest. ¡Ahora ve por tu recompensa!", FontType.FONTTYPE_FIGHT);
             }
         }
     }
 
-	public void doIniciarAventura(Player player) {
+	public void doIniciarAventura(User user) {
 		// Comando /AVENTURA
 		// Se asegura que el target es un npc
-		Npc npc = player.getNearNpcSelected(Player.DISTANCE_QUEST);
+		Npc npc = user.getNearNpcSelected(User.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
-		if (!player.checkAlive()) {
+		if (!user.checkAlive()) {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		getQuest().hacerQuest(player, npc);
+		getQuest().hacerQuest(user, npc);
 	}
 
-	public void doRecompensaAventura(Player player) {
+	public void doRecompensaAventura(User user) {
 		// Comando /REWARD
 		// Se asegura que el target es un npc
-		Npc npc = player.getNearNpcSelected(Player.DISTANCE_QUEST);
+		Npc npc = user.getNearNpcSelected(User.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
-		if (!player.checkAlive()) {
+		if (!user.checkAlive()) {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		getQuest().recibirRecompensaQuest(player);
+		getQuest().recibirRecompensaQuest(user);
 	}
 
-	public void doInfoAventura(Player player) {
+	public void doInfoAventura(User user) {
 		// Comando /INFOQ
 		// Se asegura que el target es un npc
-		Npc npc = player.getNearNpcSelected(Player.DISTANCE_QUEST);
+		Npc npc = user.getNearNpcSelected(User.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
-		if (!player.checkAlive()) {
+		if (!user.checkAlive()) {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		getQuest().sendInfoQuest(player);
+		getQuest().sendInfoQuest(user);
 	}
 
-	public void doRendirseAventura(Player player) {
+	public void doRendirseAventura(User user) {
 		// Comando /MERINDO
 		// Se asegura que el target es un npc
-		Npc npc = player.getNearNpcSelected(Player.DISTANCE_QUEST);
+		Npc npc = user.getNearNpcSelected(User.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
-		if (!player.checkAlive()) {
+		if (!user.checkAlive()) {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		getQuest().userSeRinde(player);
+		getQuest().userSeRinde(user);
 	}
 
-	public void doAdivinarAventura(Player player) {
+	public void doAdivinarAventura(User user) {
 		// Comando /ADIVINA
 		// Se asegura que el target es un npc
-		Npc npc = player.getNearNpcSelected(Player.DISTANCE_QUEST);
+		Npc npc = user.getNearNpcSelected(User.DISTANCE_QUEST);
 		if (npc == null) {
 			return;
 		}
-		if (!player.checkAlive()) {
+		if (!user.checkAlive()) {
 			return;
 		}
 		if (npc.npcType() != NpcType.NPCTYPE_QUEST) {
-			player.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Busca aventuras en otro lado.", FontType.FONTTYPE_INFO);
 			return;
 		}
-		getQuest().checkNpcAmigo(player);
+		getQuest().checkNpcAmigo(user);
 	}
 
 }

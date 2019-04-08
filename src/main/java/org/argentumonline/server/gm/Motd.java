@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.Constants;
 import org.argentumonline.server.protocol.GuildChatResponse;
 import org.argentumonline.server.protocol.ShowMOTDEditionFormResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
 import org.argentumonline.server.util.Log;
@@ -81,14 +81,14 @@ public class Motd {
     	this.m_motd.addAll(motd);
     }
 
-	public void startUpdateMOTD(Player player) {
+	public void startUpdateMOTD(User user) {
 		// Iniciar el cambio de MOTD
 		// Comando /MOTDCAMBIA
-		if (!player.isGod()) {
+		if (!user.isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(player.getNick(), "/MOTDCAMBIA");
+		Log.logGM(user.getNick(), "/MOTDCAMBIA");
 		StringBuffer sb = new StringBuffer();
 		List<String> motd = getMOTD();
 		if (!motd.isEmpty()) {
@@ -97,36 +97,36 @@ public class Motd {
 			}
 			sb.delete(sb.length() - 2, sb.length());
 		}
-		player.sendPacket(new ShowMOTDEditionFormResponse(sb.toString()));
+		user.sendPacket(new ShowMOTDEditionFormResponse(sb.toString()));
 	}
 
-	public void updateMOTD(Player player, String s) {
+	public void updateMOTD(User user, String s) {
 		// Finalizar el cambio de MOTD
 		// Comando ZMOTD
-		if (!player.isGod()) {
+		if (!user.isGod()) {
 			return;
 		}
 		String CRLF = "" + (char) 13 + (char) 10;
-		Log.logGM(player.getNick(), "ZMOTD " + s);
+		Log.logGM(user.getNick(), "ZMOTD " + s);
 		List<String> motd = new ArrayList<String>();
 		for (StringTokenizer st = new StringTokenizer(s, CRLF); st.hasMoreTokens();) {
 			motd.add(st.nextToken());
 		}
 		setMOTD(motd);
 		guardarMotd();
-		player.sendMessage("MOTD actualizado.", FontType.FONTTYPE_INFO);
+		user.sendMessage("MOTD actualizado.", FontType.FONTTYPE_INFO);
 	}
 
-	public void showMOTD(Player player) {
+	public void showMOTD(User user) {
 		// Comando /MOTD
 		// Envia los mensajes del dia.
 		List<String> motd = getMOTD();
 		if (motd.isEmpty()) {
 			return;
 		}
-		player.sendPacket(new GuildChatResponse("Mensajes de entrada:"));
+		user.sendPacket(new GuildChatResponse("Mensajes de entrada:"));
 		for (String line : motd) {
-			player.sendPacket(new GuildChatResponse(line));
+			user.sendPacket(new GuildChatResponse(line));
 		}
 	}
     

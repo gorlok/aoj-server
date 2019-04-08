@@ -21,7 +21,7 @@ import static org.argentumonline.server.util.Color.COLOR_BLANCO;
 
 import org.argentumonline.server.GamblerStats;
 import org.argentumonline.server.GameServer;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.Util;
 
@@ -34,52 +34,52 @@ public class NpcGambler extends Npc {
 		super(npc_number, server);
 	}		
 
-	public void bet(Player player, int gold) {
+	public void bet(User user, int gold) {
 		// Comando /APOSTAR
 		
 		if (gold < 0) {
-			player.talk(COLOR_BLANCO, "Has ingresado una apuesta inválida.", getId());
+			user.talk(COLOR_BLANCO, "Has ingresado una apuesta inválida.", getId());
 			return;
 		}
 		
 		if (gold < 1) {
-			player.talk(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", getId());
+			user.talk(COLOR_BLANCO, "El mínimo de apuesta es 1 moneda.", getId());
 			return;
 		}
 		
 		if (gold > APUESTA_MAXIMA) {
-			player.talk(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", getId());
+			user.talk(COLOR_BLANCO, "El máximo de apuesta es " + APUESTA_MAXIMA + " monedas.", getId());
 			return;
 		}
 		
-		if (player.stats().getGold() < gold) {
-			switch (player.gender()) {
+		if (user.stats().getGold() < gold) {
+			switch (user.gender()) {
 			case GENERO_HOMBRE:
-				player.talk(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
+				user.talk(COLOR_BLANCO, "No tienes esa cantidad, embustero!", getId());
 				break;
 			case GENERO_MUJER:
-				player.talk(COLOR_BLANCO, "No tienes esa cantidad, embustera!", getId());
+				user.talk(COLOR_BLANCO, "No tienes esa cantidad, embustera!", getId());
 				break;
 			};
 			return;
 		}
 		
 		if (Util.Azar(1, 100) <= 45) {
-			player.stats().addGold( gold );
-			player.talk(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
+			user.stats().addGold( gold );
+			user.talk(COLOR_BLANCO, "Felicidades! Has ganado " + gold + " monedas de oro!", getId());
 			
 			server.getGamblerStats().incrementLost(gold);
 		} else {
-			player.stats().addGold( -gold );
-			player.talk(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
+			user.stats().addGold( -gold );
+			user.talk(COLOR_BLANCO, "Lo siento, has perdido " + gold + " monedas de oro.", getId());
 			
 			server.getGamblerStats().incrementWins(gold);
 		}
-		player.sendUpdateUserStats();
+		user.sendUpdateUserStats();
 	}
 
-	public void balance(Player player) {
-		if (player.flags().isGM()) {
+	public void balance(User user) {
+		if (user.flags().isGM()) {
 			var gamblerStats = server.getGamblerStats();
 			
             long earnings = gamblerStats.getGanancias() - gamblerStats.getPerdidas();
@@ -93,7 +93,7 @@ public class NpcGambler extends Npc {
             	percentage = (int) (earnings * 100 / gamblerStats.getPerdidas()); 
             }
             
-            player.sendMessage(
+            user.sendMessage(
             		"Entradas: " + gamblerStats.getGanancias() +
             		" Salidas: " + gamblerStats.getPerdidas() +
             		" Ganancia Neta: " + earnings + " (" + percentage + "%)" +

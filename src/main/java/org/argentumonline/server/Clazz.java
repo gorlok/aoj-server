@@ -20,7 +20,7 @@ package org.argentumonline.server;
 import java.util.Arrays;
 
 import org.argentumonline.server.user.FactionArmors;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.UserRace;
 import org.argentumonline.server.user.UserStats;
 import org.argentumonline.server.user.UserAttributes.Attribute;
@@ -538,8 +538,8 @@ public enum Clazz {
 	}
 
 	/** Subir las estadísticas segun la clase */
-	public void incStats(Player player) {
-		UserStats stats = player.stats();
+	public void incStats(User user) {
+		UserStats stats = user.stats();
 
 		// Las mejoras varian según las características de cada clase.
 		int aumentoSalud = getMejoraSalud(stats);
@@ -550,99 +550,99 @@ public enum Clazz {
 		if (aumentoSalud > 0) {
 			stats.addMaxHP(aumentoSalud);
 			stats.restoreFullHP(); // Recupera la salud al 100%.
-			player.sendMessage("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Has ganado " + aumentoSalud + " puntos de vida.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoStamina > 0) {
 			stats.addMaxSTA(aumentoStamina);
-			player.sendMessage("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Has ganado " + aumentoStamina + " puntos de energia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoMana > 0) {
 			stats.addMaxMANA(aumentoMana);
-			player.sendMessage("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
+			user.sendMessage("Has ganado " + aumentoMana + " puntos de magia.", FontType.FONTTYPE_INFO);
 		}
 		if (aumentoGolpe > 0) {
-			stats.addMaxHIT(aumentoGolpe, player.stats().ELV);
-			stats.addMinHIT(aumentoGolpe, player.stats().ELV);
-			player.sendMessage("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
+			stats.addMaxHIT(aumentoGolpe, user.stats().ELV);
+			stats.addMinHIT(aumentoGolpe, user.stats().ELV);
+			user.sendMessage("Tu golpe maximo aumento en " + aumentoGolpe + " puntos.", FontType.FONTTYPE_INFO);
 		}
 	}
 
-	public short getRoyalArmyArmor(Player player) {
+	public short getRoyalArmyArmor(User user) {
 		switch (this) {
 		case Assassin:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 
 		case Bandit:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 
 		case Hunter:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 		case Mage:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL_ENANOS);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_IMPERIAL);
 		case Paladin:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 		case Warrior:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	        	return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_1);
 	    default:
-			if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+			if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 				return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_3);
 			}
 			return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_IMPERIAL_2);
 		}
 	}
 
-	public short getDarkLegionArmor(Player player) {
+	public short getDarkLegionArmor(User user) {
 		switch (this) {
 		case Assassin:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Bandit:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Hunter:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Mage:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS_ENANOS);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.TUNICA_MAGO_CAOS);
 		case Paladin:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 		case Warrior:
-	        if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+	        if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 	            return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 	        }
 	        return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_1);
 	    default:
-			if (player.race() == UserRace.RAZA_ENANO || player.race() == UserRace.RAZA_GNOMO) {
+			if (user.race() == UserRace.RAZA_ENANO || user.race() == UserRace.RAZA_GNOMO) {
 				return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_3);
 			}
 			return FactionArmors.getFactionArmor(FactionArmors.ARMADURA_CAOS_2);

@@ -99,7 +99,7 @@ public class UserFlags {
     
     public boolean workWatcherRepliedOK = false;
     
-	public enum PlayerType {
+	public enum UserType {
 		
 	    User		(0x01),
 	    Consejero	(0x02),
@@ -111,7 +111,7 @@ public class UserFlags {
 	    RoyalCouncil(0x80);
 	    
 	    private int value;
-	    private PlayerType(int value) {
+	    private UserType(int value) {
 	    	this.value = value;
 		}
 	    
@@ -121,7 +121,7 @@ public class UserFlags {
 	}
 	
 	/**
-	 * This is a binary OR of PlayerType flags.
+	 * This is a binary OR of UserType flags.
 	 * Ordinary user has privileges = 1.
 	 * GM has privileges > 1
 	 */
@@ -142,83 +142,83 @@ public class UserFlags {
     short indexDuel = 0;
     
 	public boolean isGod() {
-		return (privileges & PlayerType.Dios.value()) > 0;
+		return (privileges & UserType.Dios.value()) > 0;
 	}
 
 	public boolean isAdmin() {
-		return (privileges & PlayerType.Admin.value()) > 0;
+		return (privileges & UserType.Admin.value()) > 0;
 	}
 
 	public boolean isDemiGod() {
-		return (privileges & PlayerType.SemiDios.value()) > 0;
+		return (privileges & UserType.SemiDios.value()) > 0;
 	}
 
 	public boolean isCounselor() {
-		return (privileges & PlayerType.Consejero.value()) > 0;
+		return (privileges & UserType.Consejero.value()) > 0;
 	}
 
 	public boolean isGM() {
-		return privileges > PlayerType.User.value();
+		return privileges > UserType.User.value();
 	}
 	
 	public boolean isRoleMaster() {
-		return (privileges & PlayerType.RoleMaster.value()) > 0; 
+		return (privileges & UserType.RoleMaster.value()) > 0; 
 	}
 
 	public boolean isChaosCouncil() {
-		return (privileges & PlayerType.ChaosCouncil.value()) > 0; 
+		return (privileges & UserType.ChaosCouncil.value()) > 0; 
 	}
 
 	public boolean isRoyalCouncil() {
-		return (privileges & PlayerType.RoyalCouncil.value()) > 0; 
+		return (privileges & UserType.RoyalCouncil.value()) > 0; 
 	}
 	
 	public void removeChaosCouncil() {
 		if (isChaosCouncil()) {
-			privileges =- PlayerType.ChaosCouncil.value();
+			privileges =- UserType.ChaosCouncil.value();
 		}
 	}
 	
 	public void removeRoyalCouncil() {
 		if (isRoyalCouncil()) {
-			privileges =- PlayerType.RoyalCouncil.value(); 
+			privileges =- UserType.RoyalCouncil.value(); 
 		}
 	}
 	
 	public void addChaosCouncil() {
 		if (!isChaosCouncil()) {
-			privileges =+ PlayerType.ChaosCouncil.value();
+			privileges =+ UserType.ChaosCouncil.value();
 		}
 	}
 	
 	public void addRoyalCouncil() {
 		if (!isRoyalCouncil()) {
-			privileges =+ PlayerType.RoyalCouncil.value(); 
+			privileges =+ UserType.RoyalCouncil.value(); 
 		}
 	}
 	
 	public void setGod() {
-		this.privileges = PlayerType.Dios.value();
+		this.privileges = UserType.Dios.value();
 	}
 
 	public void setDemiGod() {
-		this.privileges = PlayerType.SemiDios.value();
+		this.privileges = UserType.SemiDios.value();
 	}
 
 	public void setCounselor() {
-		this.privileges = PlayerType.Consejero.value();
+		this.privileges = UserType.Consejero.value();
 	}
 	
 	public void setOrdinaryUser() {
-		this.privileges = PlayerType.User.value();
+		this.privileges = UserType.User.value();
 	}
 
 	public void setChaosCouncil() {
-		this.privileges = PlayerType.ChaosCouncil.value();
+		this.privileges = UserType.ChaosCouncil.value();
 	}
 
 	public void setRoyalCouncil() {
-		this.privileges = PlayerType.RoyalCouncil.value();
+		this.privileges = UserType.RoyalCouncil.value();
 	}
 
 }

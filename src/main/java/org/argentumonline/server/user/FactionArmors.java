@@ -47,7 +47,7 @@ public enum FactionArmors {
 		return factionArmors[factiorArmor.ordinal()];
 	}
     
-	public static void sendFactionArmor(Player admin, FactionArmors factiorArmor) {
+	public static void sendFactionArmor(User admin, FactionArmors factiorArmor) {
 		String msg = new StringBuilder()
 				.append(factiorArmor.getName())
 				.append(" es ")
@@ -56,7 +56,7 @@ public enum FactionArmors {
 		admin.sendMessage(msg, FontType.FONTTYPE_INFO);
 	}
 	
-	public static void updateFactionArmor(Player admin, FactionArmors factiorArmor, short armorObjIdx) {
+	public static void updateFactionArmor(User admin, FactionArmors factiorArmor, short armorObjIdx) {
 		factionArmors[factiorArmor.ordinal()] = armorObjIdx;
 		
 		String msg = new StringBuilder()

@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.Constants;
 import org.argentumonline.server.protocol.AddForumMsgResponse;
 import org.argentumonline.server.protocol.ShowForumFormResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 
 /**
  * @author gorlok
@@ -106,16 +106,16 @@ public class ForumManager {
 		writeForumToFile(forum);
 	}
 	
-	public void sendForumPosts(String foroId, Player player) {
+	public void sendForumPosts(String foroId, User user) {
 		Forum forum = getForum(foroId);
 		
 		forum.getPosts().stream()
 			.sorted(Comparator.comparing(ForumMessage::getCreateDate, Comparator.nullsLast(Comparator.reverseOrder())))
 			.forEach(post -> {
-				player.sendPacket(new AddForumMsgResponse(post.getTitle(), post.getBody()));
+				user.sendPacket(new AddForumMsgResponse(post.getTitle(), post.getBody()));
 			});
 		
-		player.sendPacket(new ShowForumFormResponse());
+		user.sendPacket(new ShowForumFormResponse());
 	}
 	
 }

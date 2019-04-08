@@ -30,7 +30,7 @@ import org.argentumonline.server.map.Map;
 import org.argentumonline.server.map.MapPos;
 import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.npc.NpcType;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
 import org.argentumonline.server.util.Util;
@@ -124,38 +124,38 @@ public class Quest implements Constants {
 		this.AmigoNpc = ini.getShort(seccion, "AmigoNpc");
 	}
 
-	public void hacerQuest(Player player, Npc npc) {
+	public void hacerQuest(User user, Npc npc) {
 		try {
-			if (player.isNewbie()) {
-				player.sendTalk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
+			if (user.isNewbie()) {
+				user.sendTalk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			if (player.quest().m_enQuest) {
-				player.sendTalk(COLOR_BLANCO,
+			if (user.quest().m_enQuest) {
+				user.sendTalk(COLOR_BLANCO,
 						"Debes terminar primero la quest que estás realizando para empezar otra!", npc.getId());
 				return;
 			}
-			if (player.quest().m_nroQuest >= this.server.questCount()) {
-				player.sendTalk(COLOR_BLANCO, "Ya has realizados todas las quest!", npc.getId());
+			if (user.quest().m_nroQuest >= this.server.questCount()) {
+				user.sendTalk(COLOR_BLANCO, "Ya has realizados todas las quest!", npc.getId());
 				return;
 			}
-			player.nextQuest();
-			Quest quest = player.quest().getQuest();
+			user.nextQuest();
+			Quest quest = user.quest().getQuest();
 			int azar = 0;
 			switch (quest.Objetivo) {
 			case OBJETIVO_MATAR_NPCS:
-				player.sendTalk(COLOR_BLANCO, "Debes matar " + this.NPCs + " npcs para recibir tu recompensa!",
+				user.sendTalk(COLOR_BLANCO, "Debes matar " + this.NPCs + " npcs para recibir tu recompensa!",
 						npc.getId());
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
-				if (!player.userFaction().ArmadaReal && !player.userFaction().FuerzasCaos) {
-					player.sendTalk(COLOR_BLANCO,
+				if (!user.userFaction().ArmadaReal && !user.userFaction().FuerzasCaos) {
+					user.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Usuarios + " usuarios para recibir tu recompensa!", npc.getId());
-				} else if (player.userFaction().ArmadaReal) {
-					player.sendTalk(COLOR_BLANCO,
+				} else if (user.userFaction().ArmadaReal) {
+					user.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Criminales + " criminales para recibir tu recompensa!", npc.getId());
-				} else if (player.userFaction().FuerzasCaos) {
-					player.sendTalk(COLOR_BLANCO,
+				} else if (user.userFaction().FuerzasCaos) {
+					user.sendTalk(COLOR_BLANCO,
 							"Debes matar " + this.Ciudadanos + " ciudadanos para recibir tu recompensa!", npc.getId());
 				}
 				break;
@@ -164,7 +164,7 @@ public class Quest implements Constants {
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
-				player.sendTalk(COLOR_BLANCO,
+				user.sendTalk(COLOR_BLANCO,
 						"Debes encontrar a mi amigo npc para recibir tu recompensa! Pistas: Se puede encontrar en lugares característicos del juego, pero apresúrate!" +
 						" Si alguien que está haciendo este mismo tipo de quest, y lo encuentra antes, puedes perderlo. En tal caso deberás volver y hacerme clic, y poner /MERINDO",
 						npc.getId());
@@ -176,7 +176,7 @@ public class Quest implements Constants {
 				if (this.Coordenadas[azar - 1] == null) {
 					return;
 				}
-				player.sendTalk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas "
+				user.sendTalk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas "
 						+ this.Pista[azar - 1]
 						+ " para recibir tu recompensa! PD: Si no te apresuras, y lo mata otro usuario, perderás esta quest. En tal caso deberás volver y hacerme clic, y poner /MERINDO",
 						npc.getId());
@@ -185,295 +185,295 @@ public class Quest implements Constants {
 				break;
 			}
 		} catch (Exception e) {
-			log.fatal(player.getNick() + " Error en HacerQuest!", e);
+			log.fatal(user.getNick() + " Error en HacerQuest!", e);
 		}
 	}
 
-	public void recibirRecompensaQuest(Player player) {
+	public void recibirRecompensaQuest(User user) {
 		try {
-			Npc npc = this.server.npcById(player.flags().TargetNpc);
-			if (player.isNewbie()) {
-				player.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
+			Npc npc = this.server.npcById(user.flags().TargetNpc);
+			if (user.isNewbie()) {
+				user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			if (player.quest().m_nroQuest <= 0) {
-				player.talk(COLOR_BLANCO, "No has empezado ninguna Quest!", npc.getId());
+			if (user.quest().m_nroQuest <= 0) {
+				user.talk(COLOR_BLANCO, "No has empezado ninguna Quest!", npc.getId());
 				return;
 			}
-			if (player.quest().m_enQuest) {
-				if (player.quest().m_recompensa == player.quest().m_nroQuest) {
-					player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa por esta Quest!", npc.getId());
+			if (user.quest().m_enQuest) {
+				if (user.quest().m_recompensa == user.quest().m_nroQuest) {
+					user.talk(COLOR_BLANCO, "Ya has recibido tu recompensa por esta Quest!", npc.getId());
 					return;
 				}
 			}
-			Quest quest = player.quest().getQuest();
+			Quest quest = user.quest().getQuest();
 			switch (quest.Objetivo) {
 			case OBJETIVO_MATAR_NPCS:
-				if (player.stats().NPCsMuertos >= quest.NPCs) {
+				if (user.stats().NPCsMuertos >= quest.NPCs) {
 					if (quest.DaExp) {
-						player.stats().addExp(quest.Exp);
-						player.checkUserLevel();
-						player.talk(COLOR_BLANCO,
+						user.stats().addExp(quest.Exp);
+						user.checkUserLevel();
+						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						player.stats().addGold(quest.Oro);
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
+						user.stats().addGold(quest.Oro);
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-							Map mapa = this.server.getMap(player.pos().map);
-							mapa.dropItemOnFloor(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
+						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							Map mapa = this.server.getMap(user.pos().map);
+							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 				} else {
-					player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
+					user.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 				}
 				break;
 			case OBJETIVO_MATAR_USUARIOS:
-				if (!player.userFaction().ArmadaReal && !player.userFaction().FuerzasCaos) {
-					if (player.userFaction().citizensKilled
-							+ player.userFaction().criminalsKilled >= quest.Usuarios) {
+				if (!user.userFaction().ArmadaReal && !user.userFaction().FuerzasCaos) {
+					if (user.userFaction().citizensKilled
+							+ user.userFaction().criminalsKilled >= quest.Usuarios) {
 						if (quest.DaExp) {
-							player.stats().addExp(quest.Exp);
-							player.checkUserLevel();
-							player.talk(COLOR_BLANCO,
+							user.stats().addExp(quest.Exp);
+							user.checkUserLevel();
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							player.stats().addGold(quest.Oro);
-							player.talk(COLOR_BLANCO,
+							user.stats().addGold(quest.Oro);
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-								Map mapa = this.server.getMap(player.pos().map);
-								mapa.dropItemOnFloor(player.pos().x, player.pos().y,
+							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+								Map mapa = this.server.getMap(user.pos().map);
+								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
 							}
-							player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 					} else {
-						player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
+						user.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
-				} else if (player.userFaction().ArmadaReal) {
-					if (player.userFaction().criminalsKilled >= quest.Criminales) {
+				} else if (user.userFaction().ArmadaReal) {
+					if (user.userFaction().criminalsKilled >= quest.Criminales) {
 						if (quest.DaExp) {
-							player.stats().addExp(quest.Exp);
-							player.checkUserLevel();
-							player.talk(COLOR_BLANCO,
+							user.stats().addExp(quest.Exp);
+							user.checkUserLevel();
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							player.stats().addGold(quest.Oro);
-							player.talk(COLOR_BLANCO,
+							user.stats().addGold(quest.Oro);
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-								Map mapa = this.server.getMap(player.pos().map);
-								mapa.dropItemOnFloor(player.pos().x, player.pos().y,
+							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+								Map mapa = this.server.getMap(user.pos().map);
+								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
 							}
-							player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 					} else {
-						player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
+						user.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
-				} else if (player.userFaction().FuerzasCaos) {
-					if (player.userFaction().citizensKilled >= quest.Ciudadanos) {
+				} else if (user.userFaction().FuerzasCaos) {
+					if (user.userFaction().citizensKilled >= quest.Ciudadanos) {
 						if (quest.DaExp) {
-							player.stats().addExp(quest.Exp);
-							player.checkUserLevel();
-							player.talk(COLOR_BLANCO,
+							user.stats().addExp(quest.Exp);
+							user.checkUserLevel();
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!",
 									npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaOro) {
-							player.stats().addGold(quest.Oro);
-							player.talk(COLOR_BLANCO,
+							user.stats().addGold(quest.Oro);
+							user.talk(COLOR_BLANCO,
 									"Como recompensa has recibido " + quest.Oro + " monedas de oro!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-								Map mapa = this.server.getMap(player.pos().map);
-								mapa.dropItemOnFloor(player.pos().x, player.pos().y,
+							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+								Map mapa = this.server.getMap(user.pos().map);
+								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
 							}
-							player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-							player.quest().m_realizoQuest = false;
-							player.quest().m_recompensa = player.quest().m_nroQuest;
-							player.quest().m_enQuest = false;
+							user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+							user.quest().m_realizoQuest = false;
+							user.quest().m_recompensa = user.quest().m_nroQuest;
+							user.quest().m_enQuest = false;
 						}
 					} else {
-						player.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
+						user.talk(COLOR_BLANCO, "Todavía no has completado el objetivo!", npc.getId());
 					}
 				}
 				break;
 			case OBJETIVO_ENCONTRAR_NPC:
-				if (player.quest().m_realizoQuest) {
+				if (user.quest().m_realizoQuest) {
 					if (quest.DaExp) {
-						player.stats().addExp(quest.Exp);
-						player.checkUserLevel();
-						player.talk(COLOR_BLANCO,
+						user.stats().addExp(quest.Exp);
+						user.checkUserLevel();
+						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						player.stats().addGold(quest.Oro);
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
+						user.stats().addGold(quest.Oro);
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-							Map mapa = this.server.getMap(player.pos().map);
-							mapa.dropItemOnFloor(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
+						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							Map mapa = this.server.getMap(user.pos().map);
+							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 				} else {
-					player.talk(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
+					user.talk(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
 				}
 				break;
 			case OBJETIVO_MATAR_UN_NPC:
-				if (player.quest().m_realizoQuest) {
+				if (user.quest().m_realizoQuest) {
 					if (quest.DaExp) {
-						player.stats().addExp(quest.Exp);
-						player.checkUserLevel();
-						player.talk(COLOR_BLANCO,
+						user.stats().addExp(quest.Exp);
+						user.checkUserLevel();
+						user.talk(COLOR_BLANCO,
 								"Como recompensa has recibido " + quest.Exp + " puntos de experiencia!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaOro) {
-						player.stats().addGold(quest.Oro);
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
+						user.stats().addGold(quest.Oro);
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido " + quest.Oro + " monedas de oro!",
 								npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (player.userInv().agregarItem(quest.Obj, 1) < 1) {
-							Map mapa = this.server.getMap(player.pos().map);
-							mapa.dropItemOnFloor(player.pos().x, player.pos().y, new InventoryObject(quest.Obj, 1));
+						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							Map mapa = this.server.getMap(user.pos().map);
+							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}
-						player.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
-						player.quest().m_realizoQuest = false;
-						player.quest().m_recompensa = player.quest().m_nroQuest;
-						player.quest().m_enQuest = false;
+						user.talk(COLOR_BLANCO, "Como recompensa has recibido un objeto!", npc.getId());
+						user.quest().m_realizoQuest = false;
+						user.quest().m_recompensa = user.quest().m_nroQuest;
+						user.quest().m_enQuest = false;
 					}
 				} else {
-					player.talk(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
+					user.talk(COLOR_BLANCO, "Todavía no has logrado el objetivo!", npc.getId());
 				}
 				break;
 			}
-			player.sendUpdateUserStats();
+			user.sendUpdateUserStats();
 		} catch (Exception e) {
-			log.fatal(player.getNick() + " Error en RecibirRecompensaQuest!", e);
+			log.fatal(user.getNick() + " Error en RecibirRecompensaQuest!", e);
 		}
 	}
 
-	public void checkNpcAmigo(Player player) {
-		if (player.quest().m_enQuest) {
-			Npc npc = this.server.npcById(player.flags().TargetNpc);
+	public void checkNpcAmigo(User user) {
+		if (user.quest().m_enQuest) {
+			Npc npc = this.server.npcById(user.flags().TargetNpc);
 			if (npc.npcType() == NpcType.NPCTYPE_AMIGOQUEST) {
-				Quest quest = player.quest().getQuest();
+				Quest quest = user.quest().getQuest();
 				if (quest.Objetivo == 3) {
-					player.quest().m_realizoQuest = true;
-					player.talk(COLOR_BLANCO,
+					user.quest().m_realizoQuest = true;
+					user.talk(COLOR_BLANCO,
 							"Felicitaciones, me has encontrado, ahora debes volver con mi compañero por tu recompensa!",
 							npc.getId());
 				} else {
-					player.talk(COLOR_BLANCO, "Yo correspondo a otra quest!", npc.getId());
+					user.talk(COLOR_BLANCO, "Yo correspondo a otra quest!", npc.getId());
 				}
 			} else {
-				player.sendMessage("Este npc no es de la quest jajaja!", FontType.FONTTYPE_INFO);
+				user.sendMessage("Este npc no es de la quest jajaja!", FontType.FONTTYPE_INFO);
 			}
 		} else {
-			player.sendMessage("No has comenzado ninguna quest!", FontType.FONTTYPE_INFO);
+			user.sendMessage("No has comenzado ninguna quest!", FontType.FONTTYPE_INFO);
 		}
 	}
 
-	public void sendInfoQuest(Player player) {
-		Npc npc = this.server.npcById(player.flags().TargetNpc);
-		if (player.isNewbie()) {
-			player.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
+	public void sendInfoQuest(User user) {
+		Npc npc = this.server.npcById(user.flags().TargetNpc);
+		if (user.isNewbie()) {
+			user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 			return;
 		}
-		Quest quest = player.quest().getQuest();
+		Quest quest = user.quest().getQuest();
 		switch (quest.Objetivo) {
 		case 1:
-			player.talk(COLOR_BLANCO, "Debes matar " + quest.NPCs + " npcs para recibir tu recompensa!",
+			user.talk(COLOR_BLANCO, "Debes matar " + quest.NPCs + " npcs para recibir tu recompensa!",
 					npc.getId());
 			break;
 		case 2:
-			if (!player.userFaction().ArmadaReal && !player.userFaction().FuerzasCaos) {
-				player.talk(COLOR_BLANCO, "Debes matar " + quest.Usuarios + " usuarios para recibir tu recompensa!",
+			if (!user.userFaction().ArmadaReal && !user.userFaction().FuerzasCaos) {
+				user.talk(COLOR_BLANCO, "Debes matar " + quest.Usuarios + " usuarios para recibir tu recompensa!",
 						npc.getId());
-			} else if (player.userFaction().ArmadaReal) {
-				player.talk(COLOR_BLANCO,
+			} else if (user.userFaction().ArmadaReal) {
+				user.talk(COLOR_BLANCO,
 						"Debes matar " + quest.Criminales + " criminales para recibir tu recompensa!", npc.getId());
-			} else if (player.userFaction().FuerzasCaos) {
-				player.talk(COLOR_BLANCO,
+			} else if (user.userFaction().FuerzasCaos) {
+				user.talk(COLOR_BLANCO,
 						"Debes matar " + quest.Ciudadanos + " ciudadanos para recibir tu recompensa!", npc.getId());
 			}
 			break;
 		case 3:
-			player.talk(COLOR_BLANCO,
+			user.talk(COLOR_BLANCO,
 					"Debes encontrar a mi amigo npc para recibir tu recompensa! Pistas: Se pude encontrar en lugares característicos del juego," +
 					" pero apresúrate porque si otro que está haciendo este tipo de quest lo encuentra primero puedes perderlo, en tal caso deberás clikearme y poner /MERINDO",
 					npc.getId());
 			break;
 		case 4:
 			int azar = Util.Azar(0, Pista.length);
-			player.talk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas " +
+			user.talk(COLOR_BLANCO, "Debes matar al npc que se encuentra en las coordenadas " +
 					this.Pista[azar]
 					+ " para recibir tu recompensa! PD: Si no te apresuras y lo mata otro usuario perderás esta quest, en tal caso deberás clikearme y poner /MERINDO",
 					npc.getId());
@@ -481,21 +481,21 @@ public class Quest implements Constants {
 		}
 	}
 
-	public void userSeRinde(Player player) {
-		Npc npc = this.server.npcById(player.flags().TargetNpc);
+	public void userSeRinde(User user) {
+		Npc npc = this.server.npcById(user.flags().TargetNpc);
 		try {
-			if (player.isNewbie()) {
-				player.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
+			if (user.isNewbie()) {
+				user.talk(COLOR_BLANCO, "Los newbies no pueden realizar estas quests!", npc.getId());
 				return;
 			}
-			player.quest().m_realizoQuest = false;
-			player.quest().m_recompensa = player.quest().m_nroQuest;
-			player.quest().m_enQuest = false;
-			player.talk(COLOR_BLANCO,
+			user.quest().m_realizoQuest = false;
+			user.quest().m_recompensa = user.quest().m_nroQuest;
+			user.quest().m_enQuest = false;
+			user.talk(COLOR_BLANCO,
 					"Te has rendido por lo tanto no has conseguido la recompensa, pero puedes continuar con la siguiente quest.",
 					npc.getId());
 		} catch (Exception e) {
-			log.fatal(player.getNick() + " Error en UserSeRinde!", e);
+			log.fatal(user.getNick() + " Error en UserSeRinde!", e);
 		}
 	}
 

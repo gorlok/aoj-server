@@ -30,7 +30,7 @@ import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.protocol.AreaChangedResponse;
 import org.argentumonline.server.protocol.ObjectCreateResponse;
 import org.argentumonline.server.protocol.SetInvisibleResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 
 
 /** 
@@ -113,7 +113,7 @@ public class AreasAO implements Constants {
 	}
 	
 	
-	public void checkUpdateNeededUser(Map map, Player user, Heading heading) {
+	public void checkUpdateNeededUser(Map map, User user, Heading heading) {
 		
 		var userArea = user.charArea();
 		if (userArea.areaID == MAP_TO_AREA[user.pos().x][user.pos().y]) {
@@ -197,8 +197,8 @@ public class AreasAO implements Constants {
     	for (byte x = (byte) minX; x <= maxX; x++) {
     		for (byte y = (byte) minY; y <= maxY; y++) {
     			
-    			if (map.hasPlayer(x, y)) {
-    				Player other = map.getPlayer(x, y);
+    			if (map.hasUser(x, y)) {
+    				User other = map.getUser(x, y);
     				if (user == other && heading == USER_NUEVO) {
     					user.sendPacket(user.characterCreate());
     				}
@@ -331,12 +331,12 @@ public class AreasAO implements Constants {
 		
 	    }
     	
-    	if (map.getPlayersCount() > 0) {
+    	if (map.getUsersCount() > 0) {
     		for (byte x = (byte) minX; x < maxX; x++) {
         		for (byte y = (byte) minY; y < maxY; y++) {
-        			if (map.hasPlayer(x, y)) {
-        				Player player = map.getPlayer(x, y);
-        				player.sendPacket(npc.characterCreate());
+        			if (map.hasUser(x, y)) {
+        				User user = map.getUser(x, y);
+        				user.sendPacket(npc.characterCreate());
         			}
         		}
     		}
@@ -358,7 +358,7 @@ public class AreasAO implements Constants {
 		checkUpdateNeededNpc(map, npc, USER_NUEVO);
 	}
 	
-	public void loadUser(Map map, Player user) {
+	public void loadUser(Map map, User user) {
 		user.charArea().reset();
 		checkUpdateNeededUser(map, user, USER_NUEVO);
 	}
@@ -371,10 +371,10 @@ public class AreasAO implements Constants {
 		int areaX = (int) Math.pow(2, x / 9);
 		int areaY = (int) Math.pow(2, y / 9);
 
-		for (Player player : map.getPlayers()) {
-			if ( ((player.charArea().areasToSendX & areaX) > 0) &&
-				 ((player.charArea().areasToSendY & areaY) > 0) ) {
-					player.sendPacket(packet);
+		for (User user : map.getUsers()) {
+			if ( ((user.charArea().areasToSendX & areaX) > 0) &&
+				 ((user.charArea().areasToSendY & areaY) > 0) ) {
+					user.sendPacket(packet);
 			}
 		}
 	}
@@ -386,18 +386,18 @@ public class AreasAO implements Constants {
 		areaX = (int) Math.pow(2, areaX / 9);
 		areaY = (int) Math.pow(2, areaY / 9);
 
-		for (Player player : map.getPlayers()) {
-			int tempInt = (player.charArea().areasToSendX & areaX);
+		for (User user : map.getUsers()) {
+			int tempInt = (user.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 
 			if (gral.cardinality() > 0) {
-				tempInt = (player.charArea().areasToSendY & areaY);
+				tempInt = (user.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (player.getId() != id) {
-						player.sendPacket(packet);
+					if (user.getId() != id) {
+						user.sendPacket(packet);
 					}
 				}
 			}
@@ -407,23 +407,23 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío de datos al área del user, y adyacentes
 	 */
-	public void sendToUserArea(Map map, Player user, ServerPacket packet) {
+	public void sendToUserArea(Map map, User user, ServerPacket packet) {
 		var userArea = user.charArea();
 		
 		int areaX = userArea.currentAreaX;
 		int areaY = userArea.currentAreaY;
 		
-		for (Player player : map.getPlayers()) {
-			int tempInt = (player.charArea().areasToSendX & areaX);
+		for (User otherUser : map.getUsers()) {
+			int tempInt = (otherUser.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
-				tempInt = (player.charArea().areasToSendY & areaY);
+				tempInt = (otherUser.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					player.sendPacket(packet);
+					otherUser.sendPacket(packet);
 				}
 			}
 		}
@@ -432,25 +432,25 @@ public class AreasAO implements Constants {
 	/**
 	 * Envío al área del user, y adyacentes, excepto al parámetro 'user'
 	 */
-	public void sendToUserAreaButIndex(Map map, Player user, ServerPacket packet) {
+	public void sendToUserAreaButIndex(Map map, User user, ServerPacket packet) {
 		var userArea = user.charArea();
 
 		int areaX = userArea.currentAreaX;
 		int areaY = userArea.currentAreaY;
 		
-		for (Player player : map.getPlayers()) {
-			int tempInt = (player.charArea().areasToSendX & areaX);
+		for (User otherUser : map.getUsers()) {
+			int tempInt = (otherUser.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (player.charArea().areasToSendY & areaY);
+				tempInt = (otherUser.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				
 				if (gral.cardinality() > 0) {
-					if (player.getId() != user.getId()) {
-						player.sendPacket(packet);
+					if (otherUser.getId() != user.getId()) {
+						otherUser.sendPacket(packet);
 					}
 				}
 			}
@@ -465,17 +465,17 @@ public class AreasAO implements Constants {
 		int areaX = npc.charArea().currentAreaX;
 		int areaY = npc.charArea().currentAreaY;
 		
-		for (Player player : List.copyOf(map.getPlayers())) {
-			int tempInt = (player.charArea().areasToSendX & areaX);
+		for (User user : List.copyOf(map.getUsers())) {
+			int tempInt = (user.charArea().areasToSendX & areaX);
 			BitSet gral = new BitSet();
 			gral.set(tempInt);
 			
 			if (gral.cardinality() > 0) {
 				
-				tempInt = (player.charArea().areasToSendY & areaY);
+				tempInt = (user.charArea().areasToSendY & areaY);
 				gral.set(tempInt);
 				if (gral.cardinality() > 0) {
-					player.sendPacket(packet);
+					user.sendPacket(packet);
 				}
 			}
 		}

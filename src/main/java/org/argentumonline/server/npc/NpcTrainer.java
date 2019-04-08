@@ -20,7 +20,7 @@ package org.argentumonline.server.npc;
 import org.argentumonline.server.Constants;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.protocol.TrainerCreatureListResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.IniFile;
 
 /**
@@ -74,7 +74,7 @@ public class NpcTrainer extends Npc {
 		return 0;
     }
     
-    public void sendTrainerCreatureList(Player player) {
+    public void sendTrainerCreatureList(User user) {
     	StringBuilder sb = new StringBuilder();
         for (int i = 0; i < this.creatureList.length; i++) {
             sb.append(this.creatureList[i].npc_name)
@@ -85,7 +85,7 @@ public class NpcTrainer extends Npc {
         	sb.deleteCharAt(sb.length()-1);
         }
         
-        player.sendPacket(new TrainerCreatureListResponse(sb.toString()));
+        user.sendPacket(new TrainerCreatureListResponse(sb.toString()));
     }
     
     @Override
@@ -125,7 +125,7 @@ public class NpcTrainer extends Npc {
     }
 
 	public void spawnTrainerPet(short slot) {
-		if (petsCount() < Player.MAX_TRAINER_PETS) {
+		if (petsCount() < User.MAX_TRAINER_PETS) {
 			if (slot > 0 && slot <= creaturesCount()) {
 				Npc trainerPet = Npc.spawnNpc(creatureIndex(slot), 
 						pos(), /*fx*/ true, /*respawn*/ false);

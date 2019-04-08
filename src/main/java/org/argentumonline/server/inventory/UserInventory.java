@@ -38,7 +38,7 @@ import org.argentumonline.server.protocol.BlacksmithWeaponsResponse;
 import org.argentumonline.server.protocol.CarpenterObjectsResponse;
 import org.argentumonline.server.protocol.ShowCarpenterFormResponse;
 import org.argentumonline.server.protocol.WorkRequestTargetResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.UserGender;
 import org.argentumonline.server.user.UserAttributes.Attribute;
 import org.argentumonline.server.util.FontType;
@@ -51,7 +51,7 @@ import org.argentumonline.server.util.Util;
 public class UserInventory extends Inventory implements Constants {
 	private static Logger log = LogManager.getLogger();
     
-    Player player;
+    private User user;
     
     boolean armaEquipada = false;
     boolean municionEquipada = false;
@@ -71,13 +71,13 @@ public class UserInventory extends Inventory implements Constants {
     int anilloSlot = 0;
     
     /** Creates a new instance of UserInventory */
-    public UserInventory(GameServer server, Player player, int slots) {
+    public UserInventory(GameServer server, User user, int slots) {
         super(server, slots);
-        this.player = player;
+        this.user = user;
     }
     
-    private Player player() {
-    	return this.player;
+    private User getUser() {
+    	return this.user;
     }
     
     public void setAnilloSlot(int anilloSlot) {
@@ -244,7 +244,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (infoObj.esNewbie()) {
                     quitarUserInvItem(j+1, this.objs[j].cant);
                     // Actualiza un solo slot del inventario del usuario
-                    player().sendInventorySlot(j+1);
+                    getUser().sendInventorySlot(j+1);
                 }
             }
         }
@@ -269,7 +269,7 @@ public class UserInventory extends Inventory implements Constants {
             this.objs[slot-1].cant = 0;
             this.objs[slot-1].objid = 0;
         }
-       	player().sendInventorySlot(slot);
+       	getUser().sendInventorySlot(slot);
     }
 
     public void dropObj(byte slot, int cant) {
@@ -278,9 +278,9 @@ public class UserInventory extends Inventory implements Constants {
                 cant = this.objs[slot-1].cant;
             }
             // Check objeto en el suelo
-            Map mapa = this.server.getMap(player().pos().map);
-            byte x = player().pos().x;
-            byte y = player().pos().y;
+            Map mapa = this.server.getMap(getUser().pos().map);
+            byte x = getUser().pos().x;
+            byte y = getUser().pos().y;
             short objid = this.objs[slot-1].objid;
             if (!mapa.hasObject(x, y)) {
                 if (this.objs[slot-1].equipado) {
@@ -288,13 +288,13 @@ public class UserInventory extends Inventory implements Constants {
 				}
                 mapa.addObject(objid, cant, x, y);
                 quitarUserInvItem(slot, cant);
-                player().sendInventorySlot(slot);
+                getUser().sendInventorySlot(slot);
                 ObjectInfo iobj = findObject(objid);
-                if (player().flags().isGM()) {
-					Log.logGM(player().getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
+                if (getUser().flags().isGM()) {
+					Log.logGM(getUser().getNick(), "Tiró la cantidad de " + cant + " unidades del objeto " + iobj.Nombre);
 				}
             } else {
-                player().sendMessage("No hay espacio en el piso.", FontType.FONTTYPE_INFO);
+                getUser().sendMessage("No hay espacio en el piso.", FontType.FONTTYPE_INFO);
             }
         }
     }
@@ -314,9 +314,9 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.armaSlot = 0;
                 this.armaEquipada = false;
-                if (!player().flags().Mimetizado) {
-                	player().infoChar().weapon = NingunArma;
-	                player().sendCharacterChange();
+                if (!getUser().flags().Mimetizado) {
+                	getUser().infoChar().weapon = NingunArma;
+	                getUser().sendCharacterChange();
                 }
                 break;
                 
@@ -336,17 +336,17 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.armaduraSlot = 0;
                 this.armaduraEquipada = false;
-                player().undress();
-                player().sendCharacterChange();
+                getUser().undress();
+                getUser().sendCharacterChange();
                 break;
                 
             case CASCO:
                 this.objs[slot-1].equipado = false;
                 this.cascoSlot = 0;
                 this.cascoEquipado = false;
-                if (!player().flags().Mimetizado) {
-	                player().infoChar().helmet = NingunCasco;
-	                player().sendCharacterChange();
+                if (!getUser().flags().Mimetizado) {
+	                getUser().infoChar().helmet = NingunCasco;
+	                getUser().sendCharacterChange();
                 }
                 break;
                 
@@ -354,9 +354,9 @@ public class UserInventory extends Inventory implements Constants {
                 this.objs[slot-1].equipado = false;
                 this.escudoSlot = 0;
                 this.escudoEquipado = false;
-                if (!player().flags().Mimetizado) {
-	                player().infoChar().shield = NingunEscudo;
-	                player().sendCharacterChange();
+                if (!getUser().flags().Mimetizado) {
+	                getUser().infoChar().shield = NingunEscudo;
+	                getUser().sendCharacterChange();
                 }
                 break;
                 
@@ -367,8 +367,8 @@ public class UserInventory extends Inventory implements Constants {
                 break;
         }
 
-		player().sendUpdateUserStats();
-        player().sendInventorySlot(slot);
+		getUser().sendUpdateUserStats();
+        getUser().sendInventorySlot(slot);
     }
     
     public void equipar(int slot) {
@@ -381,23 +381,23 @@ public class UserInventory extends Inventory implements Constants {
 		}
         ObjectInfo infoObj = findObject(this.objs[slot-1].objid);
         short objid = this.objs[slot-1].objid;
-        if (infoObj.esNewbie() && !player().isNewbie()) {
-            player().sendMessage("Solo los newbies pueden usar este objeto.", FontType.FONTTYPE_INFO);
+        if (infoObj.esNewbie() && !getUser().isNewbie()) {
+            getUser().sendMessage("Solo los newbies pueden usar este objeto.", FontType.FONTTYPE_INFO);
             return;
         }
         InventoryObject obj_inv = getObject(slot);
         
         switch (infoObj.objType) {
             case Weapon:
-                if (infoObj.clasePuedeUsarItem(player().clazz()) && player().userFaction().faccionPuedeUsarItem(objid)) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz()) && getUser().userFaction().faccionPuedeUsarItem(objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (player().flags().Mimetizado) {
-                        	player().mimetizeChar().weapon = NingunArma;
+                        if (getUser().flags().Mimetizado) {
+                        	getUser().mimetizeChar().weapon = NingunArma;
                         } else {
-                        	player().infoChar().weapon = NingunArma;
-                        	player().sendCharacterChange();
+                        	getUser().infoChar().weapon = NingunArma;
+                        	getUser().sendCharacterChange();
                         }
                         return;
                     }
@@ -409,23 +409,23 @@ public class UserInventory extends Inventory implements Constants {
                     this.objs[slot-1].equipado = true;
                     this.armaEquipada = true;
                     this.armaSlot = slot;
-                	player().sendWave(SOUND_SACAR_ARMA);
+                	getUser().sendWave(SOUND_SACAR_ARMA);
                     
-                    if (player().flags().Mimetizado) {
-                        player().mimetizeChar().weapon = infoObj.WeaponAnim; 
+                    if (getUser().flags().Mimetizado) {
+                        getUser().mimetizeChar().weapon = infoObj.WeaponAnim; 
                     } else {
-	                    player().infoChar().weapon = infoObj.WeaponAnim;
-	                    player().sendCharacterChange();
+	                    getUser().infoChar().weapon = infoObj.WeaponAnim;
+	                    getUser().sendCharacterChange();
                     }
                     
                 } else {
-                    player().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
                 
             case Anillo:
-                if (infoObj.clasePuedeUsarItem(player().clazz()) && player().userFaction().faccionPuedeUsarItem(objid)) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz()) && getUser().userFaction().faccionPuedeUsarItem(objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
@@ -440,12 +440,12 @@ public class UserInventory extends Inventory implements Constants {
                     this.anilloEquipado = true;
                     this.anilloSlot = slot;
                 } else {
-                    player().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
 
             case Flechas:
-                if (infoObj.clasePuedeUsarItem(player().clazz()) && player().userFaction().faccionPuedeUsarItem(objid)) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz()) && getUser().userFaction().faccionPuedeUsarItem(objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
@@ -460,27 +460,27 @@ public class UserInventory extends Inventory implements Constants {
                     this.municionEquipada = true;
                     this.municionSlot = slot;
                 } else {
-                    player().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
             case Armadura:
-                if (player().isSailing()) {
+                if (getUser().isSailing()) {
 					return;
 				}
                 // Nos aseguramos que puede usarla
-                if (infoObj.clasePuedeUsarItem(player().clazz()) && 
-                    player().userFaction().faccionPuedeUsarItem(objid) &&
-                    player().genderCanUseItem(objid) &&
-                    player().checkRazaUsaRopa(objid)) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz()) && 
+                    getUser().userFaction().faccionPuedeUsarItem(objid) &&
+                    getUser().genderCanUseItem(objid) &&
+                    getUser().checkRazaUsaRopa(objid)) {
                 	
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         // Quitamos del inv el item
                         desequipar(slot);
-                        player().undress();
-                        if (!player().flags().Mimetizado) {
-                        	player().sendCharacterChange();
+                        getUser().undress();
+                        if (!getUser().flags().Mimetizado) {
+                        	getUser().sendCharacterChange();
                         }
                         return;
                     }
@@ -493,31 +493,31 @@ public class UserInventory extends Inventory implements Constants {
                     this.armaduraEquipada = true;
                     this.armaduraSlot = slot;
                     
-                    if (player().flags().Mimetizado) {
-                    	player().mimetizeChar().body = infoObj.Ropaje;
+                    if (getUser().flags().Mimetizado) {
+                    	getUser().mimetizeChar().body = infoObj.Ropaje;
                     } else {
-	                    player().infoChar().body = infoObj.Ropaje;
-	                    player().sendCharacterChange();
+	                    getUser().infoChar().body = infoObj.Ropaje;
+	                    getUser().sendCharacterChange();
                     }
-                    player().flags().Desnudo = false;
+                    getUser().flags().Desnudo = false;
                 } else {
-                    player().sendMessage("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase, genero o raza no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
             case CASCO:
-                if (player().isSailing()) {
+                if (getUser().isSailing()) {
 					return;
 				}
-                if (infoObj.clasePuedeUsarItem(player().clazz())) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz())) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (player().flags().Mimetizado) {
-                        	player().mimetizeChar().helmet = NingunCasco;
+                        if (getUser().flags().Mimetizado) {
+                        	getUser().mimetizeChar().helmet = NingunCasco;
                         } else {
-                            player().infoChar().helmet = NingunCasco;
-                        	player().sendCharacterChange();
+                            getUser().infoChar().helmet = NingunCasco;
+                        	getUser().sendCharacterChange();
                         }
                         return;
                     }
@@ -530,31 +530,31 @@ public class UserInventory extends Inventory implements Constants {
                     this.cascoEquipado = true;
                     this.cascoSlot = slot;
                     
-                    if (player().flags().Mimetizado) {
-                    	player().mimetizeChar().helmet = infoObj.CascoAnim;
+                    if (getUser().flags().Mimetizado) {
+                    	getUser().mimetizeChar().helmet = infoObj.CascoAnim;
                     } else {
-	                    player().infoChar().helmet = infoObj.CascoAnim;
-	                    player().sendCharacterChange();
+	                    getUser().infoChar().helmet = infoObj.CascoAnim;
+	                    getUser().sendCharacterChange();
                     }
                 } else {
-                    player().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
             case ESCUDO:
-                if (player().isSailing()) {
+                if (getUser().isSailing()) {
 					return;
 				}
-                if (infoObj.clasePuedeUsarItem(player().clazz()) && 
-                		player().userFaction().faccionPuedeUsarItem(objid)) {
+                if (infoObj.clasePuedeUsarItem(getUser().clazz()) && 
+                		getUser().userFaction().faccionPuedeUsarItem(objid)) {
                     // Si esta equipado lo quita
                     if (obj_inv.equipado) {
                         desequipar(slot);
-                        if (player().flags().Mimetizado) {
-                        	player().mimetizeChar().shield = NingunEscudo;
+                        if (getUser().flags().Mimetizado) {
+                        	getUser().mimetizeChar().shield = NingunEscudo;
                         } else {
-                            player().infoChar().shield = NingunEscudo;
-                        	player().sendCharacterChange();
+                            getUser().infoChar().shield = NingunEscudo;
+                        	getUser().sendCharacterChange();
                         }
                         return;
                     }
@@ -567,19 +567,19 @@ public class UserInventory extends Inventory implements Constants {
                     this.escudoEquipado = true;
                     this.escudoSlot = slot;
                     
-                    if (player().flags().Mimetizado) {
-                    	player().mimetizeChar().shield = infoObj.ShieldAnim;
+                    if (getUser().flags().Mimetizado) {
+                    	getUser().mimetizeChar().shield = infoObj.ShieldAnim;
                     } else {
-	                    player().infoChar().shield = infoObj.ShieldAnim;
-	                    player().sendCharacterChange();
+	                    getUser().infoChar().shield = infoObj.ShieldAnim;
+	                    getUser().sendCharacterChange();
                     }
                 } else {
-                    player().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Tu clase no puede usar este objeto.", FontType.FONTTYPE_INFO);
                 }
                 break;
         }
         // Actualiza el inventario
-        player().sendInventoryToUser();
+        getUser().sendInventoryToUser();
     }
     
     public void desequiparArmadura() {
@@ -625,7 +625,7 @@ public class UserInventory extends Inventory implements Constants {
 				int agregados = (agregar > this.objs[i].espacioLibre()) ? this.objs[i].espacioLibre() : agregar;
 	            this.objs[i].objid = objid;
 	            this.objs[i].cant += agregados;
-	            player().sendInventorySlot(i + 1);
+	            getUser().sendInventorySlot(i + 1);
 				agregar -= agregados; // Descuento lo agregado al total que hay que agregar.
 				// Si no hay nada pendiente de agregar, termino la búsqueda.
 				if (agregar < 1) {
@@ -641,7 +641,7 @@ public class UserInventory extends Inventory implements Constants {
     				int agregados = (agregar > MAX_INVENTORY_OBJS) ? MAX_INVENTORY_OBJS : agregar;
 		            this.objs[i].objid = objid;
 		            this.objs[i].cant  = agregados;
-		            player().sendInventorySlot(i + 1);
+		            getUser().sendInventorySlot(i + 1);
     				agregar -= agregados; // Descuento lo agregado al total que hay que agregar.
     				// Si no hay nada pendiente de agregar, termino la búsqueda.
     				if (agregar < 1) {
@@ -656,11 +656,11 @@ public class UserInventory extends Inventory implements Constants {
     	}
     	// Si no se pudo agregar nada.
     	if (agregar == cant) {
-            player().sendMessage("No podes cargar mas objetos.", FontType.FONTTYPE_INFO);
+            getUser().sendMessage("No podes cargar mas objetos.", FontType.FONTTYPE_INFO);
             return 0; // Devuelvo cuantos items se agregaron, que es ninguno.
     	}
     	// Se pudo agregar algo, pero no había suficiente lugar en el inventario para todo.
-        player().sendMessage("Solo puedes cargar parte de los objetos.", FontType.FONTTYPE_INFO);
+        getUser().sendMessage("Solo puedes cargar parte de los objetos.", FontType.FONTTYPE_INFO);
         return cant - agregar; // Devuelvo cuantos items se agregaron, que no son todos.
     }
     
@@ -680,12 +680,12 @@ public class UserInventory extends Inventory implements Constants {
     	var validWeapons = new ArrayList<BlacksmithWeapons_DATA>();
     	for (short objid : this.server.getArmasHerrero()) {
             ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= player().skillHerreriaEfectivo()) {
+            if (info.SkHerreria <= getUser().skillHerreriaEfectivo()) {
             	validWeapons.add(new BlacksmithWeapons_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
     	}
 
-        player.sendPacket(
+        user.sendPacket(
         		new BlacksmithWeaponsResponse(
 					(short) validWeapons.size(), 
 					validWeapons.toArray(new BlacksmithWeapons_DATA[0])));
@@ -695,12 +695,12 @@ public class UserInventory extends Inventory implements Constants {
     	var validObjects = new ArrayList<CarpenterObjects_DATA>();
     	for (short objid : this.server.getObjCarpintero()) {
             ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= player().skillCarpinteriaEfectivo()) {
+            if (info.SkHerreria <= getUser().skillCarpinteriaEfectivo()) {
             	validObjects.add(new CarpenterObjects_DATA(info.Nombre, (short)info.Madera, objid));
             }
     	}
 
-        player.sendPacket(
+        user.sendPacket(
         		new CarpenterObjectsResponse(
         				(short) validObjects.size(), 
         				validObjects.toArray(new CarpenterObjects_DATA[0])));
@@ -710,24 +710,24 @@ public class UserInventory extends Inventory implements Constants {
     	var validArmaduras = new ArrayList<BlacksmithArmors_DATA>();
     	for (short objid : this.server.getArmadurasHerrero()) {
             ObjectInfo info = findObject(objid);
-            if (info.SkHerreria <= player().skillHerreriaEfectivo()) {
+            if (info.SkHerreria <= getUser().skillHerreriaEfectivo()) {
             	validArmaduras.add(new BlacksmithArmors_DATA(info.Nombre, info.LingH, info.LingP, info.LingO, objid));
             }
     	}
 
-        player.sendPacket(
+        user.sendPacket(
         		new BlacksmithArmorsResponse(
         				(short) validArmaduras.size(), 
         				validArmaduras.toArray(new BlacksmithArmors_DATA[0])));
     }
 
     public void dropAllItemsNoNewbies() {
-        Map mapa = this.server.getMap(player().pos().map);
+        Map mapa = this.server.getMap(getUser().pos().map);
         for (InventoryObject element : this.objs) {
             if (element.objid > 0) {
                 ObjectInfo obj = findObject(element.objid);
                 if (obj.itemSeCae() && !obj.esNewbie()) {
-                    mapa.dropItemOnFloor(player().pos().x, player().pos().y, element);
+                    mapa.dropItemOnFloor(getUser().pos().x, getUser().pos().y, element);
                 }
             }
         }
@@ -747,80 +747,80 @@ public class UserInventory extends Inventory implements Constants {
 			return;
 		}
         ObjectInfo infoObjInv = findObject(objInv.objid);
-        if (infoObjInv.esNewbie() && !player().isNewbie()) {
-            player().sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
+        if (infoObjInv.esNewbie() && !getUser().isNewbie()) {
+            getUser().sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
-        if (!player().counters().intervaloPermiteUsar()) {
+        if (!getUser().counters().intervaloPermiteUsar()) {
             return;
         }
-        player().flags().TargetObjInvIndex = objInv.objid;
-        player().flags().TargetObjInvSlot = slot;
+        getUser().flags().TargetObjInvIndex = objInv.objid;
+        getUser().flags().TargetObjInvSlot = slot;
         
-        Map map = this.server.getMap(player().pos().map);
+        Map map = this.server.getMap(getUser().pos().map);
         switch (infoObjInv.objType) {
             case UseOnce:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 // Usa el item
-                player().stats().aumentarHambre(infoObjInv.MinHam);
-                player().flags().Hambre = false;
-                player().sendUpdateHungerAndThirst();
+                getUser().stats().aumentarHambre(infoObjInv.MinHam);
+                getUser().flags().Hambre = false;
+                getUser().sendUpdateHungerAndThirst();
                 // Sonido
                 if (objInv.objid == Manzana || objInv.objid == ManzanaNewbie || objInv.objid == ManzanaNewbie) {
-                	player().sendWave(SOUND_MORFAR_MANZANA);
+                	getUser().sendWave(SOUND_MORFAR_MANZANA);
                 } else {
-                	player().sendWave(SOUND_COMIDA);
+                	getUser().sendWave(SOUND_COMIDA);
                 }
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
                 break;
             case Guita:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                player().stats().addGold(objInv.cant);
-                player().sendUpdateUserStats();
+                getUser().stats().addGold(objInv.cant);
+                getUser().sendUpdateUserStats();
                 quitarUserInvItem(slot, objInv.cant);
                 break;
             case Weapon:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 
-                if (player().stats().isTooTired()) {
-					if (player().gender() == UserGender.GENERO_HOMBRE) {
-						player().sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
+                if (getUser().stats().isTooTired()) {
+					if (getUser().gender() == UserGender.GENERO_HOMBRE) {
+						getUser().sendMessage("Estas muy cansado para luchar.", FontType.FONTTYPE_INFO);
 					} else {
-						player().sendMessage("Estas muy cansada para luchar.", FontType.FONTTYPE_INFO);
+						getUser().sendMessage("Estas muy cansada para luchar.", FontType.FONTTYPE_INFO);
 					}
 					return;
                 }
                 
                 if (!objInv.equipado) {
-                    player().sendMessage("Antes de usar la herramienta deberias equipartela.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Antes de usar la herramienta deberias equipartela.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 
                 if (infoObjInv.esProyectil()) {
-                	if ( ! player().isInCombatMode()) {
-                		player().sendMessage("No estás en modo de combate, presiona la tecla \"C\" para pasar al modo combate.", FontType.FONTTYPE_INFO);
+                	if ( ! getUser().isInCombatMode()) {
+                		getUser().sendMessage("No estás en modo de combate, presiona la tecla \"C\" para pasar al modo combate.", FontType.FONTTYPE_INFO);
                 		return;
                 	}
-                	player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Proyectiles.value()));
+                	getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Proyectiles.value()));
                 	
                 } else {
                 	// No es un arma de proyectiles
-                	if (player().flags().TargetObj != 0) {
-	                	ObjectInfo targetInfo = findObject(player().flags().TargetObj);
+                	if (getUser().flags().TargetObj != 0) {
+	                	ObjectInfo targetInfo = findObject(getUser().flags().TargetObj);
 	                	// ¿El objetivo es leña?
 	                	if (targetInfo != null && targetInfo.objType == ObjType.Leña) {
 	                    	// ¿Estoy usando una daga?
 	                        if (infoObjInv.ObjIndex == DAGA) {
-	                            player().tratarDeHacerFogata();
+	                            getUser().tratarDeHacerFogata();
 	                        } else {
-	                        	player().sendMessage("Si quieres hacer una fogata, necesitas usar una daga común.", FontType.FONTTYPE_INFO);
+	                        	getUser().sendMessage("Si quieres hacer una fogata, necesitas usar una daga común.", FontType.FONTTYPE_INFO);
 	                        }
 	                    }
                 	}
@@ -830,235 +830,235 @@ public class UserInventory extends Inventory implements Constants {
                 switch (infoObjInv.ObjIndex) {
                     case OBJ_INDEX_CAÑA:
                     case OBJ_INDEX_RED_PESCA:
-                        player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Pesca.value()));
+                        getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Pesca.value()));
                         break;
                         
                     case OBJ_INDEX_HACHA_LEÑADOR:
-                        player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Talar.value()));
+                        getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Talar.value()));
                         break;
                         
                     case OBJ_INDEX_PIQUETE_MINERO:
-                        player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Mineria.value()));
+                        getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Mineria.value()));
                         break;
                         
                     case OBJ_INDEX_MARTILLO_HERRERO:
-                        player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Herreria.value()));
+                        getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_Herreria.value()));
                         break;
                         
                     case OBJ_INDEX_SERRUCHO_CARPINTERO:
                     	sendCarpenterObjects();
-                    	player().sendPacket(new ShowCarpenterFormResponse());
+                    	getUser().sendPacket(new ShowCarpenterFormResponse());
                         break;
                 }
                 break;
                 
             case Pociones:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!player().counters().intervaloPermiteAtacar()) {
-                    player().sendMessage("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
+                if (!getUser().counters().intervaloPermiteAtacar()) {
+                    getUser().sendMessage("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
                     return;
                 }
-                player().flags().TomoPocion = true;
-                player().flags().TipoPocion = infoObjInv.TipoPocion;
+                getUser().flags().TomoPocion = true;
+                getUser().flags().TipoPocion = infoObjInv.TipoPocion;
                 
-                switch (player().flags().TipoPocion) {
+                switch (getUser().flags().TipoPocion) {
                 	// TODO enum
                     case 1: // Modif la agilidad
-                        player().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        player().stats().attr().modifyByEffect(Attribute.AGILIDAD, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        getUser().stats().attr().modifyByEffect(Attribute.AGILIDAD, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 2: // Modif la fuerza
-                        player().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
-                        player().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().flags().DuracionEfecto = infoObjInv.DuracionEfecto;
+                        getUser().stats().attr().modifyByEffect(Attribute.FUERZA, Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
                         break;
                     case 3: // Pocion roja, restaura HP
-                        player().stats().addHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
-                        player().sendUpdateUserStats();
+                        getUser().stats().addHP(Util.Azar(infoObjInv.MinModificador, infoObjInv.MaxModificador));
+                        getUser().sendUpdateUserStats();
                         break;
                     case 4: // Pocion azul, restaura MANA
-                        player().stats().aumentarMana(Util.porcentaje(player().stats().maxMana, 4)
-                        		+ ( (player().stats().ELV / 2) + 40 / player().stats().ELV) );
-                        player().sendUpdateUserStats();
+                        getUser().stats().aumentarMana(Util.porcentaje(getUser().stats().maxMana, 4)
+                        		+ ( (getUser().stats().ELV / 2) + 40 / getUser().stats().ELV) );
+                        getUser().sendUpdateUserStats();
                         break;
                     case 5: // Pocion violeta
-                        if (player().flags().Envenenado) {
-                            player().flags().Envenenado = false;
-                            player().sendMessage("Te has curado del envenenamiento.", FontType.FONTTYPE_INFO);
+                        if (getUser().flags().Envenenado) {
+                            getUser().flags().Envenenado = false;
+                            getUser().sendMessage("Te has curado del envenenamiento.", FontType.FONTTYPE_INFO);
                         }
                         break;
                     case 6: // Pocion negra
-                        if (!player().flags().isGM()) {
-                        	player().userDie();
-                            player().sendMessage("Sientes un gran mareo y pierdes el conocimiento.", FontType.FONTTYPE_INFO);
+                        if (!getUser().flags().isGM()) {
+                        	getUser().userDie();
+                            getUser().sendMessage("Sientes un gran mareo y pierdes el conocimiento.", FontType.FONTTYPE_INFO);
                         }
                         break;
                 }
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-            	player().sendWave(SOUND_BEBER);
-                player().sendUpdateUserStats();
+            	getUser().sendWave(SOUND_BEBER);
+                getUser().sendUpdateUserStats();
                 break;
                 
             case Bebidas:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                player().stats().aumentarSed(infoObjInv.MinSed);
-                player().flags().Sed = false;
-                player().sendUpdateHungerAndThirst();
+                getUser().stats().aumentarSed(infoObjInv.MinSed);
+                getUser().flags().Sed = false;
+                getUser().sendUpdateHungerAndThirst();
                 // Quitamos del inv el item
                 quitarUserInvItem(slot, 1);
-                player().sendWave(SOUND_BEBER);
+                getUser().sendWave(SOUND_BEBER);
                 break;
                 
             case Llaves:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (player().flags().TargetObj == 0) {
+                if (getUser().flags().TargetObj == 0) {
 					return;
 				}
-                ObjectInfo targetInfo = findObject(player().flags().TargetObj);
+                ObjectInfo targetInfo = findObject(getUser().flags().TargetObj);
                 // ¿El objeto cliqueado es una puerta?
                 if (targetInfo.objType == ObjType.Puertas) {
                     // ¿Esta cerrada?
                     if (targetInfo.estaCerrada()) {
                         // ¿Cerrada con llave?
-                        byte targetX = player().flags().TargetObjX;
-                        byte targetY = player().flags().TargetObjY;
+                        byte targetX = getUser().flags().TargetObjX;
+                        byte targetY = getUser().flags().TargetObjY;
                         if (targetInfo.Llave > 0) {
                             if (targetInfo.Clave == infoObjInv.Clave) {
                                 map.toggleDoor(map.getObject(targetX, targetY));
-                                player().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
-                                player().sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
+                                getUser().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
+                                getUser().sendMessage("Has abierto la puerta.", FontType.FONTTYPE_INFO);
                                 return;
                             }
-                            player().sendMessage("La llave no sirve.", FontType.FONTTYPE_INFO);
+                            getUser().sendMessage("La llave no sirve.", FontType.FONTTYPE_INFO);
                             return;
                         }
                         if (targetInfo.Clave == infoObjInv.Clave) {
                             map.toggleDoor(map.getObject(targetX, targetY));
-                            player().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
-                            player().sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
+                            getUser().flags().TargetObj = map.getObject(targetX, targetY).obj_ind;
+                            getUser().sendMessage("Has cerrado con llave la puerta.", FontType.FONTTYPE_INFO);
                             return;
                         } 
-                        player().sendMessage("La llave no sirve.", FontType.FONTTYPE_INFO);
+                        getUser().sendMessage("La llave no sirve.", FontType.FONTTYPE_INFO);
                         return;
                     }
-                    player().sendMessage("No esta cerrada.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("No esta cerrada.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 break;
                 
             case BotellaVacia:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                Pos lugar = new Pos(player().flags().TargetX, player().flags().TargetY);
-                if (!lugar.isValid() || !map.isWater(player().flags().TargetX, player().flags().TargetY)) {
-                    player().sendMessage("No hay agua allí.", FontType.FONTTYPE_INFO);
+                Pos lugar = new Pos(getUser().flags().TargetX, getUser().flags().TargetY);
+                if (!lugar.isValid() || !map.isWater(getUser().flags().TargetX, getUser().flags().TargetY)) {
+                    getUser().sendMessage("No hay agua allí.", FontType.FONTTYPE_INFO);
                     return;
                 }
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(infoObjInv.IndexAbierta, 1) == 0) {
-                    map.dropItemOnFloor(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexAbierta, 1));
+                    map.dropItemOnFloor(getUser().pos().x, getUser().pos().y, new InventoryObject(infoObjInv.IndexAbierta, 1));
                 }
                 break;
                 
             case BotellaLlena:
-                if (!player().isAlive()) {
-                    player().sendMessage("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
+                if (!getUser().isAlive()) {
+                    getUser().sendMessage("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.", FontType.FONTTYPE_INFO);
                     return;
                 }
-                player().stats().aumentarSed(infoObjInv.MinSed);
-                player().flags().Sed = false;
-                player().sendUpdateHungerAndThirst();
+                getUser().stats().aumentarSed(infoObjInv.MinSed);
+                getUser().flags().Sed = false;
+                getUser().sendUpdateHungerAndThirst();
                 quitarUserInvItem(slot, 1);
                 if (agregarItem(infoObjInv.IndexCerrada, 1) == 0) {
-                    map.dropItemOnFloor(player().pos().x, player().pos().y, new InventoryObject(infoObjInv.IndexCerrada, 1));
+                    map.dropItemOnFloor(getUser().pos().x, getUser().pos().y, new InventoryObject(infoObjInv.IndexCerrada, 1));
                 }
                 break;
                 
             case Pergaminos:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!player().flags().Hambre && !player().flags().Sed) {
-                    player().agregarHechizo(slot);
-                    player().sendInventoryToUser();
+                if (!getUser().flags().Hambre && !getUser().flags().Sed) {
+                    getUser().agregarHechizo(slot);
+                    getUser().sendInventoryToUser();
                 } else {
-                    player().sendMessage("Estas demasiado hambriento y sediento.", FontType.FONTTYPE_INFO);
+                    getUser().sendMessage("Estas demasiado hambriento y sediento.", FontType.FONTTYPE_INFO);
                 }
                 break;
                 
             case Minerales:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-            	player().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_FundirMetal));
+            	getUser().sendPacket(new WorkRequestTargetResponse(Skill.SKILL_FundirMetal));
                break;
                
             case Instrumentos:
-                if (!player().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
+                if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
                 
                 // ¿Es el Cuerno Real?
                 if (infoObjInv.esReal()) {
-                	if (player().userFaction().faccionPuedeUsarItem(objInv.objid)) {
+                	if (getUser().userFaction().faccionPuedeUsarItem(objInv.objid)) {
                 		if (map.isSafeMap()) {
-                			player().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
+                			getUser().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
                 		}
-                		player().sendWave(infoObjInv.Snd1);
+                		getUser().sendWave(infoObjInv.Snd1);
                 	} else {
-                		player().sendMessage("Solo Miembros de la Armada Real pueden usar este cuerno.", FontType.FONTTYPE_INFO);
+                		getUser().sendMessage("Solo Miembros de la Armada Real pueden usar este cuerno.", FontType.FONTTYPE_INFO);
                 	}
                 	return;
                 }
                 
                 // ¿Es el Cuerno Real?
                 if (infoObjInv.esCaos()) {
-                	if (player().userFaction().faccionPuedeUsarItem(objInv.objid)) {
+                	if (getUser().userFaction().faccionPuedeUsarItem(objInv.objid)) {
                 		if (map.isSafeMap()) {
-                			player().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
+                			getUser().sendMessage("No hay Peligro aquí. Es Zona Segura.", FontType.FONTTYPE_INFO);
                 		}
-                		player().sendWave(infoObjInv.Snd1);
+                		getUser().sendWave(infoObjInv.Snd1);
                 	} else {
-                		player().sendMessage("Solo Miembros de la Legión Oscura pueden usar este cuerno.", FontType.FONTTYPE_INFO);
+                		getUser().sendMessage("Solo Miembros de la Legión Oscura pueden usar este cuerno.", FontType.FONTTYPE_INFO);
                 	}
                 	return;
                 }
                 
                 // Es Laud o Tambor o Flauta
-                player().sendWave(infoObjInv.Snd1);
+                getUser().sendWave(infoObjInv.Snd1);
                 break;
                 
             case Barcos:
-            	if (player().stats().ELV < 25) {
-            		if (player().clazz() != Clazz.Fisher && player().clazz() != Clazz.Pirate) {
-                		player().sendMessage("Para recorrer los mares debes ser nivel 25 o superior.", FontType.FONTTYPE_INFO);
+            	if (getUser().stats().ELV < 25) {
+            		if (getUser().clazz() != Clazz.Fisher && getUser().clazz() != Clazz.Pirate) {
+                		getUser().sendMessage("Para recorrer los mares debes ser nivel 25 o superior.", FontType.FONTTYPE_INFO);
                 		return;
-            		} else if (player().stats().ELV < 20) {
-                		player().sendMessage("Para recorrer los mares debes ser nivel 20 o superior.", FontType.FONTTYPE_INFO);
+            		} else if (getUser().stats().ELV < 20) {
+                		getUser().sendMessage("Para recorrer los mares debes ser nivel 20 o superior.", FontType.FONTTYPE_INFO);
                 		return;
             		}
             	}
             	
-                short m = player().pos().map;
-                short x = player().pos().x;
-                short y = player().pos().y;
+                short m = getUser().pos().map;
+                short x = getUser().pos().x;
+                short y = getUser().pos().y;
                 if (((map.isLegalPos(MapPos.mxy(m, (short) (x - 1), y), true, false) 
                 		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y - 1)), true, false) 
                 		|| map.isLegalPos(MapPos.mxy(m, (short) (x + 1), y), true, false) 
                 		|| map.isLegalPos(MapPos.mxy(m, x, (short) (y + 1)), true, false)) 
-                		&& !player().flags().Navegando) 
-                	|| player().flags().Navegando) {
+                		&& !getUser().flags().Navegando) 
+                	|| getUser().flags().Navegando) {
 		                    this.barcoSlot = slot;
-		                    player().sailingToggle();
+		                    getUser().sailingToggle();
                 } else {
-            		player().sendMessage("¡Debes aproximarte al agua para usar el barco!", FontType.FONTTYPE_INFO);
+            		getUser().sendMessage("¡Debes aproximarte al agua para usar el barco!", FontType.FONTTYPE_INFO);
                 }
                 break;
                 

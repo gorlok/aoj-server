@@ -122,8 +122,8 @@ public interface Constants {
     final static int YMinMapSize = 1;
     final static int XMaxMapSize = 100;
     final static int YMaxMapSize = 100;
-    final static int MAPA_ALTO  = 100;
-    final static int MAPA_ANCHO = 100;
+    final static int MAP_HEIGHT  = 100;
+    final static int MAP_WIDTH = 100;
     
 	public final String CHARFILES_FOLDER = "charfile";
     

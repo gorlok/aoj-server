@@ -178,31 +178,31 @@ public class Reputation {
         }
     }
     
-    public void disminuyeNoblezaAumentaBandido(Player player, double noblePts, double bandidoPts) {
+    public void disminuyeNoblezaAumentaBandido(User user, double noblePts, double bandidoPts) {
     	// DisNobAuBan
     	// disminuye la nobleza NoblePts puntos y aumenta el bandido BandidoPts puntos
-        boolean eraCriminal = player.isCriminal();
+        boolean eraCriminal = user.isCriminal();
         
         // Si estamos en la arena no hacemos nada
-        if (player.isAtDuelArena()) {
+        if (user.isAtDuelArena()) {
         	return;
         }
         
-        if (!player.flags().isGM() || player.flags().isCounselor()) {
+        if (!user.flags().isGM() || user.flags().isCounselor()) {
         	// pierdo nobleza...
         	decNoble(noblePts);
 			// gano bandido...
         	incBandido(bandidoPts);
 
-        	player.sendPacket(new NobilityLostResponse());
+        	user.sendPacket(new NobilityLostResponse());
         	
-        	if (player.isCriminal() && player.isRoyalArmy()) {
-        		player.userFaction().royalArmyKick();
+        	if (user.isCriminal() && user.isRoyalArmy()) {
+        		user.userFaction().royalArmyKick();
         	}
         }
         
-        if ( !eraCriminal && player.isCriminal()) {
-        	player.refreshCharStatus();
+        if ( !eraCriminal && user.isCriminal()) {
+        	user.refreshCharStatus();
         }
     }
     

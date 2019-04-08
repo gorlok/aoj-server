@@ -133,7 +133,7 @@ import io.netty.channel.Channel;
 /**
  * @author gorlok
  */
-public class Player extends AbstractCharacter {
+public class User extends AbstractCharacter {
 
 	private static Logger log = LogManager.getLogger();
 	
@@ -221,7 +221,7 @@ public class Player extends AbstractCharacter {
 	
 	GameServer server;
 	
-	public Player(GameServer aoserver) {
+	public User(GameServer aoserver) {
 		init(aoserver);
 		this.userTrade = new UserTrade(this);
 	}
@@ -424,7 +424,7 @@ public class Player extends AbstractCharacter {
 
 	@Override
 	public String toString() {
-		return "Player(id=" + getId() + ",nick=" + this.userName + ")";
+		return "User(id=" + getId() + ",nick=" + this.userName + ")";
 	}
 
 	public UserFaction userFaction() {
@@ -440,7 +440,7 @@ public class Player extends AbstractCharacter {
 	}
 
 	/**
-	 * Sends a network packet to the player.
+	 * Sends a network packet to the user.
 	 *
 	 * @param msg    is the message type to send.
 	 * @param params is the parameters of the message (optional).
@@ -1127,30 +1127,30 @@ public class Player extends AbstractCharacter {
                 return;
 			}
 
-			Player targetPlayer = this.server.playerById(flags().TargetUser);
-			if (targetPlayer == null) {
+			User targetUser = this.server.userById(flags().TargetUser);
+			if (targetUser == null) {
 				return;
 			}
             //Is the other one dead??
-			if (!targetPlayer.isAlive()) {
+			if (!targetUser.isAlive()) {
 				sendMessage("¡¡No puedes comerciar con los muertos!!", FontType.FONTTYPE_INFO);
                 return;
 			}
 
             //Is it me??
-			if (targetPlayer == this) {
+			if (targetUser == this) {
 				sendMessage("No puedes comerciar con vos mismo...", FontType.FONTTYPE_INFO);
                 return;
 			}
 
             //Check distance
-			if (pos().distance(targetPlayer.pos()) > 3) {
+			if (pos().distance(targetUser.pos()) > 3) {
 				sendMessage("Estás demasiado lejos del usuario.", FontType.FONTTYPE_INFO);
                 return;
 			}
 
             //Is he already trading?? is it with me or someone else??
-			if (targetPlayer.isTrading() && targetPlayer.flags().TargetUser != this.getId()) {
+			if (targetUser.isTrading() && targetUser.flags().TargetUser != this.getId()) {
 				sendMessage("No puedes comerciar con el usuario en este momento.", FontType.FONTTYPE_INFO);
 			}
 
@@ -1510,7 +1510,7 @@ public class Player extends AbstractCharacter {
 	 * Robar objeto
 	 * @param victim
 	 */
-	private void stealObject(Player victim) {
+	private void stealObject(User victim) {
 		boolean flag = false;
 		short slot = 0;
 		if (Util.Azar(1, 12) < 6) { // Comenzamos por el principio o el final?
@@ -1570,7 +1570,7 @@ public class Player extends AbstractCharacter {
 		return (Util.Azar(1, rango) < 3);
 	}
 
-	private void steal(Player victima) {
+	private void steal(User victima) {
 		if (victima.flags().isGM() || this.flags().isGM()) {
 			return;
 		}
@@ -1721,7 +1721,7 @@ public class Player extends AbstractCharacter {
 				}
 
 				mapa.lookAtTile(this, x, y);
-				Player targetUser = this.server.playerById(flags().TargetUser);
+				User targetUser = this.server.userById(flags().TargetUser);
 				Npc npc = this.server.npcById(flags().TargetNpc);
 				if (npc != null) {
 					if (!npc.isAttackable()) {
@@ -1816,7 +1816,7 @@ public class Player extends AbstractCharacter {
 					}
 					mapa.lookAtTile(this, x, y);
 					if (flags().TargetUser > 0 && flags().TargetUser != getId()) {
-						targetUser = this.server.playerById(flags().TargetUser);
+						targetUser = this.server.userById(flags().TargetUser);
 						if (targetUser.isAlive()) {
 							MapPos wpaux = MapPos.mxy(pos().map, x, y);
 							if (wpaux.distance(pos()) > 2) {
@@ -2122,7 +2122,7 @@ public class Player extends AbstractCharacter {
 	public void changeCharDescription(String newDescRM) {
 		// Comando "/SETDESC "
         if (isGod() || isAdmin() || isRoleMaster()) {
-        	Player targetUser = server.playerById(flags().TargetUser);
+        	User targetUser = server.userById(flags().TargetUser);
         	if (targetUser != null) {
                 targetUser.descRM = newDescRM;
         	} else {
@@ -2189,7 +2189,7 @@ public class Player extends AbstractCharacter {
 		boolean wasLogged = flags().UserLogged;
 		try {
 			Map mapa = this.server.getMap(pos().map);
-			if (mapa != null && mapa.hasPlayer(this)) {
+			if (mapa != null && mapa.hasUser(this)) {
 				getUserPets().removeInvocationPets();				
 				for (Npc pet: getUserPets().getPets()) {
 					mapa.exitNpc(pet);
@@ -2207,7 +2207,7 @@ public class Player extends AbstractCharacter {
 		} catch (Exception ex) {
 			log.fatal("ERROR EN doSALIR(): ", ex);
 		} finally {
-			this.server.dropPlayer(this);
+			this.server.dropUser(this);
 			if (wasLogged) {
 				try {
 					saveUser();
@@ -2407,9 +2407,9 @@ public class Player extends AbstractCharacter {
 		if (map == null) {
 			return;
 		}
-		Player targetUser = this.server.playerById(targetIndex);
+		User targetUser = this.server.userById(targetIndex);
 		if (targetUser != null) {
-			if (map.lookForPlayerAtArea(pos().x, pos().y, targetUser.getId()) == null) {
+			if (map.lookForUserAtArea(pos().x, pos().y, targetUser.getId()) == null) {
 				sendMessage("Estas muy lejos de " + targetUser.getNick(), FontType.FONTTYPE_INFO);
 			} else {
 				if (flags().isCounselor()) {
@@ -2487,13 +2487,13 @@ public class Player extends AbstractCharacter {
 	}
 
 	/**
-	 * Move player in the heading direction.
+	 * Move user in the heading direction.
 	 * If newPos has a "casper" (ghost or died user), both positions are swapped.
 	 * Invisible Admins can't move over caspers.
 	 * @param heading
 	 */
 	private void move(Heading heading) {
-		Player casper;
+		User casper;
 		MapPos oldPos = pos().copy();
 		Map map = this.server.getMap(pos().map);
 		if (map == null) {
@@ -2503,22 +2503,22 @@ public class Player extends AbstractCharacter {
 		infoChar().heading(heading);
 		MapPos newPos = pos().copy().moveToHeading(heading);
 		if ( map.isLegalPos(newPos, isSailing(), !isSailing())) {
-			casper = map.getPlayer(newPos.x, newPos.y);
+			casper = map.getUser(newPos.x, newPos.y);
 			if (casper != null) {
 				if (flags().AdminInvisible) {
 					// los admins invisibles no pueden patear caspers
-					// player can't move
+					// user can't move
 					sendPositionUpdate();
 					return;
 				} 
 				Heading casperHeading = heading.invertHeading();
             	casper.infoChar().heading(casperHeading);
-				map.movePlayerSwapping(this, newPos, casper);
+				map.moveUserSwapping(this, newPos, casper);
 			} else {
-				map.movePlayer(this, newPos);
+				map.moveUser(this, newPos);
 			}
 
-			// TELEPORT PLAYER
+			// TELEPORT USER
 			if (map.isTeleport(newPos.x, newPos.y)) {
 				// Esto es similar al DoTileEvents original
 				MapPos targetPos	= map.teleportTarget(newPos.x, newPos.y);
@@ -2526,12 +2526,12 @@ public class Player extends AbstractCharacter {
 				boolean sendingData = pos().map != targetPos.map;
 				if (!enterIntoMap(targetPos.map, targetPos.x, targetPos.y, withFX, sendingData)) {
 					// if fails, go back to the closest original position
-					MapPos warpPos = map.closestLegalPosPlayer(oldPos.x, oldPos.y, flags().Navegando, flags().isGM());
+					MapPos warpPos = map.closestLegalPosUser(oldPos.x, oldPos.y, flags().Navegando, flags().isGM());
 					warpMe(warpPos.map, warpPos.x, warpPos.y, true);
 				}
 			}
 		} else {
-			// player can't move
+			// user can't move
 			sendPositionUpdate();
 		}
 	}
@@ -2716,7 +2716,7 @@ public class Player extends AbstractCharacter {
 			if (oldMap == null) {
 				return false;
 			}
-			if (oldMap.hasPlayer(this) && !oldMap.exitMap(this)) {
+			if (oldMap.hasUser(this) && !oldMap.exitMap(this)) {
 				// it fails to exit map
 				log.fatal(this.getNick() + " no pudo salir del mapa actual");
 			}
@@ -2732,7 +2732,7 @@ public class Player extends AbstractCharacter {
 			return false;
 		}
 
-		MapPos freePos = targetMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
+		MapPos freePos = targetMap.closestLegalPosUser(x, y, flags().Navegando, flags().isGM());
 
 		// enter into the new map
 		if (!targetMap.enterMap(this, freePos.x, freePos.y)) {
@@ -2819,7 +2819,7 @@ public class Player extends AbstractCharacter {
 			sendPacket(new PlayMidiResponse((byte) newMap.getMusic(), (short)45));
 		}
 		
-		MapPos freePos = newMap.closestLegalPosPlayer(x, y, flags().Navegando, flags().isGM());
+		MapPos freePos = newMap.closestLegalPosUser(x, y, flags().Navegando, flags().isGM());
 		if (freePos == null) {
 			log.warn("WARPUSER FALLO: no hay un lugar libre cerca de mapa=" + targetMap + " x=" + x + " y=" + y);
 			return false;
@@ -3886,12 +3886,12 @@ public class Player extends AbstractCharacter {
 				return;
 			}
 			Map mapa = this.server.getMap(pos().map);
-			Player attackedPlayer = mapa.getPlayer(attackPos.x, attackPos.y);
+			User attackedUser = mapa.getUser(attackPos.x, attackPos.y);
 			// Look for user
-			if (attackedPlayer != null) {
-				usuarioAtacaUsuario(attackedPlayer);
+			if (attackedUser != null) {
+				usuarioAtacaUsuario(attackedUser);
 				sendUpdateUserStats();
-				attackedPlayer.sendUpdateUserStats();
+				attackedUser.sendUpdateUserStats();
 				return;
 			}
 			// Look for Npc
@@ -3917,7 +3917,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public boolean usuarioImpacto(Player victima) {
+	public boolean usuarioImpacto(User victima) {
 		double probExito = 0;
 		long skillTacticas = victima.skills().get(Skill.SKILL_Tacticas);
 		long skillDefensa = victima.skills().get(Skill.SKILL_Defensa);
@@ -3973,7 +3973,7 @@ public class Player extends AbstractCharacter {
 		return huboImpacto;
 	}
 
-	public void usuarioAtacaUsuario(Player victima) {
+	public void usuarioAtacaUsuario(User victima) {
 		if (!puedeAtacar(victima)) {
 			return;
 		}
@@ -3995,7 +3995,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void userDañoUser(Player victima) {
+	public void userDañoUser(User victima) {
 		short damage = calcularDaño(null);
 		short shipDefense = 0;
 		envenenarUsuario(victima); // revisar... FIXME
@@ -4061,7 +4061,7 @@ public class Player extends AbstractCharacter {
 		checkUserLevel();
 	}
 
-	public void actStats(Player victima) {
+	public void actStats(User victima) {
 		// ActStats
 		int daExp = victima.stats().ELV * 2;
 		stats().addExp(daExp);
@@ -4096,7 +4096,7 @@ public class Player extends AbstractCharacter {
 		log.info("ASESINATO: " + this.userName + " asesino a " + victima.userName);
 	}
 	
-	public void contarMuerte(Player killedUser) {
+	public void contarMuerte(User killedUser) {
 		// ContarMuerte
 		if (killedUser.isNewbie()) {
 			return;
@@ -4109,7 +4109,7 @@ public class Player extends AbstractCharacter {
 		stats().incUsuariosMatados();
 	}
 
-	public void usuarioAtacadoPorUsuario(Player victima) {
+	public void usuarioAtacadoPorUsuario(User victima) {
 		if (duelStatus(victima) == DuelStatus.DUEL_ALLOWED) {
 			return;
 		}
@@ -4137,7 +4137,7 @@ public class Player extends AbstractCharacter {
 		victima.allPetsAttackUser(this);
 	}
 
-	public void allPetsAttackUser(Player objetivo) {
+	public void allPetsAttackUser(User objetivo) {
 		getUserPets().getPets().forEach(pet -> {
 			pet.attackedByUserName(objetivo.getNick());
 			pet.defenderse();
@@ -4149,7 +4149,7 @@ public class Player extends AbstractCharacter {
         return map.getTrigger(pos().x, pos().y) == Trigger.TRIGGER_ARENA_DUELOS;
 	}
 
-	public boolean puedeAtacar(Player victima) {
+	public boolean puedeAtacar(User victima) {
 		Map map = this.server.getMap(victima.pos().map);
 
 		DuelStatus t = duelStatus(victima);
@@ -4227,7 +4227,7 @@ public class Player extends AbstractCharacter {
 		}
 	}
 
-	public void apuñalar(Player victimaUsuario, int daño) {
+	public void apuñalar(User victimaUsuario, int daño) {
 		// DoApuñalar
 		if (suerteApuñalar()) {
 			daño *= 1.5;
@@ -4440,7 +4440,7 @@ public class Player extends AbstractCharacter {
 				sendError("El personaje no existe. Compruebe el nombre de usuario.");
 				return;
 			}
-			if (this.server.isPlayerAlreadyConnected(userName)) {
+			if (this.server.isUserAlreadyConnected(userName)) {
 				sendError("Perdon, pero ya esta conectado.");
 				return;
 			}
@@ -5290,7 +5290,7 @@ public class Player extends AbstractCharacter {
 	    DUEL_MISSING 	/* TRIGGER6_AUSENTE  3 */;
     }
 
-	public DuelStatus duelStatus(Player victima) {
+	public DuelStatus duelStatus(User victima) {
 		// triggerZonaPelea
 		
 		if (victima == null) {
@@ -5311,7 +5311,7 @@ public class Player extends AbstractCharacter {
 		return DuelStatus.DUEL_MISSING;
 	}
 
-	private void envenenarUsuario(Player victima) {
+	private void envenenarUsuario(User victima) {
 		// UserEnvenenar
 		ObjectInfo arma = this.userInv.getArma();
 		if (arma != null) {
@@ -5473,10 +5473,10 @@ public class Player extends AbstractCharacter {
 		sendPacket(new PongResponse());
 	}
 
-	public void useSpellMacro(Player player) {
-		server.sendToAdmins(new ConsoleMsgResponse(player.getNick() + 
+	public void useSpellMacro(User user) {
+		server.sendToAdmins(new ConsoleMsgResponse(user.getNick() + 
 				" fue expulsado por Anti-macro de hechizos", FontType.FONTTYPE_VENENO.id()));
-        player.sendError("Has sido expulsado por usar macro de hechizos. Recomendamos leer el reglamento sobre el tema macros");
+        user.sendError("Has sido expulsado por usar macro de hechizos. Recomendamos leer el reglamento sobre el tema macros");
 	}
 	
 }

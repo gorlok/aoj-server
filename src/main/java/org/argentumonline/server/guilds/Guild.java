@@ -21,13 +21,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.argentumonline.server.Constants;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.protocol.PlayWaveResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
 
@@ -117,18 +118,16 @@ public class Guild {
     public void messageToGuildMembers(String message, FontType font) {
     	// ToGuildMembers
         for (String member: this.members) {
-            this.server.playerByUserName(member)
+            this.server.userByName(member)
             	.sendMessage(message, font);            
         }
     }
     
     public void sendPlayWave(byte sound) {
     	// ToGuildMembers
-        Player player;
-        for (String member: this.members) {
-        	player = this.server.playerByUserName(member);
-        	player.sendPacket(new PlayWaveResponse(sound, player.pos().x, player.pos().y));
-        }
+    	this.members.stream()
+    		.map(GameServer.instance()::userByName)
+    		.forEach( u -> u.sendPacket(new PlayWaveResponse(sound, u.pos().x, u.pos().y)));
     }
     
     public int codexLength() {
@@ -398,32 +397,32 @@ public class Guild {
         }
     }
 
-    public void removeAllie(String name) {
+    public void removeAllie(String userName) {
     	for (String allie: this.alliedGuilds) {
-    		if (allie.equalsIgnoreCase(name)) {
+    		if (allie.equalsIgnoreCase(userName)) {
     			this.alliedGuilds.remove(allie);
     			return;
     		}
     	}
     }
 
-    public void removeEnemy(String name) {
+    public void removeEnemy(String userName) {
         for (String enemy: this.enemyGuilds) {
-            if (enemy.equalsIgnoreCase(name)) {
+            if (enemy.equalsIgnoreCase(userName)) {
                 this.enemyGuilds.remove(enemy);
                 return;
             }
         }
     }
 
-    public void removeMember(String name) {
-        Player player;
-        for (String member: this.members) {
-            player = this.server.playerByUserName(member);
-            if (player.getNick().equalsIgnoreCase(name)) {
-            	this.members.remove(player.getNick());          
-            }
-        }
+    public void removeMember(String userName) {
+    	Optional<User> user = this.members.stream()
+			.map(GameServer.instance()::userByName)
+			.filter(u -> u.getNick().equalsIgnoreCase(userName))
+			.findFirst();
+    	if (user.isPresent()) {
+    		this.members.remove(user.get().getNick());          
+    	}
     }
     
     // FIXME ?
@@ -462,9 +461,9 @@ public class Guild {
         this.ballotBox.clear();
     }
 
-    public boolean isMember(String name) {
+    public boolean isMember(String userName) {
         for (String member: this.members) {
-            if (member.equalsIgnoreCase(name)) {
+            if (member.equalsIgnoreCase(userName)) {
                 return true;
             }
         }
@@ -478,21 +477,21 @@ public class Guild {
         return this.ballotBox.getWinner();
     }
 
-    public void computeVote(Player player, String member) {
+    public void computeVote(User user, String member) {
         if (!this.elections) {
-            player.sendMessage("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
+            user.sendMessage("Aun no es período de elecciones.", FontType.FONTTYPE_GUILD);
             return;
          }
-         if (player.guildInfo().yaVoto()) {
-            player.sendMessage("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
+         if (user.guildInfo().yaVoto()) {
+            user.sendMessage("Ya has votado!!! Solo se permite un voto por miembro.", FontType.FONTTYPE_GUILD);
             return;
          }
          if (!this.isMember(member)) {
-            player.sendMessage("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
+            user.sendMessage("No hay ningún miembro con ese nombre.", FontType.FONTTYPE_GUILD);
             return;
          }
          this.ballotBox.addVote(member);
-         player.guildInfo().voto();
-         player.sendMessage("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
+         user.guildInfo().voto();
+         user.sendMessage("Tu voto ha sido contabilizado.", FontType.FONTTYPE_GUILD);
     }
 }

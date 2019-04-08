@@ -47,7 +47,7 @@ import org.argentumonline.server.npc.WorkWatcher;
 import org.argentumonline.server.protocol.ConsoleMsgResponse;
 import org.argentumonline.server.protocol.RainToggleResponse;
 import org.argentumonline.server.quest.Quest;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.Spell;
 import org.argentumonline.server.util.Feedback;
 import org.argentumonline.server.util.FontType;
@@ -66,10 +66,10 @@ public class GameServer implements Constants {
 
     private boolean useUPnP = false; // FIXME configure this
 
-    private HashMap<Short, Player> players = new HashMap<>();
+    private HashMap<Short, User> users = new HashMap<>();
     private HashMap<Short, Npc> npcs = new HashMap<>();
 
-	private List<Player> playersToDrop = new LinkedList<>();
+	private List<User> usersToDrop = new LinkedList<>();
 	private List<Short> deadNpcs = new LinkedList<>();
 
 	private List<Spell> spells = new LinkedList<>();
@@ -202,12 +202,12 @@ public class GameServer implements Constants {
 		return this.npcLoader;
 	}
 
-    public List<Player> players() {
-    	return this.players.values().stream()
+    public List<User> getUsers() {
+    	return this.users.values().stream()
     			.collect(Collectors.toList());
     }
 
-    public List<Npc> npcs() {
+    public List<Npc> getNpcs() {
     	return new ArrayList<>(this.npcs.values());
     }
 
@@ -240,7 +240,7 @@ public class GameServer implements Constants {
     			// just in case, Java's short type is signed
     			this.lastId = 1;
     		}
-    	} while (players.containsKey(this.lastId) || npcs.containsKey(this.lastId));
+    	} while (users.containsKey(this.lastId) || npcs.containsKey(this.lastId));
     	
         return this.lastId;
     }
@@ -286,14 +286,14 @@ public class GameServer implements Constants {
     }
 
     public List<String> getUsuariosConectados() {
-    	return players().stream()
+    	return getUsers().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
-			    	.map(Player::getNick)
+			    	.map(User::getNick)
 			    	.collect(Collectors.toList());
     }
 
     public void echarPjsNoPrivilegiados() {
-    	var users = players().stream()
+    	var users = getUsers().stream()
 			    	.filter(c -> c.isLogged() && c.hasNick() && !c.flags().isGM())
 			    	.collect(Collectors.toList());
 
@@ -311,16 +311,16 @@ public class GameServer implements Constants {
     }
 
     public List<String> getUsuariosConIP(String ip) {
-    	return players().stream()
+    	return getUsers().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.getIP().equals(ip))
-		    	.map(Player::getNick)
+		    	.map(User::getNick)
 		    	.collect(Collectors.toList());
     }
 
     public List<String> getGMsOnline() {
-    	return players().stream()
+    	return getUsers().stream()
 		    	.filter(c -> c.isLogged() && c.hasNick() && c.flags().isGM())
-		    	.map(Player::getNick)
+		    	.map(User::getNick)
 		    	.collect(Collectors.toList());
     }
 
@@ -374,7 +374,7 @@ public class GameServer implements Constants {
                 passMinuteTimer(now);
                 passSecondTimer(now);
                 
-                removeDropedPlayers();
+                removeDroppedUsers();
 
                 long ellapsed = System.currentTimeMillis() - now;
                 if (ellapsed > worstTime) {
@@ -393,15 +393,15 @@ public class GameServer implements Constants {
         }
     }
 
-    public synchronized void dropPlayer(Player user) {
+    public synchronized void dropUser(User user) {
     	user.closeConnection();
-    	this.playersToDrop.add(user);
+    	this.usersToDrop.add(user);
     }
 
-    private synchronized void removeDropedPlayers() {
+    private synchronized void removeDroppedUsers() {
     	// Se hace aqui para evitar problemas de concurrencia
-    	this.playersToDrop.stream().forEach(u -> this.players.remove(u.getId()));
-    	this.playersToDrop.clear();
+    	this.usersToDrop.stream().forEach(u -> this.users.remove(u.getId()));
+    	this.usersToDrop.clear();
     }
 
     private static String memoryStatus() {
@@ -485,21 +485,21 @@ public class GameServer implements Constants {
         return npc;
     }
 
-    public void createPlayer(Channel channel) {
-        Player player = new Player(this);
-        player.setChannel(channel);
+    public void createUser(Channel channel) {
+        User user = new User(this);
+        user.setChannel(channel);
         
-        if (manager().getBannedIPs().contains(player.getIP())) {
-        	player.sendError("Su IP se encuentra bloqueada en este servidor.");
-        	player.quitGame();
+        if (manager().getBannedIPs().contains(user.getIP())) {
+        	user.sendError("Su IP se encuentra bloqueada en este servidor.");
+        	user.quitGame();
         	return;
         }
         
-        this.players.put(player.getId(), player);
+        this.users.put(user.getId(), user);
     }
 
-    public Optional<Player> findPlayer(Channel channel) {
-    	return this.players.values().stream()
+    public Optional<User> findUser(Channel channel) {
+    	return this.users.values().stream()
 		    		.filter(p -> p.getChannel() == channel)
 		    		.findFirst();
     }
@@ -512,8 +512,8 @@ public class GameServer implements Constants {
         return this.npcs.get(npcId);
     }
 
-    public Player playerById(short id) {
-        return this.players.get(id);
+    public User userById(short id) {
+        return this.users.get(id);
     }
 
     public Spell getSpell(int spell) {
@@ -527,22 +527,22 @@ public class GameServer implements Constants {
 		return null;
     }
     
-    public Player playerByUserName(String userName) {
+    public User userByName(String userName) {
     	if ("".equals(userName)) {
 			return null;
 		}
     	
-    	Optional<Player> founded = players().stream()
+    	Optional<User> founded = getUsers().stream()
     		.filter(u -> userName.equalsIgnoreCase(u.getNick()))
     		.findFirst();
     	
     	return founded.isPresent() ? founded.get() : null;
     }
 
-    public boolean isPlayerAlreadyConnected(String userName) {
-    	Player foundedPlayer = playerByUserName(userName);
-    	return foundedPlayer != null &&
-    			userName.equalsIgnoreCase(foundedPlayer.getNick());
+    public boolean isUserAlreadyConnected(String userName) {
+    	User foundedUser = userByName(userName);
+    	return foundedUser != null &&
+    			userName.equalsIgnoreCase(foundedUser.getNick());
     }
 
     private void npcAiTimer(long now) {
@@ -551,7 +551,7 @@ public class GameServer implements Constants {
             lastNpcAI = now;
     	
 	        if (!this.doingBackup) {
-	            npcs().stream()
+	            getNpcs().stream()
 	            	.filter(npc -> npc.isNpcActive() && !npc.isStatic())
 	            	.forEach(npc -> {
 		                if (npc.isParalized()) {
@@ -560,7 +560,7 @@ public class GameServer implements Constants {
 		                    // Usamos AI si hay algun user en el mapa
 		                    if (npc.pos().isValid()) {
 		                        Map map = getMap(npc.pos().map);
-		                        if (map != null && map.getPlayersCount() > 0) {
+		                        if (map != null && map.getUsersCount() > 0) {
 	                                npc.doAI();
 		                        }
 		                    }
@@ -579,9 +579,9 @@ public class GameServer implements Constants {
         	fps = 0;
         	worstTime = 0;
             lastPasarSegundoTimer = now;
-	        List<Player> readyToQuit = new LinkedList<>();
+	        List<User> readyToQuit = new LinkedList<>();
 	        
-	        players().stream().forEach(u -> {
+	        getUsers().stream().forEach(u -> {
 	            if (u.counters().Saliendo) {
 	                u.counters().SalirCounter--;
 	                if (u.counters().SalirCounter <= 0) {
@@ -598,7 +598,7 @@ public class GameServer implements Constants {
 	                }
 	            }
 	        });
-	        readyToQuit.stream().forEach(Player::quitGame);
+	        readyToQuit.stream().forEach(User::quitGame);
 	        
 	        getWorkWatcher().passSecond();
         }
@@ -606,9 +606,9 @@ public class GameServer implements Constants {
 
     public void saveUsers() {
         this.doingBackup = true;
-    	players().stream()
-    		.filter(Player::isLogged)
-    		.forEach(Player::saveUser);
+    	getUsers().stream()
+    		.filter(User::isLogged)
+    		.forEach(User::saveUser);
         this.doingBackup = false;
     }
 
@@ -642,7 +642,7 @@ public class GameServer implements Constants {
         if ((now - lastFX) > 200) {
             lastFX = now;
             maps.stream()
-            	.filter(Map::isHasPlayers)
+            	.filter(Map::isHasUsers)
             	.forEach(m -> {
             		if (Util.Azar(1, 150) < 12) {
             			m.soundFx();
@@ -657,9 +657,9 @@ public class GameServer implements Constants {
         if ((now - lastGameTimer) > 40) {
             lastGameTimer = now;
             
-            players().stream()
-            	.filter(Player::hasId)
-            	.forEach(Player::procesarEventos);
+            getUsers().stream()
+            	.filter(User::hasId)
+            	.forEach(User::procesarEventos);
         }
     }
 
@@ -667,7 +667,7 @@ public class GameServer implements Constants {
         if ((now - lastNpcAtacaTimer) > 2000) {
             lastNpcAtacaTimer = now;
     	
-            npcs().stream().forEach(Npc::startAttacking);
+            getNpcs().stream().forEach(Npc::startAttacking);
         }
     }
 
@@ -675,10 +675,10 @@ public class GameServer implements Constants {
         if ((now - lastTimerOculto) > 3_000) {
             lastTimerOculto = now;
             
-            players().stream()
-            	.filter(Player::hasId)
-            	.filter(Player::isHidden)
-            	.forEach(Player::updateHiding);
+            getUsers().stream()
+            	.filter(User::hasId)
+            	.filter(User::isHidden)
+            	.forEach(User::updateHiding);
         }
     }
 
@@ -689,24 +689,24 @@ public class GameServer implements Constants {
         if ((now - lastLluviaTimer) > 1500) {
             lastLluviaTimer = now;
 
-            players().stream()
-            	.filter(Player::hasId)
-            	.forEach(Player::rainingEffect);
+            getUsers().stream()
+            	.filter(User::hasId)
+            	.forEach(User::rainingEffect);
         }
     }
 
     public void sendToAll(ServerPacket packet) {
-    	players().stream()
-	    	.filter(Player::hasId)
-	    	.filter(Player::isLogged)
+    	getUsers().stream()
+	    	.filter(User::hasId)
+	    	.filter(User::isLogged)
 	    	.forEach(u -> u.sendPacket(packet));
     }
 
     public void sendToAdmins(ServerPacket packet) {
-    	players().stream()
-	    	.filter(Player::hasId)
-	    	.filter(Player::isLogged)
-	    	.filter(Player::isGM)
+    	getUsers().stream()
+	    	.filter(User::hasId)
+	    	.filter(User::isLogged)
+	    	.filter(User::isGM)
 	    	.forEach(u -> u.sendPacket(packet));
     }
 
@@ -756,10 +756,10 @@ public class GameServer implements Constants {
         if ((now - lastPiqueteTimer) > 1_000) {
             lastPiqueteTimer = now;
 
-            players().stream()
-		    	.filter(Player::hasId)
-		    	.filter(Player::isLogged)
-		    	.forEach(Player::checkPiquete);
+            getUsers().stream()
+		    	.filter(User::hasId)
+		    	.filter(User::isLogged)
+		    	.forEach(User::checkPiquete);
         }
     }
 
@@ -767,10 +767,10 @@ public class GameServer implements Constants {
         if ((now - lastPurgarPenas) > 60_000) {
             lastPurgarPenas = now;
             
-            players().stream()
-		    	.filter(Player::hasId)
-		    	.filter(Player::isLogged)
-		    	.forEach(Player::checkPenalties);
+            getUsers().stream()
+		    	.filter(User::hasId)
+		    	.filter(User::isLogged)
+		    	.forEach(User::checkPenalties);
         }
     }
 
@@ -778,10 +778,10 @@ public class GameServer implements Constants {
         if ((now - lastCheckIdleUser) > 60_000) {
             lastCheckIdleUser = now;
     	
-            players().stream()
-		    	.filter(Player::hasId)
-		    	.filter(Player::isLogged)
-		    	.forEach(Player::checkIdle);
+            getUsers().stream()
+		    	.filter(User::hasId)
+		    	.filter(User::isLogged)
+		    	.forEach(User::checkIdle);
         }
     }
 
@@ -898,13 +898,13 @@ public class GameServer implements Constants {
     }
 
     public void sendMessageToGMs(String msg) {
-    	players().stream()
+    	getUsers().stream()
 			.filter(p -> p.isLogged() && p.isGM())
 			.forEach(p -> p.sendMessage(msg, FontType.FONTTYPE_GM));
     }
 
     public void sendMessageToRoleMasters(String msg) {
-    	players().stream()
+    	getUsers().stream()
     		.filter(p -> p.isLogged() && p.isRoleMaster())
     		.forEach(p -> p.sendMessage(msg, FontType.FONTTYPE_GUILDMSG));
     }
@@ -934,7 +934,7 @@ public class GameServer implements Constants {
         /////////// FIXME
     }
 
-    public void cleanWorld(Player admin) {
+    public void cleanWorld(User admin) {
     	// Comando /LIMPIAR
 		if (!admin.isGM()) {
 			return;
@@ -979,7 +979,7 @@ public class GameServer implements Constants {
         // Guardar los NPCs
         try {
             IniFile ini = new IniFile();
-            npcs().stream()
+            getNpcs().stream()
             	.filter(Npc::isBackup)
             	.forEach(npc -> npc.backupNpc(ini));
 
@@ -994,7 +994,7 @@ public class GameServer implements Constants {
 
     private void reSpawnOrigPosNpcs() {
         List<Npc> spawnNPCs = new ArrayList<>();
-        npcs().stream()
+        getNpcs().stream()
         	.filter(Npc::isNpcActive)
         	.forEach(npc -> {
         		if (npc.getNumber() == GUARDIAS && npc.getOrig().isValid()) {
@@ -1056,7 +1056,7 @@ public class GameServer implements Constants {
         GameServer.instance().runGameLoop();
     }
 
-    public void reloadObjects(Player admin) {
+    public void reloadObjects(User admin) {
 		if (!admin.isGod() && !admin.isAdmin()) {
 			return;
 		}
@@ -1065,7 +1065,7 @@ public class GameServer implements Constants {
     	Log.logGM(admin.getNick(), admin.getNick() + " ha recargado los objetos.");
     }
 
-	public void reloadSpells(Player admin) {
+	public void reloadSpells(User admin) {
 		if (!admin.isGod() && !admin.isAdmin()) {
 			return;
 		}

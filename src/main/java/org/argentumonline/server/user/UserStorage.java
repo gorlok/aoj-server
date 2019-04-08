@@ -53,9 +53,9 @@ public class UserStorage {
 	private static Logger log = LogManager.getLogger();
 
 	private GameServer server;
-	private Player user;
+	private User user;
 	
-	public UserStorage(GameServer server, Player user) {
+	public UserStorage(GameServer server, User user) {
 		this.server = server;
 		this.user = user;
 	}
@@ -66,7 +66,7 @@ public class UserStorage {
 	 */
 	public void loadUserFromStorage()
 	throws IOException {
-		IniFile ini = new IniFile(Player.getPjFile(user.userName));
+		IniFile ini = new IniFile(User.getPjFile(user.userName));
 		
 		loadUserInit(ini);
 		user.stats().loadUserStats(ini);
@@ -87,7 +87,7 @@ public class UserStorage {
 	public void loadUserFromStorageOffline(String userName)
 	throws IOException {
 		user.userName = userName;
-		IniFile ini = new IniFile(Player.getPjFile(user.userName));
+		IniFile ini = new IniFile(User.getPjFile(user.userName));
 		
 		loadUserInit(ini);
 		user.stats().loadUserStats(ini);
@@ -101,7 +101,7 @@ public class UserStorage {
 	
 	public String passwordHashFromStorage(String nick) 
 	throws FileNotFoundException, IOException {
-		IniFile ini = new IniFile(Player.getPjFile(user.getNick()));
+		IniFile ini = new IniFile(User.getPjFile(user.getNick()));
 		
 		return ini.getString("INIT", "PasswordHash");
 	}
@@ -221,11 +221,11 @@ public class UserStorage {
 	
 	public static CharacterInfoResponse createCharacterInfoResponse(String userName) {
 		// ¿Existe el personaje?
-		if (!Util.fileExists(Player.getPjFile(userName))) {
+		if (!Util.fileExists(User.getPjFile(userName))) {
 			return null;
 		}
 		try {
-			IniFile ini = new IniFile(Player.getPjFile(userName));
+			IniFile ini = new IniFile(User.getPjFile(userName));
 			
 			Reputation tmpReputation = new Reputation();
 			tmpReputation.loadUserReputacion(ini);
@@ -429,7 +429,7 @@ public class UserStorage {
 			updateLastIp(ini);
 
 			// Guardar todo
-			ini.store(Player.getPjFile(user.userName));
+			ini.store(User.getPjFile(user.userName));
 		} catch (Exception e) {
 			log.fatal(user.getNick() + ": ERROR EN SAVEUSER()", e);
 		}
@@ -468,7 +468,7 @@ public class UserStorage {
 		List<String> lastIP = new ArrayList<>();
 		IniFile ini;
 		try {
-			ini = new IniFile(Player.getPjFile(user.getNick()));
+			ini = new IniFile(User.getPjFile(user.getNick()));
 			IntStream.range(1, 6).forEach(i -> {
 				String ip = ini.getString("INIT", "LastIP" + i);
 				if (!ip.isEmpty()) {
@@ -482,7 +482,7 @@ public class UserStorage {
 
 	public static String emailFromStorage(String userName) 
 	throws FileNotFoundException, IOException {
-		IniFile ini = new IniFile(Player.getPjFile(userName));
+		IniFile ini = new IniFile(User.getPjFile(userName));
 		
 		return ini.getString("CONTACTO", "Email");
 	}
@@ -491,7 +491,7 @@ public class UserStorage {
 		List<String> punishments = new ArrayList<>();
 		IniFile ini;
 		try {
-			ini = new IniFile(Player.getPjFile(userName));
+			ini = new IniFile(User.getPjFile(userName));
 			int count = ini.getInt("PENAS", "Cant");
 			IntStream.range(1, count + 1).forEach(i -> {
 				punishments.add(ini.getString("PENAS", "P" + i));
@@ -502,7 +502,7 @@ public class UserStorage {
 	}
 
 	public static void addPunishment(String userName, String text) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -518,7 +518,7 @@ public class UserStorage {
 	}
 
 	public static void updatePunishment(String userName, byte index, String newText) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -534,7 +534,7 @@ public class UserStorage {
 	}
 	
     public static boolean isUserBanned(String userName) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -545,7 +545,7 @@ public class UserStorage {
     }
     
     public static void banUser(String userName, String admin, String reason) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -559,7 +559,7 @@ public class UserStorage {
     }
 
     public static void unBanUser(String userName) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -573,7 +573,7 @@ public class UserStorage {
     }
 
     public static void updateEmail(String userName, String newEmail) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -585,7 +585,7 @@ public class UserStorage {
     }
     
     public static void updatePassword(String userName, String newPasswordHash) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -597,7 +597,7 @@ public class UserStorage {
     }
     
     public static String getGuildName(String userName) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -608,13 +608,13 @@ public class UserStorage {
     }
 
 	public static void changeName(String userName, String newName) throws IOException {
-		Path original = Paths.get(Player.getPjFile(userName));
-	    Path copied = Paths.get(Player.getPjFile(newName));
+		Path original = Paths.get(User.getPjFile(userName));
+	    Path copied = Paths.get(User.getPjFile(newName));
 	    Files.copy(original, copied, StandardCopyOption.COPY_ATTRIBUTES);		
 	}
 
     public static void councilKick(String userName) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -627,7 +627,7 @@ public class UserStorage {
     }
     
     public static void addBankGold(String userName, int goldToAdd) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -644,7 +644,7 @@ public class UserStorage {
     }
     
     public static void writeGold(String userName, int gold) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -656,7 +656,7 @@ public class UserStorage {
     }
     
     public static void addExp(String userName, int addedExp) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -670,7 +670,7 @@ public class UserStorage {
     }
 
     public static void writeLevel(String userName, int level) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -682,7 +682,7 @@ public class UserStorage {
     }
     
     public static void writeCriminalsKilled(String userName, int count) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -694,7 +694,7 @@ public class UserStorage {
     }
     
     public static void writeCitizensKilled(String userName, int count) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -706,7 +706,7 @@ public class UserStorage {
     }
         
     public static void writeSkillValue(String userName, int skill, int value) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -718,7 +718,7 @@ public class UserStorage {
     }
     
     public static void writeFreeSkillsPoints(String userName, int value) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -730,7 +730,7 @@ public class UserStorage {
     }
     
     public static void writeNobleReputation(String userName, int value) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -743,7 +743,7 @@ public class UserStorage {
     
     
     public static void writeAssassinReputation(String userName, int value) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -755,7 +755,7 @@ public class UserStorage {
     }
 
 	public static void writeRace(String userName, UserRace race) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -767,7 +767,7 @@ public class UserStorage {
 	}
 	
 	public static void writeClazz(String userName, Clazz clazz) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -779,7 +779,7 @@ public class UserStorage {
 	}
 	
 	public static void writeGender(String userName, UserGender gender) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -791,7 +791,7 @@ public class UserStorage {
 	}
 	
 	public static void writeBody(String userName, short bodyIndex) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -803,7 +803,7 @@ public class UserStorage {
 	}
 	
 	public static void writeHead(String userName, short headIndex) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);

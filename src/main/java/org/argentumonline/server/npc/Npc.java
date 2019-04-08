@@ -65,7 +65,7 @@ import org.argentumonline.server.protocol.NPCSwingResponse;
 import org.argentumonline.server.protocol.ParalizeOKResponse;
 import org.argentumonline.server.protocol.PlayWaveResponse;
 import org.argentumonline.server.user.Party;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.Spell;
 import org.argentumonline.server.util.Color;
 import org.argentumonline.server.util.FontType;
@@ -171,7 +171,7 @@ End Enum
     byte  spellsCount = 0;
     short spells[] = new short[MAX_NUM_SPELLS];  // le da vida ;)
 
-    Player petUserOwner = null;
+    User petUserOwner = null;
     short petNpcOwnerId  = 0;
 
     /**
@@ -183,9 +183,9 @@ End Enum
 
     public class PFINFO {
     	public MapPos m_targetPos;
-    	public Player m_targetUser;
+    	public User m_targetUser;
 
-    	public PFINFO(MapPos pos, Player user) {
+    	public PFINFO(MapPos pos, User user) {
     		this.m_targetPos = pos;
     		this.m_targetUser = user;
     	}
@@ -244,8 +244,8 @@ End Enum
         int i = 0;
         while (!hayPosValida && i < MAXSPAWNATTEMPS) {
             if (!orig.isValid()) {
-                orig.x = (byte) Util.Azar(1, MAPA_ANCHO);
-                orig.y = (byte) Util.Azar(1, MAPA_ALTO);
+                orig.x = (byte) Util.Azar(1, MAP_WIDTH);
+                orig.y = (byte) Util.Azar(1, MAP_HEIGHT);
             }
             tmp = mapa.closestLegalPosNpc(orig.x, orig.y, npc.isWaterValid(), npc.isLandInvalid(), false);
             if (tmp != null) {
@@ -494,11 +494,11 @@ End Enum
         return this.npcNumber;
     }
 
-    public Player getPetUserOwner() {
+    public User getPetUserOwner() {
 		return this.petUserOwner;
 	}
 
-    public void setPetUserOwner(Player petUserOwner) {
+    public void setPetUserOwner(User petUserOwner) {
 		this.petUserOwner = petUserOwner;
 	}
 
@@ -625,7 +625,7 @@ End Enum
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
     //'?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿
 
-    public void calcularDarExp(Player player, int daño) {
+    public void calcularDarExp(User user, int daño) {
     	int exp = 0;
     	// Chekeamos que las variables sean validas para las operaciones
     	if (daño < 0) {
@@ -657,65 +657,65 @@ End Enum
     	exp = exp * 1000; // FIXME EXPERIENCIA FACIL
     	// Le damos la exp al user
         if (exp > 0) {
-            if (player.partyIndex > 0) {
-            	Party.obtenerExito(player, exp, pos());
+            if (user.partyIndex > 0) {
+            	Party.obtenerExito(user, exp, pos());
             } else {
-            	player.stats().addExp(exp);
-                player.sendMessage("Has ganado " + exp + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            	user.stats().addExp(exp);
+                user.sendMessage("Has ganado " + exp + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             }
-            player.checkUserLevel();
+            user.checkUserLevel();
         }
     }
 
-    public void muereNpc(Player player) {
+    public void muereNpc(User user) {
         ////////////// FIXME
         // Lo mato un usuario?
-        if (player != null) {
-        	boolean eraCrimi = player.isCriminal();
+        if (user != null) {
+        	boolean eraCrimi = user.isCriminal();
 
-            MapPos pos = player.pos();
+            MapPos pos = user.pos();
             Map m = this.server.getMap(pos.map);
 
             if (this.snd3 > 0) {
-            	m.sendToArea(pos.x, pos.y, new PlayWaveResponse(this.snd3, player.pos().x, player.pos().y));
+            	m.sendToArea(pos.x, pos.y, new PlayWaveResponse(this.snd3, user.pos().x, user.pos().y));
             }
-            player.flags().TargetNpc = 0;
-            player.flags().TargetNpcTipo = 0;
+            user.flags().TargetNpc = 0;
+            user.flags().TargetNpcTipo = 0;
             // El user que lo mato tiene mascotas?
-            if (player.getUserPets().hasPets()) {
-                player.getUserPets().petsFollowMaster(this);
+            if (user.getUserPets().hasPets()) {
+                user.getUserPets().petsFollowMaster(this);
             }
-            player.sendMessage("Has matado la criatura!", FONTTYPE_FIGHT);
+            user.sendMessage("Has matado la criatura!", FONTTYPE_FIGHT);
             if (this.expCount > 0) {
-                player.stats().addExp(this.expCount * 1000); // FIXME experiencia FACIL
-                player.sendMessage("Has ganado " + this.expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
+                user.stats().addExp(this.expCount * 1000); // FIXME experiencia FACIL
+                user.sendMessage("Has ganado " + this.expCount + " puntos de experiencia.", FONTTYPE_FIGHT);
             } else {
-                player.sendMessage("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
+                user.sendMessage("No has ganado experiencia al matar la criatura.", FONTTYPE_FIGHT);
             }
-            player.stats().incNPCsMuertos();
-            player.quest().checkNpcEnemigo(player, this);
+            user.stats().incNPCsMuertos();
+            user.quest().checkNpcEnemigo(user, this);
 
             if (this.stats.alineacion == 0) {
             	// TODO: ¿No debería compararse con NpcType==2? Hay otros guardias aparte del npcNumber=6
                 if (this.npcNumber == GUARDIAS) {
-                    player.turnCriminal();
+                    user.turnCriminal();
                 }
-                if (!player.flags().isGod()) {
-                    player.reputation().incAsesino(vlAsesino);
+                if (!user.flags().isGod()) {
+                    user.reputation().incAsesino(vlAsesino);
                 }
             } else if (this.stats.alineacion == 1) {
-                player.reputation().incPlebe(vlCazador);
+                user.reputation().incPlebe(vlCazador);
             } else if (this.stats.alineacion == 2) {
-                player.reputation().incNoble(vlAsesino / 2);
+                user.reputation().incNoble(vlAsesino / 2);
             } else if (this.stats.alineacion == 4) {
-                player.reputation().incPlebe(vlCazador);
+                user.reputation().incPlebe(vlCazador);
             }
             // Controla el nivel del usuario
-            player.checkUserLevel();
+            user.checkUserLevel();
 
             //Agush: updateamos de ser necesario ;-)
-            if (player.isCriminal() != eraCrimi && eraCrimi == true) {
-            	player.refreshCharStatus();
+            if (user.isCriminal() != eraCrimi && eraCrimi == true) {
+            	user.refreshCharStatus();
             }
         }
 
@@ -821,7 +821,7 @@ End Enum
                 }
                 // Update map and user pos
                 this.infoChar.heading(dir);
-                mapa.moverNpc(this, newPos.x, newPos.y);
+                mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             }
         } else { // No es mascota
@@ -842,7 +842,7 @@ End Enum
                 }
                 // Update map and user pos
                 this.infoChar.heading(dir);
-                mapa.moverNpc(this, newPos.x, newPos.y);
+                mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             } else {
                 if (this.movement == AiType.NPC_PATHFINDING) {
@@ -856,10 +856,10 @@ End Enum
         }
     }
 
-    public void npcEnvenenarUser(Player player) {
+    public void npcEnvenenarUser(User user) {
         int n = Util.Azar(1, 100);
         if (n < 30) {
-            player.poison();
+            user.poison();
         }
     }
 
@@ -936,7 +936,7 @@ End Enum
         }
     }
 
-    public void talkToUser(Player user, String chat, int color) {
+    public void talkToUser(User user, String chat, int color) {
     	user.sendPacket(
     			new ChatOverHeadResponse(chat, this.getId(),
         					Color.r(color), Color.g(color), Color.b(color)));
@@ -980,40 +980,40 @@ End Enum
             MapPos pos = pos().copy();
             pos.moveToHeading(dir);
             if (pos.isValid()) {
-                if (mapa.hasPlayer(pos.x, pos.y)) {
-                    Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && player.isAllowingChase()) {
+                if (mapa.hasUser(pos.x, pos.y)) {
+                    User user = mapa.getUser(pos.x, pos.y);
+                    if (user.isAlive() && user.isAllowingChase()) {
                         // ¿ES CRIMINAL?
                     	if (npcType() != NpcType.NPCTYPE_GUARDIAS_CAOS) {
-                    		if (player.isCriminal()) {
+                    		if (user.isCriminal()) {
                     			cambiarDir(dir);
-                    			npcAtacaUser(player);
+                    			npcAtacaUser(user);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(user.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
-                    			npcAtacaUser(player);
+                    			npcAtacaUser(user);
                     			return;
                     		}
                     	} else {
-                    		if (!player.isCriminal()) {
+                    		if (!user.isCriminal()) {
                     			cambiarDir(dir);
-                    			npcAtacaUser(player);
+                    			npcAtacaUser(user);
                     			return;
-                    		} else if (this.attackedBy.equalsIgnoreCase(player.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
+                    		} else if (this.attackedBy.equalsIgnoreCase(user.getNick()) && !this.flags().get(FLAG_FOLLOW)) {
                     			cambiarDir(dir);
-                    			npcAtacaUser(player);
+                    			npcAtacaUser(user);
                     			return;
                     		}
                     	}
                     	/* FIXME
-                        if ((player.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CRIMINALES) ||
-                            (!player.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CIUDADANOS)) {
+                        if ((user.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CRIMINALES) ||
+                            (!user.esCriminal() && this.m_guardiaPersigue == GUARDIAS_PERSIGUEN_CIUDADANOS)) {
                             cambiarDir(dir);
-                            npcAtacaUser(player); // ok
+                            npcAtacaUser(user); // ok
                             return;
-                        } else if (!isFollowing() && m_attackedBy.equalsIgnoreCase(player.getNick())) {
+                        } else if (!isFollowing() && m_attackedBy.equalsIgnoreCase(user.getNick())) {
                             cambiarDir(dir);
-                            npcAtacaUser(player); // ok
+                            npcAtacaUser(user); // ok
                             return;
                         }
                         */
@@ -1035,14 +1035,14 @@ End Enum
             MapPos pos = pos().copy();
             pos.moveToHeading(dir);
             if (pos.isValid()) {
-                if (mapa.hasPlayer(pos.x, pos.y)) {
-                    Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && player.isAllowingChase()) {
+                if (mapa.hasUser(pos.x, pos.y)) {
+                    User user = mapa.getUser(pos.x, pos.y);
+                    if (user.isAlive() && user.isAllowingChase()) {
                         if (isMagical()) {
-                            npcCastSpell(player);
+                            npcCastSpell(user);
                         }
                         cambiarDir(dir);
-                        npcAtacaUser(player); // ok
+                        npcAtacaUser(user); // ok
                         return;
                     }
                 }
@@ -1062,14 +1062,14 @@ End Enum
             MapPos pos = pos().copy();
             pos.moveToHeading(dir);
             if (pos.isValid()) {
-                if (mapa.hasPlayer(pos.x, pos.y)) {
-                    Player player = mapa.getPlayer(pos.x, pos.y);
-                    if (player.isAlive() && player.isAllowingChase() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
+                if (mapa.hasUser(pos.x, pos.y)) {
+                    User user = mapa.getUser(pos.x, pos.y);
+                    if (user.isAlive() && user.isAllowingChase() && this.attackedBy.equalsIgnoreCase(user.getNick())) {
                         if (isMagical()) {
-                            npcCastSpell(player);
+                            npcCastSpell(user);
                         }
                         cambiarDir(dir);
-                        npcAtacaUser(player); // ok
+                        npcAtacaUser(user); // ok
                         return;
                     }
                 }
@@ -1087,14 +1087,14 @@ End Enum
             for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
                 MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
-                        if (player != null) {
-                            if (player.isAlive() && !player.isInvisible() && player.isAllowingChase()) {
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
+                        if (user != null) {
+                            if (user.isAlive() && !user.isInvisible() && user.isAllowingChase()) {
                                 if (isMagical()) {
-                                   npcCastSpell(player);
+                                   npcCastSpell(user);
                                 }
-                                Heading dir = pos().findDirection(player.pos());
+                                Heading dir = pos().findDirection(user.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1115,11 +1115,11 @@ End Enum
             for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
                 MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
-                        if (!player.flags().isGM() && this.attackedBy.equalsIgnoreCase(player.getNick())) {
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
+                        if (!user.flags().isGM() && this.attackedBy.equalsIgnoreCase(user.getNick())) {
                             if (getPetUserOwner() != null) {
-		                        if (	!getPetUserOwner().isCriminal() && !player.isCriminal() &&
+		                        if (	!getPetUserOwner().isCriminal() && !user.isCriminal() &&
 		                        		(getPetUserOwner().hasSafeLock() || getPetUserOwner().userFaction().ArmadaReal)) {
 		                            getPetUserOwner().sendMessage("La mascota no atacará a ciudadanos si eres miembro de la Armada Real o tienes el seguro activado", FontType.FONTTYPE_INFO);
 		                            this.attackedBy = "";
@@ -1127,11 +1127,11 @@ End Enum
 		                            return;
 		                        }
                             }
-                            if (player.isAlive() && !player.isInvisible()) {
+                            if (user.isAlive() && !user.isInvisible()) {
                                 if (isMagical()) {
-                                    npcCastSpell(player);
+                                    npcCastSpell(user);
                                 }
-                                Heading dir = pos().findDirection(player.pos());
+                                Heading dir = pos().findDirection(user.pos());
                                 mover(dir);
                                 return;
                             }
@@ -1164,16 +1164,16 @@ End Enum
             for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
                 MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
 
-                        if (player == null) break;
+                        if (user == null) break;
 
-                        if (player.isCriminal() && player.isAlive() && !player.isInvisible() && player.isAllowingChase()) {
+                        if (user.isCriminal() && user.isAlive() && !user.isInvisible() && user.isAllowingChase()) {
                             if (isMagical()) {
-                                npcCastSpell(player);
+                                npcCastSpell(user);
                             }
-                            Heading dir = pos().findDirection(player.pos());
+                            Heading dir = pos().findDirection(user.pos());
                             mover(dir);
                             return;
                         }
@@ -1193,13 +1193,13 @@ End Enum
             for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
                 MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
-                        if (!player.isCriminal() && player.isAlive() && !player.isInvisible() && !player.flags().isGM()) {
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
+                        if (!user.isCriminal() && user.isAlive() && !user.isInvisible() && !user.flags().isGM()) {
                             if (isMagical()) {
-                                npcCastSpell(player);
+                                npcCastSpell(user);
                             }
-                            Heading dir = pos().findDirection(player.pos());
+                            Heading dir = pos().findDirection(user.pos());
                             mover(dir);
                             return;
                         }
@@ -1211,7 +1211,7 @@ End Enum
     }
 
     private void seguirAmo() {
-        Player master = getPetUserOwner();
+        User master = getPetUserOwner();
         if (master == null) {
         	return;
         }
@@ -1339,13 +1339,13 @@ End Enum
     	for (byte y = (byte) (pos().y-RANGO_VISION_Y); y <= (byte) (pos().y+RANGO_VISION_Y); y++) {
     		for (byte x = (byte) (pos().x-RANGO_VISION_X); x <= (byte) (pos().x+RANGO_VISION_X); x++) {
     			if (pos.isValid()) {
-    				if (map.hasPlayer(x, y)) {
-    					Player player = map.getPlayer(x, y);
-    					if (player.isAlive() && !player.isInvisible() && !player.isHidden() && player.isAllowingChase()) {
+    				if (map.hasUser(x, y)) {
+    					User user = map.getUser(x, y);
+    					if (user.isAlive() && !user.isInvisible() && !user.isHidden() && user.isAllowingChase()) {
     						// No quiero que ataque siempre al primero
     						if (Util.Azar(1,  3) < 3) {
     							if (flags().get(FLAG_LANZA_SPELLS)) {
-    								npcCastSpell(player);
+    								npcCastSpell(user);
     								return;
     							}
     						}
@@ -1497,13 +1497,13 @@ End Enum
         }
     }
 
-    private void npcCastSpell(Player player) {
+    private void npcCastSpell(User user) {
     	// NpcLanzaUnSpell
     	
     	if (!canAttack()) {
     		return;
     	}
-        if (player.isInvisible() || player.isHidden()) {
+        if (user.isInvisible() || user.isHidden()) {
 			return;
 		}
         // Si no se peude usar magia en el mapa, no le deja hacerlo.
@@ -1518,90 +1518,90 @@ End Enum
         Spell spell = this.server.getSpell(spellIndex);
         if (spell.SubeHP == 1) {
             daño = Util.Azar(spell.MinHP, spell.MaxHP);
-            player.sendWave(spell.WAV);
-            player.sendCreateFX(spell.FXgrh, spell.loops);
-            player.stats().addHP(daño);
-            player.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
-            player.sendUpdateUserStats();
+            user.sendWave(spell.WAV);
+            user.sendCreateFX(spell.FXgrh, spell.loops);
+            user.stats().addHP(daño);
+            user.sendMessage(this.name + " te ha dado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
+            user.sendUpdateUserStats();
             
         }
 
         if (spell.SubeHP == 2) {
-            if (player.flags().isGM()) {
+            if (user.flags().isGM()) {
     			return;
     		}
             daño = Util.Azar(spell.MinHP, spell.MaxHP);
             
             // Si el usuario tiene un sombrero mágico de defensa, se reduce el daño
-            if (player.userInv().tieneCascoEquipado()) {
+            if (user.userInv().tieneCascoEquipado()) {
             	daño = daño - Util.Azar(
-            			player.userInv().getCasco().DefensaMagicaMin,
-            			player.userInv().getCasco().DefensaMagicaMax);
+            			user.userInv().getCasco().DefensaMagicaMin,
+            			user.userInv().getCasco().DefensaMagicaMax);
             }
             
             // Si el usuario tiene un anillo mágico de defensa, se reduce el daño
-            if (player.userInv().tieneAnilloEquipado()) {
+            if (user.userInv().tieneAnilloEquipado()) {
             	daño = daño - Util.Azar(
-            			player.userInv().getAnillo().DefensaMagicaMin,
-            			player.userInv().getAnillo().DefensaMagicaMax);
+            			user.userInv().getAnillo().DefensaMagicaMin,
+            			user.userInv().getAnillo().DefensaMagicaMax);
             }
             
             if (daño < 0) {
             	daño = 0;
             }
             
-            player.sendWave(spell.WAV);
-            player.sendCreateFX(spell.FXgrh, spell.loops);
-            player.stats().removeHP(daño);
-            player.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
-            player.sendUpdateUserStats();
+            user.sendWave(spell.WAV);
+            user.sendCreateFX(spell.FXgrh, spell.loops);
+            user.stats().removeHP(daño);
+            user.sendMessage(this.name + " te ha quitado " + daño + " puntos de vida.", FONTTYPE_FIGHT);
+            user.sendUpdateUserStats();
             // Muere
-            if (player.stats().MinHP < 1) {
-                player.stats().MinHP = 0;
-                player.userDie();
+            if (user.stats().MinHP < 1) {
+                user.stats().MinHP = 0;
+                user.userDie();
                 if (getPetUserOwner() != null) {
-                    getPetUserOwner().contarMuerte(player);
-                    getPetUserOwner().actStats(player);
+                    getPetUserOwner().contarMuerte(user);
+                    getPetUserOwner().actStats(user);
                 }
             }
         }
         
         if (spell.isParaliza() || spell.isInmoviliza()) {
-    		if (!player.flags().Paralizado) {
-    			player.sendWave(spell.WAV);
-    			player.sendCreateFX(spell.FXgrh, spell.loops);
+    		if (!user.flags().Paralizado) {
+    			user.sendWave(spell.WAV);
+    			user.sendCreateFX(spell.FXgrh, spell.loops);
     			
-    			if (player.userInv().tieneAnilloEquipado() && player.userInv().getAnillo().ObjIndex == SUPERANILLO) {
-    	            player.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
+    			if (user.userInv().tieneAnilloEquipado() && user.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    	            user.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
     	            return;
     			}
     			
     			if (spell.isInmoviliza()) {
-    				player.flags().Inmovilizado = true;
+    				user.flags().Inmovilizado = true;
     			}
     			
-    			player.flags().Paralizado = true;
-    			player.counters().Paralisis = IntervaloParalizado;
-    			player.sendPacket(new ParalizeOKResponse());
+    			user.flags().Paralizado = true;
+    			user.counters().Paralisis = IntervaloParalizado;
+    			user.sendPacket(new ParalizeOKResponse());
     		}
         }
         
         if (spell.isEstupidez()) { // turbación
-        	if (!player.isDumb()) {
-    			player.sendWave(spell.WAV);
-    			player.sendCreateFX(spell.FXgrh, spell.loops);
+        	if (!user.isDumb()) {
+    			user.sendWave(spell.WAV);
+    			user.sendCreateFX(spell.FXgrh, spell.loops);
 
-    			if (player.userInv().tieneAnilloEquipado() && player.userInv().getAnillo().ObjIndex == SUPERANILLO) {
-    	            player.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
+    			if (user.userInv().tieneAnilloEquipado() && user.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    	            user.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
     	            return;
     			}
-    			player.makeDumb();
+    			user.makeDumb();
         	}
         }
     }
 
-    private void npcAtacaUser(Player player) {
-    	if (player.flags().AdminInvisible || !player.isAllowingChase()) {
+    private void npcAtacaUser(User user) {
+    	if (user.flags().AdminInvisible || !user.isAllowingChase()) {
     		return;
     	}
     	
@@ -1610,36 +1610,36 @@ End Enum
         if (!canAttack()) {
 			return;
 		}
-        if (player.flags().isGM()) {
+        if (user.flags().isGM()) {
 			return;
 		}
-        player.getUserPets().petsAttackNpc(this);
-		targetUser(player.getId());
-        if (player.flags().AtacadoPorNpc == 0 && player.flags().AtacadoPorUser == 0) {
-			player.flags().AtacadoPorNpc = this.getId();
+        user.getUserPets().petsAttackNpc(this);
+		targetUser(user.getId());
+        if (user.flags().AtacadoPorNpc == 0 && user.flags().AtacadoPorUser == 0) {
+			user.flags().AtacadoPorNpc = this.getId();
 		}
         this.flags().set(FLAG_PUEDE_ATACAR, false);
         if (this.snd1 > 0) {
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(this.snd1, pos().x,pos().y));
 		}
-        if (player.npcImpacto(this)) {
+        if (user.npcImpacto(this)) {
         	mapa.sendToArea(pos().x, pos().y, new PlayWaveResponse(SOUND_IMPACTO, pos().x,pos().y));
-            if (!player.isSailing()) {
-            	mapa.sendToArea(pos().x, pos().y, new CreateFXResponse(player.getId(), FXSANGRE, (short) 0));
+            if (!user.isSailing()) {
+            	mapa.sendToArea(pos().x, pos().y, new CreateFXResponse(user.getId(), FXSANGRE, (short) 0));
 			}
-            player.npcDaño(this);
+            user.npcDaño(this);
             // ¿Puede envenenar?
             if (puedeEnvenenar()) {
-				npcEnvenenarUser(player);
+				npcEnvenenarUser(user);
 			}
         } else {
-        	player.sendPacket(new NPCSwingResponse());
+        	user.sendPacket(new NPCSwingResponse());
         }
         // -----Tal vez suba los skills------
-        player.riseSkill(Skill.SKILL_Tacticas);
-        player.sendUpdateUserStats();
+        user.riseSkill(Skill.SKILL_Tacticas);
+        user.sendUpdateUserStats();
         // Controla el nivel del usuario
-        player.checkUserLevel();
+        user.checkUserLevel();
     }
 
     private boolean npcImpactoNpc(Npc victim) {
@@ -1767,10 +1767,10 @@ End Enum
             for (byte y = (byte) (pos().y-10); y <= (byte) (pos().y+10); y++) {
                 MapPos pos = MapPos.mxy(pos().map, x, y);
                 if (pos.isValid()) {
-                    if (mapa.hasPlayer(x, y)) {
-                        Player player = mapa.getPlayer(x, y);
-                        if (player.isAlive() && !player.isInvisible() && !player.isHidden() && player.isAllowingChase()) {
-                        	this.m_pfinfo = new PFINFO(MapPos.mxy(pos().map, x, y), player);
+                    if (mapa.hasUser(x, y)) {
+                        User user = mapa.getUser(x, y);
+                        if (user.isAlive() && !user.isInvisible() && !user.isHidden() && user.isAllowingChase()) {
+                        	this.m_pfinfo = new PFINFO(MapPos.mxy(pos().map, x, y), user);
                         	PathFinding pf = new PathFinding();
                         	this.current_path = pf.seekPath(this);
                             return;
@@ -1931,20 +1931,20 @@ End Enum
     	return "(" + this.stats().MinHP + "/" + this.stats().MaxHP + ")";
     }
 
-    public String healthDescription(Player player) {
+    public String healthDescription(User user) {
     	if (this.stats().MaxHP <= 0) {
 			return "";
 		}
 
-    	if (player.flags().isGM()) {
+    	if (user.flags().isGM()) {
 			return estadoVidaExacta();
 		}
     	
-    	if (!player.isAlive()) {
+    	if (!user.isAlive()) {
     		return "";
     	}
     	
-        short skSup = player.skills().get(Skill.SKILL_Supervivencia);
+        short skSup = user.skills().get(Skill.SKILL_Supervivencia);
         double vidaPct = this.stats().MinHP / this.stats().MaxHP;
         if (skSup < 11) {
         	return "(Dudoso)";

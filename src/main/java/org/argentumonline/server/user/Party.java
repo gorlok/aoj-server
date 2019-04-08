@@ -4,7 +4,7 @@ import org.argentumonline.server.map.MapPos;
 
 public class Party {
 
-	public static void obtenerExito(Player player, int expaDar, MapPos pos) {
+	public static void obtenerExito(User user, int expaDar, MapPos pos) {
 		// TODO Auto-generated method stub
 	}
 	

@@ -17,7 +17,7 @@
  *******************************************************************************/
 package org.argentumonline.server.guilds;
 
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 
 /**
@@ -25,7 +25,7 @@ import org.argentumonline.server.util.FontType;
  */
 public class GuildUser {
     
-	Player player;
+	private User user;
     public String  m_guildName = "";
     public long    m_solicitudes = 0;
     public long    m_solicitudesRechazadas = 0;
@@ -38,8 +38,8 @@ public class GuildUser {
     public long    m_clanesParticipo = 0;
     public long    m_guildPoints = 0;
     
-    public GuildUser(Player player) {
-        this.player = player;
+    public GuildUser(User user) {
+        this.user = user;
     }
     
 	public void ingresarClan(String guildName) {
@@ -83,7 +83,7 @@ public class GuildUser {
     }
     
     public void giveGuildPoints(int pts) {
-        this.player.sendMessage("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
+        this.user.sendMessage("¡¡¡Has recibido " + pts + " guildpoints!!!", FontType.FONTTYPE_GUILD);
         this.m_guildPoints += pts;
         if (this.m_guildPoints > 9000000) {
             this.m_guildPoints = 9000000;

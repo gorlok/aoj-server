@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.map.Heading;
 import org.argentumonline.server.protocol.*;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.FontType;
 
 import com.google.gson.Gson;
@@ -38,11 +38,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
 		var server = GameServer.instance();
-		Optional<Player> p = server.findPlayer(ctx.channel());
+		Optional<User> p = server.findUser(ctx.channel());
 		if (!p.isPresent()) {
 			return;
 		}
-		Player player = p.get();
+		User user = p.get();
 
 		// TODO
 		Gson gson = new Gson();
@@ -50,7 +50,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		System.out.println("<<< procesando paquete " + packet.getClass().getCanonicalName() + " " + gson.toJson(packet));
 
 		
-		player.counters().resetIdleCount();
+		user.counters().resetIdleCount();
 		
 		ClientPacket clientPacket = (ClientPacket)packet;
 		// Does the packet requires a logged user?
@@ -59,314 +59,314 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			clientPacket.id() != ClientPacketID.ThrowDices) {
 				
 	        // Is the user actually logged?
-	        if ( !player.isLogged() ) {
-	        	player.quitGame();
+	        if ( !user.isLogged() ) {
+	        	user.quitGame();
 	        }
 		}
 		
 		switch (clientPacket.id()) {
 		case Ping:
-			player.ping();
+			user.ping();
 			break;
 			
 		case LoginExistingChar:
-			handleLoginExistingChar((LoginExistingCharRequest)packet, player);
+			handleLoginExistingChar((LoginExistingCharRequest)packet, user);
 			break;
 			
 		case Walk:
-			handleWalk((WalkRequest)packet, player);
+			handleWalk((WalkRequest)packet, user);
 			break;
 			
 		case Talk:
-			handleTalk((TalkRequest)packet, player);
+			handleTalk((TalkRequest)packet, user);
 			break;
 			
 		case Yell:
-			player.yell(((YellRequest)packet).chat);
+			user.yell(((YellRequest)packet).chat);
 			break;
 			
 		case Whisper:
-			player.whisper(((WhisperRequest)packet).targetCharIndex, ((WhisperRequest)packet).chat);
+			user.whisper(((WhisperRequest)packet).targetCharIndex, ((WhisperRequest)packet).chat);
 			break;
 
 		case LeftClick:
-			handleLeftClick((LeftClickRequest)packet, player);
+			handleLeftClick((LeftClickRequest)packet, user);
 			break;
 
 		case DoubleClick:
-			handleDoubleClick((DoubleClickRequest)packet, player);
+			handleDoubleClick((DoubleClickRequest)packet, user);
 			break;
 
 		case WorkLeftClick:
-			handleWorkLeftClick((WorkLeftClickRequest)packet, player);
+			handleWorkLeftClick((WorkLeftClickRequest)packet, user);
 			break;
 
 		case ChangeHeading:
-			handleChangeHeading((ChangeHeadingRequest)packet, player);
+			handleChangeHeading((ChangeHeadingRequest)packet, user);
 			break;
 
 		case MoveSpell:
-			handleMoveSpell((MoveSpellRequest)packet, player);
+			handleMoveSpell((MoveSpellRequest)packet, user);
 			break;
 			
 		case CastSpell:
-			handleCastSpell((CastSpellRequest)packet, player);
+			handleCastSpell((CastSpellRequest)packet, user);
 			break;
 
 		case Work:
-			handleWork((WorkRequest)packet, player);
+			handleWork((WorkRequest)packet, user);
 			break;
 
 		case PickUp: // pikachu :P
-			player.pickUpObject();
+			user.pickUpObject();
 			break;
 
 		case Drop:
-			handleDrop((DropRequest)packet, player);
+			handleDrop((DropRequest)packet, user);
 			break;
 
 		case EquipItem:
-			handleEquipItem((EquipItemRequest)packet, player);
+			handleEquipItem((EquipItemRequest)packet, user);
 			break;
 
 		case Attack:
-			player.atack();
+			user.atack();
 			break;
 			
 		case UseItem:
-			player.useItem(((UseItemRequest)packet).slot);
+			user.useItem(((UseItemRequest)packet).slot);
 			break;
 			
 		case Quit:
-			player.startQuitGame();
+			user.startQuitGame();
 			break;
 			
 		case CommerceStart:
-			player.commerceStart();
+			user.commerceStart();
 			break;
 			
 		case CommerceEnd:
-			player.commerceEnd();
+			user.commerceEnd();
 			break;
 			
 		case CommerceBuy:
-			handleCommerceBuy((CommerceBuyRequest)packet, player);
+			handleCommerceBuy((CommerceBuyRequest)packet, user);
 			break;
 			
 		case CommerceSell:
-			handleCommerceSell((CommerceSellRequest)packet, player);
+			handleCommerceSell((CommerceSellRequest)packet, user);
 			break;
 			
 		case UserCommerceOffer:
-			player.userTrade.userCommerceOffer(((UserCommerceOfferRequest)packet).slot, ((UserCommerceOfferRequest)packet).amount);
+			user.userTrade.userCommerceOffer(((UserCommerceOfferRequest)packet).slot, ((UserCommerceOfferRequest)packet).amount);
 			break;
 
 		case UserCommerceEnd:
-			player.userTrade.userCommerceEnd();
+			user.userTrade.userCommerceEnd();
 			break;
 		
 		case UserCommerceOk:
-			player.userTrade.userCommerceAccept();
+			user.userTrade.userCommerceAccept();
 			break;
 		
 		case UserCommerceReject:
-			player.userTrade.userCommerceReject();
+			user.userTrade.userCommerceReject();
 			break;
 			
 		case Meditate:
-			player.meditate();
+			user.meditate();
 			break;
 			
 		case RequestPositionUpdate:
-			player.sendPositionUpdate();
+			user.sendPositionUpdate();
 			break;
 
 		case LoginNewChar:
-			handleLoginNewChar((LoginNewCharRequest)packet, player);
+			handleLoginNewChar((LoginNewCharRequest)packet, user);
 			break;
 
 		case ThrowDices:
-			player.throwDices();
+			user.throwDices();
 			break;
 			
 		case RequestMiniStats:
-			player.sendMiniStats();
+			user.sendMiniStats();
 			break;
 			
 		case RequestSkills:
-			player.sendSkills();
+			user.sendSkills();
 			break;
 			
 		case BankStart:
-			player.bankStart();
+			user.bankStart();
 			break;
 
 		case BankEnd:
-			player.bankEnd();
+			user.bankEnd();
 			break;
 
 		case BankDeposit:
-			handleBankDepositItem((BankDepositRequest)packet, player);
+			handleBankDepositItem((BankDepositRequest)packet, user);
 			break;
 
 		case BankExtractItem:
-			handleBankExtractItem((BankExtractItemRequest)packet, player);
+			handleBankExtractItem((BankExtractItemRequest)packet, user);
 			break;
 
 		case BankDepositGold:
-			player.bankDepositGold(((BankDepositGoldRequest)packet).amount);
+			user.bankDepositGold(((BankDepositGoldRequest)packet).amount);
 			break;
 			
 		case BankExtractGold:
-			player.bankExtractGold(((BankExtractGoldRequest)packet).amount);
+			user.bankExtractGold(((BankExtractGoldRequest)packet).amount);
 			break;
 			
 		case MoveBank:
-			player.moveBank(((MoveBankRequest)packet).slot, ((MoveBankRequest)packet).dir);
+			user.moveBank(((MoveBankRequest)packet).slot, ((MoveBankRequest)packet).dir);
 			break;
 			
 		case SafeToggle:
-			player.safeToggle();
+			user.safeToggle();
 			break;
 			
 		case CombatModeToggle:
-			player.toggleCombatMode();
+			user.toggleCombatMode();
 			break;
 			
 		case TrainList:
-			player.trainList();
+			user.trainList();
 			break;
 			
 		case Train:
-			player.userTrainWithPet(((TrainRequest)packet).petIndex);
+			user.userTrainWithPet(((TrainRequest)packet).petIndex);
 			break;
 			
 		case Heal:
-			player.heal();
+			user.heal();
 			break;
 			
 		case Resuscitate:
-			player.resuscitate();
+			user.resuscitate();
 			break;
 			
 		case RequestAccountState:
-			player.requestAccountState();
+			user.requestAccountState();
 			break;
 			
 		case Gamble:
-			player.gamble(((GambleRequest)packet).amount);
+			user.gamble(((GambleRequest)packet).amount);
 			break;
 			
 		case ForumPost:
-			handleForumPost(((ForumPostRequest)packet), player);
+			handleForumPost(((ForumPostRequest)packet), user);
 			break;
 			
 		case RequestFame:
-			player.sendFame();
+			user.sendFame();
 			break;
 		
 		case RequestAtributes:
-			player.sendUserAttributes();
+			user.sendUserAttributes();
 			break;
 			
 		case ModifySkills:
-			player.skills().subirSkills(((ModifySkillsRequest)packet).skills);
+			user.skills().subirSkills(((ModifySkillsRequest)packet).skills);
 			break;
 			
 		case Rest:
-			player.rest();
+			user.rest();
 			break;
 			
 		case CraftCarpenter:
-			player.craftCarpenter(((CraftCarpenterRequest)packet).item);
+			user.craftCarpenter(((CraftCarpenterRequest)packet).item);
 			break;
 			
 		case CraftBlacksmith:
-			player.craftBlacksmith(((CraftBlacksmithRequest)packet).item);
+			user.craftBlacksmith(((CraftBlacksmithRequest)packet).item);
 			break;
 			
 		case SpellInfo:
-			player.spells().sendSpellInfo(((SpellInfoRequest)packet).spellSlot);
+			user.spells().sendSpellInfo(((SpellInfoRequest)packet).spellSlot);
 			break;
 			
 		case Information:
-			player.showInformation();
+			user.showInformation();
 			break;
 			
 		case GMRequest:
-			server.manager().askForHelpToGM(player);
+			server.manager().askForHelpToGM(user);
 			break;
 			
 		case Online:
-			player.showUsersOnline();
+			user.showUsersOnline();
 			break;
 			
 		case ResuscitationToggle:
-			player.resuscitationToggle();
+			user.resuscitationToggle();
 			break;
 			
 		case PetFollow:
-			player.petFollowMaster();
+			user.petFollowMaster();
 			break;
 			
 		case PetStand:
-			player.petStand();
+			user.petStand();
 			break;
 			
 		case ChangePassword:
-			player.changePassword(((ChangePasswordRequest)packet).newPassword);
+			user.changePassword(((ChangePasswordRequest)packet).newPassword);
 			break;
 			
 		case Denounce:
-			player.denounce(((DenounceRequest)packet).text);
+			user.denounce(((DenounceRequest)packet).text);
 			break;
 			
 		case Help:
-			player.showHelp();
+			user.showHelp();
 			break;
 			
 		case BugReport:
-			server.manager().bugReport(player, ((BugReportRequest)packet).bugReport);
+			server.manager().bugReport(user, ((BugReportRequest)packet).bugReport);
 			break;
 			
 		case RequestMOTD:
-			server.motd().showMOTD(player);
+			server.motd().showMOTD(user);
 			break;
 			
 		case UseSpellMacro:
-			player.useSpellMacro(player);
+			user.useSpellMacro(user);
 			break;
 			
 		case RequestStats:
-			server.manager().sendUserStats(player, player);
+			server.manager().sendUserStats(user, user);
 			break;
 
 		case RoleMasterRequest:
-			server.manager().roleMasterRequest(player, ((RoleMasterRequestRequest)packet).request);
+			server.manager().roleMasterRequest(user, ((RoleMasterRequestRequest)packet).request);
 			break;
 			
 		case CouncilMessage:
-			server.manager().sendCouncilMessage(player, ((CouncilMessageRequest)packet).chat);
+			server.manager().sendCouncilMessage(user, ((CouncilMessageRequest)packet).chat);
 			break;
 			
 		case Reward:
-			player.reward();
+			user.reward();
 			break;
 			
 		case Enlist:
-			player.enlist();
+			user.enlist();
 			break;
 			
 		case LeaveFaction:
-			player.leaveFaction();
+			user.leaveFaction();
 			break;
 			
 		case ChangeDescription:
-			player.changeDescription(((ChangeDescriptionRequest)packet).description);
+			user.changeDescription(((ChangeDescriptionRequest)packet).description);
 			break;
 			
 		case CentinelReport:
-			server.getWorkWatcher().checkCode(player, ((CentinelReportRequest)packet).key);
+			server.getWorkWatcher().checkCode(user, ((CentinelReportRequest)packet).key);
 			break;
 
 		// *****************************************************************************************	
@@ -376,349 +376,349 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		// *****************************************************************************************	
 		
 		case OnlineGM:
-			server.manager().showGmOnline(player);
+			server.manager().showGmOnline(user);
 			break;
 			
 		case TurnOffServer:
-			server.manager().shutdownServer(player);
+			server.manager().shutdownServer(user);
 			break;
 			
 		case GMPanel:
-			server.manager().showGmPanelForm(player);
+			server.manager().showGmPanelForm(user);
 			break;
 			
 		case Invisible:
-			server.manager().turnInvisible(player);
+			server.manager().turnInvisible(user);
 			break;
 			
 		case RainToggle:
-			server.manager().toggleRain(player);
+			server.manager().toggleRain(user);
 			break;
 			
 		case SystemMessage:
-			server.manager().sendSystemMsg(player, ((SystemMessageRequest)packet).message);
+			server.manager().sendSystemMsg(user, ((SystemMessageRequest)packet).message);
 			break;
 			
 		case Uptime:
-			server.manager().showUptime(player);
+			server.manager().showUptime(user);
 			break;
 			
 		case WarpChar:
-			handleWarpChar((WarpCharRequest)packet, player);
+			handleWarpChar((WarpCharRequest)packet, user);
 			break;
 			
 		case Where:
-			server.manager().whereIsUser(player, ((WhereRequest)packet).userName);
+			server.manager().whereIsUser(user, ((WhereRequest)packet).userName);
 			break;
 			
 		case SummonChar:
-			server.manager().summonChar(player, ((SummonCharRequest)packet).userName);
+			server.manager().summonChar(user, ((SummonCharRequest)packet).userName);
 			break;
 			
 		case GoToChar:
-			server.manager().goToChar(player, ((GoToCharRequest)packet).userName);
+			server.manager().goToChar(user, ((GoToCharRequest)packet).userName);
 			break;
 			
 		case WarpMeToTarget:
-			server.manager().warpMeToTarget(player);
+			server.manager().warpMeToTarget(user);
 			break;
 			
 		case ServerTime:
-			server.manager().sendServerTime(player);
+			server.manager().sendServerTime(user);
 			break;
 	
 		case SOSShowList:
-			server.manager().sendHelpRequests(player);
+			server.manager().sendHelpRequests(user);
 			break;
 		
 		case SOSRemove:
-			server.manager().removeHelpRequest(player, ((SOSRemoveRequest)packet).userName);
+			server.manager().removeHelpRequest(user, ((SOSRemoveRequest)packet).userName);
 			break;
 			
 		case CleanSOS:
-			server.manager().clearAllHelpRequestToGm(player);
+			server.manager().clearAllHelpRequestToGm(user);
 			break;
 			
 		case RequestUserList:
-			server.manager().sendUserNameList(player);
+			server.manager().sendUserNameList(user);
 			break;
 			
 		case ReviveChar:
-			server.manager().reviveUser(player, ((ReviveCharRequest)packet).userName);
+			server.manager().reviveUser(user, ((ReviveCharRequest)packet).userName);
 			break;
 			
 		case DoBackUp:
-			server.manager().backupWorld(player);
+			server.manager().backupWorld(user);
 			break;
 			
 		case ChangeMOTD:
-			server.motd().startUpdateMOTD(player);
+			server.motd().startUpdateMOTD(user);
 			break;
 			
 		case SetMOTD:
-			server.motd().updateMOTD(player, ((SetMOTDRequest)packet).newMOTD);
+			server.motd().updateMOTD(user, ((SetMOTDRequest)packet).newMOTD);
 			break;
 			
 		case TalkAsNPC:
-			player.talkAsNpc(((TalkAsNPCRequest)packet).message);
+			user.talkAsNpc(((TalkAsNPCRequest)packet).message);
 			break;
 			
 		case GMMessage:
-			server.manager().sendMessageToAdmins(player,
-					player.getNick() + "> " + ((GMMessageRequest)packet).message, 
+			server.manager().sendMessageToAdmins(user,
+					user.getNick() + "> " + ((GMMessageRequest)packet).message, 
 					FontType.FONTTYPE_GMMSG);
 			break;
 			
 		case ServerMessage:
-			server.manager().sendServerMessage(player, ((ServerMessageRequest)packet).message);
+			server.manager().sendServerMessage(user, ((ServerMessageRequest)packet).message);
 			break;
 			
 		case RoyalArmyMessage:
-			server.manager().sendMessageToRoyalArmy(player, ((RoyalArmyMessageRequest)packet).message);
+			server.manager().sendMessageToRoyalArmy(user, ((RoyalArmyMessageRequest)packet).message);
 			break;
 			
 		case ChaosLegionMessage:
-			server.manager().sendMessageToDarkLegion(player, ((ChaosLegionMessageRequest)packet).message);
+			server.manager().sendMessageToDarkLegion(user, ((ChaosLegionMessageRequest)packet).message);
 			break;
 			
 		case CitizenMessage:
-			server.manager().sendMessageToCitizens(player, ((CitizenMessageRequest)packet).message);
+			server.manager().sendMessageToCitizens(user, ((CitizenMessageRequest)packet).message);
 			break;
 			
 		case CriminalMessage:
-			server.manager().sendMessageToCriminals(player, ((CriminalMessageRequest)packet).message);
+			server.manager().sendMessageToCriminals(user, ((CriminalMessageRequest)packet).message);
 			break;
 			
 		case CreaturesInMap:
-			server.manager().sendCreaturesInMap(player, ((CreaturesInMapRequest)packet).map);
+			server.manager().sendCreaturesInMap(user, ((CreaturesInMapRequest)packet).map);
 			break;
 			
 		case OnlineMap:
-			server.manager().sendUsersOnlineMap(player, ((OnlineMapRequest)packet).map);
+			server.manager().sendUsersOnlineMap(user, ((OnlineMapRequest)packet).map);
 			break;
 			
 		case OnlineRoyalArmy:
-			server.manager().sendOnlineRoyalArmy(player);
+			server.manager().sendOnlineRoyalArmy(user);
 			break;
 			
 		case OnlineChaosLegion:
-			server.manager().sendOnlineChaosLegion(player);
+			server.manager().sendOnlineChaosLegion(user);
 			break;
 			
 		case Working:
-			server.manager().sendUsersWorking(player);
+			server.manager().sendUsersWorking(user);
 			break;
 			
 		case Hiding:
-			server.manager().sendUsersHiding(player);
+			server.manager().sendUsersHiding(user);
 			break;
 			
 		case NavigateToggle:
-			player.navigateToggleGM();
+			user.navigateToggleGM();
 			break;
 			
 		case Ignored:
-			player.ignoreToggleGM();
+			user.ignoreToggleGM();
 			break;
 			
 		case ShowName:
-			player.showNameToggleGM();
+			user.showNameToggleGM();
 			break;
 			
 		case ChatColor:
-			handleChatColor((ChatColorRequest)packet, player);
+			handleChatColor((ChatColorRequest)packet, user);
 			break;
 			
 		case SetCharDescription:
-			player.changeCharDescription(((SetCharDescriptionRequest)packet).desc);
+			user.changeCharDescription(((SetCharDescriptionRequest)packet).desc);
 			break;
 			
 		case Comment:
-			server.manager().saveGmComment(player, ((CommentRequest)packet).comment);
+			server.manager().saveGmComment(user, ((CommentRequest)packet).comment);
 			break;
 			
 		case CleanWorld:
-			server.cleanWorld(player);
+			server.cleanWorld(user);
 			break;
 			
 		case SpawnListRequest:
-			server.manager().sendSpawnCreatureList(player);
+			server.manager().sendSpawnCreatureList(user);
 			break;
 			
 		case SpawnCreature:
-			server.manager().spawnCreature(player, ((SpawnCreatureRequest)packet).npc);
+			server.manager().spawnCreature(user, ((SpawnCreatureRequest)packet).npc);
 			break;
 			
 		case NPCFollow:
-			server.manager().npcFollow(player);
+			server.manager().npcFollow(user);
 			break;
 
 		case KillNPC:
-			server.manager().killNpc(player);
+			server.manager().killNpc(user);
 			break;
 			
 		case KillNPCNoRespawn:
-			server.manager().killNpcNoRespawn(player);
+			server.manager().killNpcNoRespawn(user);
 			break;
 			
 		case KillAllNearbyNPCs:
-			server.manager().killAllNearbyNpcs(player);
+			server.manager().killAllNearbyNpcs(user);
 			break;
 			
 		case TeleportCreate:
-			handleTeleportCreate((TeleportCreateRequest)packet, player);
+			handleTeleportCreate((TeleportCreateRequest)packet, user);
 			break;
 			
 		case TeleportDestroy:
-			server.manager().destroyTeleport(player);
+			server.manager().destroyTeleport(user);
 			break;
 			
 		case CreateItem:
-			server.manager().createItem(player, ((CreateItemRequest)packet).objectIndex);
+			server.manager().createItem(user, ((CreateItemRequest)packet).objectIndex);
 			break;
 			
 		case DestroyItems:
-			server.manager().destroyItem(player);
+			server.manager().destroyItem(user);
 			break;
 			
 		case ItemsInTheFloor:
-			server.manager().sendItemsInTheFloor(player);
+			server.manager().sendItemsInTheFloor(user);
 			break;
 			
 		case DestroyAllItemsInArea:
-			server.manager().destroyAllItemsInArea(player);
+			server.manager().destroyAllItemsInArea(user);
 			break;
 			
 		case GoNearby:
-			server.manager().goToChar(player, ((GoNearbyRequest)packet).userName);
+			server.manager().goToChar(user, ((GoNearbyRequest)packet).userName);
 			break;
 			
 		case RequestCharInfo:
-			server.manager().requestCharInfo(player, ((RequestCharInfoRequest)packet).userName);
+			server.manager().requestCharInfo(user, ((RequestCharInfoRequest)packet).userName);
 			break;
 			
 		case RequestCharInventory:
-			server.manager().requestCharInv(player, ((RequestCharInventoryRequest)packet).userName);
+			server.manager().requestCharInv(user, ((RequestCharInventoryRequest)packet).userName);
 			break;
 			
 		case RequestCharStats:
-			server.manager().requestCharStats(player, ((RequestCharStatsRequest)packet).userName);
+			server.manager().requestCharStats(user, ((RequestCharStatsRequest)packet).userName);
 			break;
 			
 		case RequestCharGold:
-			server.manager().requestCharGold(player, ((RequestCharGoldRequest)packet).userName);
+			server.manager().requestCharGold(user, ((RequestCharGoldRequest)packet).userName);
 			break;
 			
 		case RequestCharBank:
-			server.manager().requestCharBank(player, ((RequestCharBankRequest)packet).userName);
+			server.manager().requestCharBank(user, ((RequestCharBankRequest)packet).userName);
 			break;
 			
 		case RequestCharSkills:
-			server.manager().requestCharSkills(player, ((RequestCharSkillsRequest)packet).userName);
+			server.manager().requestCharSkills(user, ((RequestCharSkillsRequest)packet).userName);
 			break;
 			
 		case NickToIP:
-			server.manager().nick2IP(player, ((NickToIPRequest)packet).userName);
+			server.manager().nick2IP(user, ((NickToIPRequest)packet).userName);
 			break;
 			
 		case IPToNick:
-			handleIpToNick(player, (IPToNickRequest)packet);
+			handleIpToNick(user, (IPToNickRequest)packet);
 			break;
 			
 		case LastIP:
-			server.manager().lastIp(player, ((LastIPRequest)packet).userName);
+			server.manager().lastIp(user, ((LastIPRequest)packet).userName);
 			break;
 			
 		case RequestCharMail:
-			server.manager().requestCharEmail(player, ((RequestCharMailRequest)packet).userName);
+			server.manager().requestCharEmail(user, ((RequestCharMailRequest)packet).userName);
 			break;
 			
 		case MakeDumb:
-			server.manager().makeDumb(player, ((MakeDumbRequest)packet).userName);
+			server.manager().makeDumb(user, ((MakeDumbRequest)packet).userName);
 			break;
 
 		case MakeDumbNoMore:
-			server.manager().makeNoDumb(player, ((MakeDumbNoMoreRequest)packet).userName);
+			server.manager().makeNoDumb(user, ((MakeDumbNoMoreRequest)packet).userName);
 			break;
 			
 		case Execute:
-			server.manager().executeUser(player, ((ExecuteRequest)packet).userName);
+			server.manager().executeUser(user, ((ExecuteRequest)packet).userName);
 			break;
 			
 		case Silence:
-			server.manager().silenceUser(player, ((SilenceRequest)packet).userName);
+			server.manager().silenceUser(user, ((SilenceRequest)packet).userName);
 			break;
 
 		case Punishments:
-			server.manager().punishments(player, ((PunishmentsRequest)packet).name);
+			server.manager().punishments(user, ((PunishmentsRequest)packet).name);
 			break;
 			
 		case WarnUser:
-			handleWarnUser(player, (WarnUserRequest)packet);
+			handleWarnUser(user, (WarnUserRequest)packet);
 			break;
 			
 		case RemovePunishment:
-			handleRemovePunishment(player, (RemovePunishmentRequest)packet);
+			handleRemovePunishment(user, (RemovePunishmentRequest)packet);
 			break;
 			
 		case Jail:
-			handleJail(player, (JailRequest)packet);
+			handleJail(user, (JailRequest)packet);
 			break;
 			
 		case Forgive:
-			server.manager().forgiveUser(player, ((ForgiveRequest)packet).userName);
+			server.manager().forgiveUser(user, ((ForgiveRequest)packet).userName);
 			break;
 			
 		case TurnCriminal:
-			server.manager().turnCriminal(player, ((TurnCriminalRequest)packet).userName);
+			server.manager().turnCriminal(user, ((TurnCriminalRequest)packet).userName);
 			break;
 			
 		case BanChar:
-			handleBanChar(player, (BanCharRequest)packet);
+			handleBanChar(user, (BanCharRequest)packet);
 			break;
 			
 		case UnbanChar:
-			server.manager().unbanUser(player, ((UnbanCharRequest)packet).userName);
+			server.manager().unbanUser(user, ((UnbanCharRequest)packet).userName);
 			break;
 			
 		case BanIP:
-			handleBanIp(player, (BanIPRequest)packet);
+			handleBanIp(user, (BanIPRequest)packet);
 			break;
 		
 		case UnbanIP:
-			handleUnbanIp(player, (UnbanIPRequest)packet);
+			handleUnbanIp(user, (UnbanIPRequest)packet);
 			break;
 			
 		case BannedIPList:
-			server.manager().bannedIPList(player);
+			server.manager().bannedIPList(user);
 			break;
 			
 		case BannedIPReload:
-			server.manager().bannedIPReload(player);
+			server.manager().bannedIPReload(user);
 			break;		
 			
 		case Kick:
-			server.manager().kickUser(player, ((KickRequest)packet).userName);
+			server.manager().kickUser(user, ((KickRequest)packet).userName);
 			break;
 			
 		case KickAllChars:
-			server.manager().kickAllUsersNoGm(player);
+			server.manager().kickAllUsersNoGm(user);
 			break;
 			
 		case ForceMIDIAll:
-			server.manager().playMidiAll(player, ((ForceMIDIAllRequest)packet).midiId);
+			server.manager().playMidiAll(user, ((ForceMIDIAllRequest)packet).midiId);
 			break;
 			
 		case ForceMIDIToMap:
-			server.manager().playMidiToMap(player, ((ForceMIDIToMapRequest)packet).map, ((ForceMIDIToMapRequest)packet).midiId);
+			server.manager().playMidiToMap(user, ((ForceMIDIToMapRequest)packet).map, ((ForceMIDIToMapRequest)packet).midiId);
 			break;
 			
 		case ForceWAVEAll:
-			server.manager().playWaveAll(player, ((ForceWAVEAllRequest)packet).waveId);
+			server.manager().playWaveAll(user, ((ForceWAVEAllRequest)packet).waveId);
 			break;
 			
 		case ForceWAVEToMap:
-			handleForceWaveToMap(player, (ForceWAVEToMapRequest)packet);
+			handleForceWaveToMap(user, (ForceWAVEToMapRequest)packet);
 			break;
 			
 		case ShowServerForm:
@@ -726,15 +726,15 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 
 		case SaveChars:
-			server.manager().saveChars(player);
+			server.manager().saveChars(user);
 			break;
 			
 		case SaveMap:
-			server.manager().saveMap(player);
+			server.manager().saveMap(user);
 			break;
 			
 		case ServerOpenToUsersToggle:
-			server.manager().serverOpenToUsersToggle(player);
+			server.manager().serverOpenToUsersToggle(user);
 			break;
 			
 		case ReloadNPCs:
@@ -742,15 +742,15 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case ReloadObjects:
-			server.reloadObjects(player);
+			server.reloadObjects(user);
 			break;
 			
 		case ReloadSpells:
-			server.reloadSpells(player);
+			server.reloadSpells(user);
 			break;
 			
 		case ReloadServerIni:
-			server.manager().reloadServerIni(player);
+			server.manager().reloadServerIni(user);
 			break;
 			
 		case Restart:
@@ -758,75 +758,75 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case AlterMail:
-			server.manager().alterEmail(player, ((AlterMailRequest)packet).userName, ((AlterMailRequest)packet).newEmail);
+			server.manager().alterEmail(user, ((AlterMailRequest)packet).userName, ((AlterMailRequest)packet).newEmail);
 			break;
 			
 		case AlterName:
-			server.manager().alterName(player, ((AlterNameRequest)packet).userName, ((AlterNameRequest)packet).newName);
+			server.manager().alterName(user, ((AlterNameRequest)packet).userName, ((AlterNameRequest)packet).newName);
 			break;
 			
 		case AlterPassword:
 			// /APASS
-			if (player.isGM()) {
-				player.sendMessage("Por seguridad, no se puede cambiar passwords de este modo.", FontType.FONTTYPE_INFO);
+			if (user.isGM()) {
+				user.sendMessage("Por seguridad, no se puede cambiar passwords de este modo.", FontType.FONTTYPE_INFO);
 				// TODO implementar otro mecanismo para cambio de passwords x email
 			}
 			break;
 			
 		case TileBlockedToggle:
-			server.manager().tileBlockedToggle(player);
+			server.manager().tileBlockedToggle(user);
 			break;
 
 		case SetTrigger:
-			server.manager().setTrigger(player, ((SetTriggerRequest)packet).trigger);
+			server.manager().setTrigger(user, ((SetTriggerRequest)packet).trigger);
 			break;
 			
 		case AskTrigger:
-			server.manager().askTrigger(player);
+			server.manager().askTrigger(user);
 			break;
 			
 		case CreateNPC:
-			server.manager().createNpc(player, ((CreateNPCRequest)packet).npcIndex);
+			server.manager().createNpc(user, ((CreateNPCRequest)packet).npcIndex);
 			break;
 			
 		case CreateNPCWithRespawn:
-			server.manager().createNpcWithRespawn(player, ((CreateNPCWithRespawnRequest)packet).npcIndex);
+			server.manager().createNpcWithRespawn(user, ((CreateNPCWithRespawnRequest)packet).npcIndex);
 			break;
 					
 		case ResetNPCInventory:
-			server.manager().resetNPCInventory(player);
+			server.manager().resetNPCInventory(user);
 			break;
 			
 		case ImperialArmour:
-			handleImperialArmour(player, (ImperialArmourRequest)packet);
+			handleImperialArmour(user, (ImperialArmourRequest)packet);
 			break;
 			
 		case ChaosArmour:
-			handleChaosArmour(player, (ChaosArmourRequest)packet);
+			handleChaosArmour(user, (ChaosArmourRequest)packet);
 			break;
 			
 		case AcceptRoyalCouncilMember:
-			server.manager().acceptRoyalCouncilMember(player, ((AcceptRoyalCouncilMemberRequest)packet).userName);
+			server.manager().acceptRoyalCouncilMember(user, ((AcceptRoyalCouncilMemberRequest)packet).userName);
 			break;
 					
 		case AcceptChaosCouncilMember:
-			server.manager().acceptChaosCouncilMember(player, ((AcceptChaosCouncilMemberRequest)packet).userName);
+			server.manager().acceptChaosCouncilMember(user, ((AcceptChaosCouncilMemberRequest)packet).userName);
 			break;
 			
 		case CouncilKick:
-			server.manager().councilKick(player, ((CouncilKickRequest)packet).userName);
+			server.manager().councilKick(user, ((CouncilKickRequest)packet).userName);
 			break;
 			
 		case RoyalArmyKick:
-			server.manager().royalArmyKickForEver(player, ((RoyalArmyKickRequest)packet).userName);
+			server.manager().royalArmyKickForEver(user, ((RoyalArmyKickRequest)packet).userName);
 			break;
 			
 		case ChaosLegionKick:
-			server.manager().chaosLegionKickForEver(player, ((ChaosLegionKickRequest)packet).userName);
+			server.manager().chaosLegionKickForEver(user, ((ChaosLegionKickRequest)packet).userName);
 			break;
 			
 		case ResetFactions:
-			server.manager().resetFactions(player, ((ResetFactionsRequest)packet).userName);
+			server.manager().resetFactions(user, ((ResetFactionsRequest)packet).userName);
 			break;
 
 		case ResetAutoUpdate:
@@ -834,47 +834,47 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case ToggleCentinelActivated:
-			server.getWorkWatcher().workWatcherActivateToggle(player);
+			server.getWorkWatcher().workWatcherActivateToggle(user);
 			break;
 			
 		case ChangeMapInfoBackup:
-			server.manager().changeMapInfoBackup(player, ((ChangeMapInfoBackupRequest)packet).doTheBackup == 1);
+			server.manager().changeMapInfoBackup(user, ((ChangeMapInfoBackupRequest)packet).doTheBackup == 1);
 			break;
 			
 		case ChangeMapInfoLand:
-			server.manager().changeMapInfoLand(player, ((ChangeMapInfoLandRequest)packet).infoLand);
+			server.manager().changeMapInfoLand(user, ((ChangeMapInfoLandRequest)packet).infoLand);
 			break;
 			
 		case ChangeMapInfoZone:
-			server.manager().changeMapInfoZone(player, ((ChangeMapInfoZoneRequest)packet).infoZone);
+			server.manager().changeMapInfoZone(user, ((ChangeMapInfoZoneRequest)packet).infoZone);
 			break;
 			
 		case ChangeMapInfoNoInvi:
-			server.manager().changeMapInfoNoInvi(player, ((ChangeMapInfoNoInviRequest)packet).noInvisible == 1);
+			server.manager().changeMapInfoNoInvi(user, ((ChangeMapInfoNoInviRequest)packet).noInvisible == 1);
 			break;
 			 
 		case ChangeMapInfoNoMagic:
-			server.manager().changeMapInfoNoMagic(player, ((ChangeMapInfoNoMagicRequest)packet).noMagic == 1);
+			server.manager().changeMapInfoNoMagic(user, ((ChangeMapInfoNoMagicRequest)packet).noMagic == 1);
 			break;			
 			
 		case ChangeMapInfoNoResu:
-			server.manager().changeMapInfoNoResu(player, ((ChangeMapInfoNoResuRequest)packet).noResu == 1);
+			server.manager().changeMapInfoNoResu(user, ((ChangeMapInfoNoResuRequest)packet).noResu == 1);
 			break;
 			
 		case ChangeMapInfoPK:
-			server.manager().changeMapInfoPK(player, ((ChangeMapInfoPKRequest)packet).isMapPk == 1);
+			server.manager().changeMapInfoPK(user, ((ChangeMapInfoPKRequest)packet).isMapPk == 1);
 			break;
 			
 		case ChangeMapInfoRestricted:
-			server.manager().changeMapInfoRestricted(player, ((ChangeMapInfoRestrictedRequest)packet).status);
+			server.manager().changeMapInfoRestricted(user, ((ChangeMapInfoRestrictedRequest)packet).status);
 			break;
 			
 		case EditChar:
-			handleEditChar(player, (EditCharRequest)packet);
+			handleEditChar(user, (EditCharRequest)packet);
 			break;
 			
 		case CheckSlot:
-			handleCheckSlot(player, (CheckSlotRequest)packet);
+			handleCheckSlot(user, (CheckSlotRequest)packet);
 			break;
 			
 		case PartyCreate:
@@ -935,38 +935,38 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		
 	}
 
-	private void handleCheckSlot(Player player, CheckSlotRequest packet) {
-		GameServer.instance().manager().handleCheckSlot(player, packet.userName, packet.slot);
+	private void handleCheckSlot(User user, CheckSlotRequest packet) {
+		GameServer.instance().manager().handleCheckSlot(user, packet.userName, packet.slot);
 	}
 
-	private void handleEditChar(Player admin, EditCharRequest packet) {
+	private void handleEditChar(User admin, EditCharRequest packet) {
 		GameServer.instance().manager().handleEditCharacter(admin, 
 				packet.userName, packet.option, packet.param1, packet.param2);
 	}
 
-	private void handleImperialArmour(Player admin, ImperialArmourRequest packet) {
+	private void handleImperialArmour(User admin, ImperialArmourRequest packet) {
 		GameServer.instance().manager().royalArmyArmour(admin, packet.index, packet.objIndex);
 	}
 	
-	private void handleChaosArmour(Player admin, ChaosArmourRequest packet) {
+	private void handleChaosArmour(User admin, ChaosArmourRequest packet) {
 		GameServer.instance().manager().darkLegionArmour(admin, packet.index, packet.objIndex);
 	}
 
-	private void handleIpToNick(Player admin, IPToNickRequest packet) {
+	private void handleIpToNick(User admin, IPToNickRequest packet) {
 		String ip = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
 		GameServer.instance().manager().ipToNick(admin, ip);
 	}
 
-	private void handleForceWaveToMap(Player player, ForceWAVEToMapRequest packet) {
-		GameServer.instance().manager().playWavToMap(player, packet.waveId, packet.map, packet.x, packet.y);		
+	private void handleForceWaveToMap(User user, ForceWAVEToMapRequest packet) {
+		GameServer.instance().manager().playWavToMap(user, packet.waveId, packet.map, packet.x, packet.y);		
 	}
 
-	private void handleUnbanIp(Player admin, UnbanIPRequest packet) {
+	private void handleUnbanIp(User admin, UnbanIPRequest packet) {
 		String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
 		GameServer.instance().manager().unbanIP(admin, bannedIP);
 	}
 
-	private void handleBanIp(Player admin, BanIPRequest packet) {
+	private void handleBanIp(User admin, BanIPRequest packet) {
 		if (packet.byIP) {
 			String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
 			GameServer.instance().manager().banIP(admin, bannedIP, packet.reason);
@@ -975,110 +975,110 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		}
 	}
 
-	private void handleBanChar(Player admin, BanCharRequest packet) {
+	private void handleBanChar(User admin, BanCharRequest packet) {
 		GameServer.instance().manager().banUser(admin, packet.userName, packet.reason);
 	}
 
-	private void handleJail(Player admin, JailRequest packet) {
+	private void handleJail(User admin, JailRequest packet) {
 		GameServer.instance().manager().sendUserToJail(admin, packet.userName, packet.reason, packet.jailTime);
 	}
 
-	private void handleRemovePunishment(Player player, RemovePunishmentRequest packet) {
-		GameServer.instance().manager().removePunishment(player, packet.userName, packet.punishment, packet.newText); 
+	private void handleRemovePunishment(User user, RemovePunishmentRequest packet) {
+		GameServer.instance().manager().removePunishment(user, packet.userName, packet.punishment, packet.newText); 
 	}
 
-	private void handleWarnUser(Player player, WarnUserRequest packet) {
-		GameServer.instance().manager().warnUser(player, packet.userName, packet.reason);
+	private void handleWarnUser(User user, WarnUserRequest packet) {
+		GameServer.instance().manager().warnUser(user, packet.userName, packet.reason);
 	}
 
-	private void handleTeleportCreate(TeleportCreateRequest packet, Player admin) {
+	private void handleTeleportCreate(TeleportCreateRequest packet, User admin) {
 		GameServer.instance().manager().createTeleport(admin, packet.mapa, packet.x, packet.y);
 	}
 
-	private void handleChatColor(ChatColorRequest packet, Player admin) {
+	private void handleChatColor(ChatColorRequest packet, User admin) {
 		admin.changeChatColor(packet.red & 0xff, packet.green & 0xff, packet.blue & 0xff);
 	}
 
-	private void handleWarpChar(WarpCharRequest packet, Player admin) {
+	private void handleWarpChar(WarpCharRequest packet, User admin) {
 		GameServer.instance().manager().warpUserTo(admin, packet.userName, packet.map, packet.x, packet.y);
 	}
 
-	private void handleForumPost(ForumPostRequest packet, Player player) {
-		player.postOnForum(packet.title, packet.msg);
+	private void handleForumPost(ForumPostRequest packet, User user) {
+		user.postOnForum(packet.title, packet.msg);
 	}
 
-	private void handleBankExtractItem(BankExtractItemRequest packet, Player player) {
-		player.bankExtractItem(packet.slot, packet.amount);
+	private void handleBankExtractItem(BankExtractItemRequest packet, User user) {
+		user.bankExtractItem(packet.slot, packet.amount);
 	}
 
-	private void handleBankDepositItem(BankDepositRequest packet, Player player) {
-		player.bankDepositItem(packet.slot, packet.amount);
+	private void handleBankDepositItem(BankDepositRequest packet, User user) {
+		user.bankDepositItem(packet.slot, packet.amount);
 	}
 
-	private void handleLoginNewChar(LoginNewCharRequest packet, Player player) {
-		player.connectNewUser(packet.userName, packet.password, packet.race,
+	private void handleLoginNewChar(LoginNewCharRequest packet, User user) {
+		user.connectNewUser(packet.userName, packet.password, packet.race,
 				packet.gender, packet.clazz, packet.email, packet.homeland);
 	}
 
-	private void handleCommerceSell(CommerceSellRequest packet, Player player) {
-		player.commerceSellToMerchant(packet.slot, packet.amount);		
+	private void handleCommerceSell(CommerceSellRequest packet, User user) {
+		user.commerceSellToMerchant(packet.slot, packet.amount);		
 	}
 
-	private void handleCommerceBuy(CommerceBuyRequest packet, Player player) {
-		player.commerceBuyFromMerchant(packet.slot, packet.amount);
+	private void handleCommerceBuy(CommerceBuyRequest packet, User user) {
+		user.commerceBuyFromMerchant(packet.slot, packet.amount);
 	}
 
-	private void handleEquipItem(EquipItemRequest packet, Player player) {
-		player.equipItem(packet.itemSlot);
+	private void handleEquipItem(EquipItemRequest packet, User user) {
+		user.equipItem(packet.itemSlot);
 	}
 
-	private void handleDrop(DropRequest packet, Player player) {
-		player.dropObject(packet.slot, packet.amount);
+	private void handleDrop(DropRequest packet, User user) {
+		user.dropObject(packet.slot, packet.amount);
 	}
 
-	private void handleWork(WorkRequest packet, Player player) {
-		player.handleWork(packet.skill);
+	private void handleWork(WorkRequest packet, User user) {
+		user.handleWork(packet.skill);
 	}
 
-	private void handleCastSpell(CastSpellRequest packet, Player player) {
-		player.castSpell(packet.spell);
+	private void handleCastSpell(CastSpellRequest packet, User user) {
+		user.castSpell(packet.spell);
 	}
 
-	private void handleMoveSpell(MoveSpellRequest packet, Player player) {
+	private void handleMoveSpell(MoveSpellRequest packet, User user) {
 		// Packet.dir is boolean. 
 		// - Upwards direction if TRUE(1)
 		// - Downward direction if FALSE(0).
 		// Packet.spell is Spell's Slot in ( 1 .. MAXSLOT )
-		player.moveSpell(packet.spell, 
+		user.moveSpell(packet.spell, 
 				(byte) (packet.dir == 1 ? -1 : 1));
 	}
 
-	private void handleChangeHeading(ChangeHeadingRequest packet, Player player) {
-		player.changeHeading(packet.heading);
+	private void handleChangeHeading(ChangeHeadingRequest packet, User user) {
+		user.changeHeading(packet.heading);
 	}
 
-	private void handleWorkLeftClick(WorkLeftClickRequest packet, Player player) {
-		player.workLeftClick(packet.x, packet.y, packet.skill);
+	private void handleWorkLeftClick(WorkLeftClickRequest packet, User user) {
+		user.workLeftClick(packet.x, packet.y, packet.skill);
 	}
 
-	private void handleDoubleClick(DoubleClickRequest packet, Player player) {
-		player.clicDerechoMapa(packet.x, packet.y);
+	private void handleDoubleClick(DoubleClickRequest packet, User user) {
+		user.clicDerechoMapa(packet.x, packet.y);
 	}
 
-	private void handleLeftClick(LeftClickRequest packet, Player player) {
-		player.leftClickOnMap(packet.x, packet.y);		
+	private void handleLeftClick(LeftClickRequest packet, User user) {
+		user.leftClickOnMap(packet.x, packet.y);		
 	}
 
-	private void handleWalk(WalkRequest packet, Player player) {
-		player.walk(Heading.value(packet.heading));
+	private void handleWalk(WalkRequest packet, User user) {
+		user.walk(Heading.value(packet.heading));
 	}
 	
-	private void handleTalk(TalkRequest packet, Player player) {
-		player.talk(packet.chat);
+	private void handleTalk(TalkRequest packet, User user) {
+		user.talk(packet.chat);
 	}
 
-	private void handleLoginExistingChar(LoginExistingCharRequest packet, Player player) {
-		player.connectUser(packet.userName, packet.password);
+	private void handleLoginExistingChar(LoginExistingCharRequest packet, User user) {
+		user.connectUser(packet.userName, packet.password);
 	}
 	
 }

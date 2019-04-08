@@ -24,7 +24,7 @@ import org.argentumonline.server.GameServer;
 import org.argentumonline.server.map.Map;
 import org.argentumonline.server.protocol.ConsoleMsgResponse;
 import org.argentumonline.server.protocol.CreateFXResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.UserStorage;
 import org.argentumonline.server.util.Color;
 import org.argentumonline.server.util.FontType;
@@ -42,7 +42,7 @@ public class WorkWatcher {
 	
 	private boolean activated = false;
 	
-	private Player userWatching;
+	private User userWatching;
 
 	private int askingCode;
 	
@@ -91,7 +91,7 @@ public class WorkWatcher {
 		// ############################################################
 		// Va al siguiente usuario que se encuentre trabajando
 		// ############################################################
-		server.players().stream().forEach(p -> {
+		server.getUsers().stream().forEach(p -> {
 			if (p.isLogged() && p.isWorking() && !p.isGM()) {
 				if (!p.flags().workWatcherRepliedOK) {
 	                // Inicializamos
@@ -166,7 +166,7 @@ public class WorkWatcher {
 	    }
 	}
 
-	public void checkCode(Player user, int enteredCode) {
+	public void checkCode(User user, int enteredCode) {
 		// ############################################################
 		// Corrobora la clave que le envia el usuario
 		// ############################################################
@@ -192,14 +192,14 @@ public class WorkWatcher {
 		// ############################################################
 		// Reset del Centinela
 		// ############################################################
-		server.players().stream().forEach(p -> {
+		server.getUsers().stream().forEach(p -> {
 			if (p.isLogged() && !p.getNick().isBlank() && p != userWatching) {
 				p.flags().workWatcherRepliedOK = false;
 			}
 		});
 	}
 	
-	public void sendCode(Player player) {
+	public void sendCode(User user) {
 		// ############################################################
 		// Enviamos al usuario la clave vía el personaje centinela
 		// ############################################################
@@ -208,17 +208,17 @@ public class WorkWatcher {
 			return;
 		}
 	    
-	    if (player == userWatching) {
-	    	if (!player.flags().workWatcherRepliedOK) {
-	    		workWatcher.talkToUser(player, "¡Te he dicho que escribas /CENTINELA " + askingCode + ", escríbelo rápido!", Color.COLOR_VERDE);
-	            player.sendMessage("El centinela está llamando tu atención. ¡Respóndele sin demora!", FontType.FONTTYPE_CENTINELA);
+	    if (user == userWatching) {
+	    	if (!user.flags().workWatcherRepliedOK) {
+	    		workWatcher.talkToUser(user, "¡Te he dicho que escribas /CENTINELA " + askingCode + ", escríbelo rápido!", Color.COLOR_VERDE);
+	            user.sendMessage("El centinela está llamando tu atención. ¡Respóndele sin demora!", FontType.FONTTYPE_CENTINELA);
 	    	} else {
 	            // Logueamos el evento
 	            Log.logCentinela("El usuario " + userWatching.getNick() + " respondió más de una vez la contraseña correcta.");
-	            workWatcher.talkToUser(player, "Te agradezco, pero ya me has respondido. Me retiraré pronto.", Color.COLOR_VERDE);
+	            workWatcher.talkToUser(user, "Te agradezco, pero ya me has respondido. Me retiraré pronto.", Color.COLOR_VERDE);
 	    	}
 	    } else {
-	    	workWatcher.talkToUser(player, "No es a ti a quien estoy hablando, ¿no ves?", Color.COLOR_BLANCO);
+	    	workWatcher.talkToUser(user, "No es a ti a quien estoy hablando, ¿no ves?", Color.COLOR_BLANCO);
 	    }
 	}
 	
@@ -265,7 +265,7 @@ public class WorkWatcher {
 	    }
 	}
 	
-	private void warpWorkWatcher(Player user) {
+	private void warpWorkWatcher(User user) {
 		// ############################################################
 		// Inciamos la revisión del usuario UserIndex
 		// ############################################################
@@ -285,7 +285,7 @@ public class WorkWatcher {
 	}
 
 
-	public void userLogout(Player user) {
+	public void userLogout(User user) {
 		// ############################################################
 		// El usuario al que revisabamos se desconectó
 		// ############################################################
@@ -304,7 +304,7 @@ public class WorkWatcher {
 	    }
 	}
 
-	public void workWatcherActivateToggle(Player admin) {
+	public void workWatcherActivateToggle(User admin) {
 		// Command /CENTINELAACTIVADO
 		if (!admin.isGod() && !admin.isAdmin()) {
 			return;

@@ -21,7 +21,7 @@ import java.util.BitSet;
 
 import org.argentumonline.server.GameServer;
 import org.argentumonline.server.npc.Npc;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 
 /**
  * @author gorlok
@@ -60,7 +60,7 @@ public class Tile {
     private short objIndex;
     private int objCount;
     
-    private short playerId = 0;
+    private short userId = 0;
     private short npcId;
     
     private int grh[] = new int[4];
@@ -108,8 +108,8 @@ public class Tile {
         this.objCount = cant;
     }
     
-    public Player player() {
-    	return GameServer.instance().playerById(this.playerId);
+    public User getUser() {
+    	return GameServer.instance().userById(this.userId);
     }
     
     public Npc npc() {
@@ -124,12 +124,12 @@ public class Tile {
         this.npcId = (npc == null) ? 0 : npc.getId();
     }
     
-    public short playerId() {
-        return this.playerId;
+    public short userId() {
+        return this.userId;
     }
     
-    public void playerId(short id) {
-        this.playerId = id;
+    public void userId(short id) {
+        this.userId = id;
     }
     
     public Trigger trigger() {
@@ -200,13 +200,13 @@ public class Tile {
     public boolean isFreeForNpc(boolean canWater) {
 	    if (!canWater) {
 	        return !isBlocked() 
-	        		&& playerId() == 0 
+	        		&& userId() == 0 
 	        		&& npc() == null 
 	        		&& trigger() != Trigger.TRIGGER_POS_INVALIDA 
 	        		&& !isWater();
 	    }
         return !isBlocked() 
-        		&& playerId() == 0 
+        		&& userId() == 0 
         		&& npc() == null 
         		&& trigger() != Trigger.TRIGGER_POS_INVALIDA;
     }
@@ -219,23 +219,23 @@ public class Tile {
     	boolean isDeadChar = false;
     	boolean isAdminInvisible = false;
     	
-	    if (playerId() > 0) {
-	        isDeadChar = !player().isAlive();
-	        isAdminInvisible = player().flags().AdminInvisible;
+	    if (userId() > 0) {
+	        isDeadChar = !getUser().isAlive();
+	        isAdminInvisible = getUser().flags().AdminInvisible;
 	    }
     	
         if (canWater && canLand) {
             return !isBlocked() 
-            	&& (playerId() == 0 || isAdminInvisible) 
+            	&& (userId() == 0 || isAdminInvisible) 
             	&& npc() == null; 
         } else if (canLand && !canWater) {
             return !isBlocked() 
-                	&& (playerId() == 0 || isDeadChar || isAdminInvisible) 
+                	&& (userId() == 0 || isDeadChar || isAdminInvisible) 
                 	&& npc() == null 
                 	&& !isWater();
         } else if (canWater && !canLand) {
             return !isBlocked() 
-                	&& (playerId() == 0 || isDeadChar || isAdminInvisible) 
+                	&& (userId() == 0 || isDeadChar || isAdminInvisible) 
                 	&& npc() == null 
                 	&& isWater();
         }
@@ -271,21 +271,21 @@ public class Tile {
 
     public boolean isFreePosWithWater() {
         return !isBlocked() 
-        		&& playerId() == 0 
+        		&& userId() == 0 
         		&& npc() == null 
         		&& isWater();
     }
     
     public boolean isFreePosWithoutWater() {
         return !isBlocked() 
-        		&& playerId() == 0 
+        		&& userId() == 0 
         		&& npc() == null 
         		&& !isWater();
     }
             
     public boolean isFreePosForAdmin() {
         // Los Admins no respetan las leyes de la física :P
-        return playerId() == 0 
+        return userId() == 0 
         		&& npc() == null;
     }
 

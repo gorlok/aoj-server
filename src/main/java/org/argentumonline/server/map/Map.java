@@ -53,7 +53,7 @@ import org.argentumonline.server.protocol.ObjectDeleteResponse;
 import org.argentumonline.server.protocol.PlayWaveResponse;
 import org.argentumonline.server.protocol.RemoveCharDialogResponse;
 import org.argentumonline.server.protocol.ShowSignalResponse;
-import org.argentumonline.server.user.Player;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.BytesReader;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
@@ -89,7 +89,7 @@ public class Map implements Constants {
     int     mapVersion = 0; // FIXME se usa?
     boolean noEncriptarMP = false; // sin uso
     
-    /** player killing enabled */
+    /** User killing enabled */
     private boolean pk = false;
     private boolean magiaSinEfecto = false;
     private boolean inviSinEfecto = false;
@@ -104,19 +104,19 @@ public class Map implements Constants {
     
     private GameServer server;
     
-    private Tile tiles[][] = new Tile[MAPA_ANCHO][MAPA_ALTO];
+    private Tile tiles[][] = new Tile[MAP_WIDTH][MAP_HEIGHT];
     
     private List<Tile> objects = new ArrayList<Tile>();
-    private List<Player> players = new ArrayList<Player>();
+    private List<User> users = new ArrayList<User>();
     private List<Npc> npcs = new ArrayList<Npc>();
     
     /** Creates a new instance of Map */
-    public Map(short nroMapa, GameServer server) {
+    public Map(short nroMap, GameServer server) {
     	this.server = server;
-        this.mapNumber = nroMapa;
+        this.mapNumber = nroMap;
         
-        for (int x = 0; x < MAPA_ANCHO; x++) {
-            for (int y = 0; y < MAPA_ALTO; y++) {
+        for (int x = 0; x < MAP_WIDTH; x++) {
+            for (int y = 0; y < MAP_HEIGHT; y++) {
                 this.tiles[x][y] = new Tile((short)(x+1), (short)(y+1));
             }
         }
@@ -162,8 +162,8 @@ public class Map implements Constants {
     	return AreasAO.instance();
     }
     
-    public List<Player> getPlayers() {
-    	return this.players;
+    public List<User> getUsers() {
+    	return this.users;
     }
     
     public List<Npc> getNpcs() {
@@ -245,8 +245,8 @@ public class Map implements Constants {
     	return false;
     }
     
-    public boolean hasPlayer(Player player) {
-        return this.players.contains(player);
+    public boolean hasUser(User user) {
+        return this.users.contains(user);
     }
     
     /** intemperie */
@@ -254,12 +254,12 @@ public class Map implements Constants {
        	return (this.zone != Zone.DUNGEON) && tile(x, y).isOutdoor();
     }
     
-    public boolean isHasPlayers() {
-    	return !this.players.isEmpty();
+    public boolean isHasUsers() {
+    	return !this.users.isEmpty();
     }
     
-    public int getPlayersCount() {
-        return this.players.size();
+    public int getUsersCount() {
+        return this.users.size();
     }
     
     public boolean isSafeMap() {
@@ -312,7 +312,7 @@ public class Map implements Constants {
         this.name = ini.getString(section, "Name");
         this.music = ini.getInt(section, "MusicNum");
         
-        // Player Kiling está invertido 0 habilita PK, 1 deshabilita PK.
+        // User Kiling está invertido 0 habilita PK, 1 deshabilita PK.
         this.pk = (ini.getInt(section, "PK") == 0); 
         
         this.magiaSinEfecto = (ini.getInt(section, "MagiaSinEfecto") == 1);
@@ -398,8 +398,8 @@ public class Map implements Constants {
             this.magicWord = Integer.reverseBytes(reader.readInt());
             reader.skipBytes(8); // FILL 8 bytes
             
-            for (int y = 0; y < MAPA_ALTO; y++) {
-                for (int x = 0; x < MAPA_ANCHO; x++) {
+            for (int y = 0; y < MAP_HEIGHT; y++) {
+                for (int x = 0; x < MAP_WIDTH; x++) {
                 	
                 	byflags = reader.readByte();
                 	
@@ -466,8 +466,8 @@ public class Map implements Constants {
 	        reader.skipBytes(10);
 	        reader.mark();
 	        
-	        for (int y = 0; y < MAPA_ALTO; y++) {
-	            for (int x = 0; x < MAPA_ANCHO; x++) {
+	        for (int y = 0; y < MAP_HEIGHT; y++) {
+	            for (int x = 0; x < MAP_WIDTH; x++) {
 	            	
 	            	byflags = reader.readByte();
 	            	
@@ -515,45 +515,44 @@ public class Map implements Constants {
         }
     }
     
-    public boolean enterMap(Player player, byte  x, byte y) {
-        if (tile(x, y).playerId() != 0) {
+    public boolean enterMap(User user, byte  x, byte y) {
+        if (tile(x, y).userId() != 0) {
 			return false;
 		}
-        this.players.add(player);
-        tile(x, y).playerId(player.getId());
-        //sendToAreaButIndex(x, y, player.getId(), player.characterCreate());
-        player.pos().set(this.mapNumber, x, y);
+        this.users.add(user);
+        tile(x, y).userId(user.getId());
+        user.pos().set(this.mapNumber, x, y);
         return true;
     }
     
-    public boolean exitMap(Player player) {
-        short x = player.pos().x;
-        short y = player.pos().y;
+    public boolean exitMap(User user) {
+        short x = user.pos().x;
+        short y = user.pos().y;
         try {
         	try {
-        		area().sendToUserArea(this, player, new RemoveCharDialogResponse(player.getId()));
+        		area().sendToUserArea(this, user, new RemoveCharDialogResponse(user.getId()));
         		
-        		if (player.flags().AdminInvisible) {
-        			player.sendPacket(new CharacterRemoveResponse(player.getId()));
+        		if (user.flags().AdminInvisible) {
+        			user.sendPacket(new CharacterRemoveResponse(user.getId()));
         		} else {
-        			sendToArea(player.pos().x, player.pos().y, new CharacterRemoveResponse(player.getId()));
+        			sendToArea(user.pos().x, user.pos().y, new CharacterRemoveResponse(user.getId()));
         		}
         		
         	} finally {
-        		this.players.remove(player);
-        		player.charArea().reset();
+        		this.users.remove(user);
+        		user.charArea().reset();
         	}
         } finally {
-	        if (tile(x,y).playerId() != player.getId()) {
+	        if (tile(x,y).userId() != user.getId()) {
 	        	log.fatal("INCONSISTENCIA: el jugador no se encuentra donde debería");
 	            return false;
 	        }
-	        tile(x,y).playerId((short) 0);
+	        tile(x,y).userId((short) 0);
         }
         return true;
     }
     
-    public void moverNpc(Npc npc, byte x, byte y) {
+    public void moveNpc(Npc npc, byte x, byte y) {
         if (tile(x, y).npc() != null) {
 			log.fatal("ERRRRRRRRRRORRRRRRRRRRRR en moverNpc: " + npc);
 		}
@@ -565,7 +564,7 @@ public class Map implements Constants {
     }
     
     public boolean isFree(byte  x, byte y) {
-        return (tile(x, y).playerId() == 0) && (tile(x, y).npc() == null);
+        return (tile(x, y).userId() == 0) && (tile(x, y).npc() == null);
     }
     
     public boolean isBlocked(byte  x, byte y) {
@@ -605,7 +604,7 @@ public class Map implements Constants {
         return true;
     }
     
-    public void quitarNpcsArea(Player admin) {
+    public void removeNpcsArea(User admin) {
         short x1 = (short) (admin.pos().x - MinXBorder + 1);
         short x2 = (short) (admin.pos().x + MaxXBorder + 1);
         short y1 = (short) (admin.pos().y - MinYBorder + 1);
@@ -645,11 +644,11 @@ public class Map implements Constants {
         admin.sendMessage(msg, FontType.FONTTYPE_INFO);
     }    
 
-    public void sendItemsInTheFloor(Player admin) {
+    public void sendItemsInTheFloor(User admin) {
     	// List of objects by name
     	var objects = new TreeMap<String, List<String>>();
-    	for (int x = 5; x < MAPA_ANCHO - 5; x++) {
-    		for (int y = 5; y < MAPA_ALTO - 5; y++) {
+    	for (int x = 5; x < MAP_WIDTH - 5; x++) {
+    		for (int y = 5; y < MAP_HEIGHT - 5; y++) {
     			if (hasObject((byte)x, (byte)y)) {
     				var oi = getObject((byte)x, (byte)y).objInfo();
     				if (oi.objType != ObjType.Arboles
@@ -753,11 +752,9 @@ public class Map implements Constants {
     }
     
     public void sendToAllButIndex(int exceptId, ServerPacket packet) {
-        for (Player player : this.players) {
-            if (player.getId() != exceptId) {
-        		player.sendPacket(packet);
-            }
-        }
+    	this.users.stream()
+    		.filter( u -> u.getId() != exceptId )
+    		.forEach( u -> u.sendPacket(packet));
     }
     
     public void sendToArea(byte x, byte y, ServerPacket packet) {
@@ -785,20 +782,20 @@ public class Map implements Constants {
         if (y2 > 100) {
 			y2 = 100;
 		}
-        Player player;
+        User user;
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (tile(x,y).playerId() > 0) {
-                    player = this.server.playerById(tile(x,y).playerId());
-                    if (player != null && (player.flags().isGod() || player.flags().isDemiGod())) {
-						player.sendPacket(packet);
+                if (tile(x,y).userId() > 0) {
+                    user = this.server.userById(tile(x,y).userId());
+                    if (user != null && (user.flags().isGod() || user.flags().isDemiGod())) {
+						user.sendPacket(packet);
 					}
                 }
             }
         }
     }
     
-    public Player lookForPlayerAtArea(short pos_x, short pos_y, short cli_id) {
+    public User lookForUserAtArea(short pos_x, short pos_y, short cli_id) {
         short x1 = (short) (pos_x - MinXBorder + 1);
         short x2 = (short) (pos_x + MaxXBorder + 1);
         short y1 = (short) (pos_y - MinYBorder + 1);
@@ -817,72 +814,69 @@ public class Map implements Constants {
 		}
         for (short y = y1; y <= y2; y++) {
             for (short x = x1; x <= x2; x++) {
-                if (tile(x, y).playerId() == cli_id) {
-					return this.server.playerById(tile(x,y).playerId());
+                if (tile(x, y).userId() == cli_id) {
+					return this.server.userById(tile(x,y).userId());
 				}
             }
         }
         return null;
     }
     
-    /** Send player's chars in map */
-    public void sendPlayers(Player player) {
-    	for (Player otherPlayer : this.players) {
-    		// send me other Chars in map, except mine
-    		if (!otherPlayer.equals(player)) {
-    			player.sendPacket(otherPlayer.characterCreate());
-    		}
-    	}
+    /** Send user chars in map */
+    public void sendUsers(User user) {
+    	this.users.stream()
+    		.filter( u -> !u.equals(user))
+    		.forEach( u -> user.sendPacket(u.characterCreate()));
     }
     
     /** Send objects in map */
-    public void sendObjects(Player player) {
+    public void sendObjects(User user) {
         for (Tile object : this.objects) {
-            player.sendObject(object.objIndex(), object.x(), object.y());
+            user.sendObject(object.objIndex(), object.x(), object.y());
         }
     }
     
     /** send NPCs in map */
-    public void sendNpcs(Player player) {
+    public void sendNpcs(User user) {
         for (Npc npc : this.npcs) {
-            player.sendPacket(npc.characterCreate());
+            user.sendPacket(npc.characterCreate());
         }
     }
     
     /** send blocked positions in map */
-    public void sendBlockedPositions(Player player) {
-        for (int y = 0; y < MAPA_ALTO; y++) {
-            for (int x = 0; x < MAPA_ANCHO; x++) {
+    public void sendBlockedPositions(User user) {
+        for (int y = 0; y < MAP_HEIGHT; y++) {
+            for (int x = 0; x < MAP_WIDTH; x++) {
                 if (this.tiles[x][y].isModified()) {
-					player.sendBlockedPosition(x+1, y+1, this.tiles[x][y].isBlocked());
+					user.sendBlockedPosition(x+1, y+1, this.tiles[x][y].isBlocked());
 				}
             }
         }
     }
     
-    public void movePlayer(Player player, MapPos newPos) {
-        tile(player.pos().x, player.pos().y).playerId((short) 0);
-        tile(newPos.x, newPos.y).playerId(player.getId());
+    public void moveUser(User user, MapPos newPos) {
+        tile(user.pos().x, user.pos().y).userId((short) 0);
+        tile(newPos.x, newPos.y).userId(user.getId());
         
-        player.pos().set(this.mapNumber, newPos.x, newPos.y);
+        user.pos().set(this.mapNumber, newPos.x, newPos.y);
         
-        area().sendToAreaButIndex(this, newPos.x, newPos.y, player.getId(), 
-        		new CharacterMoveResponse(player.getId(), newPos.x, newPos.y));
-        area().checkUpdateNeededUser(this, player, player.infoChar().heading());
+        area().sendToAreaButIndex(this, newPos.x, newPos.y, user.getId(), 
+        		new CharacterMoveResponse(user.getId(), newPos.x, newPos.y));
+        area().checkUpdateNeededUser(this, user, user.infoChar().heading());
     }
     
-    public void movePlayerSwapping(Player player, MapPos newPos, Player casper) {
-    	MapPos oldPos = player.pos().copy();
+    public void moveUserSwapping(User user, MapPos newPos, User casper) {
+    	MapPos oldPos = user.pos().copy();
     	
-        tile(oldPos.x, oldPos.y).playerId(casper.getId());
-        tile(newPos.x, newPos.y).playerId(player.getId());
+        tile(oldPos.x, oldPos.y).userId(casper.getId());
+        tile(newPos.x, newPos.y).userId(user.getId());
         
-        player.pos().set(this.mapNumber, newPos.x, newPos.y);
+        user.pos().set(this.mapNumber, newPos.x, newPos.y);
         casper.pos().set(this.mapNumber, oldPos.x, oldPos.y);
         
-    	area().sendToAreaButIndex(this, newPos.x, newPos.y, player.getId(), 
-    		new CharacterMoveResponse(player.getId(), newPos.x, newPos.y));
-        area().checkUpdateNeededUser(this, player, player.infoChar().heading());
+    	area().sendToAreaButIndex(this, newPos.x, newPos.y, user.getId(), 
+    		new CharacterMoveResponse(user.getId(), newPos.x, newPos.y));
+        area().checkUpdateNeededUser(this, user, user.infoChar().heading());
         
         if (!casper.flags().AdminInvisible) {
         	area().sendToAreaButIndex(this, oldPos.x, oldPos.y, casper.getId(), 
@@ -922,10 +916,10 @@ public class Map implements Constants {
         		&& (tile(x, y).hasObject());
     }
     
-    public boolean hasPlayer(byte  x, byte y) {
+    public boolean hasUser(byte  x, byte y) {
         return Pos.isValid(x, y) 
-        		&& (tile(x, y).playerId() != 0 
-        		&& getPlayer(x, y) != null);
+        		&& (tile(x, y).userId() != 0 
+        		&& getUser(x, y) != null);
     }
     
     public boolean hasNpc(byte  x, byte y) {
@@ -935,8 +929,8 @@ public class Map implements Constants {
         return (tile(x, y).npc() != null);
     }
     
-    public Player getPlayer(byte  x, byte y) {
-        return this.server.playerById(tile(x, y).playerId());
+    public User getUser(byte  x, byte y) {
+        return this.server.userById(tile(x, y).userId());
     }
     
     public Npc getNpc(byte  x, byte y) {
@@ -960,13 +954,13 @@ public class Map implements Constants {
         return null;
     }
     
-    public Player lookForNearbyPlayer(byte  x, byte y) {
+    public User lookForNearbyUser(byte  x, byte y) {
         // Ver si hay un jugador en los alrededores...
-        if (hasPlayer(x, (byte) (y+1))) {
-            return getPlayer(x, (byte) (y+1));
+        if (hasUser(x, (byte) (y+1))) {
+            return getUser(x, (byte) (y+1));
         }
-        if (hasPlayer(x, y)) {
-            return getPlayer(x, y);
+        if (hasUser(x, y)) {
+            return getUser(x, y);
         }
         return null;
     }
@@ -982,9 +976,9 @@ public class Map implements Constants {
         return null;
     }
     
-    public void lookAtTile(Player player, byte  x, byte y) {
-        System.out.println("areaID:" + player.charArea().areaID);
-    	if (!player.pos().inRangoVision(x, y)) {
+    public void lookAtTile(User user, byte  x, byte y) {
+        System.out.println("areaID:" + user.charArea().areaID);
+    	if (!user.pos().inRangoVision(x, y)) {
             return;
         }
         boolean foundSomething = false;
@@ -993,36 +987,36 @@ public class Map implements Constants {
         MapObject obj = lookForNearbyObject(x, y);
         if (obj != null) {
         	if (obj.objInfo().mostrarCantidad()) {
-        		player.sendMessage(obj.objInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
+        		user.sendMessage(obj.objInfo().Nombre + " - " + obj.obj_cant, FontType.FONTTYPE_INFO);
         	} else {
-        		player.sendMessage(obj.objInfo().Nombre, FontType.FONTTYPE_INFO);
+        		user.sendMessage(obj.objInfo().Nombre, FontType.FONTTYPE_INFO);
         	}
-            player.flags().TargetObj = obj.objInfo().ObjIndex;
-            player.flags().TargetObjMap = this.mapNumber;
-            player.flags().TargetObjX = obj.x;
-            player.flags().TargetObjY = obj.y;
+            user.flags().TargetObj = obj.objInfo().ObjIndex;
+            user.flags().TargetObjMap = this.mapNumber;
+            user.flags().TargetObjX = obj.x;
+            user.flags().TargetObjY = obj.y;
             foundSomething = true;
             System.out.println("OBJ " + obj.objInfo().Nombre + " OID:" + obj.objInfo().ObjIndex + " x="+obj.x + ",y="+obj.y);
         }
         
         // Ver si hay un jugador
-        Player anotherPlayer;
-        if ((anotherPlayer = lookForNearbyPlayer(x, y)) != null) {
-        	if (!anotherPlayer.flags().AdminInvisible || player.flags().isGM()) {
+        User anotherUser;
+        if ((anotherUser = lookForNearbyUser(x, y)) != null) {
+        	if (!anotherUser.flags().AdminInvisible || user.flags().isGM()) {
         		
-        		if (anotherPlayer.descRM.length() > 0 || !anotherPlayer.showName) {
+        		if (anotherUser.descRM.length() > 0 || !anotherUser.showName) {
         			// tiene descRM, o no quiere que se vea su nombre.
-                    player.sendMessage(anotherPlayer.descRM, FontType.FONTTYPE_INFOBOLD);
+                    user.sendMessage(anotherUser.descRM, FontType.FONTTYPE_INFOBOLD);
         		} else {
-        			player.sendMessage("Ves a " + anotherPlayer.userNameTagDesc(), anotherPlayer.getTagColor());
+        			user.sendMessage("Ves a " + anotherUser.userNameTagDesc(), anotherUser.getTagColor());
         		}
         		
-        		player.flags().TargetUser = anotherPlayer.getId();
-        		player.flags().TargetNpc = 0;
-        		player.flags().TargetObj = 0;
-        		player.flags().TargetMap = this.mapNumber;
-        		player.flags().TargetX = x;
-        		player.flags().TargetY = y;
+        		user.flags().TargetUser = anotherUser.getId();
+        		user.flags().TargetNpc = 0;
+        		user.flags().TargetObj = 0;
+        		user.flags().TargetMap = this.mapNumber;
+        		user.flags().TargetX = x;
+        		user.flags().TargetY = y;
         		foundSomething = true;
         	}
         }
@@ -1034,10 +1028,10 @@ public class Map implements Constants {
             System.out.println("NPC id:" + npc.getId() + " name:" + npc.getName() + " areaID:" + npc.charArea().areaID + " " + npc.pos().toString());
             if (npc.description.length() > 0) {
             	// tiene algo para decir
-            	player.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
+            	user.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
             } else if (npc.getId() == server.getWorkWatcher().getNpc().getId()) {
                 // enviamos nuevamente el mensaje del Centinela, según quien pregunta.
-            	server.getWorkWatcher().sendCode(player);
+            	server.getWorkWatcher().sendCode(user);
             } else {
             	String npcName;
             	if (npc.getPetUserOwner() != null) {
@@ -1045,32 +1039,32 @@ public class Map implements Constants {
             	} else {
             		npcName = npc.name;
             	}
-            	player.sendMessage(npcName + " " + npc.healthDescription(player), FontType.FONTTYPE_INFO);
-            	if (player.flags().isGM() && npc.attackedFirstBy != "") {
-            		player.sendMessage("Le pegó primero: " + npc.attackedFirstBy + ".", FontType.FONTTYPE_INFO);
+            	user.sendMessage(npcName + " " + npc.healthDescription(user), FontType.FONTTYPE_INFO);
+            	if (user.flags().isGM() && npc.attackedFirstBy != "") {
+            		user.sendMessage("Le pegó primero: " + npc.attackedFirstBy + ".", FontType.FONTTYPE_INFO);
             	}
             }
             
-            player.flags().TargetNpc = npc.getId();
-            player.flags().TargetMap = this.mapNumber;
-            player.flags().TargetX = x;
-            player.flags().TargetY = y;
-            player.flags().TargetUser = 0;
-            player.flags().TargetObj = 0;
+            user.flags().TargetNpc = npc.getId();
+            user.flags().TargetMap = this.mapNumber;
+            user.flags().TargetX = x;
+            user.flags().TargetY = y;
+            user.flags().TargetUser = 0;
+            user.flags().TargetObj = 0;
         }
         
         if (!foundSomething) {
-            player.flags().TargetNpc = 0;
-            player.flags().TargetNpcTipo = 0;
-            player.flags().TargetUser = 0;
-            player.flags().TargetObj = 0;
-            player.flags().TargetObjMap = 0;
-            player.flags().TargetObjX = 0;
-            player.flags().TargetObjY = 0;
-            player.flags().TargetMap = this.mapNumber;
-            player.flags().TargetX = x;
-            player.flags().TargetY = y;
-            player.sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
+            user.flags().TargetNpc = 0;
+            user.flags().TargetNpcTipo = 0;
+            user.flags().TargetUser = 0;
+            user.flags().TargetObj = 0;
+            user.flags().TargetObjMap = 0;
+            user.flags().TargetObjX = 0;
+            user.flags().TargetObjY = 0;
+            user.flags().TargetMap = this.mapNumber;
+            user.flags().TargetX = x;
+            user.flags().TargetY = y;
+            user.sendMessage("No ves nada interesante.", FontType.FONTTYPE_INFO);
         }
     }
     
@@ -1078,19 +1072,19 @@ public class Map implements Constants {
         return tile(x, y).teleport();
     }
     
-    public void accionParaRamita(byte x, byte y, Player player) {
-        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaRamita(byte x, byte y, User user) {
+        if (Util.distance(user.pos().x, user.pos().y, x, y) > 2) {
+            user.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         
         if (tile(x, y).isSafeZone() && isSafeMap()) {
-            player.sendMessage("En zona segura no puedes hacer fogatas.", FontType.FONTTYPE_INFO);
+            user.sendMessage("En zona segura no puedes hacer fogatas.", FontType.FONTTYPE_INFO);
             return;
         }
         
         int suerte = 0;
-        int skillSupervivencia = player.skills().get(Skill.SKILL_Supervivencia);        
+        int skillSupervivencia = user.skills().get(Skill.SKILL_Supervivencia);        
         if (skillSupervivencia == 0) {
 			suerte = 0;
 		} else if (skillSupervivencia < 6) {
@@ -1103,20 +1097,20 @@ public class Map implements Constants {
         if (Util.Azar(1, suerte) == 1) {
         	removeObject(x, y);
             addObject(FOGATA, 1, x, y);
-            player.sendMessage("Has prendido la fogata.", FontType.FONTTYPE_INFO);
+            user.sendMessage("Has prendido la fogata.", FontType.FONTTYPE_INFO);
         } else {
-            player.sendMessage("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
+            user.sendMessage("No has podido hacer fuego.", FontType.FONTTYPE_INFO);
         }
-		player.riseSkill(Skill.SKILL_Supervivencia);
+		user.riseSkill(Skill.SKILL_Supervivencia);
     }
 
 	private Tile tile(int x, int y) {
 		return this.tiles[x-1][y-1];
 	}
     
-    public void accionParaForo(byte  x, byte y, Player player) {
-        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaForo(byte  x, byte y, User user) {
+        if (Util.distance(user.pos().x, user.pos().y, x, y) > 2) {
+            user.sendMessage("Estás demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         // ¿Hay mensajes?
@@ -1125,12 +1119,12 @@ public class Map implements Constants {
             return;
         }
         String foroId = obj.objInfo().ForoID;
-        this.server.getForumManager().sendForumPosts(foroId, player);
+        this.server.getForumManager().sendForumPosts(foroId, user);
     }
     
-    public void accionParaPuerta(byte  x, byte y, Player player) {
-        if (Util.distance(player.pos().x, player.pos().y, x, y) > 2) {
-            player.sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
+    public void accionParaPuerta(byte  x, byte y, User user) {
+        if (Util.distance(user.pos().x, user.pos().y, x, y) > 2) {
+            user.sendMessage("Estas demasiado lejos.", FontType.FONTTYPE_INFO);
             return;
         }
         MapObject obj = getObject(x, y);
@@ -1139,19 +1133,19 @@ public class Map implements Constants {
 		}
         if (obj.objInfo().Clave == 0) {
             toggleDoor(obj);
-            player.flags().TargetObj = obj.objInfo().ObjIndex;
+            user.flags().TargetObj = obj.objInfo().ObjIndex;
         } else {
-            player.sendMessage("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
+            user.sendMessage("La puerta esta cerrada con llave.", FontType.FONTTYPE_INFO);
         }
     }
     
-    public void accionParaCartel(byte  x, byte y, Player player) {
+    public void accionParaCartel(byte  x, byte y, User user) {
         MapObject obj = getObject(x, y);
         if (obj == null || obj.objInfo().objType != ObjType.Carteles) {
 			return;
 		}
         if (obj.objInfo().Texto.length() > 0) {
-        	player.sendPacket(new ShowSignalResponse(obj.objInfo().Texto, obj.objInfo().GrhSecundario));
+        	user.sendPacket(new ShowSignalResponse(obj.objInfo().Texto, obj.objInfo().GrhSecundario));
         }
     }
     
@@ -1223,7 +1217,7 @@ public class Map implements Constants {
         		&& tile(pos.x,pos.y).isFreeForNpc(canWater);
     }
     
-    private boolean isFreePosForPlayer(byte  x, byte y, boolean sailing, boolean isAdmin) {
+    private boolean isFreePosForUser(byte  x, byte y, boolean sailing, boolean isAdmin) {
     	if (isAdmin) {
 			return isFreePosForAdmin(x, y); // Los Admins no respetan las leyes de la física :P
 			
@@ -1242,8 +1236,8 @@ public class Map implements Constants {
     /** 
      * Busca una posicion válida para un jugador, y que sea lo más cercana a la posición original 
      */
-    public MapPos closestLegalPosPlayer(byte orig_x, byte orig_y, boolean sailing, boolean isAdmin) {
-        if (isFreePosForPlayer(orig_x, orig_y, sailing, isAdmin)) {
+    public MapPos closestLegalPosUser(byte orig_x, byte orig_y, boolean sailing, boolean isAdmin) {
+        if (isFreePosForUser(orig_x, orig_y, sailing, isAdmin)) {
 			return MapPos.mxy(this.mapNumber, orig_x, orig_y);
 		}
         for (int radio = 1; radio < 13; radio++) {
@@ -1254,22 +1248,22 @@ public class Map implements Constants {
             // Recorrer los lados superior e inferior del borde.
             for (byte x = x1; x <= x2; x++) {
                 // lado superior
-                if (isFreePosForPlayer(x, y1, sailing, isAdmin)) {
+                if (isFreePosForUser(x, y1, sailing, isAdmin)) {
 					return MapPos.mxy(this.mapNumber, x, y1);
 				}
                 // lado inferior
-                if (isFreePosForPlayer(x, y2, sailing, isAdmin)) {
+                if (isFreePosForUser(x, y2, sailing, isAdmin)) {
 					return MapPos.mxy(this.mapNumber, x, y2);
 				}
             }
             // Recorrer los lados izquierdo y derecho del borde.
             for (byte y = (byte) (y1+1); y < y2; y++) {
                 // lado izquierdo
-                if (isFreePosForPlayer(x1, y, sailing, isAdmin)) {
+                if (isFreePosForUser(x1, y, sailing, isAdmin)) {
 					return MapPos.mxy(this.mapNumber, x1, y);
 				}
                 // lado derecho
-                if (isFreePosForPlayer(x2, y, sailing, isAdmin)) {
+                if (isFreePosForUser(x2, y, sailing, isAdmin)) {
 					return MapPos.mxy(this.mapNumber, x2, y);
 				}
             }
@@ -1353,7 +1347,7 @@ public class Map implements Constants {
     }
     
     
-    public void sendCreaturesInMap(Player admin) {
+    public void sendCreaturesInMap(User admin) {
     	// List of creatures per npc name
     	var hostiles = new TreeMap<String, List<Npc>>();
     	var others = new TreeMap<String, List<Npc>>();
@@ -1471,8 +1465,8 @@ public class Map implements Constants {
                 f.writeInt(Integer.reverseBytes(this.magicWord));
                 f.writeLong(0); // FILL 8 bytes
                 
-                for (int y = 0; y < MAPA_ALTO; y++) {
-                    for (int x = 0; x < MAPA_ANCHO; x++) {
+                for (int y = 0; y < MAP_HEIGHT; y++) {
+                    for (int x = 0; x < MAP_WIDTH; x++) {
                     	byte flags = 0;
                     	
                     	if (this.tiles[x][y].isBlocked()) {
@@ -1528,8 +1522,8 @@ public class Map implements Constants {
                 byte[] skip10 = new byte[10];
                 f.write(skip10); // saltear los primeros 10 bytes.
                 // leer detalle del archivo .inf
-                for (short y = 0; y < MAPA_ALTO; y++) {
-                    for (short x = 0; x < MAPA_ANCHO; x++) {
+                for (short y = 0; y < MAP_HEIGHT; y++) {
+                    for (short x = 0; x < MAP_WIDTH; x++) {
                     	byte flags = 0;
                     	if (this.tiles[x][y].isTeleport()) {
                     		flags += FLAG_TELEPORT;
@@ -1569,7 +1563,7 @@ public class Map implements Constants {
         }
     }
     
-    public void objectMassDestroy(Player admin, byte pos_x, byte pos_y) {
+    public void objectMassDestroy(User admin, byte pos_x, byte pos_y) {
         int x1 = pos_x - MinXBorder + 1;
         int x2 = pos_x + MaxXBorder + 1;
         int y1 = pos_y - MinYBorder + 1;
@@ -1605,55 +1599,59 @@ public class Map implements Constants {
         }
     }    
     
-    public void construirAreaObj(Player player, byte  x, byte y) {
+    public void construirAreaObj(User user, byte  x, byte y) {
     	MapObject obj = getObject(x,y);
-    	if (obj != null) player.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.objInfo().GrhIndex));
+    	if (obj != null) user.sendPacket(new ObjectCreateResponse((byte)x, (byte)y, (short)obj.objInfo().GrhIndex));
     }
     
-    public void construirAreaNpc(Player player, Npc npc) {
-    	player.sendPacket(npc.characterCreate());
+    public void construirAreaNpc(User user, Npc npc) {
+    	user.sendPacket(npc.characterCreate());
     }
     
     public void soundFx() {
-        if (getPlayersCount() > 0 && Util.Azar(1, 150) < 12) {
-        	byte sound = -1;
-            switch (this.terrain) {
-                case FOREST:
-                    int n = Util.Azar(1, 100);
-                    switch (this.zone) {
-                        case COUNTRY:
-                        case CITY:
-                            if (!this.server.isRaining()) {
-                                if (n < 15) {
-                                	sound = Constants.SOUND_AVE2;
-                                } else if (n < 30) {
-                                	sound = Constants.SOUND_AVE;
-                                } else if (n <= 35) {
-                                	sound = Constants.SOUND_GRILLO;
-                                } else if (n <= 40) {
-                                	sound = Constants.SOUND_GRILLO2;
-                                } else if (n <= 45) {
-                                	sound = Constants.SOUND_AVE3;
-                                }
-                            }
-                            break;
-					default:
-						break;
-                    }
-			default:
-				break;
-            }
+        if (getUsersCount() > 0 && Util.Azar(1, 150) < 12) {
+        	final byte sound = randomSoundFx();
             if (sound > -1) {
-                for (Player player : this.players) {
-            		player.sendPacket(new PlayWaveResponse(sound, player.pos().x, player.pos().y));
-                }
+            	this.users.stream()
+            		.forEach(u -> u.sendPacket(new PlayWaveResponse(sound, u.pos().x, u.pos().y)));
             }
         }
     }
 
+	private byte randomSoundFx() {
+		byte sound = -1;
+		switch (this.terrain) {
+		    case FOREST:
+		        int n = Util.Azar(1, 100);
+		        switch (this.zone) {
+		            case COUNTRY:
+		            case CITY:
+		                if (!this.server.isRaining()) {
+		                    if (n < 15) {
+		                    	sound = Constants.SOUND_AVE2;
+		                    } else if (n < 30) {
+		                    	sound = Constants.SOUND_AVE;
+		                    } else if (n <= 35) {
+		                    	sound = Constants.SOUND_GRILLO;
+		                    } else if (n <= 40) {
+		                    	sound = Constants.SOUND_GRILLO2;
+		                    } else if (n <= 45) {
+		                    	sound = Constants.SOUND_AVE3;
+		                    }
+		                }
+		                break;
+				default:
+					break;
+		        }
+		default:
+			break;
+		}
+		return sound;
+	}
+
     
     @Deprecated
-    public void doTileEvents(Player player) {
+    public void doTileEvents(User user) {
 		// Esto no hace falta por ahora, era para hacer funcionar a los teleports,
 		// y estoy haciendo que los teleports trabajen de otra manera.
     	//
@@ -1669,14 +1667,14 @@ public class Map implements Constants {
 	 * Uses: Restringir = "NEWBIE" (newbies), "ARMADA", "CAOS", "FACCION" or "NO".
      * @return true if passage is forbidden, false if passage is allowed
      */
-    public boolean isForbbidenMap(Player player) {
+    public boolean isForbbidenMap(User user) {
     	// ¿Es mapa de newbies?
     	if (isNewbieMap()) {
-    		if (player.isNewbie() || player.flags().isGM()) {
+    		if (user.isNewbie() || user.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un newbie/gm, "NO PASARÁS!"
-				player.sendMessage("Mapa exclusivo para newbies.", FontType.FONTTYPE_INFO);
+				user.sendMessage("Mapa exclusivo para newbies.", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	} 
@@ -1684,11 +1682,11 @@ public class Map implements Constants {
 		// ¿Es mapa de Armadas?
     	if (isRoyalArmyMap()) {
             // ¿El usuario es Armada?
-    		if (player.isRoyalArmy() || player.flags().isGM()) {
+    		if (user.isRoyalArmy() || user.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/gm, "NO PASARÁS!"
-				player.sendMessage("Mapa exclusivo para miembros del ejército Real", FontType.FONTTYPE_INFO);
+				user.sendMessage("Mapa exclusivo para miembros del ejército Real", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}
@@ -1696,11 +1694,11 @@ public class Map implements Constants {
 		// ¿Es mapa de Caos?
     	if (isDarkLegionMap()) {
             // ¿El usuario es Caos?
-    		if (player.isDarkLegion() || player.flags().isGM()) {
+    		if (user.isDarkLegion() || user.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un caos/gm, "NO PASARÁS!"
-				player.sendMessage("Mapa exclusivo para miembros del ejército Oscuro.", FontType.FONTTYPE_INFO);
+				user.sendMessage("Mapa exclusivo para miembros del ejército Oscuro.", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}
@@ -1708,11 +1706,11 @@ public class Map implements Constants {
 		// ¿Es mapa de faccionarios?
     	if (isFactionMap()) {
             // ¿El usuario es Caos?
-    		if (player.isRoyalArmy() || player.isDarkLegion() || player.flags().isGM()) {
+    		if (user.isRoyalArmy() || user.isDarkLegion() || user.flags().isGM()) {
     			return false; // allowed
     		} else {
     			// no es un armada/caos/gm, "NO PASARÁS!"
-				player.sendMessage("Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontType.FONTTYPE_INFO);
+				user.sendMessage("Solo se permite entrar al Mapa si eres miembro de alguna Facción", FontType.FONTTYPE_INFO);
     			return true;
     		}
     	}

@@ -68,12 +68,12 @@ public class UserFaction implements Constants {
     public int NextRecompensa = 0;
     
     
-    private Player player;
+    private User user;
     private GameServer server;
     
-    public UserFaction(GameServer server, Player player) {
+    public UserFaction(GameServer server, User user) {
     	this.server = server;
-        this.player = player;
+        this.user = user;
     }
     
     public void reset() {
@@ -96,7 +96,7 @@ public class UserFaction implements Constants {
         NextRecompensa = 0;
     }
 
-    public void countKill(Player killedUser) {
+    public void countKill(User killedUser) {
     	if (killedUser.isCriminal()) {
     		if (!lastCriminalKilled.equalsIgnoreCase(killedUser.userName)) {
     			lastCriminalKilled = killedUser.userName;
@@ -150,8 +150,8 @@ public class UserFaction implements Constants {
 	    ini.setValue("FACCIONES", "NextRecompensa", this.NextRecompensa);
 	}
 	
-    public static void royalArmyKick(Player admin, String userName) {
-		final String fileName = Player.getPjFile(userName);
+    public static void royalArmyKick(User admin, String userName) {
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -164,8 +164,8 @@ public class UserFaction implements Constants {
 		}
     }
     
-    public static void chaosLegionKick(Player admin, String userName) {
-		final String fileName = Player.getPjFile(userName);
+    public static void chaosLegionKick(User admin, String userName) {
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -179,7 +179,7 @@ public class UserFaction implements Constants {
     }
 
     public static void resetFactions(String userName) {
-		final String fileName = Player.getPjFile(userName);
+		final String fileName = User.getPjFile(userName);
 		IniFile ini;
 		try {
 			ini = new IniFile(fileName);
@@ -207,12 +207,12 @@ public class UserFaction implements Constants {
     public boolean faccionPuedeUsarItem(short objid) {
         ObjectInfo infoObj = this.server.getObjectInfoStorage().getInfoObjeto(objid);
         if (infoObj.esReal()) {
-            if (!player.isCriminal()) {
+            if (!user.isCriminal()) {
                 return this.ArmadaReal;
             } 
             return false;
         } else if (infoObj.esCaos()) {
-            if (player.isCriminal()) {
+            if (user.isCriminal()) {
                 return this.FuerzasCaos;
             }
             return false;
@@ -223,140 +223,140 @@ public class UserFaction implements Constants {
     
     public void royalArmyEnlist(Npc npc) {
         if (this.ArmadaReal) {
-            this.player.talk(COLOR_BLANCO, "¡Ya perteneces a las tropas reales! Ve a combatir criminales!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "¡Ya perteneces a las tropas reales! Ve a combatir criminales!!!", npc.getId());
             return;
         }
         if (this.FuerzasCaos) {
-            this.player.talk(COLOR_BLANCO, "¡Maldito insolente! Vete de aqui seguidor de las sombras!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "¡Maldito insolente! Vete de aqui seguidor de las sombras!!!", npc.getId());
             return;
         }
-        if (this.player.isCriminal()) {
-            this.player.talk(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
+        if (this.user.isCriminal()) {
+            this.user.talk(COLOR_BLANCO, "No se permiten criminales en el ejército imperial!!!", npc.getId());
             return;
         }
         if (this.criminalsKilled < 10) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.criminalsKilled, npc.getId());
+            this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 10 criminales, y solo has matado " + this.criminalsKilled, npc.getId());
             return;
         }
-        if (this.player.stats().ELV < 18) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
+        if (this.user.stats().ELV < 18) {
+            this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 18!!!", npc.getId());
             return;
         }
         if (this.citizensKilled > 0) {
-            this.player.talk(COLOR_BLANCO, "Has asesinado gente inocente, no aceptamos asesinos en las tropas reales!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Has asesinado gente inocente, no aceptamos asesinos en las tropas reales!", npc.getId());
             return;
         }
         this.ArmadaReal = true;
         this.RecompensasReal = (short) (this.criminalsKilled / 100);
-        this.player.talk(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
+        this.user.talk(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
-            short armadura = this.player.clazz().getRoyalArmyArmor(this.player);
-            if (this.player.userInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMap(this.player.pos().map);
-                mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
+            short armadura = this.user.clazz().getRoyalArmyArmor(this.user);
+            if (this.user.userInv().agregarItem(armadura, 1) < 1) {
+                Map mapa = this.server.getMap(this.user.pos().map);
+                mapa.dropItemOnFloor(this.user.pos().x, this.user.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraReal = true;
         }
         if (!this.RecibioExpInicialReal) {
-            this.player.stats().addExp(EXP_AL_UNIRSE);
-            this.player.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.user.stats().addExp(EXP_AL_UNIRSE);
+            this.user.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialReal = true;
-            this.player.checkUserLevel();
+            this.user.checkUserLevel();
         }
-        Log.logEjercitoReal(this.player.getNick());
+        Log.logEjercitoReal(this.user.getNick());
     }
 
     public void darkLegionEnlist(Npc npc) {
-        if (!this.player.isCriminal()) {
-            this.player.talk(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
+        if (!this.user.isCriminal()) {
+            this.user.talk(COLOR_BLANCO, "Lárgate de aqui, bufón!!!! No eres bienvenido!", npc.getId());
             return;
         }
         if (this.FuerzasCaos) {
-            this.player.talk(COLOR_BLANCO, "Ya perteneces a las tropas del Caos!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Ya perteneces a las tropas del Caos!!!", npc.getId());
             return;
         }
         if (this.ArmadaReal) {
-            this.player.talk(COLOR_BLANCO, "Las sombras reinarán en Argentum, lárgate de aqui estúpido ciudadano.!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Las sombras reinarán en Argentum, lárgate de aqui estúpido ciudadano.!!!", npc.getId());
             return;
         }
         // Si era miembro de la Armada Real no se puede enlistar
         if (this.RecibioExpInicialReal) { 
             // Tomamos el valor de ahí: ¿Recibio la experiencia para entrar?
-            this.player.talk(COLOR_BLANCO, "No permitiré que ningún insecto real ingrese ¡Traidor del Rey!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "No permitiré que ningún insecto real ingrese ¡Traidor del Rey!", npc.getId());
             return;
         }
         if (this.citizensKilled < 150) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.citizensKilled + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes matar al menos 150 ciudadanos, y solo has matado " + this.citizensKilled + ". No pierdas tiempo y haz rápido tu trabajo!", npc.getId());
             return;
         }
-        if (this.player.stats().ELV < 25) {
-            this.player.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
+        if (this.user.stats().ELV < 25) {
+            this.user.talk(COLOR_BLANCO, "Para unirte a nuestras fuerzas debes ser al menos nivel 25!!!", npc.getId());
             return;
         }
         this.FuerzasCaos = true;
         this.RecompensasCaos = (short) (this.citizensKilled / 100);
-        this.player.talk(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
+        this.user.talk(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
-            short armadura = this.player.clazz().getDarkLegionArmor(this.player);
-            if (this.player.userInv().agregarItem(armadura, 1) < 1) {
-                Map mapa = this.server.getMap(this.player.pos().map);
-                mapa.dropItemOnFloor(this.player.pos().x, this.player.pos().y, new InventoryObject(armadura, 1));
+            short armadura = this.user.clazz().getDarkLegionArmor(this.user);
+            if (this.user.userInv().agregarItem(armadura, 1) < 1) {
+                Map mapa = this.server.getMap(this.user.pos().map);
+                mapa.dropItemOnFloor(this.user.pos().x, this.user.pos().y, new InventoryObject(armadura, 1));
             }
             this.RecibioArmaduraCaos = true;
         }
         if (!this.RecibioExpInicialCaos) {
-            this.player.stats().addExp(EXP_AL_UNIRSE);
-            this.player.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.user.stats().addExp(EXP_AL_UNIRSE);
+            this.user.sendMessage("Has ganado " + EXP_AL_UNIRSE + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecibioExpInicialCaos = true;
-            this.player.checkUserLevel();
+            this.user.checkUserLevel();
         }
-        Log.logEjercitoCaos(this.player.getNick());
+        Log.logEjercitoCaos(this.user.getNick());
     }
 
     public void royalArmyReward(Npc npc) {
         if (this.criminalsKilled / 100 == this.RecompensasReal) {
-            this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 criminales mas para recibir la proxima!!!", npc.getId());
         } else {
-            this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.player.stats().addExp(EXP_X_100);
-            this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.user.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
+            this.user.stats().addExp(EXP_X_100);
+            this.user.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasReal++;
-            this.player.checkUserLevel();
+            this.user.checkUserLevel();
         }
     }
 
     public void darkLegionReward(Npc npc) {
         if (this.citizensKilled / 100 == this.RecompensasCaos) {
-            this.player.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
+            this.user.talk(COLOR_BLANCO, "Ya has recibido tu recompensa, mata 100 ciudadanos mas para recibir la proxima!!!", npc.getId());
         } else {
-            this.player.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
-            this.player.stats().addExp(EXP_X_100);
-            this.player.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
+            this.user.talk(COLOR_BLANCO, "Aqui tienes tu recompensa noble guerrero!!!", npc.getId());
+            this.user.stats().addExp(EXP_X_100);
+            this.user.sendMessage("Has ganado " + EXP_X_100 + " puntos de experiencia.", FontType.FONTTYPE_FIGHT);
             this.RecompensasCaos++;
-            this.player.checkUserLevel();
+            this.user.checkUserLevel();
         }
     }
 
     public void royalArmyKick() {
         this.ArmadaReal = false;
-        this.player.sendMessage("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
+        this.user.sendMessage("Has sido expulsado de las tropas reales!!!.", FontType.FONTTYPE_FIGHT);
     }
 
     public void darkLegionKick() {
         this.FuerzasCaos = false;
-        this.player.sendMessage("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
+        this.user.sendMessage("Has sido expulsado de las fuerzas del caos!!!.", FontType.FONTTYPE_FIGHT);
     }
     
     public void royalArmyKickForEver(String byWho) { 
 		ArmadaReal = false;
 		Reenlistadas = 200;
-		player.sendMessage(byWho + " te ha expulsado de forma definitiva de la Armada Real.", FontType.FONTTYPE_FIGHT);
+		user.sendMessage(byWho + " te ha expulsado de forma definitiva de la Armada Real.", FontType.FONTTYPE_FIGHT);
     }
     
     public void darkLegionKickForEver(String byWho) { 
     	FuerzasCaos = false;
 		Reenlistadas = 200;
-		player.sendMessage(byWho + " te ha expulsado de forma definitiva de la Legión Oscura.", FontType.FONTTYPE_FIGHT);
+		user.sendMessage(byWho + " te ha expulsado de forma definitiva de la Legión Oscura.", FontType.FONTTYPE_FIGHT);
     }
 
     private final static String[] ROYAL_ARMY_TITLES = {

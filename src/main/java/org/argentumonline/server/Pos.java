@@ -36,11 +36,11 @@ public class Pos implements Constants {
 	}
 
 	public boolean isValid() {
-		return (this.x > 0) && (this.y > 0) && (this.x <= MAPA_ANCHO) && (this.y <= MAPA_ALTO);
+		return (this.x > 0) && (this.y > 0) && (this.x <= MAP_WIDTH) && (this.y <= MAP_HEIGHT);
 	}
 
 	public static boolean isValid(int x, int y) {
-		return (x > 0) && (y > 0) && (x <= MAPA_ANCHO) && (y <= MAPA_ALTO);
+		return (x > 0) && (y > 0) && (x <= MAP_WIDTH) && (y <= MAP_HEIGHT);
 	}
 
 	public boolean inRangoVision(Pos pos) {
