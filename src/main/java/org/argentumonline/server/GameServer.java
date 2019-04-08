@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.argentumonline.server.api.ManagerApi;
 import org.argentumonline.server.forum.ForumManager;
+import org.argentumonline.server.gm.BannIP;
 import org.argentumonline.server.gm.ManagerServer;
 import org.argentumonline.server.gm.Motd;
 import org.argentumonline.server.guilds.GuildManager;
@@ -47,8 +48,8 @@ import org.argentumonline.server.npc.WorkWatcher;
 import org.argentumonline.server.protocol.ConsoleMsgResponse;
 import org.argentumonline.server.protocol.RainToggleResponse;
 import org.argentumonline.server.quest.Quest;
-import org.argentumonline.server.user.User;
 import org.argentumonline.server.user.Spell;
+import org.argentumonline.server.user.User;
 import org.argentumonline.server.util.Feedback;
 import org.argentumonline.server.util.FontType;
 import org.argentumonline.server.util.IniFile;
@@ -105,6 +106,7 @@ public class GameServer implements Constants {
     private ObjectInfoStorage objectInfoStorage;
     private GamblerStats gamblerStats;
     private WorkWatcher workWatcher;
+    private BannIP bannIP;
     private NetworkServer ns;
 
     private Feedback feedback = new Feedback();// FIXME
@@ -149,6 +151,7 @@ public class GameServer implements Constants {
     	this.objectInfoStorage = new ObjectInfoStorage();
     	this.gamblerStats = new GamblerStats();
     	this.workWatcher = new WorkWatcher(this);
+    	this.bannIP = new BannIP(this);
     }
     
     private void init() {
@@ -196,6 +199,10 @@ public class GameServer implements Constants {
 
     public ForumManager getForumManager() {
 		return this.forumManager;
+	}
+    
+    public BannIP getBannIP() {
+		return this.bannIP;
 	}
 
     public NpcLoader getNpcLoader() {
@@ -471,7 +478,7 @@ public class GameServer implements Constants {
         loadBlacksmithingWeapons();
         loadBlacksmithingArmors();
         loadCarpentryObjects();
-        this.manager.loadBannedIPList();
+        getBannIP().loadBannedIPList();
         this.manager.loadAdminsSpawnableCreatures();
         this.manager.loadInvalidNamesList();
         this.manager.loadAdmins();
@@ -489,7 +496,7 @@ public class GameServer implements Constants {
         User user = new User(this);
         user.setChannel(channel);
         
-        if (manager().getBannedIPs().contains(user.getIP())) {
+        if (getBannIP().isIpBanned(user.getIP())) {
         	user.sendError("Su IP se encuentra bloqueada en este servidor.");
         	user.quitGame();
         	return;
@@ -1005,6 +1012,87 @@ public class GameServer implements Constants {
         		}
         	});
         spawnNPCs.stream().forEach(Npc::reSpawnNpc);
+    }
+    
+    
+	/**
+	 * Broadcast a server message
+	 * @param admin sending a server message
+	 * @param message to broadcast to all connected users
+	 */
+	public void sendServerMessage(User admin, String message) {
+		// Comando /RMSG
+		if (!admin.isGM()) {
+			return;
+		}
+		Log.logGM(admin.getUserName(), "Mensaje Broadcast: " + message);
+		if (!message.equals("")) {
+			if (admin.flags().isGM()) {
+				Log.logGM(admin.getUserName(), "Mensaje Broadcast:" + message);
+				sendToAll(new ConsoleMsgResponse(message, FontType.FONTTYPE_TALK.id()));
+			}
+		}
+	}
+	
+    public void sendMessageToAdmins(User admin, String message, FontType fuente) {
+		if (!admin.isGM()) {
+			return;
+		}
+		getUsers().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isGM())
+			.forEach(u -> u.sendMessage(message, fuente));
+    }
+
+    public void sendMessageToRoyalArmy(User admin, String message) {
+		if (!admin.isGM()) {
+			return;
+		}
+		getUsers().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
+					&& (u.flags().isGM() || u.isRoyalArmy()))
+			.forEach(u -> u.sendMessage("ARMADA REAL> " + message, FontType.FONTTYPE_TALK));
+    }
+
+    public void sendMessageToDarkLegion(User admin, String message) {
+		if (!admin.isGM()) {
+			return;
+		}
+		getUsers().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
+					&& (u.flags().isGM() || u.isDarkLegion()))
+			.forEach(u -> u.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK));
+    }
+
+    public void sendMessageToCitizens(User admin, String message) {
+		if (!admin.isGM()) {
+			return;
+		}
+		getUsers().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && !u.isCriminal())
+			.forEach(u -> u.sendMessage("CIUDADANOS> " + message, FontType.FONTTYPE_TALK));
+    }
+
+    public void sendMessageToCriminals(User admin, String message) {
+		if (!admin.isGM()) {
+			return;
+		}
+		getUsers().stream()
+			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isCriminal())
+			.forEach(u -> u.sendMessage("CRIMINALES> " + message, FontType.FONTTYPE_TALK));
+    }
+    
+    public void sendCouncilMessage(User user, String message) {
+    	if (user.isRoyalCouncil()) {
+    		getUsers().stream()
+	    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isRoyalCouncil())
+	    		.forEach(u -> u.sendMessage("(Consejero) " + user.getUserName() + " > " + message,
+	    				FontType.FONTTYPE_CONSEJO));
+    	} else if (user.isChaosCouncil()) {
+    		getUsers().stream()
+	    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isChaosCouncil())
+	    		.forEach(u -> u.sendMessage("(Consejero) " + user.getUserName() + " > " + message,
+    				FontType.FONTTYPE_CONSEJOCAOS));
+    	}
     }
 
     private void saveDayStats() {

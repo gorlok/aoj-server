@@ -559,7 +559,7 @@ public class Map implements Constants {
         this.tiles[npc.pos().x-1][npc.pos().y-1].npc(null);
         tile(x, y).npc(npc);
         
-        area().checkUpdateNeededNpc(this, npc, npc.infoChar().heading());
+        area().checkUpdateNeededNpc(this, npc, npc.infoChar().getHeading());
         area().sendToNPCArea(this, npc, new CharacterMoveResponse(npc.getId(), x, y));
     }
     
@@ -862,7 +862,7 @@ public class Map implements Constants {
         
         area().sendToAreaButIndex(this, newPos.x, newPos.y, user.getId(), 
         		new CharacterMoveResponse(user.getId(), newPos.x, newPos.y));
-        area().checkUpdateNeededUser(this, user, user.infoChar().heading());
+        area().checkUpdateNeededUser(this, user, user.infoChar().getHeading());
     }
     
     public void moveUserSwapping(User user, MapPos newPos, User casper) {
@@ -876,14 +876,14 @@ public class Map implements Constants {
         
     	area().sendToAreaButIndex(this, newPos.x, newPos.y, user.getId(), 
     		new CharacterMoveResponse(user.getId(), newPos.x, newPos.y));
-        area().checkUpdateNeededUser(this, user, user.infoChar().heading());
+        area().checkUpdateNeededUser(this, user, user.infoChar().getHeading());
         
         if (!casper.flags().AdminInvisible) {
         	area().sendToAreaButIndex(this, oldPos.x, oldPos.y, casper.getId(), 
             		new CharacterMoveResponse(casper.getId(), oldPos.x, oldPos.y));
         }
-        casper.sendPacket(new ForceCharMoveResponse(casper.infoChar().heading().value()));
-        area().checkUpdateNeededUser(this, casper, casper.infoChar().heading());
+        casper.sendPacket(new ForceCharMoveResponse(casper.infoChar().getHeading().value()));
+        area().checkUpdateNeededUser(this, casper, casper.infoChar().getHeading());
     }
     
     public boolean isTeleport(byte  x, byte y) {

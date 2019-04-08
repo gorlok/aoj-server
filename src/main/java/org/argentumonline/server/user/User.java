@@ -586,7 +586,7 @@ public class User extends AbstractCharacter {
 				return;
 			}
 			npc.makeStatic();
-			npc.expresar();
+			npc.talk();
 		}
 	}
 
@@ -602,7 +602,7 @@ public class User extends AbstractCharacter {
 				return;
 			}
 			npc.followMaster();
-			npc.expresar();
+			npc.talk();
 		}
 	}
 
@@ -2500,7 +2500,7 @@ public class User extends AbstractCharacter {
 			return;
 		}
 
-		infoChar().heading(heading);
+		infoChar().setHeading(heading);
 		MapPos newPos = pos().copy().moveToHeading(heading);
 		if ( map.isLegalPos(newPos, isSailing(), !isSailing())) {
 			casper = map.getUser(newPos.x, newPos.y);
@@ -2512,7 +2512,7 @@ public class User extends AbstractCharacter {
 					return;
 				} 
 				Heading casperHeading = heading.invertHeading();
-            	casper.infoChar().heading(casperHeading);
+            	casper.infoChar().setHeading(casperHeading);
 				map.moveUserSwapping(this, newPos, casper);
 			} else {
 				map.moveUser(this, newPos);
@@ -3053,15 +3053,15 @@ public class User extends AbstractCharacter {
 	public CharacterCreateResponse characterCreate() {
 		return new CharacterCreateResponse(
 				getId(),
-				this.infoChar.body(),
-				this.infoChar.head(),
-				this.infoChar.heading().value(),
+				this.infoChar.getBody(),
+				this.infoChar.getHead(),
+				this.infoChar.getHeading().value(),
 
 				pos().x, pos().y,
-				this.infoChar.weapon(),
-				this.infoChar.shield(),
-				this.infoChar.helmet(),
-				this.infoChar.fx(),
+				this.infoChar.getWeapon(),
+				this.infoChar.getShield(),
+				this.infoChar.getHelmet(),
+				this.infoChar.getFx(),
 				this.infoChar.loops,
 				userNameAndTagForCC(),
 				(byte) (this.isCriminal() ? 1 : 0),
@@ -3087,14 +3087,14 @@ public class User extends AbstractCharacter {
 	public CharacterChangeResponse characterChange() {
 		return new CharacterChangeResponse(
 				getId(),
-				this.infoChar.body(),
-				this.infoChar.head(),
-				this.infoChar.heading().value(),
+				this.infoChar.getBody(),
+				this.infoChar.getHead(),
+				this.infoChar.getHeading().value(),
 
-				this.infoChar.weapon(),
-				this.infoChar.shield(),
-				this.infoChar.helmet(),
-				this.infoChar.fx(),
+				this.infoChar.getWeapon(),
+				this.infoChar.getShield(),
+				this.infoChar.getHelmet(),
+				this.infoChar.getFx(),
 				this.infoChar.loops);
 	}
 	
@@ -3879,7 +3879,7 @@ public class User extends AbstractCharacter {
 				return;
 			}
 			MapPos attackPos = pos().copy();
-			attackPos.moveToHeading(this.infoChar.heading());
+			attackPos.moveToHeading(this.infoChar.getHeading());
 			// Exit if not legal
 			if (!attackPos.isValid()) {
 				sendWave(SOUND_SWING);
@@ -4319,7 +4319,7 @@ public class User extends AbstractCharacter {
 		this.skills().freeSkillPts = 10;
 
 		this.passwordHash = Security.hashPassword(userName, password);
-		this.infoChar.heading(Heading.SOUTH);
+		this.infoChar.setHeading(Heading.SOUTH);
 		this.infoChar.ramdonBodyAndHead(race(), gender());
 		this.infoChar.weapon = NingunArma;
 		this.infoChar.shield = NingunEscudo;

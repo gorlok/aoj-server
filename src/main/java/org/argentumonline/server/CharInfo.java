@@ -78,39 +78,39 @@ public class CharInfo implements Constants {
 		this.heading = Heading.NONE;
 	}
 
-	public short head() {
+	public short getHead() {
 		return this.head;
 	}
 
-	public short body() {
+	public short getBody() {
 		return this.body;
 	}
 
-	public short weapon() {
+	public short getWeapon() {
 		return this.weapon;
 	}
 
-	public short shield() {
+	public short getShield() {
 		return this.shield;
 	}
 
-	public short helmet() {
+	public short getHelmet() {
 		return this.helmet;
 	}
 
-	public short fx() {
+	public short getFx() {
 		return this.fx;
 	}
 
-	public short loops() {
+	public short getLoops() {
 		return this.loops;
 	}
 
-	public Heading heading() {
+	public Heading getHeading() {
 		return this.heading;
 	}
 
-	public void heading(Heading heading) {
+	public void setHeading(Heading heading) {
 		this.heading = heading;
 	}
 

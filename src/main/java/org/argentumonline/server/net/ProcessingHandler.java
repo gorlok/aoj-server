@@ -347,7 +347,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case CouncilMessage:
-			server.manager().sendCouncilMessage(user, ((CouncilMessageRequest)packet).chat);
+			server.sendCouncilMessage(user, ((CouncilMessageRequest)packet).chat);
 			break;
 			
 		case Reward:
@@ -465,29 +465,29 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case GMMessage:
-			server.manager().sendMessageToAdmins(user,
+			server.sendMessageToAdmins(user,
 					user.getUserName() + "> " + ((GMMessageRequest)packet).message, 
 					FontType.FONTTYPE_GMMSG);
 			break;
 			
 		case ServerMessage:
-			server.manager().sendServerMessage(user, ((ServerMessageRequest)packet).message);
+			server.sendServerMessage(user, ((ServerMessageRequest)packet).message);
 			break;
 			
 		case RoyalArmyMessage:
-			server.manager().sendMessageToRoyalArmy(user, ((RoyalArmyMessageRequest)packet).message);
+			server.sendMessageToRoyalArmy(user, ((RoyalArmyMessageRequest)packet).message);
 			break;
 			
 		case ChaosLegionMessage:
-			server.manager().sendMessageToDarkLegion(user, ((ChaosLegionMessageRequest)packet).message);
+			server.sendMessageToDarkLegion(user, ((ChaosLegionMessageRequest)packet).message);
 			break;
 			
 		case CitizenMessage:
-			server.manager().sendMessageToCitizens(user, ((CitizenMessageRequest)packet).message);
+			server.sendMessageToCitizens(user, ((CitizenMessageRequest)packet).message);
 			break;
 			
 		case CriminalMessage:
-			server.manager().sendMessageToCriminals(user, ((CriminalMessageRequest)packet).message);
+			server.sendMessageToCriminals(user, ((CriminalMessageRequest)packet).message);
 			break;
 			
 		case CreaturesInMap:
@@ -679,7 +679,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case UnbanChar:
-			server.manager().unbanUser(user, ((UnbanCharRequest)packet).userName);
+			server.getBannIP().unbanUser(user, ((UnbanCharRequest)packet).userName);
 			break;
 			
 		case BanIP:
@@ -691,11 +691,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case BannedIPList:
-			server.manager().bannedIPList(user);
+			server.getBannIP().bannedIPList(user);
 			break;
 			
 		case BannedIPReload:
-			server.manager().bannedIPReload(user);
+			server.getBannIP().bannedIPReload(user);
 			break;		
 			
 		case Kick:
@@ -795,7 +795,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 					
 		case ResetNPCInventory:
-			server.manager().resetNPCInventory(user);
+			server.manager().resetNpcInventory(user);
 			break;
 			
 		case ImperialArmour:
@@ -964,20 +964,20 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 
 	private void handleUnbanIp(User admin, UnbanIPRequest packet) {
 		String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
-		GameServer.instance().manager().unbanIP(admin, bannedIP);
+		GameServer.instance().getBannIP().unbanIP(admin, bannedIP);
 	}
 
 	private void handleBanIp(User admin, BanIPRequest packet) {
 		if (packet.byIP) {
 			String bannedIP = "" + (packet.ip1&0xFF) + "." + (packet.ip2&0xFF) + "." + (packet.ip3&0xFF) + "." + (packet.ip4&0xFF);
-			GameServer.instance().manager().banIP(admin, bannedIP, packet.reason);
+			GameServer.instance().getBannIP().banIP(admin, bannedIP, packet.reason);
 		} else {
-			GameServer.instance().manager().banIPUser(admin, packet.userName, packet.reason);
+			GameServer.instance().getBannIP().banIPUser(admin, packet.userName, packet.reason);
 		}
 	}
 
 	private void handleBanChar(User admin, BanCharRequest packet) {
-		GameServer.instance().manager().banUser(admin, packet.userName, packet.reason);
+		GameServer.instance().getBannIP().banUser(admin, packet.userName, packet.reason);
 	}
 
 	private void handleJail(User admin, JailRequest packet) {

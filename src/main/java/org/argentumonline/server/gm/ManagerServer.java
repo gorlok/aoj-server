@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,12 +75,10 @@ public class ManagerServer {
     /** User names than asked for help */
     private List<String> helpRequests = new ArrayList<>();
     
-    private List<String> bannedIPs = new ArrayList<>();
-
     private short [] spawnList;
     private String [] spawnListNames;
 
-    GameServer server;
+    private GameServer server;
 
     public ManagerServer(GameServer server) {
     	this.server = server;
@@ -222,108 +219,6 @@ public class ManagerServer {
     	this.helpRequests().clear();
 		admin.sendMessage("Todos los /GM pendientes han sido eliminados.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getUserName(), "/BORRAR SOS");
-	}
-
-    public List<String> getBannedIPs() {
-        return this.bannedIPs;
-    }
-    
-	public void banIPUser(User admin, String userName, String reason) {
-		// Comando /BANIP
-		if (!admin.isGod() && !admin.isAdmin()) {
-			return;
-		}
-		User user = this.server.userByName(userName);
-		if (user == null) {
-			admin.sendMessage("Usuario desconectado.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		String bannedIP = user.getIP();
-		banUser(admin, userName, reason);
-		banIP(admin, bannedIP, reason);
-	}
-
-	public void banIP(User admin, String bannedIP, String reason) {
-		// Comando /BANIP
-		if (!admin.isGod() && !admin.isAdmin()) {
-			return;
-		}
-		var bannedIPs = getBannedIPs();
-		if (bannedIPs.contains(bannedIP)) {
-			admin.sendMessage("La IP " + bannedIP + " ya se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		bannedIPs.add(bannedIP);
-		saveBannedIPList();
-		sendMessageToAdmins(admin, admin.getUserName() + " Baneo la IP " + bannedIP, FontType.FONTTYPE_SERVER);
-		
-        // Find every user with that ip and ban him!
-		server.getUsers().stream().forEach(p -> {
-			if (p.getIP() == bannedIP) {
-				banUser(admin, p.getUserName(), "Banned IP " + bannedIP + " por: " + reason);
-			}
-		});
-	}
-
-	public void unbanIP(User admin, String bannedIP) {
-		// Comando /UNBANIP
-		if (!admin.isGod() && !admin.isAdmin()) {
-			return;
-		}
-		Log.logGM(admin.getUserName(), "/UNBANIP " + bannedIP);
-		var bannedIPs = getBannedIPs();
-		if (bannedIPs.contains(bannedIP)) {
-			bannedIPs.remove(bannedIP);
-			saveBannedIPList();
-			admin.sendMessage("La IP " + bannedIP + " se ha quitado de la lista de bans.", FontType.FONTTYPE_INFO);
-			sendMessageToAdmins(admin, admin.getUserName() + " ha quitado la IP " + bannedIP + " de la lista de bans.", 
-					FontType.FONTTYPE_SERVER);
-		} else {
-			admin.sendMessage("La IP " + bannedIP + " NO se encuentra en la lista de bans.", FontType.FONTTYPE_INFO);
-		}
-	}
-	
-	public void bannedIPList(User admin) {
-		// Command /BANIPLIST
-		if (!admin.isGM()) {
-			return;
-		}
-		Log.logGM(admin.getUserName(), "/BANIPLIST");
-	    
-		if (getBannedIPs().isEmpty()) {
-			admin.sendMessage("No hay banned IPs.", FontType.FONTTYPE_INFO);			
-		} else {
-			admin.sendMessage("Banned IPs: " + String.join(", ", getBannedIPs()), FontType.FONTTYPE_INFO);
-		}
-	}
-
-	public void bannedIPReload(User admin) {
-		// Command /BANIPRELOAD
-		if (!admin.isGM()) {
-			return;
-		}
-		Log.logGM(admin.getUserName(), "/BANIPRELOAD");
-
-		loadBannedIPList();
-	}
-	
-	public void loadBannedIPList() {
-		final String fileName = Constants.DAT_DIR + File.separator + "BanIps.dat";
-		this.bannedIPs.clear();
-		try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-			stream.forEach( line -> this.bannedIPs.add(line) );
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-	}
-	
-	public void saveBannedIPList() {
-		final String fileName = Constants.DAT_DIR + File.separator + "BanIps.dat";
-		try {
-			Files.write(Paths.get(fileName), String.join("\n", this.bannedIPs).getBytes());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void saveGmComment(User admin, String comment) {
@@ -980,7 +875,7 @@ public class ManagerServer {
 		Log.logGM(admin.getUserName(), "/MASSDEST ");
 	}
 
-	public void resetNPCInventory(User admin) {
+	public void resetNpcInventory(User admin) {
 		// Resetea el inventario
 		// Comando /RESETINV
 		if (!admin.isGM()) {
@@ -994,86 +889,6 @@ public class ManagerServer {
 		admin.sendMessage("El inventario del npc " + npc.getName() + " ha sido vaciado.", FontType.FONTTYPE_INFO);
 		Log.logGM(admin.getUserName(), "/RESETINV " + npc.toString());
 	}
-
-	/**
-	 * Broadcast a server message
-	 * @param admin sending a server message
-	 * @param message to broadcast to all connected users
-	 */
-	public void sendServerMessage(User admin, String message) {
-		// Comando /RMSG
-		if (!admin.isGM()) {
-			return;
-		}
-		Log.logGM(admin.getUserName(), "Mensaje Broadcast: " + message);
-		if (!message.equals("")) {
-			if (admin.flags().isGM()) {
-				Log.logGM(admin.getUserName(), "Mensaje Broadcast:" + message);
-				server.sendToAll(new ConsoleMsgResponse(message, FontType.FONTTYPE_TALK.id()));
-			}
-		}
-	}
-	
-    public void sendMessageToAdmins(User admin, String message, FontType fuente) {
-		if (!admin.isGM()) {
-			return;
-		}
-		server.getUsers().stream()
-			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isGM())
-			.forEach(u -> u.sendMessage(message, fuente));
-    }
-
-    public void sendMessageToRoyalArmy(User admin, String message) {
-		if (!admin.isGM()) {
-			return;
-		}
-		server.getUsers().stream()
-			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
-					&& (u.flags().isGM() || u.isRoyalArmy()))
-			.forEach(u -> u.sendMessage("ARMADA REAL> " + message, FontType.FONTTYPE_TALK));
-    }
-
-    public void sendMessageToDarkLegion(User admin, String message) {
-		if (!admin.isGM()) {
-			return;
-		}
-		server.getUsers().stream()
-			.filter(u -> u != null && u.getId() > 0 && u.isLogged()
-					&& (u.flags().isGM() || u.isDarkLegion()))
-			.forEach(u -> u.sendMessage("LEGION OSCURA> " + message, FontType.FONTTYPE_TALK));
-    }
-
-    public void sendMessageToCitizens(User admin, String message) {
-		if (!admin.isGM()) {
-			return;
-		}
-		server.getUsers().stream()
-			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && !u.isCriminal())
-			.forEach(u -> u.sendMessage("CIUDADANOS> " + message, FontType.FONTTYPE_TALK));
-    }
-
-    public void sendMessageToCriminals(User admin, String message) {
-		if (!admin.isGM()) {
-			return;
-		}
-		server.getUsers().stream()
-			.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isCriminal())
-			.forEach(u -> u.sendMessage("CRIMINALES> " + message, FontType.FONTTYPE_TALK));
-    }
-    
-    public void sendCouncilMessage(User user, String message) {
-    	if (user.isRoyalCouncil()) {
-    		server.getUsers().stream()
-	    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isRoyalCouncil())
-	    		.forEach(u -> u.sendMessage("(Consejero) " + user.getUserName() + " > " + message,
-	    				FontType.FONTTYPE_CONSEJO));
-    	} else if (user.isChaosCouncil()) {
-    		server.getUsers().stream()
-    		.filter(u -> u != null && u.getId() > 0 && u.isLogged() && u.isChaosCouncil())
-    		.forEach(u -> u.sendMessage("(Consejero) " + user.getUserName() + " > " + message,
-    				FontType.FONTTYPE_CONSEJOCAOS));
-    	}
-    }
 
 	public void summonChar(User admin, String userName) {
 		// Comando /SUM usuario
@@ -1095,58 +910,6 @@ public class ManagerServer {
 			Log.logGM(admin.getUserName(), "/SUM " + user.getUserName() +
 					" Map:" + admin.pos().map + " X:" + admin.pos().x + " Y:" + admin.pos().y);
 		}
-	}
-
-	public void banUser(User admin, String userName, String reason) {
-		// Comando /BAN
-		if (!admin.isGod() && !admin.isAdmin()) {
-			return;
-		}
-		User user = this.server.userByName(userName);
-		if (user == null) {
-			if (User.userExists(userName)) {
-				user = new User(server);
-				try {
-					user.userStorage.loadUserFromStorageOffline(userName);
-				} catch (IOException ignore) {
-					return;
-				}
-			} else {
-				admin.sendMessage("El usuario no existe.", FontType.FONTTYPE_INFO);
-				return;							
-			}
-		}
-		if (user.flags().privileges > admin.flags().privileges) {
-			admin.sendMessage("No puedes /BAN a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
-			return;
-		}
-		sendMessageToAdmins(admin, admin.getUserName() + " /BAN a " + user.getUserName() + " por: " + reason, FontType.FONTTYPE_SERVER);
-        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-		UserStorage.addPunishment(userName, admin.getUserName() + ">> /BAN por: " + reason + ". " + sdf.format(new java.util.Date()));
-		user.sendError("Has sido expulsado permanentemente del servidor.");
-		user.banned(admin.getUserName(), reason);
-		if (user.isLogged()) {
-			user.quitGame();
-		}
-		UserStorage.banUser(user.getUserName(), admin.getUserName(), reason);
-		Log.logGM(admin.getUserName(), "/BAN " + userName + " por: " + reason);
-	}
-
-	public void unbanUser(User admin, String userName) {
-		// Comando /UNBAN
-		if (!admin.isGod() && !admin.isAdmin()) {
-			return;
-		}
-		if (!UserStorage.isUserBanned(userName)) {
-			admin.sendMessage("No se puede perdonar, porque el usuario no está expulsado.", FontType.FONTTYPE_INFO);
-			return;			
-		}
-        var sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-		UserStorage.addPunishment(userName, admin.getUserName() + ">> /UNBAN " + sdf.format(new java.util.Date()));
-		UserStorage.unBanUser(userName);
-		Log.logGM(admin.getUserName(), "/UNBAN a " + userName);
-		admin.sendMessage(userName + " unbanned.", FontType.FONTTYPE_SERVER);
-		sendMessageToAdmins(admin, admin.getUserName() + " /UNBAN " + userName + ".", FontType.FONTTYPE_SERVER);
 	}
 
 	public void kickUser(User admin, String userName) {

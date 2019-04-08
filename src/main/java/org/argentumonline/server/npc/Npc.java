@@ -570,19 +570,19 @@ End Enum
     public CharacterCreateResponse characterCreate() {
     	return new CharacterCreateResponse(
 			getId(),
-			this.infoChar.body(),
-			this.infoChar.head(),
+			this.infoChar.getBody(),
+			this.infoChar.getHead(),
 
-			this.infoChar.heading().value(),
+			this.infoChar.getHeading().value(),
 			pos().x,
 			pos().y,
 
-			this.infoChar.weapon(),
-			this.infoChar.shield(),
-			this.infoChar.helmet(),
+			this.infoChar.getWeapon(),
+			this.infoChar.getShield(),
+			this.infoChar.getHelmet(),
 
-			this.infoChar.fx(),
-			this.infoChar.loops(),
+			this.infoChar.getFx(),
+			this.infoChar.getLoops(),
 
 			"",
 			(byte)0,
@@ -804,7 +804,7 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.heading(heading);
+                this.infoChar.setHeading(heading);
                 mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             }
@@ -825,7 +825,7 @@ End Enum
                     return;
                 }
                 // Update map and user pos
-                this.infoChar.heading(heading);
+                this.infoChar.setHeading(heading);
                 mapa.moveNpc(this, newPos.x, newPos.y);
                 this.setPos(newPos);
             } else {
@@ -896,7 +896,7 @@ End Enum
         this.targetNpc  = null;
     }
 
-    public Npc expresar() {
+    public Npc talk() {
         if (this.petUserOwner == null) {
 			return this;
 		}
@@ -930,11 +930,11 @@ End Enum
         this.flags().set(FLAG_HOSTIL, true);
     }
 
-    public void cambiarDir(Heading dir) {
+    public void changeHeading(Heading heading) {
         // ChangeNPCChar
         Map mapa = this.server.getMap(pos().map);
         if (mapa != null) {
-            this.infoChar.heading(dir);
+            this.infoChar.setHeading(heading);
             mapa.sendToArea(pos().x, pos().y, characterCreate());
         }
     }
@@ -969,21 +969,21 @@ End Enum
                         // ¿ES CRIMINAL?
                     	if (npcType() != NpcType.NPCTYPE_GUARDAS_CHAOS) {
                     		if (user.isCriminal()) {
-                    			cambiarDir(dir);
+                    			changeHeading(dir);
                     			npcAtacaUser(user);
                     			return;
                     		} else if (this.attackedBy.equalsIgnoreCase(user.getUserName()) && !this.flags().get(FLAG_FOLLOW)) {
-                    			cambiarDir(dir);
+                    			changeHeading(dir);
                     			npcAtacaUser(user);
                     			return;
                     		}
                     	} else {
                     		if (!user.isCriminal()) {
-                    			cambiarDir(dir);
+                    			changeHeading(dir);
                     			npcAtacaUser(user);
                     			return;
                     		} else if (this.attackedBy.equalsIgnoreCase(user.getUserName()) && !this.flags().get(FLAG_FOLLOW)) {
-                    			cambiarDir(dir);
+                    			changeHeading(dir);
                     			npcAtacaUser(user);
                     			return;
                     		}
@@ -1024,7 +1024,7 @@ End Enum
                         if (isMagical()) {
                             npcCastSpell(user);
                         }
-                        cambiarDir(dir);
+                        changeHeading(dir);
                         npcAtacaUser(user); // ok
                         return;
                     }
@@ -1051,7 +1051,7 @@ End Enum
                         if (isMagical()) {
                             npcCastSpell(user);
                         }
-                        cambiarDir(dir);
+                        changeHeading(dir);
                         npcAtacaUser(user); // ok
                         return;
                     }
