@@ -42,7 +42,7 @@ import org.argentumonline.server.anticheat.SpeedHackException;
 import org.argentumonline.server.areas.AreasAO;
 import org.argentumonline.server.guilds.Guild;
 import org.argentumonline.server.guilds.GuildUser;
-import org.argentumonline.server.inventory.Inventory;
+import org.argentumonline.server.inventory.BankInventory;
 import org.argentumonline.server.inventory.InventoryObject;
 import org.argentumonline.server.inventory.UserInventory;
 import org.argentumonline.server.map.Heading;
@@ -50,8 +50,8 @@ import org.argentumonline.server.map.Map;
 import org.argentumonline.server.map.MapObject;
 import org.argentumonline.server.map.MapPos;
 import org.argentumonline.server.map.Terrain;
-import org.argentumonline.server.map.Zone;
 import org.argentumonline.server.map.Tile.Trigger;
+import org.argentumonline.server.map.Zone;
 import org.argentumonline.server.net.ServerPacket;
 import org.argentumonline.server.npc.Npc;
 import org.argentumonline.server.npc.NpcCashier;
@@ -60,14 +60,10 @@ import org.argentumonline.server.npc.NpcMerchant;
 import org.argentumonline.server.npc.NpcTrainer;
 import org.argentumonline.server.npc.NpcType;
 import org.argentumonline.server.protocol.AttributesResponse;
-import org.argentumonline.server.protocol.BankEndResponse;
-import org.argentumonline.server.protocol.BankInitResponse;
-import org.argentumonline.server.protocol.BankOKResponse;
 import org.argentumonline.server.protocol.BlindNoMoreResponse;
 import org.argentumonline.server.protocol.BlockPositionResponse;
 import org.argentumonline.server.protocol.BlockedWithShieldOtherResponse;
 import org.argentumonline.server.protocol.BlockedWithShieldUserResponse;
-import org.argentumonline.server.protocol.ChangeBankSlotResponse;
 import org.argentumonline.server.protocol.ChangeInventorySlotResponse;
 import org.argentumonline.server.protocol.ChangeMapResponse;
 import org.argentumonline.server.protocol.ChangeUserTradeSlotResponse;
@@ -202,7 +198,7 @@ public class User extends AbstractCharacter {
 
 	UserFaction faction;
 
-	UserCounters counters = new UserCounters();
+	private UserCounters counters = new UserCounters();
 
 	public UserTrade userTrade;
 
@@ -210,8 +206,8 @@ public class User extends AbstractCharacter {
 
 	private UserQuest quest;
 
-	UserInventory userInv;
-	Inventory bankInv;
+	private UserInventory userInv;
+	private BankInventory bankInv;
 	
 	// TODO
     public short partyIndex = 0;  // index a la party q es miembro
@@ -255,7 +251,7 @@ public class User extends AbstractCharacter {
 		this.spells = new UserSpells(this.server, this);
 		this.quest = new UserQuest(this.server);
 		this.userInv = new UserInventory(this.server, this, MAX_USER_INVENTORY_SLOTS);
-		this.bankInv = new Inventory(this.server, MAX_BANCOINVENTORY_SLOTS);
+		this.bankInv = new BankInventory(this.server, this, MAX_BANCOINVENTORY_SLOTS);
 		this.faction = new UserFaction(this.server, this);
 	}
 	
@@ -283,7 +279,7 @@ public class User extends AbstractCharacter {
 		return this.server.getObjectInfoStorage().getInfoObjeto(oid);
 	}
 
-	public Inventory getBankInventory() {
+	public BankInventory getBankInventory() {
 		return this.bankInv;
 	}
 
@@ -418,7 +414,7 @@ public class User extends AbstractCharacter {
 		return this.flags;
 	}
 
-	public UserCounters counters() {
+	public UserCounters getCounters() {
 		return this.counters;
 	}
 
@@ -431,7 +427,7 @@ public class User extends AbstractCharacter {
 		return this.faction;
 	}
 
-	public UserInventory userInv() {
+	public UserInventory getUserInv() {
 		return this.userInv;
 	}
 
@@ -559,7 +555,7 @@ public class User extends AbstractCharacter {
 				stats().usuariosMatados,
 				(short) stats().NPCsMuertos,
 				this.clazz.id(),
-				(int) this.counters.Pena));
+				(int) this.getCounters().Pena));
 
 		sendUserAttributes();
 		sendSkills();
@@ -675,24 +671,6 @@ public class User extends AbstractCharacter {
 		}
 	}
 
-	public void bankStart() {
-		// Comando /BOVEDA
-		// Abrir bóveda del banco.
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!checkAlive()) {
-			return;
-		}
-		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
-		if (npc != null) {
-			if (npc.isBankCashier()) {
-				iniciarDeposito();
-			} else {
-				sendMessage("No te puedo ayudar. Busca al banquero.", FontType.FONTTYPE_INFO);
-			}
-		}
-	}
-
-
 	public Npc getNearNpcSelected(int distance) {
 		// Se asegura que el target es un npc
 		if (flags().TargetNpc == 0) {
@@ -725,199 +703,6 @@ public class User extends AbstractCharacter {
 			sendMessage(message, FontType.FONTTYPE_INFO);
 			return false;
 		}
-	}
-
-	public void bankDepositItem(short slot, int amount) {
-		// Comando DEPO
-		// Depositar un item en la bóveda del banco.
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!checkAlive()) {
-			return;
-		}
-		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
-		if (npc != null) {
-			// ¿El Npc puede comerciar?
-			if (npc.isBankCashier()) {
-				// User deposita el item del slot rdata
-				userDepositaItem(slot, amount);
-			} else {
-				sendMessage("No te puedo ayudar. Busca al banquero.", FontType.FONTTYPE_INFO);
-			}
-		}
-	}
-
-	public void bankExtractItem(short slot, int cant) {
-		// Comando RETI
-		// Retirar un item de la bóveda del banco.
-		// ¿Esta el user muerto? Si es asi no puede comerciar
-		if (!checkAlive()) {
-			return;
-		}
-		Npc npc = getNearNpcSelected(DISTANCE_CASHIER);
-		if (npc != null) {
-			// ¿El Npc puede comerciar?
-			if (npc.isBankCashier()) {
-				// User retira el item del slot rdata
-				userRetiraItem(slot, cant);
-			} else {
-				sendMessage("No te puedo ayudar. Busca al banquero.", FontType.FONTTYPE_INFO);
-			}
-		}
-	}
-
-	private void userDepositaItem(short slot, int cant) {
-		// El usuario deposita un item
-		sendUpdateUserStats();
-		if (this.userInv.getObject(slot).cant > 0 && !this.userInv.getObject(slot).equipado) {
-			if (cant > 0 && cant > this.userInv.getObject(slot).cant) {
-				cant = this.userInv.getObject(slot).cant;
-			}
-			// Agregamos el obj que compro al inventario
-			userDejaObj(slot, cant);
-			// Actualizamos el inventario del usuario
-			sendInventoryToUser();
-			// Actualizamos el inventario del banco
-			updateBankUserInv();
-			// Actualizamos la ventana del banco
-			sendBankOk();
-		}
-	}
-
-	private void userDejaObj(short slot, int cant) {
-		if (cant < 1) {
-			return;
-		}
-		short objid = this.userInv.getObject(slot).objid;
-		// ¿Ya tiene un objeto de este tipo?
-		int slot_inv = 0;
-		for (int i = 1; i <= this.bankInv.getSize(); i++) {
-			if (this.bankInv.getObject(i).objid == objid && this.bankInv.getObject(i).cant + cant <= MAX_INVENTORY_OBJS) {
-				slot_inv = i;
-				break;
-			}
-		}
-		// Sino se fija por un slot vacio antes del slot devuelto
-		if (slot_inv == 0) {
-			slot_inv = this.bankInv.getEmptySlot();
-		}
-		if (slot_inv == 0) {
-			sendMessage("No tienes mas espacio en el banco!!", FontType.FONTTYPE_INFO);
-			return;
-		}
-		// Mete el obj en el slot
-		this.bankInv.getObject(slot_inv).objid = objid;
-		this.bankInv.getObject(slot_inv).cant += cant;
-		this.userInv.quitarUserInvItem(slot, cant);
-	}
-
-	private void userRetiraItem(short slot, int cant) {
-		if (cant < 1) {
-			return;
-		}
-		sendUpdateUserStats();
-		if (this.bankInv.getObject(slot).cant > 0) {
-			if (cant > this.bankInv.getObject(slot).cant) {
-				cant = this.bankInv.getObject(slot).cant;
-			}
-			// Agregamos el obj que compro al inventario
-			userReciveObj(slot, cant);
-			// Actualizamos el inventario del usuario
-			sendInventoryToUser();
-			// Actualizamos el banco
-			updateBankUserInv();
-			// ventana update
-			sendBankOk();
-		}
-
-	}
-
-	private void userReciveObj(short slot, int cant) {
-		if (this.bankInv.getObject(slot).cant <= 0) {
-			return;
-		}
-		short objid = this.bankInv.getObject(slot).objid;
-		// ¿Ya tiene un objeto de este tipo?
-		int slot_inv = 0;
-		for (short i = 1; i <= this.userInv.getSize(); i++) {
-			if (this.userInv.getObject(i).objid == objid && this.userInv.getObject(i).cant + cant <= MAX_INVENTORY_OBJS) {
-				slot_inv = i;
-				break;
-			}
-		}
-		// Sino se fija por un slot vacio
-		if (slot_inv == 0) {
-			slot_inv = this.userInv.getEmptySlot();
-		}
-		if (slot_inv == 0) {
-			sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
-			return;
-		}
-		// Mete el obj en el slot
-		if (this.userInv.getObject(slot_inv).cant + cant <= MAX_INVENTORY_OBJS) {
-			this.userInv.getObject(slot_inv).objid = objid;
-			this.userInv.getObject(slot_inv).cant += cant;
-			quitarBancoInvItem(slot, cant);
-		} else {
-			sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
-		}
-	}
-
-	private void quitarBancoInvItem(short slot, int cant) {
-		// Quita un Obj
-		this.bankInv.getObject(slot).cant -= cant;
-		if (this.bankInv.getObject(slot).cant <= 0) {
-			this.bankInv.getObject(slot).objid = 0;
-			this.bankInv.getObject(slot).cant = 0;
-		}
-	}
-
-	private void sendBankOk() {
-		sendPacket(new BankOKResponse());
-	}
-
-	private void iniciarDeposito() {
-		// Hacemos un Update del inventario del usuario
-		updateBankUserInv();
-		// Actualizamos el dinero
-		sendUpdateUserStats();
-
-		sendPacket(new BankInitResponse());
-
-		flags().Comerciando = true;
-	}
-
-	private void updateBankUserInv(short slot) {
-		// Actualiza un solo slot
-		// Actualiza el inventario
-		if (this.bankInv.getObject(slot).objid > 0) {
-			sendBanObj(slot, this.bankInv.getObject(slot));
-		} else {
-			sendPacket(new ChangeBankSlotResponse((byte) slot, (short) 0, "", (short)0, (short)0, (byte)0, (short)0, (short)0, (short)0, 0));
-		}
-	}
-
-	private void updateBankUserInv() {
-		// Actualiza todos los slots
-		for (short i = 1; i <= MAX_BANCOINVENTORY_SLOTS; i++) {
-			// Actualiza el inventario
-			updateBankUserInv(i);
-		}
-	}
-
-	private void sendBanObj(short slot, InventoryObject obj_inv) {
-		if (obj_inv != null) {
-			ObjectInfo info = findObj(obj_inv.objid);
-			sendPacket(new ChangeBankSlotResponse(
-					(byte) slot, info.ObjIndex, info.Nombre, (short)obj_inv.cant, info.GrhIndex,
-					info.objType.value(), info.MaxHIT, info.MinHIT, info.MaxDef, info.Valor));
-		}
-	}
-
-	public void bankEnd() {
-		// Comando FINBAN
-		// User sale del modo BANCO
-		flags().Comerciando = false;
-		sendPacket(new BankEndResponse());
 	}
 
 	public void changePassword(String newPassword) {
@@ -1401,7 +1186,7 @@ public class User extends AbstractCharacter {
 	    
 	    int puntosDomar = stats().attr().get(Attribute.CHARISMA) * skills().get(Skill.SKILL_Domar);
 	    int puntosRequeridos = npc.domable();
-	    if (clazz() == Clazz.Druid && userInv().tieneAnilloEquipado() && userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
+	    if (clazz() == Clazz.Druid && getUserInv().tieneAnilloEquipado() && getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
 	    	puntosRequeridos = (int) (puntosRequeridos * 0.8);
 	    }
 
@@ -1757,7 +1542,7 @@ public class User extends AbstractCharacter {
 
 
 			case SKILL_Magia:
-				if (!counters().intervaloPermiteLanzarSpell()) {
+				if (!getCounters().intervaloPermiteLanzarSpell()) {
 					return;
 				}
 				if (flags().isCounselor())
@@ -1773,7 +1558,7 @@ public class User extends AbstractCharacter {
 
 
 			case SKILL_Pesca:
-				if (!counters().intervaloPermiteTrabajar()) {
+				if (!getCounters().intervaloPermiteTrabajar()) {
 					return;
 				}
 				if (!this.userInv.tieneArmaEquipada()) {
@@ -1811,7 +1596,7 @@ public class User extends AbstractCharacter {
 
 			case SKILL_Robar:
 				if (!mapa.isSafeMap()) {
-					if (!counters().intervaloPermiteTrabajar()) {
+					if (!getCounters().intervaloPermiteTrabajar()) {
 						return;
 					}
 					mapa.lookAtTile(this, x, y);
@@ -1840,7 +1625,7 @@ public class User extends AbstractCharacter {
 
 
 			case SKILL_Talar:
-				if (!counters().intervaloPermiteTrabajar()) {
+				if (!getCounters().intervaloPermiteTrabajar()) {
 					return;
 				}
 				if (!this.userInv.tieneArmaEquipada()) {
@@ -1870,7 +1655,7 @@ public class User extends AbstractCharacter {
 
 
 			case SKILL_Mineria:
-				if (!counters().intervaloPermiteTrabajar()) {
+				if (!getCounters().intervaloPermiteTrabajar()) {
 					return;
 				}
 				if (!this.userInv.tieneArmaEquipada()) {
@@ -2037,7 +1822,7 @@ public class User extends AbstractCharacter {
 		}
 		flags().Meditando = !flags().Meditando;
 		if (flags().Meditando) {
-			this.counters.tInicioMeditar = System.currentTimeMillis();
+			this.getCounters().tInicioMeditar = System.currentTimeMillis();
 			int segs = (TIEMPO_INICIO_MEDITAR / 1000);
 			sendMessage("Te estás concentrando. En " + segs + " segundos comenzarás a meditar.", FontType.FONTTYPE_INFO);
 			this.infoChar.loops = LoopAdEternum;
@@ -2314,7 +2099,7 @@ public class User extends AbstractCharacter {
 						// Extensión de AOJ - 16/08/2004
 						// Doble clic sobre el banquero hace /BOVEDA
 						if (checkNpcNear(npc, DISTANCE_CASHIER)) {
-							iniciarDeposito();
+							getBankInventory().iniciarDeposito();
 						}
 					} else if (npc.isPriest() || npc.isPriestNewbies()) {
 						// Extensión de AOJ - 01/02/2007
@@ -2444,9 +2229,9 @@ public class User extends AbstractCharacter {
 			return;
 		}
 
-		if (this.counters.Saliendo) {
+		if (this.getCounters().Saliendo) {
 			sendMessage("/SALIR cancelado!.", FontType.FONTTYPE_INFO);
-			this.counters.Saliendo = false;
+			this.getCounters().Saliendo = false;
 		}
 
 		if (flags().Paralizado) {
@@ -2777,7 +2562,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void revive() {
-		if (this.counters.Saliendo) {
+		if (this.getCounters().Saliendo) {
 			return;
 		}
 		Map m = this.server.getMap(pos().map);
@@ -2912,7 +2697,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void sendToJail(int jailTimeMinutes, String adminName) {
-		this.counters.Pena = jailTimeMinutes;
+		this.getCounters().Pena = jailTimeMinutes;
 		if (warpMe(WP_PRISION.map, WP_PRISION.x, WP_PRISION.y, true)) {
 			if (adminName == null) {
 				sendMessage("Has sido encarcelado. Permanecerás en la carcel " + jailTimeMinutes + " minutos.",
@@ -2925,7 +2710,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void releaseFromJail() {
-		counters().Pena = 0;
+		getCounters().Pena = 0;
 		warpMe(WP_LIBERTAD.map, WP_LIBERTAD.x, WP_LIBERTAD.y, true);
 		sendMessage("Has sido liberado!", FontType.FONTTYPE_INFO);
 	}
@@ -2943,8 +2728,8 @@ public class User extends AbstractCharacter {
 	}
 
 	public void paralizedEffect() {
-		if (this.counters.Paralisis > 0) {
-			this.counters.Paralisis--;
+		if (this.getCounters().Paralisis > 0) {
+			this.getCounters().Paralisis--;
 		} else {
 			flags().Paralizado = false;
 			flags().Inmovilizado = false;
@@ -3445,7 +3230,7 @@ public class User extends AbstractCharacter {
 			sendSkills();
 			
 			if (!isNewbie() && wasNewbie) {
-				userInv().quitarObjsNewbie();
+				getUserInv().quitarObjsNewbie();
 				quitDungeonNewbie();
 			}
 			
@@ -3866,7 +3651,7 @@ public class User extends AbstractCharacter {
 	}
 
 	public void usuarioAtaca() {
-		if (counters().intervaloPermiteAtacar()) {
+		if (getCounters().intervaloPermiteAtacar()) {
 			// Pierde stamina
 			if (stats().stamina >= 10) {
 				stats().quitarStamina(Util.random(1, 10));
@@ -4381,17 +4166,17 @@ public class User extends AbstractCharacter {
 	}
 	
 	public void checkIdle() {
-		counters().IdleCount++;
-		if (counters().IdleCount >= IdleLimit) {
+		getCounters().IdleCount++;
+		if (getCounters().IdleCount >= IdleLimit) {
 		    sendError("Demasiado tiempo inactivo. Has sido desconectado.");
 		    quitGame();
 		}
 	}
 	
 	public void checkPenalties() {
-		if (counters().Pena > 0) {
-		    counters().Pena--;
-		    if (counters().Pena < 1) {
+		if (getCounters().Pena > 0) {
+		    getCounters().Pena--;
+		    if (getCounters().Pena < 1) {
 		        releaseFromJail();
 		    }
 		}
@@ -4400,16 +4185,16 @@ public class User extends AbstractCharacter {
 	public void checkPiquete() {
 		Map mapa = server.getMap(pos().map);
 		if (mapa.isAntiPiquete(pos().x, pos().y)) {
-			counters().piqueteSeconds++;
+			getCounters().piqueteSeconds++;
 			sendMessage("Estas obstruyendo la via pública, muévete o serás encarcelado!!!", 
 					FontType.FONTTYPE_INFO);
-			if (counters().piqueteSeconds > 23) {
-				counters().piqueteSeconds = 0;
+			if (getCounters().piqueteSeconds > 23) {
+				getCounters().piqueteSeconds = 0;
 				sendToJail(JAIL_TIME_PIQUETE_MINUTES, null);
 			}
 		} else {
-			if (counters().piqueteSeconds > 0) {
-				counters().piqueteSeconds = 0;
+			if (getCounters().piqueteSeconds > 0) {
+				getCounters().piqueteSeconds = 0;
 			}
 		}
 	}
@@ -4604,8 +4389,8 @@ public class User extends AbstractCharacter {
 	}
 
 	public void efectoCegueEstu() {
-		if (counters().Ceguera > 0) {
-			counters().Ceguera--;
+		if (getCounters().Ceguera > 0) {
+			getCounters().Ceguera--;
 		} else {
 			if (isBlind()) {
 				makeNoBlind();
@@ -4635,13 +4420,13 @@ public class User extends AbstractCharacter {
 	
 	public void makeDumb() {
 		flags().Estupidez = true;
-		counters().Ceguera = IntervaloInvisible;
+		getCounters().Ceguera = IntervaloInvisible;
 		sendPacket(new DumbResponse());
 	}
 
 	public void efectoFrio() {
-		if (this.counters.Frio < IntervaloFrio) {
-			this.counters.Frio++;
+		if (this.getCounters().Frio < IntervaloFrio) {
+			this.getCounters().Frio++;
 		} else {
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa.getTerrain() == Terrain.SNOW) {
@@ -4661,7 +4446,7 @@ public class User extends AbstractCharacter {
 					sendMessage("¡¡Has perdido stamina, si no te abrigas rápido la perderás toda!!.", FontType.FONTTYPE_INFO);
 				}
 			}
-			this.counters.Frio = 0;
+			this.getCounters().Frio = 0;
 			sendUpdateUserStats();
 		}
 	}
@@ -4675,11 +4460,11 @@ public class User extends AbstractCharacter {
 		
 		// Con el paso del tiempo se va sanando... pero muy lentamente ;-)
 		if (stats().MinHP < stats().MaxHP) {
-			if (this.counters.HPCounter < intervalo) {
-				this.counters.HPCounter++;
+			if (this.getCounters().HPCounter < intervalo) {
+				this.getCounters().HPCounter++;
 			} else {
 				int mashit = Util.random(2, Util.percentage(stats().maxStamina, 5));
-				this.counters.HPCounter = 0;
+				this.getCounters().HPCounter = 0;
 				stats().MinHP += mashit;
 
 				if (stats().MinHP > stats().MaxHP) {
@@ -4702,13 +4487,13 @@ public class User extends AbstractCharacter {
 
 	public void meditar() {
 		long tActual = System.currentTimeMillis();
-		if (tActual - this.counters.tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
+		if (tActual - this.getCounters().tInicioMeditar < TIEMPO_INICIO_MEDITAR) {
 			return;
 		}
 		if (stats().stamina < stats().maxStamina) {
 			return;
 		}
-		this.counters.IdleCount = 0;
+		this.getCounters().IdleCount = 0;
 		if (stats().mana >= stats().maxMana) {
 			sendMessage("Has terminado de meditar.", FontType.FONTTYPE_INFO);
 			sendPacket(new MeditateToggleResponse());
@@ -4728,11 +4513,11 @@ public class User extends AbstractCharacter {
 	}
 
 	private boolean efectoVeneno() {
-		if (this.counters.Veneno < IntervaloVeneno) {
-			this.counters.Veneno++;
+		if (this.getCounters().Veneno < IntervaloVeneno) {
+			this.getCounters().Veneno++;
 		} else {
 			sendMessage("Estas envenenado, si no te curas moriras.", FontType.FONTTYPE_VENENO);
-			this.counters.Veneno = 0;
+			this.getCounters().Veneno = 0;
 			stats().MinHP -= Util.random(1, 5);
 			sendUpdateUserStats();
 			if (stats().MinHP < 1) {
@@ -4744,8 +4529,8 @@ public class User extends AbstractCharacter {
 	}
 
 	private void efectoInvisibilidad() {
-		if (this.counters.Invisibilidad < IntervaloInvisible) {
-			this.counters.Invisibilidad++;
+		if (this.getCounters().Invisibilidad < IntervaloInvisible) {
+			this.getCounters().Invisibilidad++;
 		} else {
 			turnVisible();
 		}
@@ -4776,10 +4561,10 @@ public class User extends AbstractCharacter {
 		// Sed
 		boolean wasUpdated = false;
 		if (stats().drinked > 0) {
-			if (this.counters.drinkCounter < IntervaloSed) {
-				this.counters.drinkCounter++;
+			if (this.getCounters().drinkCounter < IntervaloSed) {
+				this.getCounters().drinkCounter++;
 			} else {
-				this.counters.drinkCounter = 0;
+				this.getCounters().drinkCounter = 0;
 				stats().quitarSed(10);
 				if (stats().drinked <= 0) {
 					stats().drinked = 0;
@@ -4790,10 +4575,10 @@ public class User extends AbstractCharacter {
 		}
 		// hambre
 		if (stats().eaten > 0) {
-			if (this.counters.foodCounter < IntervaloHambre) {
-				this.counters.foodCounter++;
+			if (this.getCounters().foodCounter < IntervaloHambre) {
+				this.getCounters().foodCounter++;
 			} else {
-				this.counters.foodCounter = 0;
+				this.getCounters().foodCounter = 0;
 				stats().quitarHambre(10);
 				if (stats().eaten <= 0) {
 					stats().eaten = 0;
@@ -4807,10 +4592,10 @@ public class User extends AbstractCharacter {
 
 	public boolean recStamina(int intervalo) {
 		if (stats().stamina < stats().maxStamina) {
-			if (counters().STACounter < intervalo) {
-				counters().STACounter++;
+			if (getCounters().STACounter < intervalo) {
+				getCounters().STACounter++;
 			} else {
-				counters().STACounter = 0;
+				getCounters().STACounter = 0;
 				if (flags().Desnudo) {
 					// Desnudo no sube energía.
 					return false;
@@ -4918,9 +4703,9 @@ public class User extends AbstractCharacter {
 				}
 			}
 		} else {
-			this.counters.IdleCount++;
-			if (this.counters.IdleCount > IntervaloParaConexion) {
-				this.counters.IdleCount = 0;
+			this.getCounters().IdleCount++;
+			if (this.getCounters().IdleCount > IntervaloParaConexion) {
+				this.getCounters().IdleCount = 0;
 				quitGame();
 			}
 		}
@@ -5209,7 +4994,7 @@ public class User extends AbstractCharacter {
         	if (!isAlive()) {
                 infoChar().body = iFragataFantasmal;
         	} else {
-        		ObjectInfo barco = userInv().getBarco();
+        		ObjectInfo barco = getUserInv().getBarco();
                 if (isRoyalArmy()) {
                     infoChar().body = iFragataReal;
                 } else if (isDarkLegion()) {
@@ -5247,13 +5032,13 @@ public class User extends AbstractCharacter {
 	}
 
 	public void startQuitGame() {
-		if (flags().UserLogged && !this.counters.Saliendo) {
-			this.counters.Saliendo = true;
+		if (flags().UserLogged && !this.getCounters().Saliendo) {
+			this.getCounters().Saliendo = true;
 			Map mapa = this.server.getMap(pos().map);
 			if (mapa != null && mapa.isSafeMap()) {
-				this.counters.SalirCounter = 1; // 1 segundo.
+				this.getCounters().SalirCounter = 1; // 1 segundo.
 			} else {
-				this.counters.SalirCounter = IntervaloCerrarConexion; // 10 segundos
+				this.getCounters().SalirCounter = IntervaloCerrarConexion; // 10 segundos
 				sendMessage("Cerrando... Se cerrará el juego en " + IntervaloCerrarConexion + " segundos...",
 						FontType.FONTTYPE_INFO);
 			}
@@ -5271,19 +5056,6 @@ public class User extends AbstractCharacter {
 		this.spells.moveSpell(slot, dir);
 	}
 
-	public void moveBank(byte slot, byte dir) {
-		if (dir != 1 && dir != -1) {
-			return;
-		}
-		if (slot < 1 || slot > bankInv.getSize()) {
-			return;
-		}
-
-		this.bankInv.move(slot, dir);
-		updateBankUserInv();
-		sendBankOk();
-	}
-	
     enum DuelStatus {
 	    DUEL_ALLOWED 	/* TRIGGER6_PERMITE  1 */,
 	    DUEL_FORBIDDEN 	/* TRIGGER6_PROHIBE  2 */,
@@ -5478,5 +5250,5 @@ public class User extends AbstractCharacter {
 				" fue expulsado por Anti-macro de hechizos", FontType.FONTTYPE_VENENO.id()));
         user.sendError("Has sido expulsado por usar macro de hechizos. Recomendamos leer el reglamento sobre el tema macros");
 	}
-	
+
 }

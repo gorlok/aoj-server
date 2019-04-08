@@ -1516,17 +1516,17 @@ End Enum
             daño = Util.random(spell.MinHP, spell.MaxHP);
             
             // Si el usuario tiene un sombrero mágico de defensa, se reduce el daño
-            if (user.userInv().tieneCascoEquipado()) {
+            if (user.getUserInv().tieneCascoEquipado()) {
             	daño = daño - Util.random(
-            			user.userInv().getCasco().DefensaMagicaMin,
-            			user.userInv().getCasco().DefensaMagicaMax);
+            			user.getUserInv().getCasco().DefensaMagicaMin,
+            			user.getUserInv().getCasco().DefensaMagicaMax);
             }
             
             // Si el usuario tiene un anillo mágico de defensa, se reduce el daño
-            if (user.userInv().tieneAnilloEquipado()) {
+            if (user.getUserInv().tieneAnilloEquipado()) {
             	daño = daño - Util.random(
-            			user.userInv().getAnillo().DefensaMagicaMin,
-            			user.userInv().getAnillo().DefensaMagicaMax);
+            			user.getUserInv().getAnillo().DefensaMagicaMin,
+            			user.getUserInv().getAnillo().DefensaMagicaMax);
             }
             
             if (daño < 0) {
@@ -1554,7 +1554,7 @@ End Enum
     			user.sendWave(spell.WAV);
     			user.sendCreateFX(spell.FXgrh, spell.loops);
     			
-    			if (user.userInv().tieneAnilloEquipado() && user.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    			if (user.getUserInv().tieneAnilloEquipado() && user.getUserInv().getAnillo().ObjIndex == SUPERANILLO) {
     	            user.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
     	            return;
     			}
@@ -1564,7 +1564,7 @@ End Enum
     			}
     			
     			user.flags().Paralizado = true;
-    			user.counters().Paralisis = IntervaloParalizado;
+    			user.getCounters().Paralisis = IntervaloParalizado;
     			user.sendPacket(new ParalizeOKResponse());
     		}
         }
@@ -1574,7 +1574,7 @@ End Enum
     			user.sendWave(spell.WAV);
     			user.sendCreateFX(spell.FXgrh, spell.loops);
 
-    			if (user.userInv().tieneAnilloEquipado() && user.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+    			if (user.getUserInv().tieneAnilloEquipado() && user.getUserInv().getAnillo().ObjIndex == SUPERANILLO) {
     	            user.sendMessage("Tu anillo rechaza los efectos del hechizo.", FONTTYPE_FIGHT);
     	            return;
     			}

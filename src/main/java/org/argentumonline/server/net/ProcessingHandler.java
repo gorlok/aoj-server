@@ -52,7 +52,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		System.out.println("<<< procesando paquete " + packet.getClass().getCanonicalName() + " " + gson.toJson(packet));
 
 		
-		user.counters().resetIdleCount();
+		user.getCounters().resetIdleCount();
 		
 		ClientPacket clientPacket = (ClientPacket)packet;
 		// Does the packet requires a logged user?
@@ -200,11 +200,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case BankStart:
-			user.bankStart();
+			user.getBankInventory().bankStart();
 			break;
 
 		case BankEnd:
-			user.bankEnd();
+			user.getBankInventory().bankEnd();
 			break;
 
 		case BankDeposit:
@@ -224,7 +224,7 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 			break;
 			
 		case MoveBank:
-			user.moveBank(((MoveBankRequest)packet).slot, ((MoveBankRequest)packet).dir);
+			user.getBankInventory().moveBank(((MoveBankRequest)packet).slot, ((MoveBankRequest)packet).dir);
 			break;
 			
 		case SafeToggle:
@@ -1010,11 +1010,11 @@ class ProcessingHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void handleBankExtractItem(BankExtractItemRequest packet, User user) {
-		user.bankExtractItem(packet.slot, packet.amount);
+		user.getBankInventory().bankExtract(packet.slot, packet.amount);
 	}
 
 	private void handleBankDepositItem(BankDepositRequest packet, User user) {
-		user.bankDepositItem(packet.slot, packet.amount);
+		user.getBankInventory().bankDeposit(packet.slot, packet.amount);
 	}
 
 	private void handleLoginNewChar(LoginNewCharRequest packet, User user) {

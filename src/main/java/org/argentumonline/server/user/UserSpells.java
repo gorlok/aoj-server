@@ -155,7 +155,7 @@ public class UserSpells implements Constants {
 	}
 
 	public void addSpell(int slot) {
-		int oid = this.user.userInv().getObject(slot).objid;
+		int oid = this.user.getUserInv().getObject(slot).objid;
 		ObjectInfo spellObj = this.server.getObjectInfoStorage().getInfoObjeto(oid);
 		short spellIndex = spellObj.HechizoIndex;
 		if (!hasSpell(spellIndex)) {
@@ -167,7 +167,7 @@ public class UserSpells implements Constants {
 				// Actualizamos la lista de hechizos,
 				changeUserSpell(slotLibre, spellIndex);
 				// y quitamos el item del inventario.
-				this.user.userInv().quitarUserInvItem(slot, 1);
+				this.user.getUserInv().quitarUserInvItem(slot, 1);
 			}
 		} else {
 			this.user.sendMessage("Ya tienes ese hechizo.", FontType.FONTTYPE_INFO);
@@ -422,7 +422,7 @@ public class UserSpells implements Constants {
 					this.user.usuarioAtacadoPorUsuario(targetUser);
 				}
 				
-	            if (targetUser.userInv().tieneAnilloEquipado() && targetUser.userInv().getAnillo().ObjIndex == SUPERANILLO) {
+	            if (targetUser.getUserInv().tieneAnilloEquipado() && targetUser.getUserInv().getAnillo().ObjIndex == SUPERANILLO) {
 			    	targetUser.sendMessage("Tu anillo rechaza los efectos del hechizo.", FontType.FONTTYPE_INFO);
 			    	user.sendMessage("¡El hechizo no tuvo efecto, ha sido rechazado!", FontType.FONTTYPE_INFO);
 			    	return false;
@@ -432,7 +432,7 @@ public class UserSpells implements Constants {
 				if (spell.inmoviliza) {
 					targetUser.flags().Inmovilizado = true;
 				}
-				targetUser.counters.Paralisis = IntervaloParalizado;
+				targetUser.getCounters().Paralisis = IntervaloParalizado;
 				targetUser.sendPacket(new ParalizeOKResponse());
 				sendInfoSpell();
 				result = true;
@@ -513,21 +513,21 @@ public class UserSpells implements Constants {
 		        
 		        // revisamos si tiene vara, laud, o flauta
 		        if (user.clazz() == Clazz.Mage) {
-		        	if (!user.userInv().tieneArmaEquipada() || user.userInv().getArma().StaffPower == 0) {
+		        	if (!user.getUserInv().tieneArmaEquipada() || user.getUserInv().getArma().StaffPower == 0) {
 			        	this.user.sendMessage("Necesitas un báculo para este hechizo.", FontType.FONTTYPE_INFO);
 			        	return false;
 		        	}
-		        	if (user.userInv().getArma().StaffPower < spell.NeedStaff) {
+		        	if (user.getUserInv().getArma().StaffPower < spell.NeedStaff) {
 			        	this.user.sendMessage("Necesitas un mejor báculo para este hechizo.", FontType.FONTTYPE_INFO);
 			        	return false;
 		        	}
 		        } else if (user.clazz() == Clazz.Bard) {
-		            if (!user.userInv().tieneAnilloEquipado() || user.userInv().getAnillo().ObjIndex != LAUDMAGICO) {
+		            if (!user.getUserInv().tieneAnilloEquipado() || user.getUserInv().getAnillo().ObjIndex != LAUDMAGICO) {
 			        	this.user.sendMessage("Necesitas un instrumento mágico para devolver la vida.", FontType.FONTTYPE_INFO);
 			        	return false;
 		            }
 		        } else if (user.clazz() == Clazz.Druid) {
-		            if (!user.userInv().tieneAnilloEquipado() || user.userInv().getAnillo().ObjIndex != FLAUTAMAGICA) {
+		            if (!user.getUserInv().tieneAnilloEquipado() || user.getUserInv().getAnillo().ObjIndex != FLAUTAMAGICA) {
 			        	this.user.sendMessage("Necesitas un instrumento mágico para devolver la vida.", FontType.FONTTYPE_INFO);
 			        	return false;
 		            }
@@ -606,7 +606,7 @@ public class UserSpells implements Constants {
 				this.user.usuarioAtacadoPorUsuario(targetUser);
 			}
 			targetUser.flags().Ceguera = true;
-			targetUser.counters.Ceguera = IntervaloParalizado / 3;
+			targetUser.getCounters().Ceguera = IntervaloParalizado / 3;
 			targetUser.sendPacket(new BlindResponse());
 			sendInfoSpell();
 			result = true;
@@ -626,7 +626,7 @@ public class UserSpells implements Constants {
 			
 			if (!targetUser.flags().Estupidez) {
 				targetUser.flags().Estupidez = true;
-				targetUser.counters.Ceguera = IntervaloParalizado;
+				targetUser.getCounters().Ceguera = IntervaloParalizado;
 			}
 			targetUser.sendPacket(new DumbResponse());
 			sendInfoSpell();
@@ -747,8 +747,8 @@ public class UserSpells implements Constants {
 			
 			if (spell.StaffAffected) {
 				if (user.clazz() == Clazz.Mage) {
-					if (user.userInv().tieneArmaEquipada()) {
-		                damage = (damage * (user.userInv().getArma().StaffDamageBonus + 70)) / 100;
+					if (user.getUserInv().tieneArmaEquipada()) {
+		                damage = (damage * (user.getUserInv().getArma().StaffDamageBonus + 70)) / 100;
                         // Aumenta daño segun el staff-
                         // Daño = (Daño* (70 + BonifBáculo)) / 100
 					} else {
@@ -756,8 +756,8 @@ public class UserSpells implements Constants {
 					}
 				}
 			}
-			if (user.userInv().tieneAnilloEquipado() && 
-					(user.userInv().getAnillo().ObjIndex == LAUDMAGICO || user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
+			if (user.getUserInv().tieneAnilloEquipado() && 
+					(user.getUserInv().getAnillo().ObjIndex == LAUDMAGICO || user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
 				damage = (int) (damage * 1.04f); // laud magico de los bardos
 			}
 
@@ -1048,29 +1048,29 @@ public class UserSpells implements Constants {
 			// Potenciador de ataque Báculo
 			if (spell.StaffAffected) {
 				if (user.clazz() == Clazz.Mage) {
-					if (user.userInv().tieneArmaEquipada() && user.userInv().getArma().StaffDamageBonus > 0) {
-						damage = (damage * (user.userInv().getArma().StaffDamageBonus + 70)) / 100; 
+					if (user.getUserInv().tieneArmaEquipada() && user.getUserInv().getArma().StaffDamageBonus > 0) {
+						damage = (damage * (user.getUserInv().getArma().StaffDamageBonus + 70)) / 100; 
 					} else {
 						damage = (int) (damage * 0.7f); // Baja daño a 70% del original
 					}
 				}
 			}
 			// Potenciador de ataque Laúd o Flauta
-			if (user.userInv().tieneAnilloEquipado() && (user.userInv().getAnillo().ObjIndex == LAUDMAGICO || user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
+			if (user.getUserInv().tieneAnilloEquipado() && (user.getUserInv().getAnillo().ObjIndex == LAUDMAGICO || user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA)) {
 				damage = (int) (damage * 1.04f);  // laud magico de los bardos
 			}
 			
 			// Defensa mágica Sombreros
-			if (targetUser.userInv().tieneCascoEquipado()) {
+			if (targetUser.getUserInv().tieneCascoEquipado()) {
 				damage = damage - Util.random(
-						targetUser.userInv().getCasco().DefensaMagicaMin,
-						targetUser.userInv().getCasco().DefensaMagicaMax);  // sombreros antimagia
+						targetUser.getUserInv().getCasco().DefensaMagicaMin,
+						targetUser.getUserInv().getCasco().DefensaMagicaMax);  // sombreros antimagia
 			}
 			// Defensa mágica Anillos
-			if (targetUser.userInv().tieneAnilloEquipado()) {
+			if (targetUser.getUserInv().tieneAnilloEquipado()) {
 				damage = damage - Util.random(
-						targetUser.userInv().getAnillo().DefensaMagicaMin,
-						targetUser.userInv().getAnillo().DefensaMagicaMax);  // anillos antimagia
+						targetUser.getUserInv().getAnillo().DefensaMagicaMin,
+						targetUser.getUserInv().getAnillo().DefensaMagicaMax);  // anillos antimagia
 			}
 			if (damage < 0) {
 				damage = 0;
@@ -1191,8 +1191,8 @@ public class UserSpells implements Constants {
 		
 	    if (spell.NeedStaff > 0) {
 	        if (this.user.clazz() == Clazz.Mage) {
-	            if (this.user.userInv().tieneArmaEquipada()) {
-	            	if (this.user.userInv().getArma().StaffPower < spell.NeedStaff) {
+	            if (this.user.getUserInv().tieneArmaEquipada()) {
+	            	if (this.user.getUserInv().getArma().StaffPower < spell.NeedStaff) {
 	            		this.user.sendMessage("No posees un báculo lo suficientemente poderoso para que puedas lanzar el conjuro.", FontType.FONTTYPE_INFO);
 	            		return false;
 	            	}
@@ -1222,8 +1222,8 @@ public class UserSpells implements Constants {
 
 	    float druidManaBonus;
 	    if (this.user.clazz() == Clazz.Druid) {
-	        if (this.user.userInv().tieneAnilloEquipado() 
-	        		&& this.user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
+	        if (this.user.getUserInv().tieneAnilloEquipado() 
+	        		&& this.user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
 	            
 	        	if (spell.Mimetiza) {
 	                druidManaBonus = 0.5f;
@@ -1307,8 +1307,8 @@ public class UserSpells implements Constants {
 		if (success) {
 			this.user.riseSkill(Skill.SKILL_Magia);
 			
-			if (user.clazz() == Clazz.Druid && user.userInv().tieneAnilloEquipado() 
-					&& user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
+			if (user.clazz() == Clazz.Druid && user.getUserInv().tieneAnilloEquipado() 
+					&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA) {
 				this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.7f));
 			} else {
 				this.user.stats().quitarMana(spell.ManaRequerido);
@@ -1370,8 +1370,8 @@ public class UserSpells implements Constants {
 			
 		    // Agregado para que los druidas, al tener equipada la flauta magica, el coste de mana de mimetismo es de 50% menos.
 		    if (user.clazz() == Clazz.Druid 
-		    		&& user.userInv().tieneAnilloEquipado() 
-		    		&& user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA
+		    		&& user.getUserInv().tieneAnilloEquipado() 
+		    		&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA
 		    		&& spell.Mimetiza){
         		this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
 		    } else {
@@ -1406,8 +1406,8 @@ public class UserSpells implements Constants {
 			
 		    // Bonificación para druidas.
 		    if (user.clazz() == Clazz.Druid 
-		    		&& user.userInv().tieneAnilloEquipado() 
-		    		&& user.userInv().getAnillo().ObjIndex == FLAUTAMAGICA 
+		    		&& user.getUserInv().tieneAnilloEquipado() 
+		    		&& user.getUserInv().getAnillo().ObjIndex == FLAUTAMAGICA 
 		    		&& spell.Mimetiza) {
 		    	this.user.stats().quitarMana((int) (spell.ManaRequerido * 0.5f));
 		    } else {

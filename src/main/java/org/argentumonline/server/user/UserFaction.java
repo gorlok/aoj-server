@@ -251,7 +251,7 @@ public class UserFaction implements Constants {
         this.user.talk(COLOR_BLANCO, "Bienvenido a al Ejercito Imperial!!!. Aquí tienes tu armadura. Por cada centena de criminales que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraReal) {
             short armadura = this.user.clazz().getRoyalArmyArmor(this.user);
-            if (this.user.userInv().agregarItem(armadura, 1) < 1) {
+            if (this.user.getUserInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.user.pos().map);
                 mapa.dropItemOnFloor(this.user.pos().x, this.user.pos().y, new InventoryObject(armadura, 1));
             }
@@ -298,7 +298,7 @@ public class UserFaction implements Constants {
         this.user.talk(COLOR_BLANCO, "Bienvenido al lado oscuro!!!. Aqui tienes tu armadura. Por cada centena de ciudadanos que acabes te daré un recompensa, buena suerte soldado!", npc.getId());
         if (!this.RecibioArmaduraCaos) {
             short armadura = this.user.clazz().getDarkLegionArmor(this.user);
-            if (this.user.userInv().agregarItem(armadura, 1) < 1) {
+            if (this.user.getUserInv().agregarItem(armadura, 1) < 1) {
                 Map mapa = this.server.getMap(this.user.pos().map);
                 mapa.dropItemOnFloor(this.user.pos().x, this.user.pos().y, new InventoryObject(armadura, 1));
             }

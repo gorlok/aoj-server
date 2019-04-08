@@ -757,7 +757,7 @@ public class UserInventory extends Inventory implements Constants {
             getUser().sendMessage("Solo los newbies pueden usar estos objetos.", FontType.FONTTYPE_INFO);
             return;
         }
-        if (!getUser().counters().intervaloPermiteUsar()) {
+        if (!getUser().getCounters().intervaloPermiteUsar()) {
             return;
         }
         getUser().flags().TargetObjInvIndex = objInv.objid;
@@ -862,7 +862,7 @@ public class UserInventory extends Inventory implements Constants {
                 if (!getUser().checkAlive("¡¡Estas muerto!! Solo podes usar items cuando estas vivo.")) {
                     return;
                 }
-                if (!getUser().counters().intervaloPermiteAtacar()) {
+                if (!getUser().getCounters().intervaloPermiteAtacar()) {
                     getUser().sendMessage("¡¡Debes esperar unos momentos para tomar otra poción!!", FontType.FONTTYPE_INFO);
                     return;
                 }

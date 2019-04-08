@@ -228,6 +228,10 @@ public class GameServer implements Constants {
     public long runningTimeInSecs() {
         return (System.currentTimeMillis() - this.startTime) / 1000;
     }
+    
+	public ObjectInfo findObj(int oid) {
+		return getObjectInfoStorage().getInfoObjeto(oid);
+	}
 
 	public String calculateUptime() {
 		long tsegs = runningTimeInSecs();
@@ -596,14 +600,14 @@ public class GameServer implements Constants {
 	        List<User> readyToQuit = new LinkedList<>();
 	        
 	        getUsers().stream().forEach(u -> {
-	            if (u.counters().Saliendo) {
-	                u.counters().SalirCounter--;
-	                if (u.counters().SalirCounter <= 0) {
+	            if (u.getCounters().Saliendo) {
+	                u.getCounters().SalirCounter--;
+	                if (u.getCounters().SalirCounter <= 0) {
 	                    readyToQuit.add(u);
 	                } else {
-	                	switch (u.counters().SalirCounter) {
+	                	switch (u.getCounters().SalirCounter) {
 	                		case 10:
-	                			u.sendMessage("En " + u.counters().SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
+	                			u.sendMessage("En " + u.getCounters().SalirCounter +" segundos se cerrará el juego...", FontType.FONTTYPE_INFO);
 	                			break;
 	                		case 3:
 	                			u.sendMessage("Gracias por jugar Argentum Online. Vuelve pronto.", FontType.FONTTYPE_INFO);

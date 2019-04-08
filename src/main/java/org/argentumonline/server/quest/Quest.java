@@ -228,7 +228,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+						if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(user.pos().map);
 							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}
@@ -264,7 +264,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(user.pos().map);
 								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -298,7 +298,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(user.pos().map);
 								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -332,7 +332,7 @@ public class Quest implements Constants {
 							user.quest().m_enQuest = false;
 						}
 						if (quest.DaObj) {
-							if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+							if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 								Map mapa = this.server.getMap(user.pos().map);
 								mapa.dropItemOnFloor(user.pos().x, user.pos().y,
 										new InventoryObject(quest.Obj, 1));
@@ -367,7 +367,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+						if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(user.pos().map);
 							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}
@@ -400,7 +400,7 @@ public class Quest implements Constants {
 						user.quest().m_enQuest = false;
 					}
 					if (quest.DaObj) {
-						if (user.userInv().agregarItem(quest.Obj, 1) < 1) {
+						if (user.getUserInv().agregarItem(quest.Obj, 1) < 1) {
 							Map mapa = this.server.getMap(user.pos().map);
 							mapa.dropItemOnFloor(user.pos().x, user.pos().y, new InventoryObject(quest.Obj, 1));
 						}

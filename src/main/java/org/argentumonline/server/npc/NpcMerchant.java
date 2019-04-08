@@ -154,25 +154,25 @@ public class NpcMerchant extends Npc {
     		short objid = npcInv().getObject(slotNpc).objid;
     		// ¿Ya tiene un objeto de este tipo?
     		int slot_inv = 0;
-    		for (short i = 1; i <= user.userInv().getSize(); i++) {
-    			if (user.userInv().getObject(i).objid == objid && (user.userInv().getObject(i).cant + amount) <= MAX_INVENTORY_OBJS) {
+    		for (short i = 1; i <= user.getUserInv().getSize(); i++) {
+    			if (user.getUserInv().getObject(i).objid == objid && (user.getUserInv().getObject(i).cant + amount) <= MAX_INVENTORY_OBJS) {
     				slot_inv = i;
     				break;
     			}
     		}
     		// Sino se fija por un slot vacio
     		if (slot_inv == 0) {
-    			slot_inv = user.userInv().getEmptySlot();
+    			slot_inv = user.getUserInv().getEmptySlot();
     			if (slot_inv == 0) {
     				user.sendMessage("No podés tener mas objetos.", FontType.FONTTYPE_INFO);
     				return;
     			}
     		}
     		// Mete el obj en el slot
-    		if (user.userInv().getObject(slot_inv).cant + amount <= MAX_INVENTORY_OBJS) {
+    		if (user.getUserInv().getObject(slot_inv).cant + amount <= MAX_INVENTORY_OBJS) {
     			// Menor que MAX_INV_OBJS
-    			user.userInv().getObject(slot_inv).objid = objid;
-    			user.userInv().getObject(slot_inv).cant += amount;
+    			user.getUserInv().getObject(slot_inv).objid = objid;
+    			user.getUserInv().getObject(slot_inv).cant += amount;
     			// Le sustraemos el valor en oro del obj comprado
     			double unidad = ((info.Valor + infla) / dto);
     			int monto = (int) (unidad * amount);
@@ -202,15 +202,15 @@ public class NpcMerchant extends Npc {
     public void buyItemFromUser(User user, short slot, int cant) {
         // NPC COMPRA UN OBJ A UN USUARIO
         user.sendUpdateUserStats();
-        if (user.userInv().getObject(slot).cant > 0 && !user.userInv().getObject(slot).equipado) {
-            if (cant > 0 && cant > user.userInv().getObject(slot).cant) {
-                cant = user.userInv().getObject(slot).cant;
+        if (user.getUserInv().getObject(slot).cant > 0 && !user.getUserInv().getObject(slot).equipado) {
+            if (cant > 0 && cant > user.getUserInv().getObject(slot).cant) {
+                cant = user.getUserInv().getObject(slot).cant;
             }
             // Agregamos el obj que compro al inventario
             if (cant < 1) {
     			return;
     		}
-            short objid = user.userInv().getObject(slot).objid;
+            short objid = user.getUserInv().getObject(slot).objid;
             ObjectInfo info = findObj(objid);
             if (info.esNewbie()) {
                 user.sendMessage("No comercio objetos para newbies.", FontType.FONTTYPE_INFO);
@@ -242,7 +242,7 @@ public class NpcMerchant extends Npc {
                     // Menor que MAX_INV_OBJS
                     npcInv().getObject(slot_inv).objid = objid;
                     npcInv().getObject(slot_inv).cant += cant;
-                    user.userInv().quitarUserInvItem(slot, cant);
+                    user.getUserInv().quitarUserInvItem(slot, cant);
                     // Le sumamos al user el valor en oro del obj vendido
                     //double monto = ((info.Valor / 3 + infla) * cant);
                     double monto = ((info.Valor / 3) * cant);
@@ -253,7 +253,7 @@ public class NpcMerchant extends Npc {
                     user.sendMessage("No puedo cargar tantos objetos.", FontType.FONTTYPE_INFO);
                 }
             } else {
-                user.userInv().quitarUserInvItem(slot, cant);
+                user.getUserInv().quitarUserInvItem(slot, cant);
                 // Le sumamos al user el valor en oro del obj vendido
                 //double monto = ((info.Valor / 3 + infla) * cant);
                 double monto = ((info.Valor / 3) * cant);

@@ -909,8 +909,8 @@ public class ManagerServer {
 			admin.sendMessage("No puedes encarcelar a usuarios de mayor jerarquia a la tuya!", FontType.FONTTYPE_INFO);
 			return;
 		}
-		if (user.counters().Pena > 0) {
-			admin.sendMessage("El usuario ya esta en la carcel. Le quedan " + admin.counters().Pena + " minutos.",
+		if (user.getCounters().Pena > 0) {
+			admin.sendMessage("El usuario ya esta en la carcel. Le quedan " + admin.getCounters().Pena + " minutos.",
 					FontType.FONTTYPE_WARNING);
 			return;
 		}
@@ -1044,28 +1044,28 @@ public class ManagerServer {
 				"  Mana: " + user.stats().mana + "/" + user.stats().maxMana + 
 				"  Vitalidad: " + user.stats().stamina + "/" + user.stats().maxStamina, FontType.FONTTYPE_INFO);
 
-		if (user.userInv().tieneArmaEquipada()) {
+		if (user.getUserInv().tieneArmaEquipada()) {
 			admin.sendMessage("Menor Golpe/Mayor Golpe: " + user.stats().MinHIT + "/" + user.stats().MaxHIT +
-					" (" + user.userInv().getArma().MinHIT + "/" + user.userInv().getArma().MaxHIT + ")", FontType.FONTTYPE_INFO);
+					" (" + user.getUserInv().getArma().MinHIT + "/" + user.getUserInv().getArma().MaxHIT + ")", FontType.FONTTYPE_INFO);
 		} else {
 			admin.sendMessage("Menor Golpe/Mayor Golpe: " + user.stats().MinHIT + "/" + user.stats().MaxHIT, FontType.FONTTYPE_INFO);
 		}
 		
-		if (user.userInv().tieneArmaduraEquipada()) {
-			if (user.userInv().tieneEscudoEquipado()) {
-				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.userInv().getArmadura().MinDef + user.userInv().getEscudo().MinDef + "/" +
-						user.userInv().getArmadura().MaxDef + user.userInv().getEscudo().MaxDef, FontType.FONTTYPE_INFO);
+		if (user.getUserInv().tieneArmaduraEquipada()) {
+			if (user.getUserInv().tieneEscudoEquipado()) {
+				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.getUserInv().getArmadura().MinDef + user.getUserInv().getEscudo().MinDef + "/" +
+						user.getUserInv().getArmadura().MaxDef + user.getUserInv().getEscudo().MaxDef, FontType.FONTTYPE_INFO);
 			} else {
-				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.userInv().getArmadura().MinDef + "/" +
-						user.userInv().getArmadura().MaxDef, FontType.FONTTYPE_INFO);
+				admin.sendMessage("(CUERPO) Min Def/Max Def: " + user.getUserInv().getArmadura().MinDef + "/" +
+						user.getUserInv().getArmadura().MaxDef, FontType.FONTTYPE_INFO);
 			}
 		} else {
 			admin.sendMessage("(CUERPO) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
 		}
 		
-		if (user.userInv().tieneCascoEquipado()) {
-			admin.sendMessage("(CABEZA) Min Def/Max Def: " + user.userInv().getCasco().MinDef + "/" +
-					user.userInv().getCasco().MaxDef, FontType.FONTTYPE_INFO);
+		if (user.getUserInv().tieneCascoEquipado()) {
+			admin.sendMessage("(CABEZA) Min Def/Max Def: " + user.getUserInv().getCasco().MinDef + "/" +
+					user.getUserInv().getCasco().MaxDef, FontType.FONTTYPE_INFO);
 		} else {
 			admin.sendMessage("(CABEZA) Min Def/Max Def: 0", FontType.FONTTYPE_INFO);
 		}
@@ -1119,13 +1119,13 @@ public class ManagerServer {
 				return;
 			}
 		} 
-		admin.sendMessage(user.getUserName() + " tiene " + user.userInv().getObjectsCount() + " objetos.", FontType.FONTTYPE_INFO);
-		for (int i = 1; i <= user.userInv().getSize(); i++) {
-			if (user.userInv().getObject(i).objid > 0) {
-				ObjectInfo info = findObj(user.userInv().getObject(i).objid);
+		admin.sendMessage(user.getUserName() + " tiene " + user.getUserInv().getObjectsCount() + " objetos.", FontType.FONTTYPE_INFO);
+		for (int i = 1; i <= user.getUserInv().getSize(); i++) {
+			if (user.getUserInv().getObject(i).objid > 0) {
+				ObjectInfo info = findObj(user.getUserInv().getObject(i).objid);
 				admin.sendMessage(
 						" Objeto " + i + " " + info.Nombre + 
-						" Cantidad:" + user.userInv().getObject(i).cant,
+						" Cantidad:" + user.getUserInv().getObject(i).cant,
 						FontType.FONTTYPE_INFO);
 			}
 		}
@@ -1150,7 +1150,7 @@ public class ManagerServer {
 				return;
 			}
 		} 
-		admin.sendMessage(" Tiene " + user.userInv().getObjectsCount() + " objetos.", FontType.FONTTYPE_INFO);
+		admin.sendMessage(" Tiene " + user.getUserInv().getObjectsCount() + " objetos.", FontType.FONTTYPE_INFO);
 		
         admin.sendMessage("Pj: " + user.getUserName(), FontType.FONTTYPE_INFO);
         admin.sendMessage("CiudadanosMatados: " + user.userFaction().citizensKilled 
@@ -1159,7 +1159,7 @@ public class ManagerServer {
         
         admin.sendMessage("NPCsMuertos: " + user.stats().NPCsMuertos, FontType.FONTTYPE_INFO);
         admin.sendMessage("Clase: " + user.clazz().toString(), FontType.FONTTYPE_INFO);
-        admin.sendMessage("Pena: " + user.counters().Pena, FontType.FONTTYPE_INFO);
+        admin.sendMessage("Pena: " + user.getCounters().Pena, FontType.FONTTYPE_INFO);
         
         if (user.isRoyalArmy()) {
             admin.sendMessage("Armada Real Desde: " + user.userFaction().FechaIngreso, FontType.FONTTYPE_INFO);
@@ -1956,11 +1956,11 @@ public class ManagerServer {
 		} else {
 			Log.logGM(admin.getUserName(), admin.getUserName() + " Checkeo el slot " + slot + " de " + userName);
 			
-			if (user.userInv().isValidSlot(slot)) {
-				if (user.userInv().isEmpty(slot)) {
+			if (user.getUserInv().isValidSlot(slot)) {
+				if (user.getUserInv().isEmpty(slot)) {
 					admin.sendMessage("No hay Objeto en el slot seleccionado.", FontType.FONTTYPE_INFO);
 				} else {
-					var obj = user.userInv().getObject(slot);
+					var obj = user.getUserInv().getObject(slot);
 					admin.sendMessage(" Objeto (" + slot + ") " + obj.objInfo().Nombre 
 							+ " Cantidad:" + obj.cant, FontType.FONTTYPE_INFO);
 				}

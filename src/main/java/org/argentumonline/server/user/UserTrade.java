@@ -102,8 +102,8 @@ public class UserTrade {
 			}
 		} else {
 			obj1_cant = this.cant;
-			obj1_objid = user.userInv.getObject(this.objectSlot).objid;
-			if (obj1_cant > user.userInv.getObject(this.objectSlot).cant) {
+			obj1_objid = user.getUserInv().getObject(this.objectSlot).objid;
+			if (obj1_cant > user.getUserInv().getObject(this.objectSlot).cant) {
 				user.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
@@ -119,8 +119,8 @@ public class UserTrade {
 			}
 		} else {
 			obj2_cant = this.cant;
-			obj2_objid = targetUser.userInv.getObject(this.objectSlot).objid;
-			if (obj2_cant > targetUser.userInv.getObject(this.objectSlot).cant) {
+			obj2_objid = targetUser.getUserInv().getObject(this.objectSlot).objid;
+			if (obj2_cant > targetUser.getUserInv().getObject(this.objectSlot).cant) {
 				targetUser.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				terminarAhora = true;
 			}
@@ -141,7 +141,7 @@ public class UserTrade {
 			user.sendUpdateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
-			int agregados = user.userInv.agregarItem(obj2_objid, obj2_cant);
+			int agregados = user.getUserInv().agregarItem(obj2_objid, obj2_cant);
 			if (agregados < obj2_cant) {
 				// Tiro al piso lo que no pude guardar en el inventario.
 				Map mapa = user.server.getMap(user.pos().map);
@@ -160,7 +160,7 @@ public class UserTrade {
 			targetUser.sendUpdateUserStats();
 		} else {
 			// Quita el objeto y se lo da al otro
-			int agregados = targetUser.userInv.agregarItem(obj1_objid, obj1_objid);
+			int agregados = targetUser.getUserInv().agregarItem(obj1_objid, obj1_objid);
 			if (agregados < obj1_cant) {
 				// Tiro al piso los items que no se agregaron al inventario.
 				Map mapa = user.server.getMap(targetUser.pos().map);
@@ -241,7 +241,7 @@ public class UserTrade {
 			}
 		} else {
 			// objeto del inventario
-			if (amount > user.userInv.getObject(slot).cant) {
+			if (amount > user.getUserInv().getObject(slot).cant) {
 				user.sendMessage("No tienes esa cantidad.", FontType.FONTTYPE_TALK);
 				return;
 			}
@@ -278,7 +278,7 @@ public class UserTrade {
 		if (this.objectSlot == Constants.FLAGORO) {
 			objid = Constants.OBJ_ORO;
 		} else {
-			objid = targetUser.userInv.getObject(this.objectSlot).objid;
+			objid = targetUser.getUserInv().getObject(this.objectSlot).objid;
 		}
 		if (this.cant <= 0 || objid <= 0) {
 			return;
