@@ -1029,7 +1029,7 @@ public class Map implements Constants {
             if (npc.description.length() > 0) {
             	// tiene algo para decir
             	user.sendTalk(COLOR_BLANCO, npc.description, npc.getId());
-            } else if (npc.getId() == server.getWorkWatcher().getNpc().getId()) {
+            } else if (server.getWorkWatcher().getNpc() != null && npc.getId() == server.getWorkWatcher().getNpc().getId()) {
                 // enviamos nuevamente el mensaje del Centinela, según quien pregunta.
             	server.getWorkWatcher().sendCode(user);
             } else {
