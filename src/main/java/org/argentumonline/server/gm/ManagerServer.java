@@ -466,6 +466,10 @@ public class ManagerServer {
 		if (!admin.isGM()) {
 			return;
 		}
+		toggleRain();
+	}
+
+	public void toggleRain() {
 		if (this.server.isRaining()) {
 			this.server.rainStop();
 		} else {

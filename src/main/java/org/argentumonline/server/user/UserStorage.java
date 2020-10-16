@@ -101,9 +101,17 @@ public class UserStorage {
 	
 	public String passwordHashFromStorage() 
 	throws FileNotFoundException, IOException {
-		IniFile ini = new IniFile(User.getPjFile(user.getUserName()));
-		
-		return ini.getString("INIT", "PasswordHash");
+		return passwordHashFromStorage(this.user.getUserName());
+	}
+	
+	public static String passwordHashFromStorage(String userName) 
+	throws FileNotFoundException, IOException {
+		if (User.userExists(userName)) {
+			IniFile ini = new IniFile(User.getPjFile(userName));
+			return ini.getString("INIT", "PasswordHash");
+		} else {
+			return null;
+		}
 	}
 
 	private void loadUserInit(IniFile ini) 
