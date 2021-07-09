@@ -30,9 +30,9 @@ Unzip it on some empty folder and start the game server with: `./bin/ao-server r
 
 ## Build and running (with Maven)
 
-To build the project, run on the root folder: `mvn clean package`
+To build the project, run on the root folder: `mvn verify`
 
-Start the game server with: `java -jar target/server-0.12.3.jar`
+Start the game server with: `java -jar target/ao-server-0.12.3.jar`
 
 # Argentum Online Client
 
@@ -49,5 +49,5 @@ Almost a decade later, this is the official resumption of the project by the ori
 From [Wikipedia](https://es.wikipedia.org/wiki/Argentum_Online) (in Spanish):
 > "Argentum Online, también conocido como AO, es un videojuego de rol multijugador masivo en línea libre, disponible para los sistemas operativos Microsoft Windows y publicado en el año 1999 en Internet de manera independiente. El juego está programado en Visual Basic, y su éxito se debió en parte a que necesita muy bajos recursos de red para funcionar por internet y el ser completamente gratuito, algo determinante a principios de los 2000s en Argentina donde nació." 
 
-## Licence
+## License
 This project is Free Open Source Software, licensed under [GNU AFFERO GENERAL PUBLIC LICENSE Version 3](https://www.gnu.org/licenses/agpl.html)
